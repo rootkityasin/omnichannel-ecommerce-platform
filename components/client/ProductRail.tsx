@@ -153,30 +153,13 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
 }
 
 function ScrollRevealItem({ children }: { children: React.ReactNode }) {
-    const itemRef = useRef<HTMLDivElement>(null);
-    const { scrollYProgress } = useScroll({
-        target: itemRef,
-        offset: ["start 95%", "end 20%"]
-    });
-
-    const y = useTransform(scrollYProgress, [0, 0.4], [60, 0]);
-    const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
-    const scale = useTransform(scrollYProgress, [0, 0.4], [0.9, 1]);
-    const rotate = useTransform(scrollYProgress, [0, 0.4], [-2, 0]);
-
-    const springY = useSpring(y, { stiffness: 100, damping: 20 });
-    const springScale = useSpring(scale, { stiffness: 100, damping: 20 });
-
     return (
         <motion.div
-            ref={itemRef}
-            style={{
-                y: springY,
-                opacity,
-                scale: springScale,
-                rotate,
-                willChange: "transform, opacity"
-            }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{ willChange: "transform, opacity" }}
         >
             {children}
         </motion.div>

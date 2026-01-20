@@ -41,6 +41,7 @@ export function HeroStory({ data }: HeroProps) {
                     className="w-64 h-64 md:w-96 md:h-96 object-contain opacity-10"
                     animate={{ rotate: [0, 5, -5, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ willChange: "transform, opacity" }}
                 />
             </motion.div>
 

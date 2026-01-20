@@ -23,7 +23,7 @@ export function GallerySection({ data }: GalleryProps) {
 
     const galleryImages = (data && data.length > 0) ? data : defaultImages;
 
-    const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
+    const y = useTransform(scrollYProgress, [0, 1], [0, -40]);
 
     return (
         <section ref={containerRef} className="relative py-32 overflow-hidden bg-slate-900 perspective-1000">
@@ -43,7 +43,7 @@ export function GallerySection({ data }: GalleryProps) {
 
             {/* 3D Scroll Container */}
             <motion.div
-                style={{ y }}
+                style={{ y, willChange: 'transform' }}
                 className="flex flex-wrap justify-center gap-8 md:gap-12 px-4"
             >
                 {galleryImages.map((img, index) => (
