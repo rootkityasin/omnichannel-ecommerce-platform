@@ -209,9 +209,11 @@ function CartContent() {
                 <h2 className={`text-3xl md:text-4xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight ${headingClass}`}>
                     {cartTexts?.emptyTitle || t.cartPage.emptyTitle}
                 </h2>
-                <p className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}>
-                    {cartTexts?.emptyMessage || t.cartPage.emptyMessage}
-                </p>
+                {(!cartTexts || cartTexts.emptyMessage !== cartTexts.emptyTitle) && (
+                    <p className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}>
+                        {cartTexts?.emptyMessage || t.cartPage.emptyMessage}
+                    </p>
+                )}
 
                 <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
                     <img

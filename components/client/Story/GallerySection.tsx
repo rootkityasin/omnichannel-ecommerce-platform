@@ -23,13 +23,13 @@ export function GallerySection({ data }: GalleryProps) {
 
     const galleryImages = (data && data.length > 0) ? data : defaultImages;
 
-    const y = useTransform(scrollYProgress, [0, 1], [0, -40]);
+    const y = useTransform(scrollYProgress, [0, 1], [0, -20]);
 
     return (
-        <section ref={containerRef} className="relative py-32 overflow-hidden bg-slate-900 perspective-1000">
+        <section ref={containerRef} className="relative py-32 overflow-hidden bg-slate-900">
             <div className="max-w-7xl mx-auto px-6 mb-20 text-center">
                 <motion.h2
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className="text-4xl md:text-6xl font-black text-white mb-6"
@@ -49,15 +49,15 @@ export function GallerySection({ data }: GalleryProps) {
                 {galleryImages.map((img, index) => (
                     <motion.div
                         key={index}
-                        initial={{ opacity: 0, scale: 0.8, rotateX: 20 }}
-                        whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
-                        viewport={{ margin: "-100px" }}
-                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.5, delay: Math.min(index * 0.05, 0.2) }}
                         whileHover={{
-                            scale: 1.1,
+                            scale: 1.05,
                             rotate: 0,
                             zIndex: 10,
-                            transition: { duration: 0.3 }
+                            transition: { duration: 0.2 }
                         }}
                         style={{ rotate: img.rotate }}
                         className="relative group w-full max-w-xs md:max-w-sm aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/5 bg-slate-800"

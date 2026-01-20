@@ -8,13 +8,18 @@ import { useAdmin } from '@/components/providers/AdminProvider';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { CouponSection } from '@/components/client/CouponSection';
+import { useLanguageStore } from '@/lib/languageStore';
+import { translations } from '@/lib/translations';
+import { getStorySections } from '@/app/actions/story';
 
 export function CartDrawer() {
+    const { language } = useLanguageStore();
     const { items, removeItem, addItem, isOpen, closeCart, openCart, openCheckout, total, discount, finalTotal, coupon } = useCartStore();
     const { settings } = useAdmin();
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [cartTexts, setCartTexts] = useState<any>(null);
 
     const controls = useDragControls();
     const x = useMotionValue(0);
@@ -39,6 +44,17 @@ export function CartDrawer() {
         }
 
         window.addEventListener('resize', updateDimensions);
+
+        // Load cart texts for empty state
+        const loadTexts = async () => {
+            const sections = await getStorySections();
+            const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
+            if (cartSection?.content) {
+                setCartTexts(cartSection.content);
+            }
+        };
+        loadTexts();
+
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
@@ -192,14 +208,25 @@ export function CartDrawer() {
                 {/* Items */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
                     {items.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-60">
-                            <ShoppingBag className="w-16 h-16 text-gray-300" />
-                            <p className="text-gray-500 font-medium">Your cart is empty</p>
+                        <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                            <div className="w-full max-w-[240px] aspect-square mb-6 flex items-center justify-center relative">
+                                <img
+                                    src={cartTexts?.emptyImage || "/empty_cart_animation.gif"}
+                                    alt="Empty Cart"
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+                            <p className="text-gray-900 font-bold text-lg mb-1">
+                                {cartTexts?.emptyTitle || translations[language as keyof typeof translations]?.cartPage?.emptyTitle || 'Your cart is empty'}
+                            </p>
+                            <p className="text-gray-500 text-sm mb-8 max-w-[200px] mx-auto font-medium">
+                                {cartTexts?.emptyMessage || translations[language as keyof typeof translations]?.cartPage?.emptyMessage}
+                            </p>
                             <button
                                 onClick={closeCart}
-                                className="text-crab-red font-bold text-sm hover:underline"
+                                className="px-8 py-3 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-crab-red transition-all active:scale-95"
                             >
-                                Browse Menu
+                                {cartTexts?.browseMenu || 'Browse Menu'}
                             </button>
                         </div>
                     ) : (

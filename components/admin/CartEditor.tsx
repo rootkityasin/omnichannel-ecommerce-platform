@@ -34,7 +34,7 @@ export function CartEditor() {
 
     // Default Config (fallback)
     const [config, setConfig] = useState<any>({
-        emptyTitle: 'Your Cart is Empty! 🦀',
+        emptyTitle: 'Your Cart is Empty!',
         emptyMessage: "Looks like you haven't added any delicious crabs yet.",
         browseMenu: 'Browse Menu',
         title: 'Your Cart',

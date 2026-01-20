@@ -53,11 +53,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.facebook.net", // kept unsafe-inline/eval for now to prevent breakage, but will review if possible to remove
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.facebook.net https://*.facebook.com https://*.fbcdn.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' blob: data: https://**.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net",
+              "img-src 'self' blob: data: https://**.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://vitals.vercel-insights.com https://graph.facebook.com https://*.fbcdn.net",
+              "connect-src 'self' https://*.vercel-insights.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net",
               "frame-src 'self' https://*.facebook.com",
               "base-uri 'self'",
               "form-action 'self'",
@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN', // Changed to SAMEORIGIN as recommended
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-Content-Type-Options',
@@ -75,7 +75,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload', // Increased max-age to 2 years
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
             key: 'Referrer-Policy',
@@ -83,11 +83,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()', // Fixed typo 'geolocations' -> 'geolocation'
-          },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: 'https://www.crabkhai.com', // Restrict cross-origin access
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
           },
         ],
       },

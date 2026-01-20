@@ -155,10 +155,10 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
 function ScrollRevealItem({ children }: { children: React.ReactNode }) {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-30px" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             style={{ willChange: "transform, opacity" }}
         >
             {children}

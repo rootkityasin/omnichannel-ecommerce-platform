@@ -285,12 +285,13 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                         <AnimatePresence mode="wait">
                             {displayedProducts.length > 0 ? (
                                 <motion.div
-                                    key={`${activeCategory}-${activeFilter}-${debouncedSearch}`} // Trigger transition on filter change
-                                    initial={{ opacity: 0, y: 10 }}
+                                    key={`${activeCategory}-${activeFilter}-${debouncedSearch}`}
+                                    initial={{ opacity: 0, y: 4 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.2 }}
+                                    exit={{ opacity: 0, y: -4 }}
+                                    transition={{ duration: 0.15, ease: "easeOut" }}
                                     className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+                                    style={{ willChange: 'transform, opacity' }}
                                 >
                                     {displayedProducts.map((item) => (
                                         <ProductCard

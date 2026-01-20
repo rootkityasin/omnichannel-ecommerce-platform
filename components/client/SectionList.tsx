@@ -41,10 +41,11 @@ export function SectionList({ sections }: { sections: Section[] }) {
                         key={section.id}
                         id={`section-${section.slug}`}
                         className="scroll-mt-32"
-                        initial={{ opacity: 0, y: 50 }}
+                        initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-150px" }}
-                        transition={{ duration: 0.8, delay: index * 0.1, ease: "easeOut" }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.2), ease: "easeOut" }}
+                        style={{ willChange: 'transform, opacity' }}
                     >
                         <ProductRail
                             title={section.title}
