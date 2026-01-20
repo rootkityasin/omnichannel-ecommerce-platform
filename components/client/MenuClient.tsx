@@ -286,10 +286,10 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                             {displayedProducts.length > 0 ? (
                                 <motion.div
                                     key={`${activeCategory}-${activeFilter}-${debouncedSearch}`}
-                                    initial={{ opacity: 0, y: 4 }}
+                                    initial={{ opacity: 0, y: 2 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -4 }}
-                                    transition={{ duration: 0.15, ease: "easeOut" }}
+                                    exit={{ opacity: 0, y: -2 }}
+                                    transition={{ duration: 0.1, ease: "easeOut" }}
                                     className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
                                     style={{ willChange: 'transform, opacity' }}
                                 >
