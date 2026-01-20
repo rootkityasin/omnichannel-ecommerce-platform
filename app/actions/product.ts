@@ -21,19 +21,15 @@ export async function getProducts() {
                 name: true,
                 name_bn: true,
                 price: true,
-                price_bn: true,
                 image: true,
                 images: true,
                 categoryId: true,
                 pieces: true,
                 totalSold: true,
-                weightOptions: true,
                 type: true,
                 createdAt: true,
                 nutritionImage: true,
                 cookingImage: true,
-                nutrition: true,
-                cookingInstructions: true,
                 stage: true,
                 // Only select what's absolutely necessary for the menu and modal
                 // to keep the payload size small and query fast.
@@ -95,6 +91,8 @@ export async function createProduct(data: any) {
                 } : undefined
             }
         });
+        // Invalidate cache
+        productsCache = { data: null, timestamp: 0 };
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
         return { success: true, product };
@@ -125,6 +123,8 @@ export async function updateProduct(id: string, data: any) {
                 // Add other fields
             }
         });
+        // Invalidate cache
+        productsCache = { data: null, timestamp: 0 };
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
         return { success: true };
