@@ -138,6 +138,22 @@ export function AuthForm() {
                 </p>
             </div>
 
+            {/* Auth Toggle Tabs */}
+            <div className="flex bg-gray-100/50 p-1.5 rounded-2xl mb-8 border border-gray-100">
+                <button
+                    onClick={() => setIsLogin(true)}
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${isLogin ? 'bg-white shadow-md text-crab-red scale-[1.02]' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    Login
+                </button>
+                <button
+                    onClick={() => setIsLogin(false)}
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${!isLogin ? 'bg-white shadow-md text-crab-red scale-[1.02]' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    Sign Up
+                </button>
+            </div>
+
             {/* Social Buttons */}
             <div className="grid grid-cols-2 gap-4 mb-8">
                 <Button variant="outline" onClick={() => handleSocialLogin('google')} disabled={isLoading} className="h-14 rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 hover:ring-crab-red/20 transition-all">
@@ -229,21 +245,8 @@ export function AuthForm() {
                 </motion.div>
             </form>
 
-            <div className="mt-8 text-center">
-                <button
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="text-sm font-semibold text-gray-500 hover:text-crab-red transition-colors"
-                >
-                    {isLogin ? (
-                        <>
-                            Don't have an account? <span className="text-crab-red">Sign Up</span>
-                        </>
-                    ) : (
-                        <>
-                            Already have an account? <span className="text-crab-red">Login</span>
-                        </>
-                    )}
-                </button>
+            <div className="mt-8 text-center text-xs text-gray-400 font-medium font-body">
+                By continuing, you agree to our Terms of Service and Privacy Policy.
             </div>
         </motion.div >
     );

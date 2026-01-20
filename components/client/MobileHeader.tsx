@@ -94,13 +94,12 @@ export function MobileHeader() {
     }, [mascotState, isSearchOpen]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
-
-    const handleLocationClick = () => {
-        setIsLocationDialogOpen(true);
-    };
 
     const { getGeoLocation } = useGeolocation();
+
+    const handleLocationClick = () => {
+        getGeoLocation();
+    };
 
     return (
         <>
@@ -246,11 +245,6 @@ export function MobileHeader() {
             {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />
             }
 
-            <LocationPermissionDialog
-                isOpen={isLocationDialogOpen}
-                onOpenChange={setIsLocationDialogOpen}
-                onConfirm={getGeoLocation}
-            />
         </>
     );
 }

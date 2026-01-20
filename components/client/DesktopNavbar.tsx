@@ -41,13 +41,12 @@ export function DesktopNavbar() {
 
     // Sidebar State
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
-
-    const handleLocationClick = () => {
-        setIsLocationDialogOpen(true);
-    };
 
     const { getGeoLocation } = useGeolocation();
+
+    const handleLocationClick = () => {
+        getGeoLocation();
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -274,11 +273,6 @@ export function DesktopNavbar() {
                 )}
             </AnimatePresence >
 
-            <LocationPermissionDialog
-                isOpen={isLocationDialogOpen}
-                onOpenChange={setIsLocationDialogOpen}
-                onConfirm={getGeoLocation}
-            />
         </>
     );
 }
