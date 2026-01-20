@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     esmExternals: true,
   },
 
+  // Compiler options
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+
   // Image Optimization - Allow remote images
   images: {
     remotePatterns: [
