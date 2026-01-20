@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { ProductRail } from '@/components/client/ProductRail';
+import { useCartStore } from '@/lib/store';
+import { useEffect } from 'react';
 
 interface Section {
     id: string;
@@ -11,6 +13,14 @@ interface Section {
 }
 
 export function SectionList({ sections }: { sections: Section[] }) {
+    const setAllProducts = useCartStore((state) => state.setAllProducts);
+
+    useEffect(() => {
+        if (sections.length > 0) {
+            const allFoundProducts = sections.flatMap(s => s.products);
+            setAllProducts(allFoundProducts);
+        }
+    }, [sections, setAllProducts]);
     if (sections.length === 0) {
         return (
             <div className="py-12 text-center text-slate-400">

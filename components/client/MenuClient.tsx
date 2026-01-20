@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Sparkles, Utensils, Flame, Fish, Award, Star, X, Filter } from 'lucide-react';
 import { ProductCard } from '@/components/client/ProductCard';
+import { useCartStore } from '@/lib/store';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,14 @@ interface MenuClientProps {
 export function MenuClient({ initialProducts, initialCategories }: MenuClientProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const setAllProducts = useCartStore((state) => state.setAllProducts);
+
+    // Populate global store with products for fast recommendations elsewhere
+    useEffect(() => {
+        if (initialProducts?.length > 0) {
+            setAllProducts(initialProducts);
+        }
+    }, [initialProducts, setAllProducts]);
 
     const categoryId = searchParams.get('category') || 'all';
     const filterId = searchParams.get('filter') || null;

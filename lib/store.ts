@@ -30,6 +30,10 @@ interface CartState {
     total: () => number; // Item Subtotal
     discount: () => number; // Calculated discount
     finalTotal: () => number; // Payable amount
+
+    // Cached Products for Recommendations
+    allProducts: any[];
+    setAllProducts: (products: any[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -94,11 +98,14 @@ export const useCartStore = create<CartState>()(
                 const total = get().total(); // This uses the getter from inside the object specifically? No, get().total() works
                 const discount = get().discount();
                 return Math.max(0, total - discount);
-            }
+            },
+
+            allProducts: [],
+            setAllProducts: (products) => set({ allProducts: products }),
         }),
         {
             name: 'crabkhai-cart',
-            partialize: (state) => ({ items: state.items, coupon: state.coupon }),
+            partialize: (state) => ({ items: state.items, coupon: state.coupon, allProducts: state.allProducts }),
         }
     )
 );
