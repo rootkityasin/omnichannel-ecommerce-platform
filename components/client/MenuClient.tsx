@@ -273,35 +273,30 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                             </h2>
                         </div>
 
-                        <AnimatePresence mode="popLayout">
+                        <AnimatePresence mode="wait">
                             {displayedProducts.length > 0 ? (
                                 <motion.div
+                                    key={`${activeCategory}-${activeFilter}-${debouncedSearch}`} // Trigger transition on filter change
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
                                     className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
                                 >
-                                    {displayedProducts.map((item, index) => (
-                                        <motion.div
+                                    {displayedProducts.map((item) => (
+                                        <ProductCard
                                             key={item.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                                            transition={{
-                                                duration: 0.3,
-                                                delay: Math.min(index * 0.03, 0.3)
-                                            }}
-                                        >
-                                            <ProductCard
-                                                id={item.id}
-                                                name={item.name}
-                                                price={String(item.price)}
-                                                image={item.image}
-                                                name_bn={item.name_bn || item.name}
-                                                price_bn={item.price_bn || String(item.price)}
-                                                pieces={item.pieces}
-                                                totalSold={item.totalSold}
-                                                weightOptions={item.weightOptions}
-                                                images={item.images}
-                                            />
-                                        </motion.div>
+                                            id={item.id}
+                                            name={item.name}
+                                            price={String(item.price)}
+                                            image={item.image}
+                                            name_bn={item.name_bn || item.name}
+                                            price_bn={item.price_bn || String(item.price)}
+                                            pieces={item.pieces}
+                                            totalSold={item.totalSold}
+                                            weightOptions={item.weightOptions}
+                                            images={item.images}
+                                        />
                                     ))}
                                 </motion.div>
                             ) : (
