@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
   // Optimize server actions
   serverExternalPackages: ['@prisma/client', 'pg'],
 
+  // Disable X-Powered-By header
+  poweredByHeader: false,
+
   // Security Headers
   async headers() {
     return [
@@ -45,7 +48,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.facebook.net",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.facebook.net", // kept unsafe-inline/eval for now to prevent breakage, but will review if possible to remove
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' blob: data: https://**.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net",
               "font-src 'self' https://fonts.gstatic.com",
@@ -59,7 +62,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
+            value: 'SAMEORIGIN', // Changed to SAMEORIGIN as recommended
           },
           {
             key: 'X-Content-Type-Options',
@@ -67,7 +70,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
+            value: 'max-age=63072000; includeSubDomains; preload', // Increased max-age to 2 years
           },
           {
             key: 'Referrer-Policy',
@@ -75,7 +78,11 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocations=(), interest-cohort=()',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()', // Fixed typo 'geolocations' -> 'geolocation'
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'https://www.crabkhai.com', // Restrict cross-origin access
           },
         ],
       },
