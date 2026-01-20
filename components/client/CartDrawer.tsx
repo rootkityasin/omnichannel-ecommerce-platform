@@ -219,6 +219,9 @@ export function CartDrawer() {
                                             src={item.image}
                                             alt={item.name}
                                             className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = "/logo.svg";
+                                            }}
                                         />
                                     )}
                                 </div>

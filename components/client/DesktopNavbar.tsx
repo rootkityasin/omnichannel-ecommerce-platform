@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils';
 import { menuItems } from '@/lib/data';
 
 import { AnimatedSearchBar } from './AnimatedSearchBar';
+import { LocationPermissionDialog } from './LocationPermissionDialog';
+import { toast } from 'sonner';
 
 // Reusing the Mobile Sidebar logic but adapted for Desktop if needed overlap
 import { MobileHeader } from './MobileHeader'; // We might not want to import the whole header just for sidebar... 
@@ -38,6 +40,79 @@ export function DesktopNavbar() {
 
     // Sidebar State
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+
+    const handleLocationClick = () => {
+        setIsLocationDialogOpen(true);
+    };
+
+    const getGeoLocation = () => {
+        if ('geolocation' in navigator) {
+            const options = {
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 10000
+            };
+
+            toast.loading("Locating you...", { id: "location-toast" });
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                toast.dismiss("location-toast");
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+
+                const deliveryZones = [
+                    { name: 'Dhaka', lat: 23.8103, lng: 90.4125 },
+                    { name: 'Khulna', lat: 22.8456, lng: 89.5403 },
+                    { name: 'Chottogram', lat: 22.3569, lng: 91.7832 }
+                ];
+
+                let nearestCity = null;
+                let minDistance = Infinity;
+
+                deliveryZones.forEach(zone => {
+                    const R = 6371; // Radius of the earth in km
+                    const dLat = (zone.lat - userLat) * (Math.PI / 180);
+                    const dLon = (zone.lng - userLng) * (Math.PI / 180);
+                    const a =
+                        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(userLat * (Math.PI / 180)) * Math.cos(zone.lat * (Math.PI / 180)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    const d = R * c; // Distance in km
+
+                    if (d < minDistance) {
+                        minDistance = d;
+                        nearestCity = zone.name;
+                    }
+                });
+
+                if (minDistance <= 20) {
+                    toast.success(`${t.deliveryAreaSuccess} ${nearestCity}.`);
+                } else {
+                    toast.error(t.deliveryAreaFail || "Sorry, we don't deliver to your area yet.");
+                }
+            }, (error) => {
+                toast.dismiss("location-toast");
+                let errorMessage = "Location access failed.";
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = "User denied the request for Geolocation. Please enable location permissions.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = "Location information is unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = "The request to get user location timed out.";
+                        break;
+                }
+                toast.error(errorMessage);
+                console.error("Geolocation Error:", error);
+            }, options);
+        } else {
+            toast.error(t.geoNotSupported || "Geolocation is not supported by this browser.");
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -134,7 +209,7 @@ export function DesktopNavbar() {
                     </div>
 
                     {/* Center Nav */}
-                    <nav className={cn("flex items-center gap-8 bg-black/5 backdrop-blur-sm px-8 py-2.5 rounded-full border border-white/10 shadow-sm transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
+                    <nav className={cn("flex items-center gap-8 bg-black/20 backdrop-blur-md px-8 py-2.5 rounded-full border border-white/10 shadow-sm transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
                             return (
@@ -163,7 +238,18 @@ export function DesktopNavbar() {
                     {/* Right Actions */}
                     <div className={cn("flex items-center gap-5 transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
                         {/* Search */}
-                        <AnimatedSearchBar width="w-72" />
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleLocationClick}
+                                className={cn(
+                                    "p-2 rounded-full transition-colors",
+                                    !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                                )}
+                            >
+                                <MapPin className="w-5 h-5" />
+                            </button>
+                            <AnimatedSearchBar width="w-72" />
+                        </div>
 
                         {/* Language */}
                         <button
@@ -228,9 +314,6 @@ export function DesktopNavbar() {
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="fixed top-0 left-0 bottom-0 w-[300px] bg-slate-950 z-[70] shadow-2xl px-6 pb-6 pt-28 flex flex-col"
                         >
-                            <div className="mb-8">
-                                <span className="text-white font-black text-2xl uppercase tracking-widest pl-1">Menu</span>
-                            </div>
                             <nav className="space-y-6">
                                 {[
                                     { href: "/", label: "HOME", color: "text-white" },
@@ -262,13 +345,16 @@ export function DesktopNavbar() {
                                 ))}
                             </nav>
 
-                            <div className="mt-auto pt-8 border-t border-white/10">
-                                <p className="text-white/40 text-sm">© {new Date().getFullYear()} {config?.shopName || "CrabKhai"}</p>
-                            </div>
                         </motion.div>
                     </>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
+
+            <LocationPermissionDialog
+                isOpen={isLocationDialogOpen}
+                onOpenChange={setIsLocationDialogOpen}
+                onConfirm={getGeoLocation}
+            />
         </>
     );
 }

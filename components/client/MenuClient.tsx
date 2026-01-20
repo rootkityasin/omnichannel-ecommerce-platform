@@ -33,6 +33,9 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
     const filterId = searchParams.get('filter') || null;
     const initialSearch = searchParams.get('search') || '';
 
+    const [activeCategory, setActiveCategory] = useState(categoryId);
+    const [activeFilter, setActiveFilter] = useState<string | null>(filterId);
+
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const debouncedSearch = useDebounce(searchQuery, 400);
 
@@ -50,19 +53,19 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
     const filteredItems = useMemo(() => {
         let items = initialProducts.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(debouncedSearch.toLowerCase());
-            const matchesCategory = categoryId === 'all' ? true : item.categoryId === categoryId;
+            const matchesCategory = activeCategory === 'all' ? true : item.categoryId === activeCategory;
 
             let matchesFilter = true;
-            if (filterId === 'super-savings') {
+            if (activeFilter === 'super-savings') {
                 matchesFilter = item.type === 'COMBO';
             }
             return matchesSearch && matchesCategory && matchesFilter;
         });
 
         // Sorting
-        if (filterId === 'best-sellers') {
+        if (activeFilter === 'best-sellers') {
             items.sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0));
-        } else if (filterId === 'new-arrivals') {
+        } else if (activeFilter === 'new-arrivals') {
             items.sort((a, b) => {
                 const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                 const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -71,7 +74,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         }
 
         return items;
-    }, [initialProducts, debouncedSearch, categoryId, filterId]);
+    }, [initialProducts, debouncedSearch, activeCategory, activeFilter]);
 
     const displayedProducts = useMemo(() => {
         return filteredItems.slice(0, displayCount);
@@ -90,19 +93,29 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         return () => window.removeEventListener('scroll', handleScroll);
     }, [displayCount, filteredItems.length]);
 
-    // Reset display count on filter change
+    // Reset display count and sync URL on filter change
     useEffect(() => {
         setDisplayCount(12);
-    }, [debouncedSearch, categoryId, filterId]);
+
+        // Sync URL shallowly
+        const params = new URLSearchParams(window.location.search);
+        if (activeCategory && activeCategory !== 'all') params.set('category', activeCategory);
+        else params.delete('category');
+
+        if (activeFilter) params.set('filter', activeFilter);
+        else params.delete('filter');
+
+        if (debouncedSearch) params.set('search', debouncedSearch);
+        else params.delete('search');
+
+        const newPath = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({ ...window.history.state, as: newPath, url: newPath }, '', newPath);
+
+    }, [debouncedSearch, activeCategory, activeFilter]);
 
     const updateQuery = (key: string, value: string) => {
-        const params = new URLSearchParams(searchParams.toString());
-        if (value && value !== 'all') {
-            params.set(key, value);
-        } else {
-            params.delete(key);
-        }
-        router.push(`/menu?${params.toString()}`, { scroll: false });
+        if (key === 'category') setActiveCategory(value);
+        if (key === 'filter') setActiveFilter(value === 'all' ? null : value);
     };
 
     // Calculate counts for sidebar
@@ -118,24 +131,24 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         <div className="bg-slate-50 min-h-screen pt-0 pb-32">
 
             {/* MOBILE: Sticky Header (Kept as is for mobile) */}
-            <div className="md:hidden sticky top-[60px] z-30 bg-white/80 backdrop-blur-xl border-b border-white/40 px-4 pt-4 pb-4 space-y-4 shadow-sm transition-all duration-300">
-                <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
+            <div className="md:hidden sticky top-[64px] z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 px-4 py-3 space-y-3 shadow-sm transition-all duration-300">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
                     <motion.h1
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2"
+                        className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2"
                     >
                         THE MENU
                     </motion.h1>
 
-                    <div className="relative flex-1 max-w-xs group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-crab-red transition-colors" />
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-crab-red transition-colors" />
                         <input
                             type="text"
-                            placeholder="Find..."
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/5 focus:border-crab-red transition-all shadow-sm font-medium"
+                            className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-crab-red/5 focus:border-crab-red transition-all font-medium"
                         />
                         {searchQuery && (
                             <button
@@ -150,7 +163,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
                 <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar -mx-4 px-4 scroll-smooth">
                     {categoriesList.map((cat) => {
-                        const isActive = categoryId === cat.id;
+                        const isActive = activeCategory === cat.id;
                         const Icon = cat.icon;
                         return (
                             <button
@@ -210,7 +223,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
                             <nav className="space-y-1">
                                 {categoriesList.map((cat) => {
-                                    const isActive = categoryId === cat.id;
+                                    const isActive = activeCategory === cat.id;
                                     const Icon = cat.icon;
                                     return (
                                         <button
@@ -253,7 +266,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                         {/* Page Title (Desktop only, since it's in sidebar for mobile header) */}
                         <div className="hidden md:flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                                {categoriesList.find(c => c.id === categoryId)?.name || 'All Items'}
+                                {categoriesList.find(c => c.id === activeCategory)?.name || 'All Items'}
                                 <span className="ml-3 text-lg font-medium text-slate-400 font-body">
                                     ({filteredItems.length} items)
                                 </span>
@@ -263,21 +276,17 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                         <AnimatePresence mode="popLayout">
                             {displayedProducts.length > 0 ? (
                                 <motion.div
-                                    layout
                                     className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
                                 >
                                     {displayedProducts.map((item, index) => (
                                         <motion.div
                                             key={item.id}
-                                            layout
-                                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, transition: { duration: 0.1 } }}
                                             transition={{
-                                                type: "spring",
-                                                stiffness: 260,
-                                                damping: 20,
-                                                delay: Math.min(index * 0.05, 0.5)
+                                                duration: 0.3,
+                                                delay: Math.min(index * 0.03, 0.3)
                                             }}
                                         >
                                             <ProductCard

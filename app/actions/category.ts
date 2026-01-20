@@ -31,10 +31,14 @@ export async function getCategories() {
     }
 }
 
-export async function createCategory(name: string) {
+export async function createCategory(name: string, animationType: string = "AUTO", icon: string = "Package") {
     try {
         const category = await prisma.category.create({
-            data: { name }
+            data: {
+                name,
+                animationType,
+                icon
+            }
         });
         // Invalidate cache
         categoriesCache = { data: null, timestamp: 0 };
@@ -57,9 +61,16 @@ export async function deleteCategory(id: string) {
     }
 }
 
-export async function updateCategory(id: string, name: string) {
+export async function updateCategory(id: string, name: string, animationType?: string, icon?: string) {
     try {
-        await prisma.category.update({ where: { id }, data: { name } });
+        await prisma.category.update({
+            where: { id },
+            data: {
+                name,
+                ...(animationType && { animationType }),
+                ...(icon && { icon })
+            }
+        });
         // Invalidate cache
         categoriesCache = { data: null, timestamp: 0 };
         revalidatePath('/admin/categories');

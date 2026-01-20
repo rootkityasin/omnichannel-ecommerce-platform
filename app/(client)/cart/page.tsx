@@ -160,6 +160,7 @@ function CartContent() {
 
             toast.success("Order placed successfully!");
             setTimeout(() => {
+                setIsCheckoutOpen(false); // Close drawer to show success state
                 setIsOrderPlaced(true);
                 setIsAnimating(false);
                 clearCart();
@@ -352,8 +353,8 @@ function CartContent() {
                         </AnimatePresence>
                     </div>
 
-                    {/* Recommendations Section */}
-                    <div className="mt-8 md:mt-16 border-t border-gray-200 pt-8 md:pt-12">
+                    {/* Recommendations Section (Mobile: Top, Desktop: Moved to Sidebar) */}
+                    <div className="md:hidden mt-4 mb-8">
                         <CartRecommendations />
                     </div>
                 </div>
@@ -467,6 +468,11 @@ function CartContent() {
                                 By continuing, you agree to our Terms of Service.
                             </p>
                         </div>
+                    </div>
+
+                    {/* Desktop Recommendations in Sidebar */}
+                    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                        <CartRecommendations />
                     </div>
                 </div>
 

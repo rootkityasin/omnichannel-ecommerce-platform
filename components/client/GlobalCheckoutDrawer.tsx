@@ -11,6 +11,13 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from "@/components/ui/drawer";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
     Select,
@@ -21,17 +28,17 @@ import {
 } from "@/components/ui/select";
 import { createOrder } from '@/app/actions/order';
 import { getSiteConfig } from '@/app/actions/settings';
-import { useLanguageStore } from '@/lib/languageStore';
-import { translations } from '@/lib/translations';
 import { CouponSection } from './CouponSection';
 import { useRouter } from 'next/navigation';
 import { trackEvent } from '@/lib/track';
+import { useMediaQuery } from '@/lib/hooks/use-media-query';
 
 export function GlobalCheckoutDrawer() {
     const { checkoutOpen, closeCheckout, items, total, discount, clearCart, coupon } = useCartStore();
     const [isAnimating, setIsAnimating] = useState(false);
     const [siteConfig, setSiteConfig] = useState<any>(null);
     const router = useRouter();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     // Form State
     const [formData, setFormData] = useState<any>({
@@ -100,14 +107,14 @@ export function GlobalCheckoutDrawer() {
                     num_items: items.length,
                     value: totalAmount,
                     currency: 'BDT',
-                    order_id: res.orderId // Assuming createOrder returns orderId
+                    order_id: res.orderId
                 },
                 userData: {
-                    email: '', // Not captured in this form currently
+                    email: '',
                     phone: formData.phone,
                     name: formData.name,
                     area: formData.area,
-                    city: 'Dhaka' // Default city if not specified, or use area
+                    city: 'Dhaka'
                 }
             });
 
@@ -116,13 +123,7 @@ export function GlobalCheckoutDrawer() {
                 setIsAnimating(false);
                 clearCart();
                 closeCheckout();
-                router.push('/cart'); // Or stay on page? Redirect to Cart for Success View is safest as CartPage handles Success State
-                // Actually, if we clear cart, CartPage shows empty state.
-                // We should probably show a success message in the Drawer or toast.
-                // But the user typically expects a confirmation page. 
-                // Let's redirect to /cart?orderPlaced=true or allow CartPage to detect success?
-                // For now, let's just clear and show toast, maybe redirect to home?
-                // User didn't specify. I'll stick to a success toast and close.
+                router.push('/cart');
             }, 1000);
         } else {
             toast.error(res.error || "Failed to place order");
@@ -132,6 +133,144 @@ export function GlobalCheckoutDrawer() {
 
     if (items.length === 0) return null;
 
+    // Shared Form Component
+    function CheckoutForm({ className }: { className?: string }) {
+        return (
+            <form id="checkout-form" onSubmit={handlePlaceOrder} className={`space-y-4 ${className}`}>
+                <div className="space-y-4">
+                    <h3 className="font-bold text-gray-900 border-b pb-2">Delivery Details</h3>
+                    <div className="space-y-3">
+                        <input
+                            type="text"
+                            placeholder="Full Name"
+                            required
+                            className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        />
+                        <input
+                            type="tel"
+                            placeholder="Phone Number"
+                            required
+                            className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
+                            value={formData.phone}
+                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="col-span-1">
+                                <Select
+                                    value={formData.area}
+                                    onValueChange={(val) => setFormData({ ...formData, area: val })}
+                                    required
+                                >
+                                    <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-black">
+                                        <SelectValue placeholder="Area" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Dhaka">Dhaka</SelectItem>
+                                        <SelectItem value="Ctg">Ctg</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Address"
+                                required
+                                className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
+                                value={formData.address}
+                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </form>
+        );
+    }
+
+    // Shared Order Summary Component
+    function OrderSummary() {
+        return (
+            <div className="space-y-4 h-full">
+                <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 space-y-4 shadow-sm">
+                    <h3 className="font-bold text-gray-900 border-b border-orange-200 pb-2">Order Summary</h3>
+
+                    <div className="flex justify-between text-base">
+                        <span className="text-gray-600">Subtotal ({items.length} items)</span>
+                        <span className="font-bold">৳{subTotalAmount}</span>
+                    </div>
+                    <div className="flex justify-between text-base">
+                        <span className="text-gray-600">Delivery Fee</span>
+                        <span className="font-bold">৳{deliveryFee}</span>
+                    </div>
+                    {discountAmount > 0 && (
+                        <div className="flex justify-between text-base text-green-600 font-bold">
+                            <span>Discount</span>
+                            <span>-৳{discountAmount}</span>
+                        </div>
+                    )}
+                    <div className="border-t border-orange-200 pt-3 flex justify-between text-xl font-black text-crab-red">
+                        <span>Total to Pay</span>
+                        <span>৳{totalAmount}</span>
+                    </div>
+                </div>
+
+                <div className="pt-2">
+                    <CouponSection />
+                </div>
+            </div>
+        );
+    }
+
+    // Shared Button Component
+    function CheckoutButton() {
+        return (
+            <Button
+                form="checkout-form"
+                type="submit"
+                disabled={isAnimating}
+                className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6"
+            >
+                {isAnimating ? <Loader2 className="animate-spin w-5 h-5" /> : `Place Order - ৳${totalAmount}`}
+            </Button>
+        );
+    }
+
+    if (isDesktop) {
+        return (
+            <Dialog open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-3xl font-black text-slate-900">Checkout</DialogTitle>
+                        <DialogDescription>Review your order and enter delivery details to complete your purchase.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        {/* Right: Order Summary (Displayed first on mobile if we weren't using Dialog for desktop only, but here order doesn't fail accessibility) */}
+                        {/* Actually, let's put Summary on right for typical eCommerce feel */}
+
+                        {/* Left: Form */}
+                        <div className="order-2 md:order-1">
+                            <CheckoutForm />
+                            <div className="hidden md:block">
+                                <CheckoutButton />
+                            </div>
+                        </div>
+
+                        {/* Right: Summary */}
+                        <div className="order-1 md:order-2">
+                            <OrderSummary />
+                            {/* Mobile-only button placement if we ever switch back, but here we can just keep it simple */}
+                            <div className="md:hidden mt-4">
+                                <CheckoutButton />
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    // Mobile Drawer
     return (
         <Drawer open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
             <DrawerContent className="max-h-[90vh]">
@@ -143,88 +282,13 @@ export function GlobalCheckoutDrawer() {
                         </DrawerDescription>
                     </DrawerHeader>
 
-                    {/* Scrollable Form Area */}
-                    <div className="p-4 overflow-y-auto flex-1">
-                        <div className="space-y-6">
-                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
-                                <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-gray-600">Subtotal</span>
-                                    <span className="font-bold">৳{subTotalAmount}</span>
-                                </div>
-                                <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-gray-600">Delivery</span>
-                                    <span className="font-bold">৳{deliveryFee}</span>
-                                </div>
-                                {discountAmount > 0 && (
-                                    <div className="flex justify-between text-sm text-green-600 font-bold mb-2">
-                                        <span>Discount</span>
-                                        <span>-৳{discountAmount}</span>
-                                    </div>
-                                )}
-                                <div className="border-t border-orange-200 mt-2 pt-2 flex justify-between text-base font-black text-crab-red">
-                                    <span>Total</span>
-                                    <span>৳{totalAmount}</span>
-                                </div>
-                            </div>
-
-                            <CouponSection />
-
-                            <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-3">
-                                <h3 className="font-bold text-gray-900">Delivery Information</h3>
-                                <input
-                                    type="text"
-                                    placeholder="Full Name"
-                                    required
-                                    className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
-                                <input
-                                    type="tel"
-                                    placeholder="Phone Number"
-                                    required
-                                    className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
-                                    value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                />
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="col-span-1">
-                                        <Select
-                                            value={formData.area}
-                                            onValueChange={(val) => setFormData({ ...formData, area: val })}
-                                            required
-                                        >
-                                            <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-black">
-                                                <SelectValue placeholder="Area" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Dhaka">Dhaka</SelectItem>
-                                                <SelectItem value="Ctg">Ctg</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Address"
-                                        required
-                                        className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
-                                        value={formData.address}
-                                        onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    />
-                                </div>
-                            </form>
-                        </div>
+                    <div className="p-4 overflow-y-auto flex-1 space-y-6">
+                        <OrderSummary />
+                        <CheckoutForm />
                     </div>
 
                     <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
-                        <Button
-                            form="checkout-form"
-                            type="submit"
-                            disabled={isAnimating}
-                            className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all"
-                        >
-                            {isAnimating ? <Loader2 className="animate-spin w-5 h-5" /> : `Place Order - ৳${totalAmount}`}
-                        </Button>
+                        <CheckoutButton />
                     </div>
                 </div>
             </DrawerContent>

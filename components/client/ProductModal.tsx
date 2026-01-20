@@ -167,6 +167,9 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                 alt={product.name}
                                 className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
                                 onClick={() => setIsZoomed(true)}
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = "/logo.svg";
+                                }}
 
                                 // Drag / Swipe Logic
                                 drag="x"
@@ -624,6 +627,9 @@ function ZoomableImage({ src, onNext, onPrev }: { src: string, onNext: () => voi
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: scale }}
                 transition={{ duration: 0.1 }} // Faster transition for pinch
+                onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/logo.svg";
+                }}
 
                 drag
                 dragConstraints={{ left: -1000 * scale, right: 1000 * scale, top: -1000 * scale, bottom: 1000 * scale }}

@@ -149,6 +149,9 @@ export function ProductCard({
                             alt={name}
                             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                             loading="lazy"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/logo.svg";
+                            }}
                         />
                     </div>
 

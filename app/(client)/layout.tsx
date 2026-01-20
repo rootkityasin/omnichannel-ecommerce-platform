@@ -20,7 +20,7 @@ export default async function ClientLayout({ // Changed to async
         <AdminProvider>
             <ThemeInjector primaryColor={config?.primaryColor} secondaryColor={config?.secondaryColor} />
             <div className="flex flex-col min-h-screen bg-white relative">
-                <div className="md:hidden">
+                <div className="md:hidden sticky top-0 z-50">
                     <MobileHeader />
                 </div>
                 <DesktopNavbar />

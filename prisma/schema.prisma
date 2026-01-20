@@ -76,9 +76,11 @@ model OrderItem {
 }
 
 model Category {
-  id       String    @id @default(cuid())
-  name     String
-  products Product[]
+  id            String    @id @default(cuid())
+  name          String
+  animationType String    @default("AUTO")
+  icon          String    @default("Package")
+  products      Product[]
 }
 
 model PromoCard {

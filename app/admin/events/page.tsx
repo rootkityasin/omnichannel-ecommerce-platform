@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { format } from 'date-fns';
 import { Activity, User, Phone, MapPin, Eye, ShoppingCart, CheckCircle, Globe, Smartphone } from 'lucide-react';
+import { SignalDataCell } from '@/components/admin/SignalDataCell';
+import { EventExportButton } from '@/components/admin/EventExportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,9 +29,12 @@ export default async function EventMatrixPage() {
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">EVENT MATRIX</h1>
                     <p className="text-slate-500 font-medium">Real-time customer signals & conversion logs</p>
                 </div>
-                <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Live Monitoring Active</span>
+                <div className="flex items-center gap-3">
+                    <EventExportButton />
+                    <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2 h-10">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Live Monitoring Active</span>
+                    </div>
                 </div>
             </div>
 
@@ -86,13 +91,7 @@ export default async function EventMatrixPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 max-w-xs">
-                                            <div className="text-xs text-slate-600 font-medium truncate">
-                                                {event.eventData && typeof event.eventData === 'object' ? (
-                                                    Object.entries(event.eventData as any)
-                                                        .map(([k, v]) => `${k}: ${v}`)
-                                                        .join(', ')
-                                                ) : 'No extra data'}
-                                            </div>
+                                            <SignalDataCell data={event.eventData} eventName={event.eventName} />
                                             <div className="text-[10px] text-slate-400 truncate mt-1">
                                                 URL: {event.sourceUrl ? new URL(event.sourceUrl).pathname : '/'}
                                             </div>

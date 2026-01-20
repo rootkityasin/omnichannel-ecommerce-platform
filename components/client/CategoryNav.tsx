@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getCategories } from '@/app/actions/category';
 import {
     Fish,
     Flame,
@@ -11,19 +10,229 @@ import {
     Drumstick,
     Soup,
     Shell,
-    ChevronRight,
-    Sparkles
+    Snowflake,
+    Package,
+    Gift,
+    Waves,
+    Pizza,
+    Beef,
+    Microwave,
+    Coffee,
+    Apple,
+    Candy,
+    Cookie,
+    Egg,
+    IceCream,
+    Milk,
+    Cherry,
+    Croissant,
+    Beer,
+    Wine,
+    Sandwich,
+    Salad,
+    Banana,
+    Bean,
+    Cake,
+    Carrot,
+    Citrus,
+    CupSoda,
+    Grape,
+    Lollipop,
+    Nut,
+    Popcorn,
+    Rabbit,
+    Sprout,
+    Wheat,
+    Zap,
+    Bird,
+    Bone,
+    GlassWater,
+    Sparkles,
+    Star,
+    Heart,
+    Truck,
+    Store,
+    ShoppingBag,
+    Home,
+    Timer,
+    Smile,
+    ChevronRight
 } from 'lucide-react';
 
-const getCategoryIcon = (name: string) => {
+const ICON_MAP: Record<string, any> = {
+    Fish, Flame, Utensils, Drumstick, Soup, Shell, Snowflake, Package, Gift, Waves, Pizza, Beef, Microwave, Coffee,
+    Apple, Candy, Cookie, Egg, IceCream, Milk, Cherry, Croissant, Beer, Wine, Sandwich, Salad,
+    Banana, Bean, Cake, Carrot, Citrus, CupSoda, Grape, Lollipop, Nut, Popcorn, Rabbit, Sprout, Wheat, Zap,
+    Bird, Bone, GlassWater, Sparkles, Star, Heart, Truck, Store, ShoppingBag, Home, Timer, Smile, ChevronRight
+};
+
+export interface CategoryStyle {
+    icon: any;
+    color: string;
+    hoverText: string;
+    bg: string;
+    border: string;
+    shadow: string;
+    gradient: string;
+    rotate: string; // Animation class
+}
+
+export const getCategoryStyle = (name: string, index: number = 0, animationType: string = "AUTO", iconName?: string): CategoryStyle => {
     const n = name.toLowerCase();
-    if (n.includes('live')) return Fish;
-    if (n.includes('masala')) return Flame;
-    if (n.includes('meat')) return Shell;
-    if (n.includes('ready')) return Utensils;
-    if (n.includes('fry') || n.includes('fried')) return Drumstick;
-    if (n.includes('soup')) return Soup;
-    return Utensils;
+
+    // Helper for AUTO logic
+    const isRight = index % 2 === 0;
+    const getRotation = (magnitude: 3 | 6 | 12) => {
+        if (magnitude === 12) return isRight ? 'group-hover:rotate-12' : 'group-hover:-rotate-12';
+        if (magnitude === 6) return isRight ? 'group-hover:rotate-6' : 'group-hover:-rotate-6';
+        return isRight ? 'group-hover:rotate-3' : 'group-hover:-rotate-3';
+    };
+
+    let baseStyle: Partial<CategoryStyle> = {};
+    let magnitude: 3 | 6 | 12 = 6; // Default
+
+    // Determine Base Colors & Icon (Vibes)
+    if (n.includes('live') || n.includes('fresh') || n.includes('fish')) {
+        baseStyle = {
+            icon: Fish,
+            color: 'text-cyan-600',
+            hoverText: 'group-hover:text-cyan-600',
+            bg: 'group-hover:bg-cyan-500',
+            border: 'group-hover:border-cyan-200',
+            shadow: 'group-hover:shadow-cyan-500/20',
+            gradient: 'from-cyan-500/10',
+        };
+        magnitude = 12;
+    } else if (n.includes('masala') || n.includes('spicy') || n.includes('curry')) {
+        baseStyle = {
+            icon: Flame,
+            color: 'text-orange-600',
+            hoverText: 'group-hover:text-orange-600',
+            bg: 'group-hover:bg-orange-500',
+            border: 'group-hover:border-orange-200',
+            shadow: 'group-hover:shadow-orange-500/20',
+            gradient: 'from-orange-500/10',
+        };
+        magnitude = 12;
+    } else if (n.includes('fry') || n.includes('fried') || n.includes('crispy')) {
+        baseStyle = {
+            icon: Drumstick,
+            color: 'text-amber-600',
+            hoverText: 'group-hover:text-amber-600',
+            bg: 'group-hover:bg-amber-500',
+            border: 'group-hover:border-amber-200',
+            shadow: 'group-hover:shadow-amber-500/20',
+            gradient: 'from-amber-500/10',
+        };
+        magnitude = 12;
+    } else if (n.includes('frozen') || n.includes('chilled') || n.includes('ice')) {
+        baseStyle = {
+            icon: Snowflake,
+            color: 'text-sky-500',
+            hoverText: 'group-hover:text-sky-500',
+            bg: 'group-hover:bg-sky-500',
+            border: 'group-hover:border-sky-200',
+            shadow: 'group-hover:shadow-sky-500/20',
+            gradient: 'from-sky-500/10',
+        };
+        magnitude = 6;
+    } else if (n.includes('soup') || n.includes('broth')) {
+        baseStyle = {
+            icon: Soup,
+            color: 'text-yellow-600',
+            hoverText: 'group-hover:text-yellow-600',
+            bg: 'group-hover:bg-yellow-500',
+            border: 'group-hover:border-yellow-200',
+            shadow: 'group-hover:shadow-yellow-500/20',
+            gradient: 'from-yellow-500/10',
+        };
+        magnitude = 6;
+    } else if (n.includes('shell') || n.includes('meat') || n.includes('prawn') || n.includes('shrimp') || n.includes('crab')) {
+        baseStyle = {
+            icon: Shell,
+            color: 'text-rose-600',
+            hoverText: 'group-hover:text-rose-600',
+            bg: 'group-hover:bg-rose-500',
+            border: 'group-hover:border-rose-200',
+            shadow: 'group-hover:shadow-rose-500/20',
+            gradient: 'from-rose-500/10',
+        };
+        magnitude = 12;
+    } else if (n.includes('bundle') || n.includes('pack') || n.includes('combo')) {
+        baseStyle = {
+            icon: Package,
+            color: 'text-purple-600',
+            hoverText: 'group-hover:text-purple-600',
+            bg: 'group-hover:bg-purple-500',
+            border: 'group-hover:border-purple-200',
+            shadow: 'group-hover:shadow-purple-500/20',
+            gradient: 'from-purple-500/10',
+        };
+        magnitude = 6;
+    } else if (n.includes('offer') || n.includes('deal') || n.includes('discount')) {
+        baseStyle = {
+            icon: Gift,
+            color: 'text-emerald-600',
+            hoverText: 'group-hover:text-emerald-600',
+            bg: 'group-hover:bg-emerald-500',
+            border: 'group-hover:border-emerald-200',
+            shadow: 'group-hover:shadow-emerald-500/20',
+            gradient: 'from-emerald-500/10',
+        };
+        magnitude = 12;
+    } else {
+        baseStyle = {
+            icon: Utensils,
+            color: 'text-slate-600',
+            hoverText: 'group-hover:text-slate-800',
+            bg: 'group-hover:bg-slate-800',
+            border: 'group-hover:border-slate-300',
+            shadow: 'group-hover:shadow-slate-500/20',
+            gradient: 'from-slate-500/10',
+        };
+        magnitude = 6;
+    }
+
+    // Overwrite icon if explicitly provided from DB
+    if (iconName && ICON_MAP[iconName]) {
+        baseStyle.icon = ICON_MAP[iconName];
+    }
+
+    // Determine Animation Class
+    let rotateClass = '';
+
+    // Normalize animationType (handle null/undefined from DB)
+    const type = (animationType || 'AUTO').toUpperCase();
+
+    switch (type) {
+        case 'ROTATE_RIGHT':
+            rotateClass = 'group-hover:rotate-12';
+            break;
+        case 'ROTATE_LEFT':
+            rotateClass = 'group-hover:-rotate-12';
+            break;
+        case 'FLOAT':
+            rotateClass = 'group-hover:-translate-y-2';
+            break;
+        case 'BOUNCE':
+            rotateClass = 'group-hover:animate-bounce';
+            break;
+        case 'PULSE':
+            rotateClass = 'group-hover:animate-pulse';
+            break;
+        case 'SHAKE':
+            rotateClass = 'group-hover:animate-pulse';
+            break;
+        case 'FLIP':
+            rotateClass = 'group-hover:[transform:rotateY(180deg)] transition-transform duration-500';
+            break;
+        case 'AUTO':
+        default:
+            rotateClass = getRotation(magnitude);
+            break;
+    }
+
+    return { ...baseStyle, rotate: rotateClass } as CategoryStyle;
 };
 
 const containerVariants = {
@@ -98,8 +307,9 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: an
 
                 {/* Mobile View: Horizontal Scroll */}
                 <div className="md:hidden flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4 snap-x">
-                    {categories.map((cat) => {
-                        const Icon = getCategoryIcon(cat.name);
+                    {categories.map((cat, index) => {
+                        const style = getCategoryStyle(cat.name, index, cat.animationType, cat.icon);
+                        const Icon = style.icon;
                         return (
                             <Link
                                 key={cat.id}
@@ -107,10 +317,10 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: an
                                 className="flex flex-col items-center gap-3 min-w-[100px] snap-center group"
                             >
                                 <div className="relative">
-                                    <div className="w-20 h-20 rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-center text-slate-600 group-active:scale-95 transition-all">
-                                        <Icon className="w-8 h-8 group-active:text-crab-red transition-colors" />
+                                    <div className={`w-20 h-20 rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-center ${style.color} group-active:scale-95 transition-all duration-300`}>
+                                        <Icon className="w-8 h-8 transition-transform group-active:scale-110" />
                                     </div>
-                                    <div className="absolute inset-0 bg-crab-red opacity-0 group-active:opacity-5 rounded-2xl transition-opacity" />
+                                    <div className={`absolute inset-0 opacity-0 group-active:opacity-10 rounded-2xl transition-opacity bg-current ${style.color}`} />
                                 </div>
                                 <span className="text-xs font-black text-center text-slate-800 uppercase tracking-wider line-clamp-2 w-full px-1">
                                     {cat.name}
@@ -128,8 +338,9 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: an
                     viewport={{ once: true, margin: "-100px" }}
                     className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-6"
                 >
-                    {categories.map((cat) => {
-                        const Icon = getCategoryIcon(cat.name);
+                    {categories.map((cat, index) => {
+                        const style = getCategoryStyle(cat.name, index, cat.animationType, cat.icon);
+                        const Icon = style.icon;
                         return (
                             <motion.div
                                 key={cat.id}
@@ -145,27 +356,28 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: an
                                     href={`/menu?category=${cat.id}`}
                                     className="group relative block h-full"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-br from-crab-red/10 to-transparent opacity-0 group-hover:opacity-100 rounded-3xl blur-2xl transition-opacity duration-500" />
+                                    {/* Dynamic Hover Gradient */}
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${style.gradient} to-transparent opacity-0 group-hover:opacity-100 rounded-3xl blur-2xl transition-opacity duration-500`} />
 
-                                    <div className="relative h-full flex flex-col items-center justify-center p-8 bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:shadow-[0_20px_40px_rgb(230,0,0,0.08)] group-hover:-translate-y-3 group-hover:bg-white/90 transition-all duration-500 overflow-hidden">
+                                    <div className={`relative h-full flex flex-col items-center justify-center p-8 bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ${style.shadow} group-hover:-translate-y-3 group-hover:bg-white/90 transition-all duration-500 overflow-hidden`}>
 
                                         {/* Content */}
                                         <div className="relative z-10 flex flex-col items-center">
-                                            <div className="mb-6 p-5 rounded-2xl bg-slate-50 text-slate-400 group-hover:text-white group-hover:bg-crab-red shadow-inner transition-all duration-500 transform group-hover:rotate-[10deg]">
+                                            <div className={`mb-6 p-5 rounded-2xl bg-slate-50 ${style.color} ${style.bg} group-hover:text-white shadow-inner transition-all duration-500 transform ${style.rotate}`}>
                                                 <Icon className="w-8 h-8" />
                                             </div>
-                                            <h3 className="text-sm font-black text-slate-900 group-hover:text-crab-red text-center uppercase tracking-widest transition-colors duration-300">
+                                            <h3 className={`text-sm font-black text-slate-900 ${style.hoverText} text-center uppercase tracking-widest transition-colors duration-300`}>
                                                 {cat.name}
                                             </h3>
                                         </div>
 
                                         {/* Arrow Indicator */}
-                                        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-500">
-                                            <ChevronRight className="w-5 h-5 text-crab-red" />
+                                        <div className={`absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-500 ${style.color}`}>
+                                            <ChevronRight className="w-5 h-5" />
                                         </div>
 
                                         {/* Bottom Accent */}
-                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-crab-red group-hover:w-full transition-all duration-500" />
+                                        <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-current ${style.color} group-hover:w-full transition-all duration-500`} />
                                     </div>
                                 </Link>
                             </motion.div>

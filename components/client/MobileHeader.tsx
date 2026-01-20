@@ -16,6 +16,7 @@ import { useAdmin } from '@/components/providers/AdminProvider';
 import { Mascot } from './Mascot';
 import { AnimatedSearchBar } from './AnimatedSearchBar';
 import { cn } from "@/lib/utils";
+import { LocationPermissionDialog } from './LocationPermissionDialog';
 
 export function MobileHeader() {
     const [mounted, setMounted] = useState(false);
@@ -92,6 +93,79 @@ export function MobileHeader() {
     }, [mascotState, isSearchOpen]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+
+    const handleLocationClick = () => {
+        setIsLocationDialogOpen(true);
+    };
+
+    const getGeoLocation = () => {
+        if ('geolocation' in navigator) {
+            const options = {
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 10000
+            };
+
+            toast.loading("Locating you...", { id: "location-toast" });
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                toast.dismiss("location-toast");
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+
+                const deliveryZones = [
+                    { name: 'Dhaka', lat: 23.8103, lng: 90.4125 },
+                    { name: 'Khulna', lat: 22.8456, lng: 89.5403 },
+                    { name: 'Chottogram', lat: 22.3569, lng: 91.7832 }
+                ];
+
+                let nearestCity = null;
+                let minDistance = Infinity;
+
+                deliveryZones.forEach(zone => {
+                    const R = 6371; // Radius of the earth in km
+                    const dLat = (zone.lat - userLat) * (Math.PI / 180);
+                    const dLon = (zone.lng - userLng) * (Math.PI / 180);
+                    const a =
+                        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(userLat * (Math.PI / 180)) * Math.cos(zone.lat * (Math.PI / 180)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    const d = R * c; // Distance in km
+
+                    if (d < minDistance) {
+                        minDistance = d;
+                        nearestCity = zone.name;
+                    }
+                });
+
+                if (minDistance <= 20) {
+                    toast.success(`${t.deliveryAreaSuccess} ${nearestCity}.`);
+                } else {
+                    toast.error(t.deliveryAreaFail || "Sorry, we don't deliver to your area yet.");
+                }
+            }, (error) => {
+                toast.dismiss("location-toast");
+                let errorMessage = "Location access failed.";
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = "User denied the request for Geolocation. Please enable location permissions.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = "Location information is unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = "The request to get user location timed out.";
+                        break;
+                }
+                toast.error(errorMessage);
+                console.error("Geolocation Error:", error);
+            }, options);
+        } else {
+            toast.error(t.geoNotSupported || "Geolocation is not supported by this browser.");
+        }
+    };
 
     return (
         <>
@@ -162,73 +236,7 @@ export function MobileHeader() {
                     <div className={cn("flex items-center gap-3 transition-opacity duration-300", isSidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100")}>
                         <AnimatedSearchBar width="w-48" className="bg-transparent hover:bg-white/10" />
                         <button
-                            onClick={() => {
-                                if ('geolocation' in navigator) {
-                                    const options = {
-                                        enableHighAccuracy: false, // Set to false for better compatibility on Desktops/Localhost
-                                        timeout: 15000,
-                                        maximumAge: 10000
-                                    };
-
-                                    toast.loading("Locating you...", { id: "location-toast" });
-
-                                    navigator.geolocation.getCurrentPosition((position) => {
-                                        toast.dismiss("location-toast");
-                                        const userLat = position.coords.latitude;
-                                        const userLng = position.coords.longitude;
-
-                                        const deliveryZones = [
-                                            { name: 'Dhaka', lat: 23.8103, lng: 90.4125 },
-                                            { name: 'Khulna', lat: 22.8456, lng: 89.5403 },
-                                            { name: 'Chottogram', lat: 22.3569, lng: 91.7832 }
-                                        ];
-
-                                        let nearestCity = null;
-                                        let minDistance = Infinity;
-
-                                        deliveryZones.forEach(zone => {
-                                            const R = 6371; // Radius of the earth in km
-                                            const dLat = (zone.lat - userLat) * (Math.PI / 180);
-                                            const dLon = (zone.lng - userLng) * (Math.PI / 180);
-                                            const a =
-                                                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                                                Math.cos(userLat * (Math.PI / 180)) * Math.cos(zone.lat * (Math.PI / 180)) *
-                                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-                                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                                            const d = R * c; // Distance in km
-
-                                            if (d < minDistance) {
-                                                minDistance = d;
-                                                nearestCity = zone.name;
-                                            }
-                                        });
-
-                                        if (minDistance <= 20) {
-                                            toast.success(`${t.deliveryAreaSuccess} ${nearestCity}.`);
-                                        } else {
-                                            toast.error(t.deliveryAreaFail || "Sorry, we don't deliver to your area yet.");
-                                        }
-                                    }, (error) => {
-                                        toast.dismiss("location-toast");
-                                        let errorMessage = "Location access failed.";
-                                        switch (error.code) {
-                                            case error.PERMISSION_DENIED:
-                                                errorMessage = "User denied the request for Geolocation. Please enable location permissions.";
-                                                break;
-                                            case error.POSITION_UNAVAILABLE:
-                                                errorMessage = "Location information is unavailable.";
-                                                break;
-                                            case error.TIMEOUT:
-                                                errorMessage = "The request to get user location timed out.";
-                                                break;
-                                        }
-                                        toast.error(errorMessage);
-                                        console.error("Geolocation Error:", error);
-                                    }, options);
-                                } else {
-                                    toast.error(t.geoNotSupported || "Geolocation is not supported by this browser.");
-                                }
-                            }}
+                            onClick={handleLocationClick}
                             className="p-1 text-white hover:text-green-400"
                         >
                             <MapPin className="w-5 h-5" />
@@ -269,9 +277,6 @@ export function MobileHeader() {
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="fixed top-0 left-0 bottom-0 w-[280px] bg-slate-950 z-[70] shadow-2xl px-6 pb-6 pt-24 flex flex-col"
                         >
-                            <div className="mb-8">
-                                <span className="text-white font-bold text-xl uppercase tracking-widest pl-1">Menu</span>
-                            </div>
                             <nav className="space-y-6">
                                 {[
                                     { href: "/", label: "HOME", color: "text-white" },
@@ -302,16 +307,19 @@ export function MobileHeader() {
                                     </motion.div>
                                 ))}
                             </nav>
-
-                            <div className="mt-auto pt-8 border-t border-white/10">
-                                <p className="text-white/40 text-sm">© {new Date().getFullYear()} {config?.shopName || "CrabKhai"}</p>
-                            </div>
                         </motion.div>
                     </>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
-            {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />}
+            {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />
+            }
+
+            <LocationPermissionDialog
+                isOpen={isLocationDialogOpen}
+                onOpenChange={setIsLocationDialogOpen}
+                onConfirm={getGeoLocation}
+            />
         </>
     );
 }

@@ -44,9 +44,9 @@ export function StickyCartFooter({ totalAmount, itemCount, onCheckout, isAnimati
                         </Button>
                     </DrawerTrigger>
 
-                    <DrawerContent className="max-h-[90vh]">
-                        <div className="w-full max-w-lg mx-auto bg-slate-50/50">
-                            <DrawerHeader className="border-b border-gray-100 pb-4 bg-white">
+                    <DrawerContent className="h-[90dvh]">
+                        <div className="w-full max-w-lg mx-auto flex flex-col h-full bg-slate-50/50">
+                            <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0">
                                 <DrawerTitle className="text-2xl font-black text-center text-slate-900">Checkout</DrawerTitle>
                                 <DrawerDescription className="text-center font-medium">
                                     Complete your order
@@ -54,11 +54,11 @@ export function StickyCartFooter({ totalAmount, itemCount, onCheckout, isAnimati
                             </DrawerHeader>
 
                             {/* Scrollable Form Area */}
-                            <div className="p-4 overflow-y-auto max-h-[60vh]">
+                            <div className="p-4 overflow-y-auto flex-1">
                                 {children}
                             </div>
 
-                            <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom">
+                            <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
                                 <Button
                                     onClick={onCheckout}
                                     disabled={isAnimating}
