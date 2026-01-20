@@ -121,34 +121,50 @@ export function AuthForm() {
             className="w-full max-w-md mx-auto pb-20 md:pb-12"
         >
             <div className="text-center mb-6">
-                {/* Header Image/Icon - Restored Mascot with Water Drop Effect */}
+                {/* Header Image/Icon - Restored Mascot with Physics-Based Water Drop Effect */}
                 <div className="flex justify-center mb-4">
                     <div className="relative">
-                        {/* Water Drop Ripple Effect - Enhanced Visibility */}
-                        {[...Array(3)].map((_, i) => (
+                        {/* Realistic Wave Ripples */}
+                        {[...Array(4)].map((_, i) => (
                             <motion.div
                                 key={`ripple-${i}`}
-                                className="absolute inset-0 rounded-full border-2 border-crab-red/60 bg-crab-red/10 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
-                                initial={{ scale: 0.8, opacity: 0 }}
+                                className="absolute inset-0 rounded-full border-[1px] border-crab-red/40 bg-crab-red/5"
+                                initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{
-                                    scale: [1, 2, 2.6],
-                                    opacity: [0.8, 0.4, 0],
+                                    scale: [1, 2.2, 3.2],
+                                    opacity: [0, 0.7, 0.3, 0],
+                                    borderWidth: ["2px", "1px", "0.5px"],
                                 }}
                                 transition={{
                                     duration: 4,
                                     repeat: Infinity,
-                                    delay: i * 1.3,
-                                    ease: "easeOut",
+                                    delay: i * 0.8,
+                                    ease: [0.22, 1, 0.36, 1], // Custom fluid cubic-bezier
                                 }}
-                                style={{ willChange: 'transform, opacity' }}
+                                style={{
+                                    filter: 'blur(1px)',
+                                    willChange: 'transform, opacity'
+                                }}
                             />
                         ))}
 
-                        <div className="relative group cursor-pointer z-10">
+                        {/* Impact Mascot */}
+                        <motion.div
+                            className="relative group cursor-pointer z-10"
+                            animate={{
+                                scale: [1, 0.95, 1.05, 1],
+                            }}
+                            transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                repeatDelay: 1.2,
+                                ease: "easeInOut",
+                            }}
+                        >
                             <div className="w-28 h-28 rounded-full bg-white flex items-center justify-center overflow-hidden border-4 border-white shadow-xl shadow-gray-200 group-hover:scale-105 transition-transform duration-300">
                                 <img src="/mascot-avatar.png" alt="Allow" className="w-full h-full object-cover p-2" />
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
