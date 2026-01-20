@@ -16,6 +16,7 @@ import { menuItems } from '@/lib/data';
 import { AnimatedSearchBar } from './AnimatedSearchBar';
 import { LocationPermissionDialog } from './LocationPermissionDialog';
 import { toast } from 'sonner';
+import { useGeolocation } from '@/lib/hooks/useGeolocation';
 
 // Reusing the Mobile Sidebar logic but adapted for Desktop if needed overlap
 import { MobileHeader } from './MobileHeader'; // We might not want to import the whole header just for sidebar... 
@@ -46,73 +47,7 @@ export function DesktopNavbar() {
         setIsLocationDialogOpen(true);
     };
 
-    const getGeoLocation = () => {
-        if ('geolocation' in navigator) {
-            const options = {
-                enableHighAccuracy: false,
-                timeout: 15000,
-                maximumAge: 10000
-            };
-
-            toast.loading("Locating you...", { id: "location-toast" });
-
-            navigator.geolocation.getCurrentPosition((position) => {
-                toast.dismiss("location-toast");
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-
-                const deliveryZones = [
-                    { name: 'Dhaka', lat: 23.8103, lng: 90.4125 },
-                    { name: 'Khulna', lat: 22.8456, lng: 89.5403 },
-                    { name: 'Chottogram', lat: 22.3569, lng: 91.7832 }
-                ];
-
-                let nearestCity = null;
-                let minDistance = Infinity;
-
-                deliveryZones.forEach(zone => {
-                    const R = 6371; // Radius of the earth in km
-                    const dLat = (zone.lat - userLat) * (Math.PI / 180);
-                    const dLon = (zone.lng - userLng) * (Math.PI / 180);
-                    const a =
-                        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                        Math.cos(userLat * (Math.PI / 180)) * Math.cos(zone.lat * (Math.PI / 180)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                    const d = R * c; // Distance in km
-
-                    if (d < minDistance) {
-                        minDistance = d;
-                        nearestCity = zone.name;
-                    }
-                });
-
-                if (minDistance <= 20) {
-                    toast.success(`${t.deliveryAreaSuccess} ${nearestCity}.`);
-                } else {
-                    toast.error(t.deliveryAreaFail || "Sorry, we don't deliver to your area yet.");
-                }
-            }, (error) => {
-                toast.dismiss("location-toast");
-                let errorMessage = "Location access failed.";
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = "User denied the request for Geolocation. Please enable location permissions.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = "Location information is unavailable.";
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = "The request to get user location timed out.";
-                        break;
-                }
-                toast.error(errorMessage);
-                console.error("Geolocation Error:", error);
-            }, options);
-        } else {
-            toast.error(t.geoNotSupported || "Geolocation is not supported by this browser.");
-        }
-    };
+    const { getGeoLocation } = useGeolocation();
 
     useEffect(() => {
         setMounted(true);

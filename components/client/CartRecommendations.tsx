@@ -18,7 +18,10 @@ export function CartRecommendations() {
 
             // Just use what is already loaded
             if (allProducts && allProducts.length > 0) {
-                const available = allProducts.filter(p => !excludeIds.has(p.id));
+                // Ensure unique by ID in case store has duplicates
+                const uniqueAll = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
+                const available = uniqueAll.filter(p => !excludeIds.has(p.id));
+
                 // Randomize and take 8
                 const shuffled = [...available].sort(() => 0.5 - Math.random());
                 setRecommendations(shuffled.slice(0, 8));

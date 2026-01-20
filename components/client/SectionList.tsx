@@ -18,7 +18,11 @@ export function SectionList({ sections }: { sections: Section[] }) {
     useEffect(() => {
         if (sections.length > 0) {
             const allFoundProducts = sections.flatMap(s => s.products);
-            setAllProducts(allFoundProducts);
+            // Ensure unique products by ID
+            const uniqueProducts = Array.from(
+                new Map(allFoundProducts.map(p => [p.id, p])).values()
+            );
+            setAllProducts(uniqueProducts);
         }
     }, [sections, setAllProducts]);
     if (sections.length === 0) {

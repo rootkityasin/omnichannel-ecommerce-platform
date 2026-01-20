@@ -32,7 +32,7 @@ export function LocationPermissionDialog({
                     <div className="space-y-1 text-center">
                         <DialogTitle className="text-lg font-black text-slate-900 leading-tight">Location Permission</DialogTitle>
                         <DialogDescription className="text-xs font-semibold text-slate-500 leading-relaxed px-2">
-                            Allow this site to use your location for location permissions.
+                            Allow CrabKhai to check if we deliver to your current area.
                         </DialogDescription>
                     </div>
 
