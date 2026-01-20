@@ -13,25 +13,19 @@ export function CartRecommendations() {
     const [emblaRef] = useEmblaCarousel({ align: 'start', containScroll: 'trimSnaps' });
 
     useEffect(() => {
-        const fetchRecs = async () => {
+        const getLoadedRecs = () => {
             const excludeIds = new Set(items.map(i => i.id));
 
-            // If we have products in store, pick from there instantly
+            // Just use what is already loaded
             if (allProducts && allProducts.length > 0) {
                 const available = allProducts.filter(p => !excludeIds.has(p.id));
                 // Randomize and take 8
                 const shuffled = [...available].sort(() => 0.5 - Math.random());
                 setRecommendations(shuffled.slice(0, 8));
-                setLoading(false);
-                return;
             }
-
-            // Fallback to fetch if store is empty
-            const data = await getRecommendedProducts(Array.from(excludeIds), 8);
-            setRecommendations(data);
             setLoading(false);
         };
-        fetchRecs();
+        getLoadedRecs();
     }, [items.length, allProducts.length]);
 
     if (loading || recommendations.length === 0) return null;

@@ -235,12 +235,6 @@ export function MobileHeader() {
                     {/* Right: Icons (Search, Pin, Cart, User) */}
                     <div className={cn("flex items-center gap-3 transition-opacity duration-300", isSidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100")}>
                         <AnimatedSearchBar width="w-48" className="bg-transparent hover:bg-white/10" />
-                        <button
-                            onClick={handleLocationClick}
-                            className="p-1 text-white hover:text-green-400"
-                        >
-                            <MapPin className="w-5 h-5" />
-                        </button>
                         <button onClick={() => useCartStore.getState().openCart()} className="relative p-1 text-white">
                             <ShoppingCart className="w-5 h-5" />
                             {cartCount > 0 && (
@@ -249,10 +243,12 @@ export function MobileHeader() {
                                 </span>
                             )}
                         </button>
-
-                        <Link href="/account" className="p-1 text-white">
-                            <User className="w-5 h-5" />
-                        </Link>
+                        <button
+                            onClick={handleLocationClick}
+                            className="p-1 text-white hover:text-green-400"
+                        >
+                            <MapPin className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
 

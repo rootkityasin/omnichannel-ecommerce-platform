@@ -239,15 +239,6 @@ export function DesktopNavbar() {
                     <div className={cn("flex items-center gap-5 transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
                         {/* Search */}
                         <div className="flex items-center gap-3">
-                            <button
-                                onClick={handleLocationClick}
-                                className={cn(
-                                    "p-2 rounded-full transition-colors",
-                                    !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
-                                )}
-                            >
-                                <MapPin className="w-5 h-5" />
-                            </button>
                             <AnimatedSearchBar width="w-72" />
                         </div>
 
@@ -280,18 +271,16 @@ export function DesktopNavbar() {
                             </div>
                         </button>
 
-                        {/* Account */}
-                        <Link href="/account">
-                            <div className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all",
-                                !isTransparent
-                                    ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                                    : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10"
-                            )}>
-                                <User className="w-4 h-4" />
-                                <span className="text-xs font-bold">Account</span>
-                            </div>
-                        </Link>
+                        {/* MapPin moved to right corner */}
+                        <button
+                            onClick={handleLocationClick}
+                            className={cn(
+                                "p-2 rounded-full transition-colors",
+                                !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                            )}
+                        >
+                            <MapPin className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
             </header>

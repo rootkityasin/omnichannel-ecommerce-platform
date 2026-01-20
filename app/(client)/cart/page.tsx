@@ -353,8 +353,8 @@ function CartContent() {
                         </AnimatePresence>
                     </div>
 
-                    {/* Recommendations Section (Mobile: Top, Desktop: Moved to Sidebar) */}
-                    <div className="md:hidden mt-4 mb-8">
+                    {/* Consolidated Recommendations Section */}
+                    <div className="mt-12 mb-8">
                         <CartRecommendations />
                     </div>
                 </div>
@@ -469,11 +469,7 @@ function CartContent() {
                             </p>
                         </div>
                     </div>
-
-                    {/* Desktop Recommendations in Sidebar */}
-                    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                        <CartRecommendations />
-                    </div>
+                    {/* Recommendations removed from sidebar to prevent duplication */}
                 </div>
 
             </div>
