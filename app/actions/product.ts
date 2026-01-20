@@ -3,20 +3,49 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+// Simple in-memory cache with TTL for products
+let productsCache: { data: any[] | null; timestamp: number } = { data: null, timestamp: 0 };
+const CACHE_TTL = 60 * 1000; // 60 seconds
+
 export async function getProducts() {
-    return await prisma.product.findMany({
-        orderBy: { sku: 'asc' },
-        include: {
-            category: true,
-            inventory: true,
-            sections: true,
-            comboItems: {
-                include: {
-                    child: true
-                }
+    const now = Date.now();
+    if (productsCache.data && (now - productsCache.timestamp) < CACHE_TTL) {
+        return productsCache.data;
+    }
+
+    try {
+        const products = await prisma.product.findMany({
+            orderBy: { sku: 'asc' },
+            select: {
+                id: true,
+                name: true,
+                name_bn: true,
+                price: true,
+                price_bn: true,
+                image: true,
+                images: true,
+                categoryId: true,
+                pieces: true,
+                totalSold: true,
+                weightOptions: true,
+                type: true,
+                createdAt: true,
+                nutritionImage: true,
+                cookingImage: true,
+                nutrition: true,
+                cookingInstructions: true,
+                stage: true,
+                // Only select what's absolutely necessary for the menu and modal
+                // to keep the payload size small and query fast.
             }
-        }
-    });
+        });
+
+        productsCache = { data: products, timestamp: now };
+        return products;
+    } catch (error) {
+        console.error("Get Products Error:", error);
+        return productsCache.data || [];
+    }
 }
 
 export async function getProduct(id: string) {
@@ -107,6 +136,8 @@ export async function updateProduct(id: string, data: any) {
 export async function deleteProduct(id: string) {
     try {
         await prisma.product.delete({ where: { id } });
+        // Invalidate cache
+        productsCache = { data: null, timestamp: 0 };
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
         return { success: true };
