@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { format } from 'date-fns';
+import { DangerZone } from '@/components/admin/DangerZone';
 import { Shield, AlertTriangle, UserCheck, Smartphone, Key, Users } from 'lucide-react';
 import { TokenEditor } from '@/components/admin/TokenEditor';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -38,6 +39,11 @@ export default async function SecurityDashboard() {
 
                 <TabsContent value="overview" className="space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* 4. Danger Zone (Moved to Top for Visibility) */}
+                        <div className="md:col-span-2">
+                            <DangerZone />
+                        </div>
+
                         {/* 1. Access Control Settings */}
                         <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                             <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -106,6 +112,8 @@ export default async function SecurityDashboard() {
                                 {logs.length === 0 && <p className="text-slate-400 text-sm">No analytics logs found.</p>}
                             </div>
                         </div>
+
+                        {/* 3. Security Audit Log */}
                     </div>
                 </TabsContent>
 
