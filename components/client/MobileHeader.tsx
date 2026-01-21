@@ -143,14 +143,20 @@ export function MobileHeader() {
 
                         <div className={cn("flex items-center gap-3 transition-opacity duration-300", isSidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100")}>
                             <Link href="/" className="flex items-center gap-2">
-                                <img
-                                    src={config?.logoUrl || "/logo.svg"}
-                                    alt={config?.shopName || "CrabKhai"}
-                                    className="h-14 w-auto object-contain"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = "/logo.svg";
-                                    }}
-                                />
+                                {config?.logoUrl ? (
+                                    <img
+                                        src={config.logoUrl}
+                                        alt={config?.shopName || "Store"}
+                                        className="h-14 w-auto object-contain"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
+                                    />
+                                ) : (
+                                    <span className="text-xl font-black text-white tracking-tight uppercase">
+                                        {config?.shopName || "CrabKhai"}
+                                    </span>
+                                )}
                             </Link>
                             {/* Language Toggle */}
                             <button
