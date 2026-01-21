@@ -47,7 +47,7 @@ export function UsersTab() {
         fetchUsers();
     }, []);
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: string) => {
         if (confirm('Are you sure you want to delete this user?')) {
             const res = await deleteUser(id);
             if (res.success) {
