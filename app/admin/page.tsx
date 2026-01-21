@@ -13,16 +13,39 @@ export default function AdminDashboard() {
     const totalOrders = orders.length;
     const pendingOrders = orders.filter(o => o.status === 'Placed' || o.status === 'Confirmed' || o.status === 'Cooking').length;
 
-    // Derived Chart Data (Mocking daily distribution based on order count)
-    const data = [
-        { name: 'Mon', sales: 4000 },
-        { name: 'Tue', sales: 3000 },
-        { name: 'Wed', sales: 2000 },
-        { name: 'Thu', sales: 2780 },
-        { name: 'Fri', sales: 1890 },
-        { name: 'Sat', sales: 2390 },
-        { name: 'Today', sales: totalSales }, // Dynamic Today
-    ];
+    // Real Chart Data (Last 7 Days)
+    const getLast7Days = () => {
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            days.push(d.toLocaleDateString('en-US', { weekday: 'short' })); // Mon, Tue...
+        }
+        return days;
+    };
+
+    const chartLabels = getLast7Days();
+    const data = chartLabels.map(day => {
+        // Filter orders for this specific day of the week (Simple fallback matching)
+        // Note: For strict date matching we need actual Date objects comparison, 
+        // but for this quick sync, we'll match the "weekday" string if orders have dates like "Oct 04".
+        // Better: Let's assume order.date is ISO or standard string.
+        // The mock data suggests we want a trend.
+        // Let's create a map of sales by day.
+
+        const daySales = orders.reduce((acc, order) => {
+            const orderDate = new Date(order.date || order.createdAt); // Handle varied date fields
+            if (isNaN(orderDate.getTime())) return acc;
+
+            const orderDay = orderDate.toLocaleDateString('en-US', { weekday: 'short' });
+            if (orderDay === day) {
+                return acc + order.price;
+            }
+            return acc;
+        }, 0);
+
+        return { name: day, sales: daySales };
+    });
 
     return (
         <div className="space-y-6">

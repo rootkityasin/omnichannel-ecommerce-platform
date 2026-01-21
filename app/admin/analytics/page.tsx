@@ -14,24 +14,6 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, 
 import { ArrowUpRight, TrendingUp, Users, ShoppingCart, Activity, DollarSign, XCircle, Download } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 
-// Data for Line/Bar Charts
-const data = [
-    { name: 'Mon', sales: 4000, visits: 2400 },
-    { name: 'Tue', sales: 3000, visits: 1398 },
-    { name: 'Wed', sales: 2000, visits: 9800 },
-    { name: 'Thu', sales: 2780, visits: 3908 },
-    { name: 'Fri', sales: 1890, visits: 4800 },
-    { name: 'Sat', sales: 2390, visits: 3800 },
-    { name: 'Sun', sales: 3490, visits: 4300 },
-];
-
-// Data for Pie Chart
-const categoryData = [
-    { name: 'Live Crab', value: 400 },
-    { name: 'Ready to Eat', value: 300 },
-    { name: 'Frozen', value: 300 },
-    { name: 'Platters', value: 200 },
-];
 const COLORS = ['#ea580c', '#f97316', '#fbbf24', '#94a3b8'];
 
 export default function AnalyticsPage() {
@@ -111,11 +93,10 @@ export default function AnalyticsPage() {
     const trendData = Object.keys(salesByDate).map(date => ({
         name: date,
         sales: salesByDate[date],
-        visits: Math.round(salesByDate[date] / 1.5) // Fake visits relative to sales for demo
     }));
 
     // If no data, provide at least one empty point to prevent chart crash
-    if (trendData.length === 0) trendData.push({ name: 'No Data', sales: 0, visits: 0 });
+    if (trendData.length === 0) trendData.push({ name: 'No Data', sales: 0 });
 
     const COLORS = ['#ea580c', '#22c55e', '#3b82f6'];
 
@@ -234,7 +215,6 @@ export default function AnalyticsPage() {
                                     <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                     <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px' }} />
                                     <Legend verticalAlign="bottom" height={36} />
-                                    <Bar dataKey="visits" name="Est. Visits" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
                                     <Bar dataKey="sales" name="Sales" fill="#ea580c" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
