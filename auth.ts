@@ -92,7 +92,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 if (passwordsMatch) {
                     return {
                         ...user,
-                        id: user.id.toString(),
+                        id: user.id,
                     }
                 }
                 return null

@@ -68,7 +68,7 @@ export async function createUserWithRole(data: { name: string; email: string; ph
     }
 }
 
-export async function deleteUser(userId: number) {
+export async function deleteUser(userId: string) {
     const session = await auth();
     if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
         return { success: false, error: "Unauthorized" };
@@ -108,7 +108,7 @@ export async function getAllUsers() {
 export async function getUserProfile(userId: string) {
     try {
         const user = await prisma.user.findUnique({
-            where: { id: parseInt(userId, 10) }
+            where: { id: userId }
         });
         return user;
     } catch (error) {

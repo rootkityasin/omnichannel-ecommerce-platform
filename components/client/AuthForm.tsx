@@ -124,29 +124,22 @@ export function AuthForm() {
                 {/* Header Image/Icon - Restored Mascot with Physics-Based Water Drop Effect */}
                 <div className="flex justify-center mb-4">
                     <div className="relative">
-                        {/* Realistic Wave Ripples */}
-                        {[...Array(4)].map((_, i) => (
-                            <motion.div
-                                key={`ripple-${i}`}
-                                className="absolute inset-0 rounded-full border-[1px] border-crab-red/40 bg-crab-red/5"
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{
-                                    scale: [1, 2.2, 3.2],
-                                    opacity: [0, 0.7, 0.3, 0],
-                                    borderWidth: ["2px", "1px", "0.5px"],
-                                }}
-                                transition={{
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    delay: i * 0.8,
-                                    ease: [0.22, 1, 0.36, 1], // Custom fluid cubic-bezier
-                                }}
-                                style={{
-                                    filter: 'blur(1px)',
-                                    willChange: 'transform, opacity'
-                                }}
-                            />
-                        ))}
+                        {/* Premium Glow Effect */}
+                        <div className="absolute inset-0 bg-crab-red/20 rounded-full blur-2xl animate-pulse" />
+
+                        {/* Rotating Gradient Ring */}
+                        <motion.div
+                            className="absolute -inset-4 rounded-full border border-crab-red/10 border-t-crab-red/40 border-r-crab-red/40"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+                        />
+
+                        {/* Counter-Rotating Inner Ring */}
+                        <motion.div
+                            className="absolute -inset-1 rounded-full border border-orange-500/5 border-b-orange-500/20"
+                            animate={{ rotate: -360 }}
+                            transition={{ duration: 12, ease: "linear", repeat: Infinity }}
+                        />
 
                         {/* Impact Mascot */}
                         <motion.div
