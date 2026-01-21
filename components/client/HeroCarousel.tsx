@@ -10,38 +10,6 @@ import { motion } from 'framer-motion';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 
-const defaultSlides = [
-    {
-        id: '1',
-        imageUrl: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=1000&auto=format&fit=crop',
-        title: 'Live Mud Crab',
-        title_bn: 'জীবন্ত মাড ক্র্যাব',
-        subtitle: 'Fresh from Sundarbans',
-        subtitle_bn: 'সুন্দরবন থেকে সরাসরি সংগ্রহকৃত',
-        buttonText: 'Order Now',
-        buttonLink: '/menu'
-    },
-    {
-        id: '2',
-        imageUrl: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=1000&auto=format&fit=crop',
-        title: 'Family Platters',
-        title_bn: 'ফ্যামিলি প্ল্যাটার',
-        subtitle: 'Share the joy',
-        subtitle_bn: 'খুশি ভাগ করে নিন',
-        buttonText: 'Order Now',
-        buttonLink: '/menu'
-    },
-    {
-        id: '3',
-        imageUrl: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?q=80&w=1000&auto=format&fit=crop',
-        title: 'Jumbo Shrimp',
-        title_bn: 'জাম্বো চিংড়ি',
-        subtitle: 'Grilled to perfection',
-        subtitle_bn: 'নিখুঁতভাবে গ্রিল করা',
-        buttonText: 'Order Now',
-        buttonLink: '/menu'
-    },
-];
 
 interface HeroSlide {
     id: string;
@@ -55,11 +23,15 @@ interface HeroSlide {
 }
 
 export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
+    // Return null if no slides are present (sync with admin)
+    if (!slides || slides.length === 0) {
+        return null;
+    }
+
     // Memoize plugins to prevent re-initialization on every render
     const plugins = React.useMemo(() => [Autoplay({ delay: 5000, stopOnInteraction: false })], []);
 
-    // Use default slides if no active slides provided
-    const displaySlides = slides.length > 0 ? slides : defaultSlides;
+    const displaySlides = slides;
 
     // Duration 60 makes the scroll transition slower and 'smoother' than the default snap
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 60 }, plugins);

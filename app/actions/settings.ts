@@ -7,53 +7,23 @@ import { ShopType } from '@prisma/client';
 export const getSiteConfig = unstable_cache(
     async () => {
         const defaults = {
-            contactPhone: "+880 1804 221 161",
-            contactEmail: "crabkhaibangladesh@gmail.com",
-            contactAddress: "195 Green Road, Dhaka",
-            shopName: "Crab & Khai",
-            logoUrl: "/logo.svg",
+            contactPhone: "",
+            contactEmail: "",
+            contactAddress: "",
+            shopName: "",
+            logoUrl: "",
             measurementUnit: "PCS",
-            allergensText: "Crustaceans",
+            allergensText: "",
             certificates: [],
-            primaryColor: "#ea0000",
-            secondaryColor: "#0f172a",
+            primaryColor: "#000000",
+            secondaryColor: "#ffffff",
             taxPercentage: 0.0,
             shopType: 'RESTAURANT',
             weightUnitValue: 200,
             volumeUnitValue: 1000,
-            privacyPolicy: `**Your Privacy Matters to Us**
-
-At **Crab & Khai**, we believe building trust is just as important as delivering premium seafood. We want to be transparent about how we handle your information.
-
-**What We Collect & Why**
-When you place an order, we ask for your name, phone number, and delivery address. This isn't just data to us—it's the bridge that allows us to deliver fresh, quality products directly to your kitchen.
-
-**Our Promise**
-Your personal details are used strictly to fulfill your orders and improve your experience with us. We do not sell, trade, or share your information with outside parties. You are our valued customer, and your privacy is preserved with the highest standards of security.
-
-**Always Here for You**
-If you have any questions about your data or just want to verify details, please don't hesitate to contact us directly at crabkhaibangladesh@gmail.com.`,
-            refundPolicy: `**Our Freshness Guarantee**
-
-We take immense pride in the quality of our seafood. If something isn't right, we want to know.
-
-**Spoilage & Quality Issues**
-In the unlikely event that you receive a product that doesn't meet our premium standards (e.g., spoiled or damaged), please inform us within **24 hours** of delivery. A quick photo helps us resolve this instantly.
-
-**Hassle-Free Refunds**
-For valid claims, we process refunds directly to your original payment method (or bKash/Nagad) within **5-7 business days**. We aim to resolve every issue with fairness and speed.
-
-*Note: Due to the perishable nature of our products, we cannot accept returns for items that have been cooked or consumed.*`,
-            termsPolicy: `**Terms of Service**
-
-**1. General**
-By accessing and placing an order with **Crab & Khai**, you confirm that you are in agreement with and bound by the terms of service contained in the Terms & Conditions outlined below. These terms apply to the entire website and any email or other type of communication between you and Crab & Khai.
-
-**2. Products**
-All products and specific offers are subject to availability. We prioritize freshness, so availability may vary daily based on the catch.
-
-**3. Payments**
-We accept Cash on Delivery (COD) and Mobile Financial Services (bKash, Nagad). Full payment must be cleared upon delivery or in advance as per the order terms.`
+            privacyPolicy: "",
+            refundPolicy: "",
+            termsPolicy: ""
         };
 
         try {
@@ -188,7 +158,7 @@ export async function getDeliveryConfig() {
         const config = await prisma.deliveryConfig.findFirst();
         if (!config) {
             return {
-                defaultCharge: 60,
+                defaultCharge: 0,
                 defaultCodEnabled: true,
                 nonRefundable: false,
                 weightBasedCharges: [],
