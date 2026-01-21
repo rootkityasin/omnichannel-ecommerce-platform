@@ -23,6 +23,24 @@ export async function getAdminReviews() {
     }
 }
 
+export async function getProductReviews(productId: string) {
+    try {
+        const reviews = await prisma.review.findMany({
+            where: { productId },
+            include: {
+                user: {
+                    select: { name: true, image: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return reviews;
+    } catch (error) {
+        console.error("Failed to fetch product reviews:", error);
+        return [];
+    }
+}
+
 export async function deleteReview(id: string) {
     try {
         await prisma.review.delete({
