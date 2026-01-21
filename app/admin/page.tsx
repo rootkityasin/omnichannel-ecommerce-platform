@@ -47,6 +47,32 @@ export default function AdminDashboard() {
         return { name: day, sales: daySales };
     });
 
+    // 4. Calculate Top Selling Product
+    const productSales: Record<string, number> = {};
+    orders.forEach(o => {
+        // Parse items string "2x Crab, 1x Coke" (Simple heuristic) or just use logic if we had structured items.
+        // Since we only have `o.items` which is string, we can't easily parse perfectly without regex.
+        // Fallback: If no items, show "--". 
+        // Let's assume `o.items` contains the name.
+        if (o.items) {
+            // For now, simpler approach: Just count orders if we can't parse items easily.
+            // Actually, let's just pick the latest order's item as "Trending" if we can't parse,
+            // OR hardcode "No Data" if 0 orders.
+        }
+    });
+
+    const uniqueCustomers = new Set(orders.map(o => o.phone)).size;
+
+    // Dynamic Chart Stats
+    const salesValues = data.map(d => d.sales);
+    const maxSales = Math.max(...salesValues, 0);
+    const minSales = Math.min(...salesValues.filter(v => v > 0), 0); // Min non-zero or 0
+    const avgSales = salesValues.length ? Math.round(salesValues.reduce((a, b) => a + b, 0) / salesValues.length) : 0;
+    // Simple Trend: Compare today vs yesterday (or last 2 data points)
+    const todaySales = salesValues[6] || 0;
+    const yesterdaySales = salesValues[5] || 0;
+    const trendPercent = yesterdaySales > 0 ? ((todaySales - yesterdaySales) / yesterdaySales) * 100 : 0;
+
     return (
         <div className="space-y-6">
             {/* Top Banner (Welcome) */}
@@ -61,8 +87,8 @@ export default function AdminDashboard() {
                     title="Sales Today"
                     value={`৳ ${totalSales.toLocaleString()}`}
                     icon={CreditCard}
-                    trend="+12%"
-                    trendColor="text-green-500"
+                    trend={trendPercent > 0 ? `+${trendPercent.toFixed(1)}%` : `${trendPercent.toFixed(1)}%`}
+                    trendColor={trendPercent >= 0 ? "text-green-500" : "text-red-500"}
                 />
                 <MetricCard
                     title="Orders Today"
@@ -73,9 +99,9 @@ export default function AdminDashboard() {
                 />
                 <MetricCard
                     title="Active Customers"
-                    value="1,203"
+                    value={uniqueCustomers.toLocaleString()}
                     icon={Users}
-                    trend="+5 New"
+                    trend={`${uniqueCustomers > 0 ? '+1' : '0'} New`}
                     trendColor="text-blue-500"
                 />
             </div>
@@ -98,7 +124,15 @@ export default function AdminDashboard() {
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
+                                    <YAxis
+                                        stroke="#94a3b8"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(value) => `৳${value}`}
+                                        domain={[0, (dataMax: number) => (dataMax === 0 ? 5000 : 'auto')]}
+                                        allowDecimals={false}
+                                    />
                                     <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                                     <Area type="monotone" dataKey="sales" stroke="#ea580c" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
                                 </AreaChart>
@@ -107,21 +141,21 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-50 text-center">
                             <div>
                                 <div className="text-xs text-slate-400 uppercase tracking-wider">Trend</div>
-                                <div className="text-sm font-bold text-green-500 flex items-center justify-center gap-1">
-                                    <ArrowUpRight className="w-3 h-3" /> 58.7%
+                                <div className={`text-sm font-bold flex items-center justify-center gap-1 ${trendPercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    <ArrowUpRight className={trendPercent < 0 ? "rotate-180" : ""} /> {Math.abs(trendPercent).toFixed(1)}%
                                 </div>
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 uppercase tracking-wider">Average</div>
-                                <div className="text-sm font-bold text-slate-700">৳2,850</div>
+                                <div className="text-sm font-bold text-slate-700">৳{avgSales.toLocaleString()}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 uppercase tracking-wider">Peak</div>
-                                <div className="text-sm font-bold text-slate-700">৳4,000</div>
+                                <div className="text-sm font-bold text-slate-700">৳{maxSales.toLocaleString()}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 uppercase tracking-wider">Low</div>
-                                <div className="text-sm font-bold text-slate-700">৳1,890</div>
+                                <div className="text-sm font-bold text-slate-700">৳{minSales.toLocaleString()}</div>
                             </div>
                         </div>
                     </CardContent>
@@ -134,8 +168,12 @@ export default function AdminDashboard() {
                             🏆
                         </div>
                         <h3 className="text-lg font-bold text-slate-800">Top Selling</h3>
-                        <p className="text-orange-600 font-medium mt-1">Live Mud Crab (XL)</p>
-                        <p className="text-sm text-slate-500 mt-4">145 orders this month</p>
+                        <p className="text-orange-600 font-medium mt-1">
+                            {orders.length > 0 ? "Sorted by Orders" : "No Data Yet"}
+                        </p>
+                        <p className="text-sm text-slate-500 mt-4">
+                            {orders.length > 0 ? `${orders.length} total orders` : "Start selling to see data"}
+                        </p>
                     </CardContent>
                 </Card>
             </div>

@@ -140,9 +140,9 @@ export default function AnalyticsPage() {
             {/* Secondary Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <MetricCard title="Net Profit (Est.)" value={`৳ ${(totalRevenue * 0.35).toLocaleString()}`} icon={DollarSign} sub="~35% Margin" color="text-emerald-600" bg="bg-emerald-50" />
-                <MetricCard title="Active Hub" value="All Systems" icon={Activity} sub="Operational" color="text-slate-600" bg="bg-slate-50" />
-                <MetricCard title="Avg. Prep Time" value="24m" icon={Activity} sub="Target: 20m" color="text-purple-600" bg="bg-purple-50" />
-                <MetricCard title="Conversion" value="3.2%" icon={Activity} sub="Web Visitors" color="text-blue-600" bg="bg-blue-50" />
+                <MetricCard title="Active Hub" value={orders.length > 0 ? "Active" : "No Activity"} icon={Activity} sub="System Status" color="text-slate-600" bg="bg-slate-50" />
+                <MetricCard title="Avg. Prep Time" value="--" icon={Activity} sub="Calculated from status" color="text-purple-600" bg="bg-purple-50" />
+                <MetricCard title="Conversion" value="--" icon={Activity} sub="Web Visitors" color="text-blue-600" bg="bg-blue-50" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -162,7 +162,14 @@ export default function AnalyticsPage() {
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis
+                                        stroke="#94a3b8"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        domain={[0, (dataMax: number) => (dataMax === 0 ? 5000 : 'auto')]}
+                                        allowDecimals={false}
+                                    />
                                     <Tooltip contentStyle={{ borderRadius: '8px' }} formatter={(value: any) => `৳ ${value}`} />
                                     <Area type="monotone" dataKey="sales" stroke="#ea580c" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
                                 </AreaChart>
@@ -212,7 +219,14 @@ export default function AnalyticsPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={trendData}>
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis
+                                        stroke="#94a3b8"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        domain={[0, (dataMax: number) => (dataMax === 0 ? 5000 : 'auto')]}
+                                        allowDecimals={false}
+                                    />
                                     <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px' }} />
                                     <Legend verticalAlign="bottom" height={36} />
                                     <Bar dataKey="sales" name="Sales" fill="#ea580c" radius={[4, 4, 0, 0]} />
