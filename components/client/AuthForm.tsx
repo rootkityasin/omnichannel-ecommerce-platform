@@ -22,19 +22,32 @@ export function AuthForm() {
         password: '',
     });
 
+    // State to track detected type
+    const [inputType, setInputType] = useState<'PHONE' | 'EMAIL' | 'UNKNOWN'>('UNKNOWN');
+
+    useEffect(() => {
+        // Simple detection logic
+        const val = formData.contact;
+        if (val.includes('@')) {
+            setInputType('EMAIL');
+        } else if (/^[\d+ -]+$/.test(val) && val.length > 2) {
+            setInputType('PHONE');
+        } else {
+            setInputType('UNKNOWN');
+        }
+    }, [formData.contact]);
+
     const handleSocialLogin = (provider: 'google' | 'apple') => {
-        setIsLoading(true);
         signIn(provider, { callbackUrl: '/account' });
     };
 
-    // Fix: Reset loading state if user comes back (e.g. presses back button)
+    // Fix: Reset loading state if user comes back
     useEffect(() => {
         const handlePageShow = () => setIsLoading(false);
         window.addEventListener('pageshow', handlePageShow);
         return () => window.removeEventListener('pageshow', handlePageShow);
     }, []);
 
-    // Also reset on mount just in case
     useEffect(() => {
         setIsLoading(false);
     }, []);
@@ -45,9 +58,23 @@ export function AuthForm() {
 
         try {
             if (isLogin) {
+                let identifier = formData.contact;
+
+                // If it looks like a phone (digits), normalize it
+                if (!identifier.includes('@')) {
+                    // Remove any non-digits
+                    let cleanPhone = identifier.replace(/\D/g, '');
+                    // If starts with 880, remove it
+                    if (cleanPhone.startsWith('880')) cleanPhone = cleanPhone.substring(3);
+                    // If starts with 0, remove it
+                    if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+
+                    identifier = `+880${cleanPhone}`;
+                }
+
                 // NextAuth Credentials Login
                 const res = await signIn('credentials', {
-                    phone: `+880${formData.contact}`,
+                    phone: identifier,
                     password: formData.password,
                     redirect: false,
                 });
@@ -69,10 +96,18 @@ export function AuthForm() {
                 }
                 router.refresh();
             } else {
-                // Register
+                // Register logic - defaulting to Phone normalization for now unless Email detected
+                let phoneForReg = formData.contact;
+                if (!phoneForReg.includes('@')) {
+                    let cleanPhone = phoneForReg.replace(/\D/g, '');
+                    if (cleanPhone.startsWith('880')) cleanPhone = cleanPhone.substring(3);
+                    if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+                    phoneForReg = `+880${cleanPhone}`;
+                }
+
                 const res = await createUser({
                     name: formData.name,
-                    phone: `+880${formData.contact}`,
+                    phone: phoneForReg,
                     password: formData.password,
                 });
 
@@ -81,7 +116,7 @@ export function AuthForm() {
 
                     // Auto Login
                     const loginRes = await signIn('credentials', {
-                        phone: `+880${formData.contact}`,
+                        phone: phoneForReg,
                         password: formData.password,
                         redirect: false,
                     });
@@ -220,39 +255,23 @@ export function AuthForm() {
                 </AnimatePresence>
 
                 <div className="space-y-2">
-                    <Label htmlFor="contact" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone Number</Label>
-                    <div className={`flex items-center w-full bg-white rounded-xl border shadow-sm transition-all focus-within:ring-2 focus-within:ring-crab-red/20 ${formData.contact && !/^1[3-9]\d{8}$/.test(formData.contact)
-                            ? 'border-red-500 focus-within:ring-red-200'
-                            : 'border-0 ring-1 ring-gray-100'
-                        }`}>
-                        <div className="pl-4 pr-3 py-3.5 flex items-center justify-center border-r border-gray-100 bg-gray-50/50 rounded-l-xl">
-                            <span className="text-gray-500 font-medium text-sm select-none font-body flex items-center gap-1">
-                                +880
-                                <ChevronDown className="w-3 h-3 text-gray-400" />
-                            </span>
-                        </div>
-                        <Input
-                            id="contact"
-                            name="contact"
-                            autoComplete="tel"
-                            type="tel"
-                            required
-                            placeholder="17..."
-                            value={formData.contact}
-                            onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '');
-                                if (val.startsWith('0')) {
-                                    setFormData({ ...formData, contact: val.substring(1) });
-                                } else {
-                                    setFormData({ ...formData, contact: val });
-                                }
-                            }}
-                            maxLength={10}
-                            className="w-full px-4 py-3.5 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 font-medium text-gray-900 placeholder:text-gray-400 font-body text-base h-auto"
-                        />
-                    </div>
-                    {formData.contact && !/^1[3-9]\d{8}$/.test(formData.contact) && (
-                        <p className="text-xs text-red-500 font-medium">Please enter a valid mobile number (e.g. 17...)</p>
+                    <Label htmlFor="contact" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        Phone Number or Email
+                    </Label>
+
+                    <Input
+                        id="contact"
+                        name="contact"
+                        required
+                        placeholder="017..."
+                        value={formData.contact}
+                        onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                        className="w-full px-5 py-6 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 font-medium text-gray-900 transition-all font-body"
+                    />
+
+                    {/* Validation Warning */}
+                    {inputType === 'PHONE' && formData.contact.length > 2 && !/^(\+88)?01[3-9]\d{8}$/.test(formData.contact) && (
+                        <p className="text-xs text-red-500 font-medium">Please enter a valid BD mobile number (e.g. 017...)</p>
                     )}
                 </div>
 
@@ -278,7 +297,8 @@ export function AuthForm() {
                         disabled={
                             isLoading ||
                             !formData.contact ||
-                            !/^1[3-9]\d{8}$/.test(formData.contact) ||
+                            (inputType === 'PHONE' && !/^(\+88)?01[3-9]\d{8}$/.test(formData.contact)) ||
+                            (inputType === 'EMAIL' && !formData.contact.includes('@')) ||
                             formData.password.length < 6
                         }
                         className="w-full py-5 bg-crab-red text-white font-bold rounded-2xl shadow-xl shadow-orange-500/20 hover:bg-orange-600 hover:shadow-orange-500/30 transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
