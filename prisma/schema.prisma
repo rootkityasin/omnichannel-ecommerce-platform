@@ -247,7 +247,9 @@ model Order {
   couponCode      String?
   discountAmount  Int?
   hub             Hub?        @relation(fields: [hubId], references: [id])
+
   items           OrderItem[]
+  stockDeducted   Boolean     @default(false)
 }
 
 model PaymentConfig {

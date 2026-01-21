@@ -15,16 +15,25 @@ interface AnimatedSearchBarProps {
     onSearch?: (term: string) => void;
     placeholder?: string;
     width?: string; // Expanded width
+    isTransparent?: boolean;
+    onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w-64" }: AnimatedSearchBarProps) {
+export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w-64", isTransparent = true, onOpenChange }: AnimatedSearchBarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+
+
     const { language } = useLanguageStore();
     const t = translations[language];
+
+    useEffect(() => {
+        if (onOpenChange) onOpenChange(isOpen);
+    }, [isOpen, onOpenChange]);
+
 
     // Filter suggestions
     const suggestions = searchTerm.length > 0
@@ -35,15 +44,12 @@ export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w
         function handleClickOutside(event: MouseEvent) {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 if (!searchTerm || suggestions.length === 0) setIsOpen(false);
-                // Only close if we clicked completely outside. 
-                // However, clicking a suggestion is "inside" because suggestions are children of containerRef.
-                // So this logic holds: if outside container, close.
                 setIsOpen(false);
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [searchTerm, suggestions.length]); // Added suggestions.length to dependency array
+    }, [searchTerm, suggestions.length]);
 
     const performSearch = (term: string) => {
         if (onSearch) {
@@ -74,8 +80,13 @@ export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w
             <motion.div
                 layout
                 className={cn(
-                    "relative flex items-center bg-white/10 overflow-hidden transition-colors border border-transparent",
-                    isOpen ? "bg-white text-slate-900 border-gray-200 shadow-lg" : "hover:bg-white/20 text-white border-white/10",
+                    "relative flex items-center overflow-hidden transition-colors border",
+                    // Open state: White bg, dark text
+                    isOpen ? "bg-white text-slate-900 border-gray-200 shadow-lg" :
+                        // Closed state:
+                        // Transparent mode -> White text, white border (Original)
+                        // Solid mode -> Slate text, Slate border (New for /account page)
+                        isTransparent ? "bg-white/10 hover:bg-white/20 text-white border-white/10" : "bg-transparent hover:bg-slate-100 text-slate-800 border-slate-200",
                     "h-10 rounded-full",
                     isOpen ? width : "w-10 cursor-pointer"
                 )}

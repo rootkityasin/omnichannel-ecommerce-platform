@@ -207,9 +207,18 @@ export default function SmartLinkPage() {
                                 {product.name}
                             </h1>
 
-                            <div className="flex items-baseline gap-4 mb-6">
-                                <span className="text-4xl font-bold text-crab-red">৳{product.price}</span>
-                                <span className="text-sm text-slate-400 font-medium uppercase tracking-wide">Per Unit</span>
+                            <div className="flex flex-col gap-1 mb-6 relative z-50">
+                                <div className="flex items-center gap-2 text-sm font-bold text-orange-700 bg-white w-fit px-3 py-1.5 rounded-full border border-orange-200 shadow-md">
+                                    <span className="relative flex h-2.5 w-2.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                    </span>
+                                    <span className="text-xs sm:text-sm">🔥 {Math.floor(Math.random() * 15) + 5} people are looking at this!</span>
+                                </div>
+                                <div className="flex items-baseline gap-4 mt-2">
+                                    <span className="text-4xl font-bold text-crab-red">৳{product.price}</span>
+                                    <span className="text-sm text-slate-400 font-medium uppercase tracking-wide">Per Unit</span>
+                                </div>
                             </div>
 
                             <div className="prose prose-slate prose-lg text-slate-600 leading-relaxed mb-8">

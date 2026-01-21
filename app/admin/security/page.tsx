@@ -5,6 +5,8 @@ import { TokenEditor } from '@/components/admin/TokenEditor';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { UsersTab } from '@/components/admin/UsersTab';
 
+import { BlockedListTab } from '@/components/admin/BlockedListTab';
+
 export const dynamic = 'force-dynamic';
 
 export default async function SecurityDashboard() {
@@ -31,6 +33,7 @@ export default async function SecurityDashboard() {
                 <TabsList className="bg-white border text-slate-600">
                     <TabsTrigger value="overview">Security Overview</TabsTrigger>
                     <TabsTrigger value="users">Users & Roles</TabsTrigger>
+                    <TabsTrigger value="blocked">Block List</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-8">
@@ -108,6 +111,10 @@ export default async function SecurityDashboard() {
 
                 <TabsContent value="users">
                     <UsersTab />
+                </TabsContent>
+
+                <TabsContent value="blocked">
+                    <BlockedListTab />
                 </TabsContent>
             </Tabs>
         </div>

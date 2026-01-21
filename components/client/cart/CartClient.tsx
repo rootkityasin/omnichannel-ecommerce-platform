@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useCartStore } from '@/lib/store';
-import { Minus, Plus, Trash2, ArrowRight, Loader2 } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowRight, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -98,7 +98,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
 
         const orderData = {
             customerName: formData.name,
-            customerPhone: formData.phone,
+            customerPhone: `+880${formData.phone}`,
             customerAddress: `${formData.address}, ${formData.area}`,
             items: items.map(item => ({
                 productId: item.id,
@@ -404,14 +404,36 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     />
-                                    <input
-                                        type="tel"
-                                        placeholder="Phone Number"
-                                        required
-                                        className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm placeholder:text-gray-400"
-                                        value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    />
+                                    <div className={`flex items-center w-full bg-white rounded-lg border transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
+                                        ? 'border-red-500 focus-within:ring-red-200'
+                                        : 'border-gray-300'
+                                        }`}>
+                                        <div className="pl-3 pr-2 py-3 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-lg">
+                                            <span className="text-gray-500 font-medium text-sm select-none font-body flex items-center gap-1">
+                                                +880
+                                                <ChevronDown className="w-3 h-3 text-gray-400" />
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            placeholder="17..."
+                                            required
+                                            className="w-full p-3 bg-transparent border-0 outline-none focus:ring-0 text-sm placeholder:text-gray-400 font-medium font-body h-auto"
+                                            value={formData.phone}
+                                            onChange={e => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.startsWith('0')) {
+                                                    setFormData({ ...formData, phone: val.substring(1) });
+                                                } else {
+                                                    setFormData({ ...formData, phone: val });
+                                                }
+                                            }}
+                                            maxLength={10}
+                                        />
+                                    </div>
+                                    {formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone) && (
+                                        <p className="text-[10px] text-red-500 font-medium mt-1">please provide a correct number</p>
+                                    )}
                                     <div className="grid grid-cols-3 gap-3">
                                         <Select
                                             value={formData.area}
@@ -440,8 +462,15 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
                                 <div className="pt-4">
                                     <button
                                         type="submit"
-                                        disabled={isAnimating}
-                                        className={`w-full py-4 bg-crab-red text-white font-bold rounded-full shadow-lg hover:bg-red-600 active:scale-95 transition-all text-lg flex items-center justify-center gap-2 ${isAnimating ? 'opacity-80' : ''}`}
+                                        disabled={
+                                            isAnimating ||
+                                            !formData.name ||
+                                            !formData.phone ||
+                                            !formData.area ||
+                                            !formData.address ||
+                                            !/^(?:\+88|88)?(01[3-9]\d{8})$/.test(formData.phone)
+                                        }
+                                        className={`w-full py-4 bg-crab-red text-white font-bold rounded-full shadow-lg hover:bg-red-600 active:scale-95 transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isAnimating ? 'opacity-80' : ''}`}
                                     >
                                         {isAnimating ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -469,6 +498,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
                 isAnimating={isAnimating}
                 isOpen={isCheckoutOpen}
                 onOpenChange={setIsCheckoutOpen}
+                disabled={!formData.phone || !/^(?:\+88|88)?(01[3-9]\d{8})$/.test(formData.phone)}
             >
                 <div className="space-y-6">
                     <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-6">
@@ -505,43 +535,65 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
                         />
-                        <input
-                            type="tel"
-                            placeholder="Phone Number"
-                            required
-                            className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium"
-                            value={formData.phone}
-                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                        />
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-1">
-                                <Select
-                                    value={formData.area}
-                                    onValueChange={(val) => setFormData({ ...formData, area: val })}
-                                    required
-                                >
-                                    <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20">
-                                        <SelectValue placeholder="Area" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Dhaka">Dhaka</SelectItem>
-                                        <SelectItem value="Ctg">Ctg</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        <div className={`flex items-center w-full bg-white rounded-xl border transition-all focus-within:ring-2 focus-within:ring-crab-red/20 focus-within:border-crab-red ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
+                            ? 'border-red-500 focus-within:ring-red-200'
+                            : 'border-gray-200'
+                            }`}>
+                            <div className="pl-4 pr-3 py-3.5 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-xl">
+                                <span className="text-gray-500 font-medium text-base select-none font-body flex items-center gap-1">
+                                    +880
+                                    <ChevronDown className="w-3 h-3 text-gray-400" />
+                                </span>
                             </div>
                             <input
-                                type="text"
-                                placeholder="Address"
+                                type="tel"
+                                placeholder="17..."
                                 required
-                                className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium"
-                                value={formData.address}
-                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                className="w-full p-3.5 bg-transparent border-0 outline-none focus:ring-0 font-medium font-body h-auto placeholder:text-gray-400"
+                                value={formData.phone}
+                                onChange={e => {
+                                    const val = e.target.value.replace(/\D/g, '');
+                                    if (val.startsWith('0')) {
+                                        setFormData({ ...formData, phone: val.substring(1) });
+                                    } else {
+                                        setFormData({ ...formData, phone: val });
+                                    }
+                                }}
+                                maxLength={10}
                             />
                         </div>
+                        {formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone) && (
+                            <p className="text-xs text-red-500 font-medium mt-1">Enter valid BD number</p>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="col-span-1">
+                            <Select
+                                value={formData.area}
+                                onValueChange={(val) => setFormData({ ...formData, area: val })}
+                                required
+                            >
+                                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20">
+                                    <SelectValue placeholder="Area" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Dhaka">Dhaka</SelectItem>
+                                    <SelectItem value="Ctg">Ctg</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Address"
+                            required
+                            className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium"
+                            value={formData.address}
+                            onChange={e => setFormData({ ...formData, address: e.target.value })}
+                        />
                     </div>
                 </div>
-            </StickyCartFooter>
-        </div>
+            </StickyCartFooter >
+        </div >
     );
 }
 

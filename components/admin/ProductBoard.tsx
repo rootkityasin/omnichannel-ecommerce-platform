@@ -9,6 +9,7 @@ import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSenso
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { toast } from 'sonner';
 
 interface Product {
     id: string;
@@ -210,7 +211,10 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => {
                                 navigator.clipboard.writeText(`${window.location.origin}/buy/${product.id}`);
-                                alert('Link Copied!');
+                                toast.success('Link Copied!', {
+                                    className: 'bg-green-600 text-white border-green-700',
+                                    description: 'Product link copied to clipboard'
+                                });
                             }}>
                                 <Share2 className="w-4 h-4 mr-2" /> Share Link
                             </DropdownMenuItem>
@@ -257,8 +261,8 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                             key={col.stage}
                             onClick={() => scrollToColumn(index)}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium flex-shrink-0 transition-colors ${activeColumn === index
-                                    ? 'bg-orange-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             {col.title.split('/')[0].trim()} ({products.filter(p => p.stage === col.stage).length})

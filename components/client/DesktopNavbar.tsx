@@ -77,6 +77,8 @@ export function DesktopNavbar() {
     const isHomePage = pathname === '/';
     const isTransparent = isHomePage && !scrolled;
 
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
     return (
         <>
             <header
@@ -88,7 +90,7 @@ export function DesktopNavbar() {
                         : "bg-transparent py-5"
                 )}
             >
-                <div className="max-w-7xl mx-auto px-8 flex items-center justify-between h-full">
+                <div className="max-w-7xl mx-auto px-8 flex items-center justify-between h-full relative">
                     <div className="flex items-center gap-6">
                         {/* Hamburger / Close Toggle (Desktop) */}
                         <motion.button
@@ -143,7 +145,18 @@ export function DesktopNavbar() {
                     </div>
 
                     {/* Center Nav */}
-                    <nav className={cn("flex items-center gap-8 bg-black/20 backdrop-blur-md px-8 py-2.5 rounded-full border border-white/10 shadow-sm transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
+                    <motion.nav
+                        initial={{ x: "-50%", y: "-50%" }}
+                        animate={{
+                            x: isSearchOpen ? "-120%" : "-50%", // Move further left if search is open
+                            y: "-50%"
+                        }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className={cn(
+                            "flex items-center gap-8 bg-black/20 backdrop-blur-md px-8 py-2.5 rounded-full border border-white/10 shadow-sm transition-opacity duration-300",
+                            isSidebarOpen && "opacity-0 pointer-events-none",
+                            "absolute left-1/2 top-1/2"
+                        )}>
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
                             return (
@@ -167,16 +180,17 @@ export function DesktopNavbar() {
                                 </Link>
                             );
                         })}
-                    </nav>
+                    </motion.nav>
 
                     {/* Right Actions */}
-                    <div className={cn("flex items-center gap-5 transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
-                        {/* Search */}
+                    <div className={cn("flex items-center gap-4 transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
+
+                        {/* Search - First */}
                         <div className="flex items-center gap-3">
-                            <AnimatedSearchBar width="w-72" />
+                            <AnimatedSearchBar width="w-72" isTransparent={isTransparent} onOpenChange={setIsSearchOpen} />
                         </div>
 
-                        {/* Language */}
+                        {/* Language - Second */}
                         <button
                             onClick={toggleLanguage}
                             className={cn(
@@ -190,8 +204,8 @@ export function DesktopNavbar() {
                             {language === 'en' ? 'EN' : language === 'bn' ? 'বাংলা' : language.toUpperCase()}
                         </button>
 
-                        {/* Cart */}
-                        <button onClick={openCart} className="relative group">
+                        {/* Cart - Third */}
+                        <button onClick={openCart} className="relative group mr-2">
                             <div className={cn(
                                 "p-2 rounded-full transition-colors",
                                 !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
@@ -205,7 +219,7 @@ export function DesktopNavbar() {
                             </div>
                         </button>
 
-                        {/* MapPin moved to right corner */}
+                        {/* MapPin (Location) - Fourth */}
                         <button
                             onClick={handleLocationClick}
                             className={cn(
@@ -215,6 +229,20 @@ export function DesktopNavbar() {
                         >
                             <MapPin className="w-5 h-5" />
                         </button>
+
+                        {/* Account - Fifth (Pill Style) */}
+                        <Link
+                            href="/account"
+                            className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all shadow-sm",
+                                !isTransparent
+                                    ? "border-slate-200 bg-white text-slate-700 hover:border-crab-red hover:text-crab-red"
+                                    : "border-white/30 bg-white/10 backdrop-blur-md text-white hover:bg-white/20"
+                            )}
+                        >
+                            <User className="w-4 h-4" />
+                            <span className="text-xs font-bold tracking-wide uppercase">Account</span>
+                        </Link>
                     </div>
                 </div>
             </header>

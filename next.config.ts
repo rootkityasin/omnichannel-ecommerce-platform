@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Experimental features
   experimental: {
     esmExternals: true,
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
 
   // Compiler options

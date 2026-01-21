@@ -28,7 +28,8 @@ import {
     ClipboardList,
     Megaphone, // Added
     Paintbrush, // Added
-    LayoutTemplate // Added
+    LayoutTemplate, // Added
+    FlaskConical // Added
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
@@ -107,6 +108,7 @@ export function AdminSidebar() {
             items: [
                 { label: 'Event Matrix', href: '/admin/events', icon: BarChart3, badge: 'LIVE', badgeColor: "bg-green-100 text-green-600" },
                 { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+                { label: 'Reviews', href: '/admin/reviews', icon: Megaphone, badge: 'NEW', badgeColor: "bg-purple-100 text-purple-600" },
             ],
         },
 
@@ -219,8 +221,8 @@ export function AdminSidebar() {
                 {/* Footer Limit */}
                 <div className="p-4 border-t border-gray-100">
                     {!isSidebarCollapsed && (
-                        <div className="flex items-center justify-center p-2 text-xs font-medium text-slate-500 hover:text-orange-600 cursor-pointer">
-                            90s Solution
+                        <div className="flex items-center justify-center p-2 text-xs font-medium text-slate-500 hover:text-orange-600 cursor-pointer gap-1">
+                            90s Labs <FlaskConical className="w-3 h-3" />
                         </div>
                     )}
                 </div>

@@ -3,59 +3,14 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
-export async function createReview(
-    productId: string,
-    rating: number, // 1-5
-    comment: string,
-    images: string[] = []
-) {
-    try {
-        // Need user ID. For now assuming we can get it from session or passed in?
-        // Actually, servers actions can verify session.
-        // But for simplicity in this codebase context, I'll check if there's a helper or just use a dummy if not auth'd?
-        // Wait, `prisma.user` is in the schema.
-        // I should probably use `getServerSession` or similar if auth is set up.
-        // Looking at `app/actions/order.ts`, it doesn't seem to enforce auth for creation, but reviews usually do.
-        // I'll check `app/actions/auth.ts` or similar if it exists.
-        // For now, I will hardcode a user finding or create a guest user?
-        // "Guest" reviews might not be linked to user table if user is required.
-        // Schema says `user User @relation(...)`. So User IS required.
-        // I will fetch the first user as a fallback or check for a valid email?
-        // Let's assume for now we might need to find a user.
-        // Wait, if I am not logged in, how do I review?
-        // Typically requires login.
-        // I'll assume there is a logged in user or I will fetch a default 'Guest' user if exists, or error out.
-        // To be safe and quick, I'll find the first user in DB to link to (since this is likely a dev environment).
-
-        const user = await prisma.user.findFirst();
-        if (!user) {
-            return { success: false, error: "No user found to link review to." };
-        }
-
-        const review = await prisma.review.create({
-            data: {
-                rating,
-                comment,
-                images,
-                productId,
-                userId: user.id
-            }
-        });
-
-        revalidatePath(`/buy/${productId}`);
-        return { success: true, review };
-    } catch (error) {
-        console.error("Failed to create review:", error);
-        return { success: false, error: "Failed to submit review" };
-    }
-}
-
-export async function getProductReviews(productId: string) {
+export async function getAdminReviews() {
     try {
         const reviews = await prisma.review.findMany({
-            where: { productId },
             include: {
                 user: {
+                    select: { name: true, phone: true, email: true }
+                },
+                product: {
                     select: { name: true, image: true }
                 }
             },
@@ -63,6 +18,55 @@ export async function getProductReviews(productId: string) {
         });
         return reviews;
     } catch (error) {
+        console.error("Failed to fetch reviews:", error);
         return [];
+    }
+}
+
+export async function deleteReview(id: string) {
+    try {
+        await prisma.review.delete({
+            where: { id }
+        });
+        revalidatePath('/admin/reviews');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete review:", error);
+        return { success: false, error: "Failed to delete review" };
+    }
+}
+
+export async function createReview(productId: string, rating: number, comment: string, images: string[]) {
+    try {
+        const session = await import("@/auth").then(mod => mod.auth());
+        if (!session?.user?.id) return { success: false, error: "You must be logged in to review" };
+
+        let validProductId = productId;
+        // Handle "general" or empty productId
+        if (!validProductId || validProductId === 'general') {
+            validProductId = undefined as any; // Prisma will handle optional relation if we pass undefined? No, we should omit the field or pass null depending on schema.
+            // Schema: productId String?, product Product? @relation...
+            // So we can pass null.
+            validProductId = null as any;
+        }
+
+        await prisma.review.create({
+            data: {
+                userId: session.user.id,
+                productId: validProductId || null, // Ensure null if "general"
+                rating,
+                comment,
+                images
+            }
+        });
+
+        revalidatePath('/app/(client)/buy/[productId]'); // Revalidate product page
+        revalidatePath('/admin/reviews');
+        return { success: true };
+
+    } catch (error) {
+        console.error("Create Review Error:", error);
+        // Check for Foreign Key constraint if productId was invalid
+        return { success: false, error: "Failed to submit review" };
     }
 }

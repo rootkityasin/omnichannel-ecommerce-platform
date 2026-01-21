@@ -22,9 +22,10 @@ interface StickyCartFooterProps {
     children: React.ReactNode;
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
+    disabled?: boolean;
 }
 
-export function StickyCartFooter({ totalAmount, itemCount, onCheckout, isAnimating, children, isOpen, onOpenChange }: StickyCartFooterProps) {
+export function StickyCartFooter({ totalAmount, itemCount, onCheckout, isAnimating, children, isOpen, onOpenChange, disabled }: StickyCartFooterProps) {
 
     return (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] md:hidden z-40 safe-area-bottom">
@@ -61,8 +62,8 @@ export function StickyCartFooter({ totalAmount, itemCount, onCheckout, isAnimati
                             <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
                                 <Button
                                     onClick={onCheckout}
-                                    disabled={isAnimating}
-                                    className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all"
+                                    disabled={isAnimating || disabled}
+                                    className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isAnimating ? <Loader2 className="animate-spin w-5 h-5" /> : `Place Order - ৳${totalAmount}`}
                                 </Button>

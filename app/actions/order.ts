@@ -35,32 +35,7 @@ export async function createOrder(data: {
             }
         });
 
-        // 2. Deduct Stock
-        for (const item of data.items) {
-            const product = await prisma.product.findUnique({
-                where: { id: item.productId },
-                include: { comboItems: true }
-            });
 
-            if (!product) continue;
-
-            if (product.type === 'COMBO') {
-                // Deduct from children
-                for (const comboItem of product.comboItems) {
-                    await prisma.product.update({
-                        where: { id: comboItem.childId },
-                        data: { pieces: { decrement: item.quantity * comboItem.quantity } }
-                    });
-                }
-            } else {
-                // Deduct from single product & update inventory records if checking
-                // Assuming simple piece deduction for now
-                await prisma.product.update({
-                    where: { id: item.productId },
-                    data: { pieces: { decrement: item.quantity } }
-                });
-            }
-        }
 
         // 3. Increment Coupon Usage
         if (data.couponCode) {
@@ -100,6 +75,13 @@ export async function getAdminOrders() {
             }
         });
 
+        // Calculate order counts per phone number
+        const phoneCounts = orders.reduce((acc: Record<string, number>, order) => {
+            const phone = order.customerPhone;
+            acc[phone] = (acc[phone] || 0) + 1;
+            return acc;
+        }, {});
+
         // Map database records to the frontend expected format if necessary
         return orders.map((o: any) => ({
             id: o.orderId,
@@ -111,7 +93,10 @@ export async function getAdminOrders() {
             source: o.source,
             price: o.totalAmount,
             status: o.status,
-            hubId: o.hubId
+            hubId: o.hubId,
+            isRepeat: (phoneCounts[o.customerPhone] || 0) > 1,
+            orderCount: phoneCounts[o.customerPhone] || 1,
+            stockDeducted: o.stockDeducted
         }));
     } catch (error) {
         console.error("Fetch Admin Orders Error:", error);
@@ -167,5 +152,57 @@ export async function deleteAdminOrder(id: string) {
     } catch (error) {
         console.error("Delete Admin Order Error:", error);
         return { success: false, error: "Failed to delete order" };
+    }
+}
+
+export async function printOrderInvoice(orderId: string) {
+    try {
+        const order = await prisma.order.findUnique({
+            where: { orderId },
+            include: { items: true }
+        });
+
+        if (!order) return { success: false, error: "Order not found" };
+
+        // Only deduct stock if not already deducted
+        if (!order.stockDeducted) {
+            // Deduct Stock Logic (Moved from createOrder)
+            for (const item of order.items) {
+                const product = await prisma.product.findUnique({
+                    where: { id: item.productId },
+                    include: { comboItems: true }
+                });
+
+                if (!product) continue;
+
+                if (product.type === 'COMBO') {
+                    for (const comboItem of product.comboItems) {
+                        await prisma.product.update({
+                            where: { id: comboItem.childId },
+                            data: { pieces: { decrement: item.quantity * comboItem.quantity } }
+                        });
+                    }
+                } else {
+                    await prisma.product.update({
+                        where: { id: item.productId },
+                        data: { pieces: { decrement: item.quantity } }
+                    });
+                }
+            }
+
+            // Update Order Status and Flag
+            await prisma.order.update({
+                where: { id: order.id },
+                data: {
+                    status: 'Invoice Printed',
+                    stockDeducted: true
+                }
+            });
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Print Invoice Logic Error:", error);
+        return { success: false, error: "Failed to process invoice" };
     }
 }

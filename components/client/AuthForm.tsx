@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { signIn, getSession } from 'next-auth/react';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 import { createUser } from '@/app/actions/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -47,7 +47,7 @@ export function AuthForm() {
             if (isLogin) {
                 // NextAuth Credentials Login
                 const res = await signIn('credentials', {
-                    phone: formData.contact,
+                    phone: `+880${formData.contact}`,
                     password: formData.password,
                     redirect: false,
                 });
@@ -72,7 +72,7 @@ export function AuthForm() {
                 // Register
                 const res = await createUser({
                     name: formData.name,
-                    phone: formData.contact,
+                    phone: `+880${formData.contact}`,
                     password: formData.password,
                 });
 
@@ -81,7 +81,7 @@ export function AuthForm() {
 
                     // Auto Login
                     const loginRes = await signIn('credentials', {
-                        phone: formData.contact,
+                        phone: `+880${formData.contact}`,
                         password: formData.password,
                         redirect: false,
                     });
@@ -220,17 +220,40 @@ export function AuthForm() {
                 </AnimatePresence>
 
                 <div className="space-y-2">
-                    <Label htmlFor="contact" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone or Email</Label>
-                    <Input
-                        id="contact"
-                        name="contact"
-                        autoComplete="username"
-                        required
-                        placeholder={isLogin ? "+8801..." : "+8801..."}
-                        value={formData.contact}
-                        onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                        className="w-full px-5 py-6 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 font-medium text-gray-900 transition-all font-body"
-                    />
+                    <Label htmlFor="contact" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone Number</Label>
+                    <div className={`flex items-center w-full bg-white rounded-xl border shadow-sm transition-all focus-within:ring-2 focus-within:ring-crab-red/20 ${formData.contact && !/^1[3-9]\d{8}$/.test(formData.contact)
+                            ? 'border-red-500 focus-within:ring-red-200'
+                            : 'border-0 ring-1 ring-gray-100'
+                        }`}>
+                        <div className="pl-4 pr-3 py-3.5 flex items-center justify-center border-r border-gray-100 bg-gray-50/50 rounded-l-xl">
+                            <span className="text-gray-500 font-medium text-sm select-none font-body flex items-center gap-1">
+                                +880
+                                <ChevronDown className="w-3 h-3 text-gray-400" />
+                            </span>
+                        </div>
+                        <Input
+                            id="contact"
+                            name="contact"
+                            autoComplete="tel"
+                            type="tel"
+                            required
+                            placeholder="17..."
+                            value={formData.contact}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                if (val.startsWith('0')) {
+                                    setFormData({ ...formData, contact: val.substring(1) });
+                                } else {
+                                    setFormData({ ...formData, contact: val });
+                                }
+                            }}
+                            maxLength={10}
+                            className="w-full px-4 py-3.5 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 font-medium text-gray-900 placeholder:text-gray-400 font-body text-base h-auto"
+                        />
+                    </div>
+                    {formData.contact && !/^1[3-9]\d{8}$/.test(formData.contact) && (
+                        <p className="text-xs text-red-500 font-medium">Please enter a valid mobile number (e.g. 17...)</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
@@ -252,7 +275,12 @@ export function AuthForm() {
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="pt-2">
                     <Button
                         type="submit"
-                        disabled={isLoading || !formData.contact || formData.password.length < 6}
+                        disabled={
+                            isLoading ||
+                            !formData.contact ||
+                            !/^1[3-9]\d{8}$/.test(formData.contact) ||
+                            formData.password.length < 6
+                        }
                         className="w-full py-5 bg-crab-red text-white font-bold rounded-2xl shadow-xl shadow-orange-500/20 hover:bg-orange-600 hover:shadow-orange-500/30 transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
                     >
                         {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : (isLogin ? 'Login' : 'Sign Up')}

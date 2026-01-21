@@ -159,6 +159,15 @@ This project includes a robust backend administrative dashboard designed to stre
 - **Smart Admin Redirect**: Intelligent routing that instantly directs admins to the dashboard upon login.
 - **User Roles**: Granular access control for admins, kitchen staff, and managers.
 
+### 🚀 Latest Features (v2.1)
+- **Lazy Stock Deduction**: Stock is only deducted when you **Print the Invoice**, preventing inventory drift from unconfirmed orders.
+- **Client Intelligence**:
+  - **Repeat Badge**: Automatically tags returning customers (e.g., "5x Order") to help prioritize loyalty.
+  - **Blocklist System**: Mark bad actors as "Fake". Future orders from them will be flagged with a Red Alert.
+- **Invoice Printing**: Integrated one-click A4/Thermal invoice generation.
+- **Advanced Reviews**: Shoppers can now link reviews to specific products for better social proof.
+- **Strict Validation**: Enforces valid Bangladeshi phone numbers (`01xxx...`) to eliminate junk data.
+
 ### ⚙️ Admin Panel Settings
 
 The admin panel includes a powerful **Shop Settings** section that controls how your entire system operates:
@@ -232,7 +241,7 @@ We use a custom theme configured in `tailwind.config.ts` to reflect our brand id
 Feel free to open issues or submit pull requests if you have ideas for improvements.
 
 ---
-*Built with ❤️ by 90s Solutions*
+*Built with ❤️ by 90slabs*
 
 ## Deployment & Environment Variables
 

@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, Camera, Trash2 } from 'lucide-react';
+import { X, Loader2, Camera, Trash2, Check, ChevronsUpDown, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { createReview } from '@/app/actions/review';
+import { getProducts } from '@/app/actions/product';
+import { cn } from '@/lib/utils';
 
 interface ReviewMoodModalProps {
     productId?: string;
@@ -19,6 +21,23 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
     const [images, setImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Product Selector State
+    const [products, setProducts] = useState<any[]>([]);
+    const [selectedProductId, setSelectedProductId] = useState<string | 'general'>('general');
+    const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        if (isOpen) {
+            getProducts().then(setProducts);
+            setSelectedProductId(productId || 'general');
+        }
+    }, [isOpen, productId]);
+
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     // Dynamic Theme Logic
     const getThemeData = (val: number) => {
@@ -73,9 +92,8 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
 
     const handleSubmit = async () => {
         setLoading(true);
-        // Fallback to 'general' if productId is missing (e.g. story page)
-        const targetId = productId || 'general';
-        const result = await createReview(targetId, rating, comment, images);
+        // Use selectedProductId
+        const result = await createReview(selectedProductId, rating, comment, images);
         setLoading(false);
 
         if (result.success) {
@@ -180,6 +198,91 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
                                 <h2 className="text-center md:text-left text-lg font-medium text-black/80 mb-6 md:mb-8 leading-tight max-w-[200px] md:max-w-none mx-auto md:mx-0 transition-colors">
                                     How was your shopping experience?
                                 </h2>
+
+                                {/* PRODUCT SELECTOR (Choosebox) */}
+                                <div className="w-full relative mb-6 z-40">
+                                    <button
+                                        onClick={() => setIsComboboxOpen(!isComboboxOpen)}
+                                        className="w-full flex items-center justify-between bg-white border border-black/10 px-4 py-3 rounded-xl text-sm font-medium text-[#1a2e05] hover:bg-black/5 transition-colors"
+                                    >
+                                        <span className="truncate">
+                                            {selectedProductId === 'general'
+                                                ? "General / Site Review"
+                                                : products.find(p => p.id === selectedProductId)?.name || "Select Product..."}
+                                        </span>
+                                        <ChevronsUpDown className="w-4 h-4 opacity-50" />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isComboboxOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-black/5 overflow-hidden max-h-[240px] flex flex-col"
+                                            >
+                                                {/* Search Input */}
+                                                <div className="p-2 border-b border-black/5 sticky top-0 bg-white z-10">
+                                                    <div className="relative">
+                                                        <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search product..."
+                                                            value={searchQuery}
+                                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 rounded-lg text-sm border-none focus:ring-1 focus:ring-[#1a2e05]/20 outline-none"
+                                                            autoFocus
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* List */}
+                                                <div className="overflow-y-auto p-1">
+                                                    {/* General Option */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedProductId('general');
+                                                            setIsComboboxOpen(false);
+                                                            setSearchQuery('');
+                                                        }}
+                                                        className={cn(
+                                                            "w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between hover:bg-orange-50 transition-colors",
+                                                            selectedProductId === 'general' ? "bg-orange-50 text-orange-700 font-medium" : "text-gray-700"
+                                                        )}
+                                                    >
+                                                        <span>General / Site Review</span>
+                                                        {selectedProductId === 'general' && <Check className="w-4 h-4" />}
+                                                    </button>
+
+                                                    {/* Product Options */}
+                                                    {filteredProducts.map(product => (
+                                                        <button
+                                                            key={product.id}
+                                                            onClick={() => {
+                                                                setSelectedProductId(product.id);
+                                                                setIsComboboxOpen(false);
+                                                                setSearchQuery('');
+                                                            }}
+                                                            className={cn(
+                                                                "w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between hover:bg-orange-50 transition-colors",
+                                                                selectedProductId === product.id ? "bg-orange-50 text-orange-700 font-medium" : "text-gray-700"
+                                                            )}
+                                                        >
+                                                            <span className="truncate pr-2">{product.name}</span>
+                                                            {selectedProductId === product.id && <Check className="w-4 h-4 flex-shrink-0" />}
+                                                        </button>
+                                                    ))}
+
+                                                    {filteredProducts.length === 0 && (
+                                                        <div className="px-3 py-4 text-center text-xs text-gray-400">
+                                                            No products found
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
 
                                 {/* MOBILE VISUALS (Face + Label) - Hidden on desktop */}
                                 <div className="md:hidden flex flex-col items-center mb-8">

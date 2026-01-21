@@ -775,7 +775,10 @@ export default function ProductsPage() {
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem onClick={() => {
                                                                 navigator.clipboard.writeText(`${window.location.origin}/buy/${product.id}`);
-                                                                alert('Link Copied!');
+                                                                toast.success('Link Copied!', {
+                                                                    className: 'bg-green-600 text-white border-green-700',
+                                                                    description: 'Product link copied to clipboard'
+                                                                });
                                                             }}>
                                                                 <Share2 className="w-4 h-4 mr-2" /> Share Link
                                                             </DropdownMenuItem>

@@ -1,7 +1,7 @@
 'use client';
 
-import { Search, Filter, Plus, Edit, ExternalLink, MessageCircle, LayoutGrid, List, Check, X, Clock, Truck, ChefHat, ChevronDown, Package, CheckCircle, AlertOctagon, RotateCcw, CreditCard, Ban, Calendar as CalendarIcon } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Filter, Plus, Edit, ExternalLink, MessageCircle, LayoutGrid, List, Check, X, Clock, Truck, ChefHat, ChevronDown, Package, CheckCircle, AlertOctagon, RotateCcw, CreditCard, Ban, Calendar as CalendarIcon, Printer } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,18 +26,30 @@ import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { format } from "date-fns"
 import { getSiteConfig } from '@/app/actions/settings';
-import { getAdminOrders, createOrder as createOrderAction } from '@/app/actions/order';
+import { getAdminOrders, createOrder as createOrderAction, printOrderInvoice } from '@/app/actions/order';
+import { getStorySections, updateStorySection } from '@/app/actions/story';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 
 export default function OrdersPage() {
     // Global State
     const { orders, addOrder, updateOrder, deleteOrder, setOrders } = useAdmin();
     const [shopType, setShopType] = useState('RESTAURANT');
+    const [blockedPhones, setBlockedPhones] = useState<string[]>([]);
+    const [blockedEmails, setBlockedEmails] = useState<string[]>([]);
 
     useEffect(() => {
         getSiteConfig().then(config => {
             if (config?.shopType) setShopType(config.shopType);
+        });
+
+        // Load Blacklist
+        getStorySections().then(sections => {
+            const blockedSection = sections.find((s: any) => s.type === 'BLOCKED_CUSTOMERS');
+            if (blockedSection?.content) {
+                const content = blockedSection.content as any;
+                if (Array.isArray(content.phones)) setBlockedPhones(content.phones);
+                if (Array.isArray(content.emails)) setBlockedEmails(content.emails);
+            }
         });
     }, []);
 
@@ -60,7 +72,8 @@ export default function OrdersPage() {
     const [newOrder, setNewOrder] = useState({ customer: '', phone: '', price: 0, items: 1 });
 
     const filteredOrders = orders.filter(o => {
-        const matchesStatus = filterStatus === 'all' || o.status.toLowerCase() === filterStatus.toLowerCase();
+        const matchesStatus = filterStatus === 'all' ||
+            (filterStatus === 'repeated' ? o.isRepeat : o.status.toLowerCase() === filterStatus.toLowerCase());
         const matchesSource = filterSource === 'all' || o.source === filterSource;
 
         // Date Logic (Compare Date Objects)
@@ -129,6 +142,49 @@ export default function OrdersPage() {
         }
     }
 
+    const handlePrint = async (order: any) => {
+        // Optimistic UI or wait? Let's wait to ensure stock is deducted.
+        const res = await printOrderInvoice(order.id); // Uses orderId (e.g. ORD-123)
+        if (res.success) {
+            toast.success("Invoice Printed & Stock Deducted");
+            // Refresh local state to show "Invoice Printed" status
+            const dbOrders = await getAdminOrders();
+            setOrders(dbOrders);
+            // Open Print Window
+            window.open(`/admin/orders/print/${order.id}`, '_blank');
+        } else {
+            toast.error(res.error || "Failed to print invoice");
+        }
+    };
+
+    const handleMarkAsFake = async (order: any) => {
+        if (!confirm(`Mark order #${order.id} as Fake? This will flag future orders from ${order.phone} and ${order.email || 'this email'}.`)) return;
+
+        const newBlockedPhones = order.phone && !blockedPhones.includes(order.phone)
+            ? [...blockedPhones, order.phone]
+            : blockedPhones;
+
+        const newBlockedEmails = order.email && !blockedEmails.includes(order.email)
+            ? [...blockedEmails, order.email]
+            : blockedEmails;
+
+        setBlockedPhones(newBlockedPhones);
+        setBlockedEmails(newBlockedEmails);
+
+        // Update DB
+        await updateStorySection('BLOCKED_CUSTOMERS', {
+            phones: newBlockedPhones,
+            emails: newBlockedEmails
+        });
+        toast.success(`Marked ${order.customer} as a suspect/fake source.`);
+    };
+
+    const isSuspect = (order: any) => {
+        const phoneMatch = order.phone && blockedPhones.includes(order.phone);
+        const emailMatch = order.email && blockedEmails.includes(order.email);
+        return phoneMatch || emailMatch;
+    };
+
     const getAllStatuses = () => [
         "Placed", "Confirmed", "Ready to Process", "Ready To Fry", "Processing", "Ready", "Shipped", "Delivered", "Completed", "Cancelled", "Returned", "Payment OnProcess", "Payment Failed"
     ];
@@ -137,6 +193,7 @@ export default function OrdersPage() {
         switch (status) {
             case 'Placed': return "bg-blue-100 text-blue-700";
             case 'Confirmed': return "bg-green-100 text-green-700";
+            case 'Invoice Printed': return "bg-teal-100 text-teal-700 font-bold border border-teal-200"; // Highlighted
             case 'Ready to Process': return "bg-indigo-100 text-indigo-700";
             case 'Ready To Fry': return "bg-orange-100 text-orange-700";
             case 'Processing': return "bg-orange-100 text-orange-700";
@@ -353,6 +410,7 @@ export default function OrdersPage() {
                                 <TabTrigger value="returned" label="Returned" count={orders.filter(o => o.status === 'Returned').length} />
                                 <TabTrigger value="payment onprocess" label="Payment OnProcess" count={orders.filter(o => o.status === 'Payment OnProcess').length} />
                                 <TabTrigger value="payment failed" label="Payment Failed" count={orders.filter(o => o.status === 'Payment Failed').length} />
+                                <TabTrigger value="repeated" label="Repeated Customers" count={orders.filter(o => o.isRepeat).length} />
                             </TabsList>
                         </div>
 
@@ -374,12 +432,30 @@ export default function OrdersPage() {
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
                                         {filteredOrders.length > 0 ? filteredOrders.map((order) => (
-                                            <tr key={order.id} className="hover:bg-gray-50/50">
+                                            <tr key={order.id} className={cn("hover:bg-gray-50/50", isSuspect(order) && "bg-red-50/30")}>
                                                 <td className="p-4"><input type="checkbox" /></td>
-                                                <td className="p-4 font-bold text-slate-800">{order.id}</td>
+                                                <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
+                                                    {order.id}
+                                                    {isSuspect(order) && (
+                                                        <div className="group relative">
+                                                            <AlertOctagon className="w-4 h-4 text-red-500 animate-pulse cursor-help" />
+                                                            <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-red-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                                                                Suspect: Blocked Customer
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className="p-4 text-slate-500">{order.date}</td>
                                                 <td className="p-4">
-                                                    <div className="font-medium text-slate-900">{order.customer}</div>
+                                                    <div className="font-medium text-slate-900 flex items-center gap-2">
+                                                        {order.customer}
+                                                        {order.isRepeat && (
+                                                            <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 gap-1 h-5 px-1.5">
+                                                                <RotateCcw className="w-3 h-3" />
+                                                                <span className="text-[10px]">{order.orderCount}x</span>
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                     <div className="text-xs text-slate-500">{order.phone}</div>
                                                 </td>
                                                 <td className="p-4 text-center font-medium bg-slate-50 rounded mx-auto w-fit">{order.items}</td>
@@ -395,11 +471,25 @@ export default function OrdersPage() {
                                                         {order.status}
                                                     </Badge>
                                                 </td>
+
                                                 <td className="p-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className={cn(
+                                                                "h-8 w-8",
+                                                                order.stockDeducted ? "text-green-600 bg-green-50" : "text-gray-600 bg-gray-100 hover:bg-gray-200"
+                                                            )}
+                                                            onClick={() => handlePrint(order)}
+                                                            title="Print Invoice & Deduct Stock"
+                                                        >
+                                                            <Printer className="w-4 h-4" />
+                                                        </Button>
+
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="outline" size="sm" className="h-8">Change Status <ChevronDown className="w-3 h-3 ml-2" /></Button>
+                                                                <Button variant="outline" size="sm" className="h-8">Status <ChevronDown className="w-3 h-3 ml-1" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end" className="w-[200px]">
                                                                 <DropdownMenuLabel>Update Status</DropdownMenuLabel>
@@ -409,6 +499,10 @@ export default function OrdersPage() {
                                                                         {status} {order.status === status && <Check className="w-3 h-3 ml-auto" />}
                                                                     </DropdownMenuItem>
                                                                 ))}
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem onClick={() => handleMarkAsFake(order)} className="text-red-600 focus:text-red-700 bg-red-50 focus:bg-red-100 mt-2">
+                                                                    <Ban className="w-3 h-3 mr-2" /> Mark as Fake
+                                                                </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
 
@@ -430,11 +524,12 @@ export default function OrdersPage() {
                             </div>
                         </TabsContent>
                     </Tabs>
-                </Card>
+                </Card >
             ) : (
                 <FulfillmentBoard orders={filteredOrders} onStatusChange={handleStatusChange} />
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
