@@ -300,6 +300,7 @@ For valid claims, we process refunds directly to your original payment method (o
                 privacyPolicy: res.privacyPolicy ?? undefined,
                 refundPolicy: res.refundPolicy ?? undefined,
                 termsPolicy: res.termsPolicy ?? undefined,
+                certificates: Array.isArray(res.certificates) ? res.certificates : []
             };
             setConfig(safeConfig);
             setOriginalConfig(safeConfig);
