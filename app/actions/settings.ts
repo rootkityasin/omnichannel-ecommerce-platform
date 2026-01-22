@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
 import { ShopType } from '@prisma/client';
 
 export const getSiteConfig = unstable_cache(
@@ -87,7 +87,9 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        revalidatePath('/');
+        revalidateTag('site-config');
+        revalidatePath('/', 'layout'); // Revalidate all pages layout
+        revalidatePath('/admin/shop');
         return { success: true };
     } catch (error) {
         console.error("Failed to update settings:", error);

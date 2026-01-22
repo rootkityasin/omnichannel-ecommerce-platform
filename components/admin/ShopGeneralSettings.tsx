@@ -73,7 +73,8 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
             setHasChanges(false);
             setOriginalConfig(config);
         } else {
-            toast.error("Failed to save settings");
+            const errorMsg = res.error || payRes.error || "Failed to save settings";
+            toast.error(errorMsg);
         }
         setSaving(false);
     };
