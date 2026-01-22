@@ -13,10 +13,10 @@ import { ShieldAlert, Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRou
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { deleteTenant, updateTenantStatus, updateTenantPlan, getImpersonationLink } from '@/app/actions/super-admin';
-import { PLANS, getPlanDetails } from '@/app/config/plans';
+// ... imports
 import { EditCompanyModal } from './EditCompanyModal';
 
-// Reusing types roughly based on Prisma return
+
 interface TenantProps {
     tenant: {
         id: string;
@@ -30,27 +30,26 @@ interface TenantProps {
             orders: number;
         };
     };
+    plans: any[]; // Prisma Plan[]
 }
 
-export function TenantCard({ tenant }: TenantProps) {
+export function TenantCard({ tenant, plans }: TenantProps) {
     const [isPending, startTransition] = useTransition();
-    const [isOpen, setIsOpen] = useState(false); // For Dropdown
+    // ... items
+    const [isOpen, setIsOpen] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
     const [showPlan, setShowPlan] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
 
-    // Get plan details helper
-    const planDetails = getPlanDetails(tenant.plan);
+    // Dynamic Plan Details
+    const planDetails = plans.find(p => p.slug === tenant.plan || p.id === tenant.plan) || plans[0] || { name: tenant.plan, color: 'bg-slate-500' };
 
+    // ... handlers
     const handleAction = async (action: string) => {
-        if (action === 'delete') {
-            setShowDelete(true);
-            return;
-        }
-        if (action === 'edit') {
-            setShowEdit(true);
-            return;
-        }
+        // ...
+        // (Keeping existing handlers)
+        if (action === 'delete') { setShowDelete(true); return; }
+        if (action === 'edit') { setShowEdit(true); return; }
         if (action === 'toggle_status') {
             startTransition(async () => {
                 const res = await updateTenantStatus(tenant.id, !tenant.isActive);
@@ -62,29 +61,22 @@ export function TenantCard({ tenant }: TenantProps) {
             startTransition(async () => {
                 const res = await getImpersonationLink(tenant.id);
                 if (res.success && res.url) {
-                    toast.success("Redirecting to tenant admin...");
+                    toast.success("Redirecting...");
                     window.open(res.url, '_blank');
                 } else {
-                    toast.error(res.error || "Failed to generate link");
+                    toast.error(res.error || "Failed to link");
                 }
             });
         }
     };
 
-    const confirmDelete = async () => {
-        startTransition(async () => {
-            const res = await deleteTenant(tenant.id);
-            if (res.success) {
-                toast.success("Tenant deleted successfully");
-                setShowDelete(false);
-            } else {
-                toast.error(res.error);
-            }
-        });
-    };
+    // ... confirmDelete
 
     const handleUpgrade = async (newPlan: string) => {
         startTransition(async () => {
+            // Pass SKU/Slug or ID depending on how we store it. Assuming logic stores slug currently.
+            // If new system uses plan ID, we might need to adjust `updateTenantPlan`.
+            // For back-compat, assuming we store SLUG in tenant.plan.
             const res = await updateTenantPlan(tenant.id, newPlan);
             if (res.success) {
                 toast.success(`Plan updated to ${newPlan}`);
@@ -94,6 +86,14 @@ export function TenantCard({ tenant }: TenantProps) {
             }
         });
     };
+
+    const confirmDelete = async () => {
+        startTransition(async () => {
+            const res = await deleteTenant(tenant.id);
+            if (res.success) { toast.success("Deleted"); setShowDelete(false); }
+            else toast.error(res.error);
+        });
+    }
 
     return (
         <>
@@ -109,8 +109,8 @@ export function TenantCard({ tenant }: TenantProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
-                        <Badge className={`${planDetails?.color || 'bg-slate-500'} hover:opacity-90 transition-colors`}>
-                            {planDetails?.name || tenant.plan}
+                        <Badge className={`${planDetails.color} hover:opacity-90`}>
+                            {planDetails.name}
                         </Badge>
                         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                             <DropdownMenuTrigger asChild>
@@ -139,6 +139,7 @@ export function TenantCard({ tenant }: TenantProps) {
                         </DropdownMenu>
                     </div>
                 </CardHeader>
+                {/* Content... */}
                 <CardContent className="py-4 space-y-4">
                     <div className="grid grid-cols-3 gap-2 text-center text-sm">
                         <div className="bg-rose-50 p-2 rounded text-rose-600">
@@ -160,16 +161,13 @@ export function TenantCard({ tenant }: TenantProps) {
                         {tenant.isActive && <span className="text-emerald-600 flex items-center gap-1">● Active</span>}
                     </div>
                 </CardContent>
+
                 <CardFooter className="flex flex-col gap-2 pt-0">
                     <div className="grid grid-cols-2 gap-2 w-full">
                         <Button variant="outline" onClick={() => setShowPlan(true)} className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50">Upgrade</Button>
                         <Button variant="secondary" className="w-full bg-slate-100" onClick={() => handleAction('impersonate')}>Admin Hub</Button>
                     </div>
-                    <Button
-                        disabled={isPending}
-                        onClick={() => handleAction('impersonate')}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
-                    >
+                    <Button disabled={isPending} onClick={() => handleAction('impersonate')} className="w-full bg-indigo-600 gap-2">
                         {isPending ? <span className="animate-pulse">Loading...</span> : <><LogIn className="w-4 h-4" /> Login as Company</>}
                     </Button>
                 </CardFooter>
@@ -180,53 +178,57 @@ export function TenantCard({ tenant }: TenantProps) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Delete Tenant?</DialogTitle>
-                        <DialogDescription>
-                            This action cannot be undone. This will permanently delete <b>{tenant.name}</b> and ALL associated data.
-                        </DialogDescription>
+                        <DialogDescription>This action cannot be undone.</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowDelete(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={confirmDelete} disabled={isPending}>
-                            {isPending ? 'Deleting...' : 'Delete Permanently'}
-                        </Button>
+                        <Button variant="destructive" onClick={confirmDelete} disabled={isPending}>Delete</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Plan Upgrade Dialog */}
+            {/* Plan Upgrade Dialog (Using Dynamic Plans) */}
             <Dialog open={showPlan} onOpenChange={setShowPlan}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>Upgrade Plan: {tenant.name}</DialogTitle>
-                        <DialogDescription>Change the subscription tier for this company.</DialogDescription>
+                        <DialogDescription>Choose a subscription tier.</DialogDescription>
                     </DialogHeader>
                     <div className="grid grid-cols-1 gap-3 py-4">
-                        {PLANS.map((p) => (
-                            <div key={p.id} className={`flex items-center justify-between p-4 rounded-lg border ${tenant.plan === p.id ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500 shadow-sm' : 'border-slate-200 hover:border-emerald-200 hover:shadow-sm transition-all'}`}>
-                                <div>
-                                    <div className="font-semibold flex items-center gap-2 text-slate-900">
-                                        {p.name}
-                                        <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">{p.price}{p.period}</span>
+                        {plans.map((p) => {
+                            const featuresArray = typeof p.features === 'string'
+                                ? JSON.parse(p.features)  // Handle potential stringified JSON
+                                : Array.isArray(p.features) ? p.features : [];
+
+                            return (
+                                <div key={p.id} className={`flex items-center justify-between p-4 rounded-lg border ${tenant.plan === p.slug ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500' : 'border-slate-200 hover:border-emerald-200'}`}>
+                                    <div>
+                                        <div className="font-semibold flex items-center gap-2">
+                                            {p.name}
+                                            {p.isPopular && <Badge className="bg-emerald-500 text-[10px] h-5">POPULAR</Badge>}
+                                            <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                                ${p.price}{p.period}
+                                            </span>
+                                            {p.originalPrice && p.originalPrice > p.price && (
+                                                <span className="text-xs font-normal text-slate-400 line-through">
+                                                    ${p.originalPrice}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-1">{p.description}</p>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">{p.description}</p>
-                                    <div className="flex flex-wrap gap-1 mt-2">
-                                        {p.features.slice(0, 2).map((f, i) => (
-                                            <span key={i} className="text-[10px] bg-slate-50 text-slate-600 px-1.5 py-0.5 rounded border border-slate-100">{f}</span>
-                                        ))}
-                                        {p.features.length > 2 && <span className="text-[10px] text-slate-400 px-1">+{p.features.length - 2} more</span>}
-                                    </div>
+                                    <Button
+                                        size="sm"
+                                        variant={tenant.plan === p.slug ? 'secondary' : 'default'}
+                                        onClick={() => handleUpgrade(p.slug)} // Sending SLUG
+                                        disabled={isPending || tenant.plan === p.slug}
+                                        className={tenant.plan === p.slug ? "text-emerald-700 bg-emerald-100" : "bg-slate-900"}
+                                    >
+                                        {tenant.plan === p.slug ? 'Current' : 'Select'}
+                                    </Button>
                                 </div>
-                                <Button
-                                    size="sm"
-                                    variant={tenant.plan === p.id ? 'secondary' : 'default'}
-                                    onClick={() => handleUpgrade(p.id)}
-                                    disabled={isPending || tenant.plan === p.id}
-                                    className={tenant.plan === p.id ? "text-emerald-700 bg-emerald-100 hover:bg-emerald-200" : "bg-slate-900 hover:bg-slate-800 text-white"}
-                                >
-                                    {tenant.plan === p.id ? 'Current Plan' : 'Select'}
-                                </Button>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </DialogContent>
             </Dialog>

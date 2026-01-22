@@ -11,14 +11,21 @@ export default async function SuperAdminDashboard() {
     // In real implementation, check role === 'SUPER_ADMIN'
     // if (session?.user?.email !== process.env.SUPER_ADMIN_EMAIL) return <div>Access Denied</div>
 
-    const tenants = await prisma.tenant.findMany({
-        include: {
-            _count: {
-                select: { users: true, orders: true }
-            }
-        },
-        orderBy: { createdAt: 'desc' }
-    });
+    // Parallel data fetching
+    const [tenants, plans] = await Promise.all([
+        prisma.tenant.findMany({
+            include: {
+                _count: {
+                    select: { users: true, orders: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        }),
+        prisma.plan.findMany({
+            where: { isActive: true },
+            orderBy: { sortOrder: 'asc' }
+        })
+    ]);
 
     return (
         <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
@@ -32,7 +39,7 @@ export default async function SuperAdminDashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {tenants.map((tenant) => (
-                    <TenantCard key={tenant.id} tenant={tenant} />
+                    <TenantCard key={tenant.id} tenant={tenant} plans={plans} />
                 ))}
             </div>
         </div>
