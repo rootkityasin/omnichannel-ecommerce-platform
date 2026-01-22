@@ -219,6 +219,13 @@ export function TenantCard({ tenant }: TenantProps) {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <EditCompanyModal
+                tenant={tenant}
+                open={showEdit}
+                onOpenChange={setShowEdit}
+            />
         </>
+
     );
 }
