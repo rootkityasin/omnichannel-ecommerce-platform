@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useAdmin } from '@/components/providers/AdminProvider';
+import { useSettings } from '@/components/providers/SettingsProvider';
 
 const AnimatedCounter = ({ value }: { value: string | number }) => {
     const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.]/g, '')) : value;
@@ -51,7 +51,7 @@ interface ProductModalProps {
 
 export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     const addItem = useCartStore((state) => state.addItem);
-    const { settings } = useAdmin();
+    const { settings } = useSettings();
     const [quantity, setQuantity] = useState(1);
     const [selectedVariant, setSelectedVariant] = useState(product.weightOptions?.[0] || 'Standard');
 

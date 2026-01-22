@@ -4,11 +4,11 @@ import { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useAnimationStore } from '@/lib/animationStore';
 import { useCartStore } from '@/lib/store';
+import Image from 'next/image';
 import { useLanguageStore } from '@/lib/languageStore';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 import { ProductModal } from './ProductModal';
-import { useAdmin } from '@/components/providers/AdminProvider';
 import { trackEvent } from '@/lib/track';
 
 interface ProductCardProps {
@@ -38,7 +38,6 @@ export function ProductCard({
     const addItem = useCartStore((state) => state.addItem);
     const { language } = useLanguageStore();
     const { triggerFly } = useAnimationStore();
-    const { settings } = useAdmin();
     const imageRef = useRef<HTMLImageElement>(null);
 
     // Active image state for gallery
@@ -142,16 +141,16 @@ export function ProductCard({
                         </div>
                     )}
 
-                    <div className="w-full h-full overflow-hidden">
-                        <img
+                    <div className="w-full h-full overflow-hidden relative">
+                        <Image
                             ref={imageRef}
                             src={activeImage}
                             alt={name}
-                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                            loading="lazy"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/logo.svg";
-                            }}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                            priority={false}
+                            onError={() => setActiveImage("/logo.svg")}
                         />
                     </div>
 

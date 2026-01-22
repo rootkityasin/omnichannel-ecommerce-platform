@@ -8,7 +8,7 @@ import { useCartStore } from '@/lib/store';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 import { useState, useEffect, useRef } from 'react';
-import { useAdmin } from '@/components/providers/AdminProvider';
+import { useSettings } from '@/components/providers/SettingsProvider';
 import { getSiteConfig } from '@/app/actions/settings'; // Kept types
 import { cn } from '@/lib/utils';
 import { menuItems } from '@/lib/data';
@@ -27,7 +27,7 @@ export function DesktopNavbar() {
     const pathname = usePathname();
     const router = useRouter();
     const [scrolled, setScrolled] = useState(false);
-    const { settings } = useAdmin(); // Use shared settings
+    const { settings } = useSettings();
     const config = settings;
 
     const cartItems = useCartStore((state) => state.items);

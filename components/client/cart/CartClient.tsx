@@ -13,7 +13,7 @@ import { CartRecommendations } from '@/components/client/CartRecommendations';
 
 import { createOrder } from '@/app/actions/order';
 import { toast } from 'sonner';
-import { useAdmin } from '@/components/providers/AdminProvider';
+import { useSettings } from '@/components/providers/SettingsProvider';
 import {
     Select,
     SelectContent,
@@ -35,7 +35,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
     const { items, removeItem, addItem, clearCart, total, discount, coupon } = useCartStore();
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
-    const { settings } = useAdmin();
+    const { settings } = useSettings();
     const searchParams = useSearchParams();
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 

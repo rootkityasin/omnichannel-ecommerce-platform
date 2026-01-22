@@ -4,7 +4,7 @@ import { motion, useAnimation, useDragControls, useMotionValue, useTransform, Pa
 import { useCartStore } from '@/lib/store';
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useAdmin } from '@/components/providers/AdminProvider';
+import { useSettings } from '@/components/providers/SettingsProvider';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { CouponSection } from '@/components/client/CouponSection';
@@ -15,7 +15,7 @@ import { getStorySections } from '@/app/actions/story';
 export function CartDrawer() {
     const { language } = useLanguageStore();
     const { items, removeItem, addItem, isOpen, closeCart, openCart, openCheckout, total, discount, finalTotal, coupon } = useCartStore();
-    const { settings } = useAdmin();
+    const { settings } = useSettings();
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });

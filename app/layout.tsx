@@ -38,6 +38,7 @@ export const metadata: Metadata = {
 // remove imports
 import { getSiteConfig } from '@/app/actions/settings';
 import { ThemeInjector } from '@/components/client/ThemeInjector';
+import { SettingsProvider } from '@/components/providers/SettingsProvider';
 
 export default function RootLayout({
   children,
@@ -52,11 +53,13 @@ export default function RootLayout({
       >
         <main className="min-h-screen relative">
           <SessionProvider>
-            {children}
-            <PromoPopup />
-            <Toaster richColors position="top-center" />
-            <SpeedInsights />
-            <Analytics />
+            <SettingsProvider>
+              {children}
+              <PromoPopup />
+              <Toaster richColors position="top-center" />
+              <SpeedInsights />
+              <Analytics />
+            </SettingsProvider>
           </SessionProvider>
         </main>
       </body>

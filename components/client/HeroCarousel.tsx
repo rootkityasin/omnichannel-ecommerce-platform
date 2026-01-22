@@ -44,6 +44,15 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
         setSelectedIndex(emblaApi.selectedScrollSnap());
     }, [emblaApi]);
 
+    const [isMobile, setIsMobile] = React.useState(false);
+
+    React.useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     React.useEffect(() => {
         if (!emblaApi) return;
         onSelect();
@@ -66,8 +75,8 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
                                 className="relative w-full h-full"
                                 initial={{ scale: 1.05 }}
                                 animate={{
-                                    scale: index === selectedIndex ? 1.15 : 1.05,
-                                    x: index === selectedIndex ? [-20, 0] : 0
+                                    scale: isMobile ? 1 : (index === selectedIndex ? 1.15 : 1.05),
+                                    x: isMobile ? 0 : (index === selectedIndex ? [-20, 0] : 0)
                                 }}
                                 transition={{
                                     scale: { duration: 8, ease: "linear" },

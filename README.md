@@ -237,11 +237,43 @@ We use a custom theme configured in `tailwind.config.ts` to reflect our brand id
 - **Colors**: `crab-red` (Primary), `ocean-blue` (Secondary), `sand` (Accent).
 - **Typography**: Serif headings for elegance, Sans-serif body for readability.
 
+## 🖼️ Image Management
+
+The application features a hybrid image management system for flexibility and reliability:
+
+### 1. Cloudinary (Primary)
+Used for all dynamic uploads (Products, Categories, Trust Badges).
+- **Type**: Unsigned Client-Side Uploads
+- **Benefits**: CDN delivery, on-the-fly transformations, reduced server load.
+- **Config**: Requires `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` and `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET`.
+
+### 2. Local Fallback (Failsafe)
+If Cloudinary credentials are missing or valid keys are not provided:
+- **Mechanism**: The system automatically detects the missing config.
+- **Action**: Converts uploads to **Base64 Data URLs** and stores them directly in the database.
+- **Note**: This is intended for development or emergency fallback, not high-volume production use.
+
+
+## 🏢 SaaS Architecture (Multi-Tenancy)
+
+This project has been transformed into a **Multi-Tenant SaaS Platform**. It allows multiple vendors (Shops) to run their own white-labeled storefronts on a single software instance.
+
+### Core Concepts
+*   **Tenants (Shops)**: Each shop is a `Tenant` with its own isolated data (Products, Orders, Users).
+*   **Shared Database**: All tenants share one Postgres database. Data is isolated using **Row-Level Security** (via `tenantId` columns).
+*   **Dynamic Routing**: Next.js Middleware inspects the **Hostname** (`shop.platform.com` or `custom.com`) to determine which Tenant to load.
+
+### Key Features
+*   **Super Admin Dashboard**: A master control panel (`app.platform.com`) to manage Companies, Plans, and Billing.
+*   **Logical Isolation**: `tenantId` is stamped on every record. Strict filtering prevents data leaks.
+*   **Unified Codebase**: 100% code reuse. Fix a bug once, update it for everyone.
+
 ## Contributing
+
 Feel free to open issues or submit pull requests if you have ideas for improvements.
 
 ---
-*Built with ❤️ by 90slabs*
+*Built with ❤️ by 90sX*
 
 ## Deployment & Environment Variables
 

@@ -11,6 +11,7 @@ export const authConfig = {
                 token.id = user.id
                 token.role = (user as any).role
                 token.phone = (user as any).phone
+                token.tenantId = (user as any).tenantId
             }
             return token
         },
@@ -21,6 +22,8 @@ export const authConfig = {
                 session.user.role = token.role as string
                 // @ts-ignore
                 session.user.phone = token.phone as string
+                // @ts-ignore
+                session.user.tenantId = token.tenantId as string
             }
             return session
         },

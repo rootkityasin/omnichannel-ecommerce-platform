@@ -7,8 +7,31 @@ datasource db {
   provider = "postgresql"
 }
 
+model Tenant {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  customDomain  String?  @unique
+  plan          String   @default("FREE") 
+  isActive      Boolean  @default(true)
+  enabledModules String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users         User[]
+  products      Product[]
+  orders        Order[]
+  siteConfig    SiteConfig?
+  hubs          Hub[]
+  categories    Category[]
+  coupons       Coupon[]
+  promos        PromoCard[]
+}
+
 model Product {
   id              String           @id @default(cuid())
+  tenantId        String?
+  tenant          Tenant?          @relation(fields: [tenantId], references: [id])
   name            String
   price           Int
   image           String?
@@ -77,6 +100,8 @@ model OrderItem {
 
 model Category {
   id            String    @id @default(cuid())
+  tenantId      String?
+  tenant        Tenant?   @relation(fields: [tenantId], references: [id])
   name          String
   animationType String    @default("AUTO")
   icon          String    @default("Package")
@@ -85,6 +110,8 @@ model Category {
 
 model PromoCard {
   id            String   @id @default(cuid())
+  tenantId      String?
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
   title         String
   description   String?
   imageUrl      String
@@ -100,6 +127,8 @@ model PromoCard {
 
 model SiteConfig {
   id              String   @id @default(cuid())
+  tenantId        String?  @unique
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
   contactPhone    String   @default("+880 1804 221 161")
   contactEmail    String   @default("crabkhaibangladesh@gmail.com")
   contactAddress  String   @default("195 Green Road, Dhaka")
@@ -122,6 +151,8 @@ model SiteConfig {
 
 model Hub {
   id        String      @id @default(cuid())
+  tenantId  String?
+  tenant    Tenant?     @relation(fields: [tenantId], references: [id])
   name      String
   location  String
   expenses  Expense[]
@@ -133,10 +164,14 @@ model Hub {
 
 model User {
   id        String    @id @default(cuid())
+  tenantId  String?
+  tenant    Tenant?   @relation(fields: [tenantId], references: [id])
   name      String
   email     String    @unique
   phone     String?   @unique
   role      Role      @default(USER)
+  permissions String[] @default([])
+  isBlocked   Boolean  @default(false)
   hubId     String?
   image     String?
   password  String?
@@ -221,6 +256,8 @@ model Expense {
 
 model Coupon {
   id             String       @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?      @relation(fields: [tenantId], references: [id])
   code           String       @unique
   discountType   DiscountType @default(FIXED)
   discountValue  Int
@@ -235,6 +272,8 @@ model Coupon {
 
 model Order {
   id              String      @id @default(cuid())
+  tenantId        String?
+  tenant          Tenant?     @relation(fields: [tenantId], references: [id])
   orderId         String      @unique
   status          String      @default("PENDING")
   customerName    String

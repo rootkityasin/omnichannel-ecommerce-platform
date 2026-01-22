@@ -222,7 +222,7 @@ export function AdminSidebar() {
                 <div className="p-4 border-t border-gray-100">
                     {!isSidebarCollapsed && (
                         <div className="flex items-center justify-center p-2 text-xs font-medium text-slate-500 hover:text-orange-600 cursor-pointer gap-1">
-                            90s Labs <FlaskConical className="w-3 h-3" />
+                            90sX <FlaskConical className="w-3 h-3" />
                         </div>
                     )}
                 </div>

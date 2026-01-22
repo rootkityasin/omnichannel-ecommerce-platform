@@ -258,7 +258,59 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
                 </Card>
 
 
+                {/* Domain Configurations */}
+                <Card className="h-full md:col-span-2 border-indigo-100 bg-indigo-50/30">
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2 text-indigo-900">
+                            <div className="p-1 bg-indigo-100 rounded text-indigo-600">
+                                <Settings className="w-4 h-4" />
+                            </div>
+                            Domain & Hosting
+                        </CardTitle>
+                        <CardDescription>Manage your shop's web address and custom domain.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label className="text-indigo-900">Shop Subdomain (Slug)</Label>
+                            <div className="flex">
+                                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-200 bg-slate-50 text-gray-500 text-sm">
+                                    app.platform.com/
+                                </span>
+                                <Input
+                                    value={config.slug || ''}
+                                    readOnly
+                                    className="rounded-l-none bg-slate-100 text-slate-500"
+                                />
+                            </div>
+                            <p className="text-[10px] text-slate-500">
+                                This is your permanent system identifier. It cannot be changed.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-indigo-900">Custom Domain</Label>
+                            <div className="flex">
+                                <div className="relative w-full">
+                                    <Input
+                                        value={config.customDomain || ''}
+                                        onChange={(e) => setConfig({ ...config, customDomain: e.target.value })}
+                                        placeholder="www.your-shop.com"
+                                        className="pl-9 border-indigo-200 focus-visible:ring-indigo-500"
+                                    />
+                                    <span className="absolute left-3 top-2.5 text-indigo-400">
+                                        <Settings className="w-4 h-4" />
+                                    </span>
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-indigo-600/80">
+                                To use a custom domain, set a <strong>CNAME</strong> record pointing to <code>cname.vercel-dns.com</code>.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
             </div>
         </div>
+
     );
 }

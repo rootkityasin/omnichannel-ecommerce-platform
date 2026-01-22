@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { getSiteConfig } from '@/app/actions/settings';
 
 import { translations } from '@/lib/translations';
-import { useAdmin } from '@/components/providers/AdminProvider';
 import { Mascot } from './Mascot';
 import { AnimatedSearchBar } from './AnimatedSearchBar';
 import { cn } from "@/lib/utils";

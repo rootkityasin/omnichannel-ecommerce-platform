@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
 import { ShopType } from '@prisma/client';
 
+
 export const getSiteConfig = unstable_cache(
     async () => {
         const defaults = {
@@ -23,16 +24,23 @@ export const getSiteConfig = unstable_cache(
             volumeUnitValue: 1000,
             privacyPolicy: "",
             refundPolicy: "",
-            termsPolicy: ""
+            termsPolicy: "",
+            // Tenant fields
+            customDomain: "",
+            slug: ""
         };
 
         try {
-            const config = await prisma.siteConfig.findFirst();
+            const config = await prisma.siteConfig.findFirst({
+                include: { tenant: true }
+            });
             if (!config) return defaults;
             return {
                 ...defaults,
                 ...config,
                 shopType: config.shopType || defaults.shopType,
+                customDomain: config.tenant?.customDomain || "",
+                slug: config.tenant?.slug || ""
             };
         } catch (error) {
             console.error("Failed to fetch site config:", error);
@@ -45,9 +53,12 @@ export const getSiteConfig = unstable_cache(
 
 export async function updateSiteConfig(data: any) {
     try {
-        const existing = await prisma.siteConfig.findFirst();
+        const existing = await prisma.siteConfig.findFirst({
+            include: { tenant: true }
+        });
 
         if (existing) {
+            // Update Site Config
             await prisma.siteConfig.update({
                 where: { id: existing.id },
                 data: {
@@ -66,7 +77,25 @@ export async function updateSiteConfig(data: any) {
                     volumeUnitValue: parseInt(data.volumeUnitValue || 1000)
                 }
             });
+
+            // Update Tenant Domain if changed
+            if (existing.tenantId && (data.customDomain !== undefined)) {
+
+                // Unique check for customDomain (if simple check needed)
+                // Note: Prisma will throw if violates unique constraint, catch block handles it.
+                if (data.customDomain !== existing.tenant?.customDomain) {
+                    await prisma.tenant.update({
+                        where: { id: existing.tenantId },
+                        data: {
+                            customDomain: data.customDomain || null // Allow clearing
+                        }
+                    });
+                }
+            }
+
         } else {
+            // Create Logic - (Assuming Tenant exists if creating config, need to find it)
+            // For now, simpler create without tenant domain update (usually happens on setup)
             await prisma.siteConfig.create({
                 data: {
                     contactPhone: data.contactPhone,
@@ -93,9 +122,14 @@ export async function updateSiteConfig(data: any) {
         return { success: true };
     } catch (error) {
         console.error("Failed to update settings:", error);
+        // Better error message for duplicate domain
+        if (String(error).includes('Unique constraint failed')) {
+            return { success: false, error: "This domain is already taken." };
+        }
         return { success: false, error: String(error) };
     }
 }
+
 
 export async function getPaymentConfig() {
     try {
