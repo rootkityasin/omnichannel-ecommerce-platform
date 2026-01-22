@@ -14,7 +14,7 @@ export const getSiteConfig = unstable_cache(
             logoUrl: "",
             measurementUnit: "PCS",
             allergensText: "",
-            certificates: [],
+            certificates: [] as any,
             primaryColor: "#000000",
             secondaryColor: "#ffffff",
             taxPercentage: 0.0,
@@ -58,7 +58,7 @@ export async function updateSiteConfig(data: any) {
                     logoUrl: data.logoUrl,
                     measurementUnit: data.measurementUnit,
                     allergensText: data.allergensText,
-                    certificates: data.certificates,
+                    certificates: data.certificates || [],
                     secondaryColor: data.secondaryColor,
                     taxPercentage: parseFloat(data.taxPercentage || 0),
                     shopType: (data.shopType as ShopType) || ShopType.RESTAURANT,
@@ -76,7 +76,7 @@ export async function updateSiteConfig(data: any) {
                     logoUrl: data.logoUrl,
                     measurementUnit: data.measurementUnit,
                     allergensText: data.allergensText,
-                    certificates: data.certificates,
+                    certificates: data.certificates || [],
                     primaryColor: data.primaryColor || "#ea0000",
                     secondaryColor: data.secondaryColor || "#0f172a",
                     taxPercentage: parseFloat(data.taxPercentage || 0),
@@ -87,7 +87,7 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        revalidateTag('site-config');
+        // revalidateTag('site-config');
         revalidatePath('/', 'layout'); // Revalidate all pages layout
         revalidatePath('/admin/shop');
         return { success: true };

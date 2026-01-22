@@ -257,26 +257,7 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
                     </CardContent>
                 </Card>
 
-                {/* Legal / Allergens */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <FileWarning className="w-4 h-4 text-slate-500" /> Allergens & Notices
-                        </CardTitle>
-                        <CardDescription>Important information for your customers.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Allergen Information</Label>
-                            <Input
-                                value={config.allergensText}
-                                onChange={(e) => setConfig({ ...config, allergensText: e.target.value })}
-                                placeholder="e.g. Contains Crustaceans"
-                            />
-                            <p className="text-xs text-slate-500">This will be displayed in the footer or product pages.</p>
-                        </div>
-                    </CardContent>
-                </Card>
+
             </div>
         </div>
     );

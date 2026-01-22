@@ -18,7 +18,7 @@ interface SiteConfig {
     contactEmail: string;
     contactAddress: string;
     allergensText: string;
-    certificates: string[];
+    certificates: any[];
     privacyPolicy?: string;
     refundPolicy?: string;
     termsPolicy?: string;
@@ -30,7 +30,7 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
     const [originalConfig, setOriginalConfig] = useState(initialConfig);
     const [hasChanges, setHasChanges] = useState(false);
 
-    const [newCert, setNewCert] = useState('');
+    const [newCert, setNewCert] = useState({ image: '', link: '' });
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -39,13 +39,22 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
     }, [config, originalConfig]);
 
     const addCert = () => {
-        if (!newCert) return;
-        setConfig({ ...config, certificates: [...config.certificates, newCert] });
-        setNewCert('');
+        if (!newCert.image) return;
+        // Ensure certificates is treated as array of objects
+        const currentCerts = Array.isArray(config.certificates) ? config.certificates : [];
+        setConfig({
+            ...config,
+            certificates: [...currentCerts, { ...newCert }]
+        });
+        setNewCert({ image: '', link: '' });
     };
 
     const removeCert = (index: number) => {
-        setConfig({ ...config, certificates: config.certificates.filter((_, i) => i !== index) });
+        const currentCerts = Array.isArray(config.certificates) ? config.certificates : [];
+        setConfig({
+            ...config,
+            certificates: currentCerts.filter((_: any, i: number) => i !== index)
+        });
     };
 
     const handleSave = async () => {
@@ -96,28 +105,62 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
                 </div>
 
                 <div className="space-y-3 pt-2">
-                    <label className="text-sm font-medium">Trust Certifications (Image URLs)</label>
-                    <div className="flex gap-2">
-                        <Input
-                            placeholder="Paste image URL..."
-                            value={newCert}
-                            onChange={(e) => setNewCert(e.target.value)}
-                        />
-                        <Button onClick={addCert} size="sm" variant="secondary"><Plus className="w-4 h-4" /></Button>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-2">
-                        {config.certificates.map((cert, i) => (
-                            <div key={i} className="group relative aspect-square bg-slate-50 rounded border flex items-center justify-center p-2">
-                                <img src={cert} alt="" className="w-full h-full object-contain" />
-                                <button
-                                    onClick={() => removeCert(i)}
-                                    className="absolute top-1 right-1 p-1 bg-white shadow-sm text-red-500 rounded-full opacity-0 group-hover:opacity-100"
-                                >
-                                    <Trash2 className="w-3 h-3" />
-                                </button>
+                    <label className="text-sm font-medium">Trust Certifications</label>
+                    <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
+                        <div className="space-y-3">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add New Certificate</label>
+                            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-start">
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">Certificate Logo</span>
+                                    <Input
+                                        placeholder="Image URL..."
+                                        value={newCert.image}
+                                        onChange={(e) => setNewCert({ ...newCert, image: e.target.value })}
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">Redirect Link (Optional)</span>
+                                    <Input
+                                        placeholder="https://..."
+                                        value={newCert.link}
+                                        onChange={(e) => setNewCert({ ...newCert, link: e.target.value })}
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div className="pt-5">
+                                    <Button onClick={addCert} size="sm" className="bg-slate-800 text-white hover:bg-slate-700">
+                                        <Plus className="w-4 h-4 mr-1" /> Add
+                                    </Button>
+                                </div>
                             </div>
-                        ))}
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t border-slate-200">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Certificates</label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {(Array.isArray(config.certificates) ? config.certificates : []).map((cert: any, i: number) => (
+                                    <div key={i} className="group relative aspect-square bg-white rounded-lg border-2 border-slate-100 flex flex-col items-center justify-center p-2 hover:border-orange-200 transition-colors">
+                                        <div className="flex-1 w-full flex items-center justify-center p-2">
+                                            <img src={cert.image} alt="" className="max-w-full max-h-full object-contain" />
+                                        </div>
+                                        {cert.link && (
+                                            <div className="w-full text-center border-t border-slate-100 pt-1 mt-1">
+                                                <a href={cert.link} target="_blank" className="text-[10px] text-blue-500 hover:underline truncate block w-full px-1">
+                                                    {cert.link.replace(/^https?:\/\//, '')}
+                                                </a>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => removeCert(i)}
+                                            className="absolute top-1 right-1 p-1.5 bg-red-50 text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-100"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -107,7 +107,7 @@ model SiteConfig {
   logoUrl         String?
   measurementUnit String   @default("PCS")
   allergensText   String   @default("Crustaceans, Shellfish")
-  certificates    String[]
+  certificates    Json     @default("[]")
   adminSetupToken String   @default("crab-secret-setup-123")
   primaryColor    String   @default("#E60000")
   secondaryColor  String   @default("#0f172a")

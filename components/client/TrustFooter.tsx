@@ -152,20 +152,44 @@ export default function TrustFooter({ config: initialConfig, ...props }: TrustFo
                         </div>
 
                         <div className="flex flex-wrap justify-center gap-4">
-                            {certificates.map((cert: any, index: number) => (
-                                <motion.a
-                                    key={index}
-                                    href={cert.url || '#'}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    whileHover={{ scale: 1.1, rotate: 2 }}
-                                    className="w-16 h-16 bg-white rounded-full p-2 shadow-lg flex items-center justify-center transform hover:z-10 transition-all duration-300 border-2 border-white/50 cursor-pointer hover:border-amber-400"
-                                    title={`Click to read about ${cert.alt || 'Certification'}`}
-                                >
-                                    {/* Handle both string URLs and object structure if type changes, but here we expect objects from the default hardcoded array or DB */}
-                                    <img src={typeof cert === 'string' ? cert : cert.src} alt={typeof cert === 'string' ? 'Certificate' : cert.alt} className="w-full h-full object-contain" />
-                                </motion.a>
-                            ))}
+                            {certificates.map((cert: any, index: number) => {
+                                const imageSrc = typeof cert === 'string' ? cert : (cert.image || cert.src);
+                                const linkUrl = typeof cert === 'string' ? null : (cert.link || cert.url);
+
+                                const Content = (
+                                    <img
+                                        src={imageSrc}
+                                        alt="Certificate"
+                                        className="w-full h-full object-contain"
+                                    />
+                                );
+
+                                if (linkUrl) {
+                                    return (
+                                        <motion.a
+                                            key={index}
+                                            href={linkUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            whileHover={{ scale: 1.1, rotate: 2 }}
+                                            className="w-16 h-16 bg-white rounded-full p-2 shadow-lg flex items-center justify-center transform hover:z-10 transition-all duration-300 border-2 border-white/50 cursor-pointer hover:border-amber-400"
+                                            title="View Certification"
+                                        >
+                                            {Content}
+                                        </motion.a>
+                                    );
+                                }
+
+                                return (
+                                    <motion.div
+                                        key={index}
+                                        whileHover={{ scale: 1.1, rotate: 2 }}
+                                        className="w-16 h-16 bg-white rounded-full p-2 shadow-lg flex items-center justify-center transform hover:z-10 transition-all duration-300 border-2 border-white/50 hover:border-amber-400"
+                                    >
+                                        {Content}
+                                    </motion.div>
+                                );
+                            })}
                         </div>
 
                         <div className="mt-8 text-xs font-mono text-white/40 tracking-widest uppercase">
