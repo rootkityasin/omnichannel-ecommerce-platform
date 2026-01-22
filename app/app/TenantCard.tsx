@@ -207,11 +207,11 @@ export function TenantCard({ tenant, plans }: TenantProps) {
                                             {p.name}
                                             {p.isPopular && <Badge className="bg-emerald-500 text-[10px] h-5">POPULAR</Badge>}
                                             <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                                                ${p.price}{p.period}
+                                                ৳{p.price}{p.period}
                                             </span>
                                             {p.originalPrice && p.originalPrice > p.price && (
                                                 <span className="text-xs font-normal text-slate-400 line-through">
-                                                    ${p.originalPrice}
+                                                    ৳{p.originalPrice}
                                                 </span>
                                             )}
                                         </div>
