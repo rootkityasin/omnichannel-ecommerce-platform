@@ -191,110 +191,110 @@ export function AdminProvider({ children, initialUser }: { children: React.React
             import('@/app/actions/settings').then(mod => {
                 mod.getSiteConfig().then(dbConfig => {
                     if (dbConfig) {
-                        setSettings(prev => ({
                             ...prev,
-                            ...dbConfig,
-                            logoUrl: dbConfig.logoUrl ?? prev.logoUrl
+                    ...dbConfig,
+                    certificates: Array.isArray(dbConfig.certificates) ? dbConfig.certificates : [],
+                    logoUrl: dbConfig.logoUrl ?? prev.logoUrl
                         }));
-                    }
+}
                 });
             });
 
-            // 3. Fetch Orders from DB
-            getAdminOrders().then(dbOrders => {
-                if (dbOrders) setOrdersState(dbOrders);
-            });
+// 3. Fetch Orders from DB
+getAdminOrders().then(dbOrders => {
+    if (dbOrders) setOrdersState(dbOrders);
+});
         }
     }, []);
 
-    // Save to LocalStorage on Change (excluding orders)
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const dataToSave = {
-                // Not saving orders to localStorage anymore to avoid stale data
-                products: products,
-                settings: settings,
-                paymentConfig: paymentConfig
-            };
-            localStorage.setItem('crab-khai-admin-data-v7', JSON.stringify(dataToSave));
+// Save to LocalStorage on Change (excluding orders)
+useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const dataToSave = {
+            // Not saving orders to localStorage anymore to avoid stale data
+            products: products,
+            settings: settings,
+            paymentConfig: paymentConfig
+        };
+        localStorage.setItem('crab-khai-admin-data-v7', JSON.stringify(dataToSave));
+    }
+}, [products, settings, paymentConfig]);
+
+
+// --- Actions ---
+const setOrders = (newOrders: any[]) => setOrdersState(newOrders);
+const setProducts = (newProducts: any[]) => setProductsState(newProducts);
+const updateSettings = (newSettings: any) => setSettings(prev => ({ ...prev, ...newSettings }));
+const updatePaymentConfig = (newConfig: any) => setPaymentConfigState(prev => ({ ...prev, ...newConfig }));
+
+const addOrder = (order: any) => {
+    // Since manual orders are created via OrdersPage form, they should ideally call createOrder action
+    // For now we keep this local-first if needed, but the true fix is fetching after creation.
+    setOrdersState([order, ...orders]);
+};
+
+const updateOrder = async (id: string, updates: any) => {
+    // 1. Update UI immediately
+    setOrdersState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+
+    // 2. Update DB
+    const res = await updateAdminOrder(id, updates);
+    if (!res.success) {
+        toast.error("Failed to sync status with database");
+        // Optionally revert UI here
+    }
+};
+
+const deleteOrder = async (id: string) => {
+    const res = await deleteAdminOrder(id);
+    if (res.success) {
+        setOrdersState(prev => prev.filter(o => o.id !== id));
+        toast.success("Order deleted from database");
+    } else {
+        toast.error("Failed to delete from database");
+    }
+};
+
+const addProduct = (product: any) => setProductsState([{ ...product, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...products]);
+const updateProduct = (id: string, updates: any) => {
+    setProductsState(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+};
+const toggleStock = (id: string) => {
+    setProductsState(prev => prev.map(p => p.id === id ? { ...p, stock: !p.stock } : p));
+};
+const deleteProduct = (id: string) => setProductsState(prev => prev.filter(p => p.id !== id));
+
+const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
+const switchHub = (hubId: string | 'ALL') => setActiveHubId(hubId);
+
+return (
+    <AdminContext.Provider value={{
+        // Data exposed is now filtered!
+        orders: filteredOrders,
+        products: filteredProducts,
+        allProducts: products, // Expose raw products for client usage ignoring admin hub filter
+        allOrders: orders, // Expose raw orders if needed
+        settings,
+        paymentConfig,
+
+        currentUser,
+        activeHubId,
+        hubs: HUBS,
+        availableHubs,
+        switchHub,
+        loginAs,
+
+        setOrders, setProducts, updateSettings, updatePaymentConfig,
+        addOrder, updateOrder, deleteOrder,
+        addProduct, updateProduct, deleteProduct, toggleStock,
+        isSidebarCollapsed, toggleSidebar,
+        logout: () => {
+            window.location.href = '/api/admin/logout';
         }
-    }, [products, settings, paymentConfig]);
-
-
-    // --- Actions ---
-    const setOrders = (newOrders: any[]) => setOrdersState(newOrders);
-    const setProducts = (newProducts: any[]) => setProductsState(newProducts);
-    const updateSettings = (newSettings: any) => setSettings(prev => ({ ...prev, ...newSettings }));
-    const updatePaymentConfig = (newConfig: any) => setPaymentConfigState(prev => ({ ...prev, ...newConfig }));
-
-    const addOrder = (order: any) => {
-        // Since manual orders are created via OrdersPage form, they should ideally call createOrder action
-        // For now we keep this local-first if needed, but the true fix is fetching after creation.
-        setOrdersState([order, ...orders]);
-    };
-
-    const updateOrder = async (id: string, updates: any) => {
-        // 1. Update UI immediately
-        setOrdersState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
-
-        // 2. Update DB
-        const res = await updateAdminOrder(id, updates);
-        if (!res.success) {
-            toast.error("Failed to sync status with database");
-            // Optionally revert UI here
-        }
-    };
-
-    const deleteOrder = async (id: string) => {
-        const res = await deleteAdminOrder(id);
-        if (res.success) {
-            setOrdersState(prev => prev.filter(o => o.id !== id));
-            toast.success("Order deleted from database");
-        } else {
-            toast.error("Failed to delete from database");
-        }
-    };
-
-    const addProduct = (product: any) => setProductsState([{ ...product, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...products]);
-    const updateProduct = (id: string, updates: any) => {
-        setProductsState(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    };
-    const toggleStock = (id: string) => {
-        setProductsState(prev => prev.map(p => p.id === id ? { ...p, stock: !p.stock } : p));
-    };
-    const deleteProduct = (id: string) => setProductsState(prev => prev.filter(p => p.id !== id));
-
-    const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
-    const switchHub = (hubId: string | 'ALL') => setActiveHubId(hubId);
-
-    return (
-        <AdminContext.Provider value={{
-            // Data exposed is now filtered!
-            orders: filteredOrders,
-            products: filteredProducts,
-            allProducts: products, // Expose raw products for client usage ignoring admin hub filter
-            allOrders: orders, // Expose raw orders if needed
-            settings,
-            paymentConfig,
-
-            currentUser,
-            activeHubId,
-            hubs: HUBS,
-            availableHubs,
-            switchHub,
-            loginAs,
-
-            setOrders, setProducts, updateSettings, updatePaymentConfig,
-            addOrder, updateOrder, deleteOrder,
-            addProduct, updateProduct, deleteProduct, toggleStock,
-            isSidebarCollapsed, toggleSidebar,
-            logout: () => {
-                window.location.href = '/api/admin/logout';
-            }
-        }}>
-            {children}
-        </AdminContext.Provider>
-    );
+    }}>
+        {children}
+    </AdminContext.Provider>
+);
 }
 
 export function useAdmin() {
