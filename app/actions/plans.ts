@@ -102,7 +102,7 @@ export async function seedPlans() {
         {
             slug: 'BASIC',
             name: 'Basic',
-            price: 29,
+            price: 1000,
             period: '/month',
             description: 'Perfect for small businesses just starting out.',
             features: [
@@ -117,8 +117,8 @@ export async function seedPlans() {
         {
             slug: 'STANDARD',
             name: 'Standard',
-            price: 79,
-            originalPrice: 99,
+            price: 3500,
+            originalPrice: 5000,
             period: '/month',
             description: 'Ideal for growing shops with steady traffic.',
             features: [
@@ -135,7 +135,7 @@ export async function seedPlans() {
         {
             slug: 'PLATINUM',
             name: 'Platinum',
-            price: 199,
+            price: 8000,
             period: '/month',
             description: 'For high-volume enterprises demanding the best.',
             features: [

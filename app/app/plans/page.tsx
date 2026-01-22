@@ -169,9 +169,9 @@ export default function PlansPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="mb-4">
-                                <span className="text-3xl font-bold">${plan.price}</span>
+                                <span className="text-3xl font-bold">৳{plan.price}</span>
                                 {plan.originalPrice && (
-                                    <span className="text-lg text-slate-400 line-through ml-2">${plan.originalPrice}</span>
+                                    <span className="text-lg text-slate-400 line-through ml-2">৳{plan.originalPrice}</span>
                                 )}
                                 <span className="text-slate-500 text-sm">/mo</span>
                             </div>
