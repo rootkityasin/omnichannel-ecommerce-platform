@@ -13,7 +13,7 @@ import { ShieldAlert, Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRou
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { deleteTenant, updateTenantStatus, updateTenantPlan, getImpersonationLink } from '@/app/actions/super-admin';
-
+import { PLANS, getPlanDetails } from '@/app/config/plans';
 import { EditCompanyModal } from './EditCompanyModal';
 
 // Reusing types roughly based on Prisma return
@@ -38,6 +38,9 @@ export function TenantCard({ tenant }: TenantProps) {
     const [showDelete, setShowDelete] = useState(false);
     const [showPlan, setShowPlan] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+
+    // Get plan details helper
+    const planDetails = getPlanDetails(tenant.plan);
 
     const handleAction = async (action: string) => {
         if (action === 'delete') {
@@ -106,12 +109,8 @@ export function TenantCard({ tenant }: TenantProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
-                        <Badge className={
-                            tenant.plan === 'PLATINUM' ? 'bg-emerald-500 hover:bg-emerald-600' :
-                                tenant.plan === 'GOLD' ? 'bg-amber-500 hover:bg-amber-600' :
-                                    'bg-slate-500 hover:bg-slate-600'
-                        }>
-                            {tenant.plan}
+                        <Badge className={`${planDetails?.color || 'bg-slate-500'} hover:opacity-90 transition-colors`}>
+                            {planDetails?.name || tenant.plan}
                         </Badge>
                         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                             <DropdownMenuTrigger asChild>
@@ -148,7 +147,6 @@ export function TenantCard({ tenant }: TenantProps) {
                         </div>
                         <div className="bg-amber-50 p-2 rounded text-amber-600">
                             <ShieldAlert className="w-4 h-4 mx-auto mb-1" />
-                            {/* Assuming orders as 'alerts' for visual matching or 0 */}
                             {tenant._count.orders > 99 ? '99+' : tenant._count.orders}
                         </div>
                         <div className={tenant.isActive ? "bg-cyan-50 p-2 rounded text-cyan-600" : "bg-red-50 p-2 rounded text-red-600"}>
@@ -197,25 +195,38 @@ export function TenantCard({ tenant }: TenantProps) {
 
             {/* Plan Upgrade Dialog */}
             <Dialog open={showPlan} onOpenChange={setShowPlan}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>Upgrade Plan: {tenant.name}</DialogTitle>
                         <DialogDescription>Change the subscription tier for this company.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="grid grid-cols-1 gap-2">
-                            {['FREE', 'SILVER', 'GOLD', 'PLATINUM'].map((p) => (
+                    <div className="grid grid-cols-1 gap-3 py-4">
+                        {PLANS.map((p) => (
+                            <div key={p.id} className={`flex items-center justify-between p-4 rounded-lg border ${tenant.plan === p.id ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500 shadow-sm' : 'border-slate-200 hover:border-emerald-200 hover:shadow-sm transition-all'}`}>
+                                <div>
+                                    <div className="font-semibold flex items-center gap-2 text-slate-900">
+                                        {p.name}
+                                        <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">{p.price}{p.period}</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1">{p.description}</p>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {p.features.slice(0, 2).map((f, i) => (
+                                            <span key={i} className="text-[10px] bg-slate-50 text-slate-600 px-1.5 py-0.5 rounded border border-slate-100">{f}</span>
+                                        ))}
+                                        {p.features.length > 2 && <span className="text-[10px] text-slate-400 px-1">+{p.features.length - 2} more</span>}
+                                    </div>
+                                </div>
                                 <Button
-                                    key={p}
-                                    variant={tenant.plan === p ? 'default' : 'outline'}
-                                    className={tenant.plan === p ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                                    onClick={() => handleUpgrade(p)}
-                                    disabled={isPending || tenant.plan === p}
+                                    size="sm"
+                                    variant={tenant.plan === p.id ? 'secondary' : 'default'}
+                                    onClick={() => handleUpgrade(p.id)}
+                                    disabled={isPending || tenant.plan === p.id}
+                                    className={tenant.plan === p.id ? "text-emerald-700 bg-emerald-100 hover:bg-emerald-200" : "bg-slate-900 hover:bg-slate-800 text-white"}
                                 >
-                                    {p} Plan {tenant.plan === p && '(Current)'}
+                                    {tenant.plan === p.id ? 'Current Plan' : 'Select'}
                                 </Button>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
                     </div>
                 </DialogContent>
             </Dialog>
@@ -226,6 +237,5 @@ export function TenantCard({ tenant }: TenantProps) {
                 onOpenChange={setShowEdit}
             />
         </>
-
     );
 }
