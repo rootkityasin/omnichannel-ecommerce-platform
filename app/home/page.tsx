@@ -5,7 +5,7 @@ export default function PlatformLanding() {
             <div className="max-w-md w-full text-center space-y-8">
                 <div className="space-y-2">
                     <h1 className="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">
-                        90sX SaaS Platform
+                        everywhere SaaS Platform
                     </h1>
                     <p className="text-slate-400">
                         Multi-Tenant E-Commerce Suite

@@ -1,21 +1,18 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge'; // Keeping existing import, but check usage
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-
-import { ShieldAlert, Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRound, Ban, CheckCircle, ExternalLink } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ShieldAlert, Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRound, Ban, CheckCircle, Clock, Square, CheckSquare, ShoppingBag, Package } from 'lucide-react';
+import { useState, useTransition, useEffect } from 'react';
 import { toast } from 'sonner';
 import { deleteTenant, updateTenantStatus, updateTenantPlan, getImpersonationLink } from '@/app/actions/super-admin';
-// ... imports
+import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EditCompanyModal } from './EditCompanyModal';
-
+import { CompanyUsersModal } from './CompanyUsersModal';
 
 interface TenantProps {
     tenant: {
@@ -28,26 +25,36 @@ interface TenantProps {
         _count: {
             users: number;
             orders: number;
+            products: number;
         };
     };
-    plans: any[]; // Prisma Plan[]
+    plans: any[];
 }
 
 export function TenantCard({ tenant, plans }: TenantProps) {
     const [isPending, startTransition] = useTransition();
-    // ... items
-    const [isOpen, setIsOpen] = useState(false);
+
+    // State
+    const [isOpen, setIsOpen] = useState(false); // Menu
     const [showDelete, setShowDelete] = useState(false);
     const [showPlan, setShowPlan] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+    const [showUsers, setShowUsers] = useState(false);
 
-    // Dynamic Plan Details
-    const planDetails = plans.find(p => p.slug === tenant.plan || p.id === tenant.plan) || plans[0] || { name: tenant.plan, color: 'bg-slate-500' };
 
-    // ... handlers
+
+    // Plan Logic (Badge Mapping)
+    const getPlanBadge = (planName: string) => {
+        const p = planName.toUpperCase();
+        if (p.includes('PLATINUM')) return { label: 'Platinum', color: 'bg-green-500 text-white' }; // Or specific hex from image
+        if (p.includes('GOLD')) return { label: 'Gold', color: 'bg-yellow-500 text-white' };
+        if (p.includes('SILVER')) return { label: 'Silver', color: 'bg-slate-400 text-white' }; // Silver usually gray
+        return { label: 'Free Plan', color: 'bg-slate-500 text-white' }; // Default
+    };
+
+    const planBadge = getPlanBadge(tenant.plan);
+
     const handleAction = async (action: string) => {
-        // ...
-        // (Keeping existing handlers)
         if (action === 'delete') { setShowDelete(true); return; }
         if (action === 'edit') { setShowEdit(true); return; }
         if (action === 'toggle_status') {
@@ -70,13 +77,8 @@ export function TenantCard({ tenant, plans }: TenantProps) {
         }
     };
 
-    // ... confirmDelete
-
     const handleUpgrade = async (newPlan: string) => {
         startTransition(async () => {
-            // Pass SKU/Slug or ID depending on how we store it. Assuming logic stores slug currently.
-            // If new system uses plan ID, we might need to adjust `updateTenantPlan`.
-            // For back-compat, assuming we store SLUG in tenant.plan.
             const res = await updateTenantPlan(tenant.id, newPlan);
             if (res.success) {
                 toast.success(`Plan updated to ${newPlan}`);
@@ -95,136 +97,210 @@ export function TenantCard({ tenant, plans }: TenantProps) {
         });
     }
 
+    // Expiry Logic
+    const createdAt = new Date(tenant.createdAt);
+    const expiryDateObj = new Date(createdAt);
+    expiryDateObj.setFullYear(createdAt.getFullYear() + 1); // Mock 1 year validity
+
+    const now = new Date();
+    const diffTime = expiryDateObj.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const isExpired = diffDays <= 0;
+    const daysLeftText = isExpired ? 'Expired' : `${diffDays} Days Left`;
+    const daysColor = isExpired ? 'text-red-600' : (diffDays < 30 ? 'text-orange-600' : 'text-slate-600');
+    const clockColor = isExpired ? 'text-red-500' : (diffDays < 30 ? 'text-orange-500' : 'text-cyan-500');
+
+    // Format dates for display
+    const createdDateDisplay = `${String(createdAt.getDate()).padStart(2, '0')}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${createdAt.getFullYear()}`;
+    const expiredDateDisplay = expiryDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
     return (
         <>
-            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
-                <CardHeader className="pb-2 flex flex-row justify-between items-start space-y-0">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-all bg-white overflow-hidden flex flex-col h-full rounded-2xl">
+                {/* Header: Plan Badge & Menu */}
+                <div className="flex justify-between items-start p-4 pb-0">
+                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider", planBadge.color)}>
+                        {planBadge.label}
+                    </span>
+                    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 text-slate-300 hover:text-slate-500">
+                                <MoreVertical className="w-4 h-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 shadow-lg border-slate-100 rounded-xl">
+                            <DropdownMenuItem className="gap-2 p-2 cursor-pointer" onClick={() => handleAction('edit')}>
+                                <Edit className="w-4 h-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 p-2 cursor-pointer text-red-500 focus:text-red-500" onClick={() => handleAction('delete')}>
+                                <Trash2 className="w-4 h-4" /> Delete
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 p-2 cursor-pointer" onClick={() => handleAction('impersonate')}>
+                                <LogIn className="w-4 h-4" /> Login As Company
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 p-2 cursor-pointer">
+                                <KeyRound className="w-4 h-4" /> Reset Password
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 p-2 cursor-pointer" onClick={() => handleAction('toggle_status')}>
+                                {tenant.isActive ? <Ban className="w-4 h-4 text-red-500" /> : <CheckCircle className="w-4 h-4 text-green-500" />}
+                                {tenant.isActive ? 'Login Disable' : 'Enable Login'}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                {/* Body: User Info */}
+                <CardContent className="flex flex-col flex-1 p-4 pt-2 gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xl uppercase">
-                            {tenant.name.substring(0, 2)}
-                        </div>
+                        <Avatar className="h-12 w-12 rounded-lg border border-slate-100 bg-slate-50">
+                            {/* Assuming tenant has no image field yet, using name initials */}
+                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${tenant.name}`} />
+                            <AvatarFallback className="rounded-lg bg-emerald-100 text-emerald-700 font-bold">{tenant.name.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
                         <div className="overflow-hidden">
-                            <CardTitle className="text-lg font-semibold truncate" title={tenant.name}>{tenant.name}</CardTitle>
-                            <p className="text-xs text-slate-400 truncate">{tenant.slug}</p>
+                            <h3 className="font-semibold text-slate-900 truncate text-base leading-tight" title={tenant.name}>{tenant.name}</h3>
+                            <p className="text-xs text-slate-400 truncate mt-0.5">admin@exemple.com</p> {/* Placeholder or fetch actual admin email */}
                         </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <Badge className={`${planDetails.color} hover:opacity-90`}>
-                            {planDetails.name}
-                        </Badge>
-                        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600">
-                                    <MoreVertical className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => handleAction('edit')}>
-                                    <Edit className="w-4 h-4" /> Edit Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 cursor-pointer text-red-600 focus:text-red-600" onClick={() => handleAction('delete')}>
-                                    <Trash2 className="w-4 h-4" /> Delete
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600" onClick={() => handleAction('impersonate')}>
-                                    <LogIn className="w-4 h-4" /> Login As Company
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 cursor-pointer">
-                                    <KeyRound className="w-4 h-4" /> Reset Password
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => handleAction('toggle_status')}>
-                                    {tenant.isActive ? <Ban className="w-4 h-4 text-red-500" /> : <CheckCircle className="w-4 h-4 text-green-500" />}
-                                    {tenant.isActive ? 'Login Disable' : 'Enable Login'}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </CardHeader>
-                {/* Content... */}
-                <CardContent className="py-4 space-y-4">
-                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                        <div className="bg-rose-50 p-2 rounded text-rose-600">
-                            <Users className="w-4 h-4 mx-auto mb-1" />
-                            {tenant._count.users}
+
+                    {/* Date Blocks */}
+                    <div className="flex items-center justify-between text-xs text-slate-500 bg-slate-50/50 p-2 rounded-lg border border-slate-100/50">
+                        <div className="flex items-center gap-1.5" title="Creation Date">
+                            <Calendar className="w-3.5 h-3.5 text-rose-500" />
+                            <span className="font-medium text-slate-600">{createdDateDisplay}</span>
                         </div>
-                        <div className="bg-amber-50 p-2 rounded text-amber-600">
-                            <ShieldAlert className="w-4 h-4 mx-auto mb-1" />
-                            {tenant._count.orders > 99 ? '99+' : tenant._count.orders}
-                        </div>
-                        <div className={tenant.isActive ? "bg-cyan-50 p-2 rounded text-cyan-600" : "bg-red-50 p-2 rounded text-red-600"}>
-                            <Calendar className="w-4 h-4 mx-auto mb-1" />
-                            {tenant.isActive ? 'Active' : 'Disabled'}
+                        <div className="flex items-center gap-1.5" title="Days until Plan Expiry">
+                            <Clock className={cn("w-3.5 h-3.5", clockColor)} />
+                            <span className={cn("font-medium tabular-nums", daysColor)}>{daysLeftText}</span>
                         </div>
                     </div>
-                    <div className="text-xs text-slate-400 flex justify-between">
-                        <span>Created: {new Date(tenant.createdAt).toLocaleDateString()}</span>
-                        {!tenant.isActive && <span className="text-red-500 flex items-center gap-1">● Inactive</span>}
-                        {tenant.isActive && <span className="text-emerald-600 flex items-center gap-1">● Active</span>}
+
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-2 gap-2 mt-auto">
+                        <Button
+                            className="bg-lime-500 hover:bg-lime-600 text-white font-semibold h-9 text-xs"
+                            onClick={() => setShowPlan(true)}
+                        >
+                            Upgrade Plan
+                        </Button>
+                        <Button
+                            className="bg-green-50 hover:bg-green-100 text-green-600 border-0 font-semibold h-9 text-xs"
+                            onClick={() => handleAction('impersonate')}
+                        >
+                            Admin Hub
+                        </Button>
+                    </div>
+
+                    {/* Expiry Text */}
+                    <div className="text-center">
+                        <p className="text-[10px] text-slate-400 font-medium">
+                            Plan Expired : {expiredDateDisplay}
+                        </p>
                     </div>
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-2 pt-0">
-                    <div className="grid grid-cols-2 gap-2 w-full">
-                        <Button variant="outline" onClick={() => setShowPlan(true)} className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50">Upgrade</Button>
-                        <Button variant="secondary" className="w-full bg-slate-100" onClick={() => handleAction('impersonate')}>Admin Hub</Button>
+                {/* Footer: Stats */}
+                <CardFooter className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-50 p-0 bg-white">
+                    <button
+                        onClick={() => setShowUsers(true)}
+                        className="flex items-center justify-center gap-1.5 py-3 hover:bg-slate-50 transition-colors group"
+                        title="Active Staff Users"
+                    >
+                        <div className="bg-rose-100 p-1 rounded text-rose-500 group-hover:scale-110 transition-transform">
+                            <Users className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-semibold text-slate-600">{tenant._count.users}</span>
+                    </button>
+
+                    <div className="flex items-center justify-center gap-1.5 py-3" title="Total Orders">
+                        <div className="bg-orange-100 p-1 rounded text-orange-500">
+                            <ShoppingBag className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-semibold text-slate-600">{tenant._count.orders}</span>
                     </div>
-                    <Button disabled={isPending} onClick={() => handleAction('impersonate')} className="w-full bg-indigo-600 gap-2">
-                        {isPending ? <span className="animate-pulse">Loading...</span> : <><LogIn className="w-4 h-4" /> Login as Company</>}
-                    </Button>
+
+                    <div className="flex items-center justify-center gap-1.5 py-3" title="Total Products">
+                        <div className="bg-cyan-100 p-1 rounded text-cyan-500">
+                            <Package className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-semibold text-slate-600">{tenant._count.products ?? 0}</span>
+                    </div>
                 </CardFooter>
             </Card>
 
-            {/* Delete Dialog */}
+            {/* Dialogs */}
+
             <Dialog open={showDelete} onOpenChange={setShowDelete}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Delete Tenant?</DialogTitle>
                         <DialogDescription>This action cannot be undone.</DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
+                    {/* ... Delete Confirm UI ... */}
+                    <div className="flex justify-end gap-2 mt-4">
                         <Button variant="outline" onClick={() => setShowDelete(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={confirmDelete} disabled={isPending}>Delete</Button>
-                    </DialogFooter>
+                        <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Plan Upgrade Dialog (Using Dynamic Plans) */}
+            {/* Upgrade Modal - Redesigned List Layout */}
             <Dialog open={showPlan} onOpenChange={setShowPlan}>
-                <DialogContent className="sm:max-w-xl">
+                <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>Upgrade Plan: {tenant.name}</DialogTitle>
-                        <DialogDescription>Choose a subscription tier.</DialogDescription>
+                        <DialogTitle>Upgrade Plan</DialogTitle>
                     </DialogHeader>
-                    <div className="grid grid-cols-1 gap-3 py-4">
+                    <div className="space-y-0 divide-y divide-slate-100 border-y border-slate-100 mt-4 rounded-lg bg-slate-50/50">
                         {plans.map((p) => {
-                            const featuresArray = typeof p.features === 'string'
-                                ? JSON.parse(p.features)  // Handle potential stringified JSON
-                                : Array.isArray(p.features) ? p.features : [];
+                            const isCurrent = tenant.plan === p.slug;
+
+                            // Parse limits from feature strings if possible
+                            // Expected format: "2 Staff Accounts", "50 Products", "100 Orders/mo"
+                            const features = typeof p.features === 'string' ? JSON.parse(p.features) : p.features;
+
+                            const getLimit = (keyword: string) => {
+                                const feat = features.find((f: string) => f.includes(keyword));
+                                if (!feat) return '-';
+                                const num = feat.match(/([\d,]+|Unlimited|Untolimted)/i); // Handle typo if any
+                                return num ? num[0] : '-';
+                            };
+
+                            const usersLimit = getLimit('Staff');
+                            const productsLimit = getLimit('Products');
+                            const ordersLimit = getLimit('Orders');
 
                             return (
-                                <div key={p.id} className={`flex items-center justify-between p-4 rounded-lg border ${tenant.plan === p.slug ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500' : 'border-slate-200 hover:border-emerald-200'}`}>
-                                    <div>
-                                        <div className="font-semibold flex items-center gap-2">
-                                            {p.name}
-                                            {p.isPopular && <Badge className="bg-emerald-500 text-[10px] h-5">POPULAR</Badge>}
-                                            <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                                                ৳{p.price}{p.period}
-                                            </span>
-                                            {p.originalPrice && p.originalPrice > p.price && (
-                                                <span className="text-xs font-normal text-slate-400 line-through">
-                                                    ৳{p.originalPrice}
-                                                </span>
-                                            )}
+                                <div key={p.id} className="flex items-center justify-between py-4 px-4 group hover:bg-white transition-all first:rounded-t-lg last:rounded-b-lg hover:shadow-sm">
+                                    <div className="flex items-center gap-6 flex-1">
+                                        <div className="w-56">
+                                            <span className="font-bold text-slate-800 block text-sm">{p.name} ({p.price > 0 ? `৳${p.price}` : 'Free'}) / {p.period?.replace('/', '')}</span>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-1">{p.description}</p>
+                                        <div className="flex-1 grid grid-cols-3 gap-8 text-xs text-slate-500">
+                                            <div className="flex flex-col items-start min-w-[80px]">
+                                                <span className="font-medium text-slate-600">Users : {usersLimit}</span>
+                                            </div>
+                                            <div className="flex flex-col items-start min-w-[80px]">
+                                                <span className="font-medium text-slate-600">Products : {productsLimit}</span>
+                                            </div>
+                                            <div className="flex flex-col items-start min-w-[80px]">
+                                                <span className="font-medium text-slate-600">Orders : {ordersLimit}</span>
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <Button
-                                        size="sm"
-                                        variant={tenant.plan === p.slug ? 'secondary' : 'default'}
-                                        onClick={() => handleUpgrade(p.slug)} // Sending SLUG
-                                        disabled={isPending || tenant.plan === p.slug}
-                                        className={tenant.plan === p.slug ? "text-emerald-700 bg-emerald-100" : "bg-slate-900"}
+                                        size="icon"
+                                        className={cn(
+                                            "w-9 h-9 rounded-md shadow-sm transition-all border",
+                                            isCurrent
+                                                ? "bg-lime-500 border-lime-600 text-white hover:bg-lime-600"
+                                                : "bg-white border-slate-200 text-slate-300 hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50"
+                                        )}
+                                        onClick={() => !isCurrent && handleUpgrade(p.slug)}
+                                        disabled={isPending}
                                     >
-                                        {tenant.plan === p.slug ? 'Current' : 'Select'}
+                                        {isCurrent ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                                     </Button>
                                 </div>
                             )
@@ -237,6 +313,13 @@ export function TenantCard({ tenant, plans }: TenantProps) {
                 tenant={tenant}
                 open={showEdit}
                 onOpenChange={setShowEdit}
+            />
+
+            <CompanyUsersModal
+                tenantId={tenant.id}
+                tenantName={tenant.name}
+                open={showUsers}
+                onOpenChange={setShowUsers}
             />
         </>
     );

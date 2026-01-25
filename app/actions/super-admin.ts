@@ -132,3 +132,39 @@ export async function getImpersonationLink(tenantId: string) {
 
     return { success: true, url };
 }
+
+// --- User Management ---
+export async function getTenantUsers(tenantId: string) {
+    await checkSuperAdmin();
+    try {
+        const users = await prisma.user.findMany({
+            where: { tenantId },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                isBlocked: true,
+                role: true
+            },
+            orderBy: { name: 'asc' }
+        });
+        return { success: true, users };
+    } catch (error) {
+        return { success: false, error: String(error) };
+    }
+}
+
+export async function updateTenantUserStatus(userId: string, isBlocked: boolean) {
+    await checkSuperAdmin();
+    try {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { isBlocked }
+        });
+        revalidatePath('/app');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: String(error) };
+    }
+}
