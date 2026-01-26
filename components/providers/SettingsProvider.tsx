@@ -51,7 +51,7 @@ const defaultSettings = {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-    const [settings, setSettings] = useState(defaultSettings);
+    const [settings, setSettings] = useState<SettingsContextType['settings']>(defaultSettings);
     const [loading, setLoading] = useState(true);
     const hasFetched = useRef(false);
 
@@ -70,7 +70,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                     termsPolicy: data.termsPolicy || prev.termsPolicy || "",
                     privacyPolicy: data.privacyPolicy || prev.privacyPolicy || "",
                     refundPolicy: data.refundPolicy || prev.refundPolicy || ""
-                }));
+                } as SettingsContextType['settings']));
             }
         } catch (err) {
             console.error("Failed to fetch settings", err);

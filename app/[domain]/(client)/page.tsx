@@ -5,13 +5,14 @@ import { getCategories } from '@/app/actions/category';
 import { HomeClient } from '@/components/client/HomeClient';
 import { HomeSections } from '@/components/server/HomeSections';
 
-export default async function HomePage({ params }: { params: { domain: string } }) {
+export default async function HomePage({ params }: { params: Promise<{ domain: string }> }) {
     // Fetch TOP FOLD data instantly
     // We do NOT wait for sections here to allow instant FCP
+    const { domain } = await params;
     const [heroSlides, config, categories] = await Promise.all([
-        getHeroSlides(params.domain),
-        getSiteConfig(params.domain),
-        getCategories(params.domain)
+        getHeroSlides(domain),
+        getSiteConfig(domain),
+        getCategories(domain)
     ]);
 
     return (
@@ -21,7 +22,7 @@ export default async function HomePage({ params }: { params: { domain: string } 
             categories={JSON.parse(JSON.stringify(categories))}
         >
             <Suspense fallback={<SectionsLoading />}>
-                <HomeSections domain={params.domain} />
+                <HomeSections domain={domain} />
             </Suspense>
         </HomeClient>
     );

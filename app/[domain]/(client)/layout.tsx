@@ -12,9 +12,10 @@ export default async function ClientLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: { domain: string };
+    params: Promise<{ domain: string }>;
 }) {
-    const config = await getSiteConfig(params.domain);
+    const { domain } = await params;
+    const config = await getSiteConfig(domain);
 
     return (
         <>

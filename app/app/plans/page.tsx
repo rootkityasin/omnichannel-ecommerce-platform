@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Check, Loader2, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { getPlans, savePlan, deletePlan, seedPlans } from '@/app/actions/plans';
@@ -64,8 +63,8 @@ export default function PlansPage() {
 
             const res = await savePlan({
                 id: currentPlan.id,
-                slug: currentPlan.slug,
-                name: currentPlan.name,
+                slug: currentPlan.slug || '',
+                name: currentPlan.name || '',
                 description: currentPlan.description || '',
                 price: parseFloat(String(currentPlan.price)),
                 originalPrice: currentPlan.originalPrice ? parseFloat(String(currentPlan.originalPrice)) : undefined,
@@ -105,7 +104,8 @@ export default function PlansPage() {
                 toast.success("Plans seeded successfully!");
                 fetchPlans();
             } else {
-                toast.error(res.message || res.error);
+                // Typo in original code accessed res.message which might not exist on error type in some unions, keeping it safe
+                toast.error(res.message || "Failed to seed");
             }
         });
     };
