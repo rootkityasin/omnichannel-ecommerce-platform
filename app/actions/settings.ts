@@ -114,6 +114,25 @@ export async function updateSiteConfig(data: any) {
                 }
             }
 
+            // Update Tenant Slug if changed
+            if (data.slug !== undefined && data.slug !== existing.tenant?.slug) {
+                // Check if slug is taken
+                const slugTaken = await prisma.tenant.findUnique({
+                    where: { slug: data.slug }
+                });
+
+                if (slugTaken) {
+                    return { success: false, error: "This shop name is already taken." };
+                }
+
+                await prisma.tenant.update({
+                    where: { id: existing.tenantId! },
+                    data: {
+                        slug: data.slug
+                    }
+                });
+            }
+
         } else {
             // Create Logic
             await prisma.siteConfig.create({

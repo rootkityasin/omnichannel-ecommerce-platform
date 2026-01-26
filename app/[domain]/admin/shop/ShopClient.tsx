@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { updateSiteConfig } from '@/app/actions/settings';
 import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
+import { DomainSettings } from '@/components/admin/DomainSettings';
 
 interface SiteConfig {
     storeName?: string;
@@ -779,6 +780,14 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
             ) : activeModule === 'shipping' ? (
                 <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <DeliverySettings />
+                </Card>
+            ) : activeModule === 'shipping' ? (
+                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <DeliverySettings />
+                </Card>
+            ) : activeModule === 'domain' ? (
+                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <DomainSettings />
                 </Card>
             ) : activeModule ? (
                 <Card className="p-12 text-center animate-in fade-in zoom-in-95">

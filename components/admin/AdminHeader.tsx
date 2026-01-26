@@ -250,7 +250,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
                         <DropdownMenuSeparator />
                         <div className="px-2 py-1.5 flex items-center gap-2 text-slate-500">
                             <Mail className="w-4 h-4" />
-                            <span className="text-xs truncate">{currentUser?.email || 'admin@crabkhai.com'}</span>
+                            <span className="text-xs truncate">{currentUser?.email || 'admin@90slabs.com'}</span>
                         </div>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={logout} className="cursor-pointer gap-2 text-red-600 focus:text-red-600 focus:bg-red-50">
