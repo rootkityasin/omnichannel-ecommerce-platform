@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getSiteConfig, updateSiteConfig, getPaymentConfig, updatePaymentConfig } from '@/app/actions/settings';
+import { getSiteConfig, getAdminSiteConfig, updateSiteConfig, getPaymentConfig, updatePaymentConfig } from '@/app/actions/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,7 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
         if (!initialConfig) {
             async function load() {
                 const [data, payConfig] = await Promise.all([
-                    getSiteConfig(),
+                    getAdminSiteConfig(),
                     getPaymentConfig()
                 ]);
 

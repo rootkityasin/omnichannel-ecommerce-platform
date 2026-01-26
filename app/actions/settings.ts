@@ -67,6 +67,55 @@ export const getSiteConfig = unstable_cache(
     { revalidate: 3600, tags: ['site-config'] }
 );
 
+export async function getAdminSiteConfig() {
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
+
+    const defaults = {
+        contactPhone: "",
+        contactEmail: "",
+        contactAddress: "",
+        shopName: "",
+        logoUrl: "",
+        measurementUnit: "PCS",
+        allergensText: "",
+        certificates: [] as any,
+        primaryColor: "#000000",
+        secondaryColor: "#ffffff",
+        taxPercentage: 0.0,
+        shopType: 'RESTAURANT',
+        weightUnitValue: 200,
+        volumeUnitValue: 1000,
+        privacyPolicy: "",
+        refundPolicy: "",
+        termsPolicy: "",
+        customDomain: "",
+        slug: ""
+    };
+
+    if (!tenantId) return defaults;
+
+    try {
+        const config = await prisma.siteConfig.findFirst({
+            where: { tenantId },
+            include: { tenant: true }
+        });
+
+        if (!config) return defaults;
+
+        return {
+            ...defaults,
+            ...config,
+            shopType: (config.shopType as any) || defaults.shopType, // Ensure enum cast
+            customDomain: config.tenant?.customDomain || "",
+            slug: config.tenant?.slug || ""
+        };
+    } catch (error) {
+        console.error("Failed to fetch admin site config:", error);
+        return defaults;
+    }
+}
+
 export async function updateSiteConfig(data: any) {
     const session = await auth();
     const tenantId = (session?.user as any)?.tenantId;
