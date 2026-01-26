@@ -2,10 +2,17 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache } from 'next/cache';
+import { getTenantByDomain } from './tenant';
 
-export async function getSections() {
+export async function getSections(domain?: string) {
     try {
+        const tenant = domain ? await getTenantByDomain(domain) : null;
+
         const sections = await prisma.productSection.findMany({
+            where: domain ? {
+                // For now, ProductSection doesn't have tenantId.
+                // We handle this similarly to HeroSlide stop-gap.
+            } : undefined,
             orderBy: { order: 'asc' },
             include: {
                 _count: {
@@ -13,6 +20,8 @@ export async function getSections() {
                 }
             }
         });
+
+        if (domain && !tenant) return [];
         return sections;
     } catch (error) {
         console.error("Failed to fetch sections:", error);
@@ -21,13 +30,22 @@ export async function getSections() {
 }
 
 export const getHomeSections = unstable_cache(
-    async () => {
+    async (domain?: string) => {
         try {
+            const tenant = domain ? await getTenantByDomain(domain) : null;
+            if (domain && !tenant) return [];
+
             const sections = await prisma.productSection.findMany({
-                where: { isActive: true },
+                where: {
+                    isActive: true,
+                    // If we add tenantId to ProductSection, we'd add it here.
+                },
                 orderBy: { order: 'asc' },
                 include: {
                     products: {
+                        where: domain ? {
+                            tenantId: tenant?.id || 'none'
+                        } : undefined,
                         orderBy: { createdAt: 'desc' },
                     }
                 }
@@ -84,9 +102,6 @@ export async function deleteSection(id: string) {
 
 export async function assignProductToSections(productId: string, sectionIds: string[]) {
     try {
-        // Transaction to overwrite sections
-        // First disconnect all, then connect new ones
-        // Or simpler: set relation
         await prisma.product.update({
             where: { id: productId },
             data: {
@@ -102,7 +117,6 @@ export async function assignProductToSections(productId: string, sectionIds: str
     }
 }
 
-// Seed helper
 export async function seedDefaultSections() {
     const defaults = [
         { title: 'Best Sellers', slug: 'best-sellers', order: 0 },
@@ -111,7 +125,6 @@ export async function seedDefaultSections() {
     ];
 
     const sections = [];
-
     for (const s of defaults) {
         const existing = await prisma.productSection.findUnique({ where: { slug: s.slug } });
         if (!existing) {
@@ -122,16 +135,13 @@ export async function seedDefaultSections() {
         }
     }
 
-    // Assign some products if sections act as fresh start
     try {
         const products = await prisma.product.findMany({
             take: 10,
             where: { stage: { in: ['Selling', 'Published'] } }
         });
-
         if (products.length === 0) return;
 
-        // Best Sellers (assign first 3)
         const bestSellers = sections.find(s => s.slug === 'best-sellers');
         if (bestSellers) {
             const pIds = products.slice(0, 3).map(p => ({ id: p.id }));
@@ -143,7 +153,6 @@ export async function seedDefaultSections() {
             }
         }
 
-        // New Arrivals (assign next 3)
         const newArrivals = sections.find(s => s.slug === 'new-arrivals');
         if (newArrivals) {
             const pIds = products.slice(3, 6).map(p => ({ id: p.id }));
@@ -155,7 +164,6 @@ export async function seedDefaultSections() {
             }
         }
 
-        // Super Savings (assign last 2)
         const superSavings = sections.find(s => s.slug === 'super-savings');
         if (superSavings) {
             const pIds = products.slice(6, 8).map(p => ({ id: p.id }));
@@ -166,9 +174,7 @@ export async function seedDefaultSections() {
                 });
             }
         }
-
         revalidatePath('/');
-        revalidatePath('/admin/sections');
     } catch (error) {
         console.error("Error auto-assigning products during seed:", error);
     }

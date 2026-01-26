@@ -3,10 +3,11 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
 import { ShopType } from '@prisma/client';
+import { auth } from '@/auth';
 
 
 export const getSiteConfig = unstable_cache(
-    async () => {
+    async (domain?: string) => {
         const defaults = {
             contactPhone: "",
             contactEmail: "",
@@ -31,9 +32,24 @@ export const getSiteConfig = unstable_cache(
         };
 
         try {
+            let tenantWhere = {};
+            if (domain) {
+                tenantWhere = {
+                    OR: [
+                        { slug: domain },
+                        { customDomain: domain },
+                        { slug: domain.split('.')[0] } // Fallback for 'slug.localhost'
+                    ]
+                };
+            }
+
             const config = await prisma.siteConfig.findFirst({
+                where: domain ? {
+                    tenant: tenantWhere
+                } : undefined,
                 include: { tenant: true }
             });
+
             if (!config) return defaults;
             return {
                 ...defaults,
@@ -52,8 +68,16 @@ export const getSiteConfig = unstable_cache(
 );
 
 export async function updateSiteConfig(data: any) {
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
+
+    if (!tenantId) {
+        return { success: false, error: "Unauthorized: Tenant ID not found in session." };
+    }
+
     try {
         const existing = await prisma.siteConfig.findFirst({
+            where: { tenantId },
             include: { tenant: true }
         });
 
@@ -79,25 +103,22 @@ export async function updateSiteConfig(data: any) {
             });
 
             // Update Tenant Domain if changed
-            if (existing.tenantId && (data.customDomain !== undefined)) {
-
-                // Unique check for customDomain (if simple check needed)
-                // Note: Prisma will throw if violates unique constraint, catch block handles it.
+            if (data.customDomain !== undefined) {
                 if (data.customDomain !== existing.tenant?.customDomain) {
                     await prisma.tenant.update({
-                        where: { id: existing.tenantId },
+                        where: { id: existing.tenantId! },
                         data: {
-                            customDomain: data.customDomain || null // Allow clearing
+                            customDomain: data.customDomain || null
                         }
                     });
                 }
             }
 
         } else {
-            // Create Logic - (Assuming Tenant exists if creating config, need to find it)
-            // For now, simpler create without tenant domain update (usually happens on setup)
+            // Create Logic
             await prisma.siteConfig.create({
                 data: {
+                    tenantId,
                     contactPhone: data.contactPhone,
                     contactEmail: data.contactEmail,
                     contactAddress: data.contactAddress,
@@ -116,13 +137,11 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        // revalidateTag('site-config');
-        revalidatePath('/', 'layout'); // Revalidate all pages layout
+        revalidatePath('/', 'layout');
         revalidatePath('/admin/shop');
         return { success: true };
     } catch (error) {
         console.error("Failed to update settings:", error);
-        // Better error message for duplicate domain
         if (String(error).includes('Unique constraint failed')) {
             return { success: false, error: "This domain is already taken." };
         }
@@ -132,8 +151,16 @@ export async function updateSiteConfig(data: any) {
 
 
 export async function getPaymentConfig() {
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
+
+    if (!tenantId) return null;
+
     try {
-        const config = await prisma.paymentConfig.findFirst();
+        const config = await prisma.paymentConfig.findUnique({
+            where: { tenantId }
+        });
+
         if (!config) {
             return {
                 isActive: true,
@@ -164,37 +191,44 @@ export async function getPaymentConfig() {
 }
 
 export async function updatePaymentConfig(data: any) {
-    try {
-        const existing = await prisma.paymentConfig.findFirst();
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
 
-        if (existing) {
-            await prisma.paymentConfig.update({
-                where: { id: existing.id },
-                data: {
-                    ...data
-                }
-            });
-        } else {
-            await prisma.paymentConfig.create({
-                data: {
-                    ...data
-                }
-            });
-        }
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    try {
+        const { id, createdAt, updatedAt, tenantId: _, ...updateData } = data;
+
+        await prisma.paymentConfig.upsert({
+            where: { tenantId },
+            update: updateData,
+            create: {
+                ...updateData,
+                tenantId
+            }
+        });
 
         revalidatePath('/admin/shop');
         return { success: true };
     } catch (error) {
+        console.error("Update Payment Config Error:", error);
         return { success: false, error: "Failed to save payment config" };
     }
 }
 
 export async function getDeliveryConfig() {
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
+
+    if (!tenantId) return null;
+
     try {
-        const config = await prisma.deliveryConfig.findFirst();
+        const config = await prisma.deliveryConfig.findUnique({
+            where: { tenantId }
+        });
         if (!config) {
             return {
-                defaultCharge: 0,
+                defaultCharge: 60,
                 defaultCodEnabled: true,
                 nonRefundable: false,
                 weightBasedCharges: [],
@@ -211,35 +245,26 @@ export async function getDeliveryConfig() {
 }
 
 export async function updateDeliveryConfig(data: any) {
-    try {
-        const existing = await prisma.deliveryConfig.findFirst();
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
 
-        if (existing) {
-            await prisma.deliveryConfig.update({
-                where: { id: existing.id },
-                data: {
-                    defaultCharge: parseInt(data.defaultCharge || 0),
-                    defaultCodEnabled: data.defaultCodEnabled,
-                    nonRefundable: data.nonRefundable,
-                    weightBasedCharges: data.weightBasedCharges || [],
-                    deliveryZones: data.deliveryZones || [],
-                    courierPathaoEnabled: data.courierPathaoEnabled,
-                    courierPathaoCredentials: data.courierPathaoCredentials
-                }
-            });
-        } else {
-            await prisma.deliveryConfig.create({
-                data: {
-                    defaultCharge: parseInt(data.defaultCharge || 0),
-                    defaultCodEnabled: data.defaultCodEnabled,
-                    nonRefundable: data.nonRefundable,
-                    weightBasedCharges: data.weightBasedCharges || [],
-                    deliveryZones: data.deliveryZones || [],
-                    courierPathaoEnabled: data.courierPathaoEnabled,
-                    courierPathaoCredentials: data.courierPathaoCredentials
-                }
-            });
-        }
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    try {
+        const { id, createdAt, updatedAt, tenantId: _, ...updateData } = data;
+
+        await prisma.deliveryConfig.upsert({
+            where: { tenantId },
+            update: {
+                ...updateData,
+                defaultCharge: parseInt(data.defaultCharge || 0),
+            },
+            create: {
+                ...updateData,
+                tenantId,
+                defaultCharge: parseInt(data.defaultCharge || 0),
+            }
+        });
 
         revalidatePath('/admin/shop');
         return { success: true };

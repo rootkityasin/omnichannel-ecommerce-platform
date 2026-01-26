@@ -2,10 +2,19 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache } from 'next/cache';
+import { getTenantByDomain } from './tenant';
 
 export const getHeroSlides = unstable_cache(
-    async () => {
+    async (domain?: string) => {
         try {
+            const tenant = domain ? await getTenantByDomain(domain) : null;
+
+            // Note: HeroSlide currently has no tenantId in schema.
+            // Using a stop-gap: If domain is provided but tenant not resolved, return nothing.
+            // If domain is provided and tenant resolved, we currently show all (legacy behavior)
+            // but in a real multi-tenant system we'd filter by tenantId.
+            if (domain && !tenant) return [];
+
             const slides = await prisma.heroSlide.findMany({
                 orderBy: { order: 'asc' }
             });

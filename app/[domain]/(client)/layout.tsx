@@ -9,10 +9,12 @@ import { GlobalCheckoutDrawer } from "@/components/client/GlobalCheckoutDrawer";
 
 export default async function ClientLayout({
     children,
+    params,
 }: {
     children: React.ReactNode;
+    params: { domain: string };
 }) {
-    const config = await getSiteConfig();
+    const config = await getSiteConfig(params.domain);
 
     return (
         <>

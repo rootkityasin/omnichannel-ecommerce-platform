@@ -1,6 +1,6 @@
-# CrabKhai - Premium Seafood from Sundarbans
+# Omnichannel Ecommerce Platform
 
-**CrabKhai** is a premium e-commerce platform dedicated to bringing the freshest live crab and seafood delicacies from the Sundarbans directly to your doorstep. Our mission is to provide an authentic, high-quality seafood experience with a touch of luxury.
+This is a premium e-commerce platform dedicated to bringing the freshest live crab and seafood delicacies from the Sundarbans directly to your doorstep. Our mission is to provide an authentic, high-quality seafood experience with a touch of luxury.
 
 ## Live Demo
 - **Frontend**: [http://localhost:3000](http://localhost:3000) (Local Development)
@@ -85,6 +85,30 @@ Optimized `next.config.ts` for production:
 - **Faster page loads** with cached server actions
 - **Reduced database queries** through intelligent caching
 - **Smaller production bundle** without source maps
+
+---
+
+## 💎 Platform Tiers & Subscription Plans
+
+CrabKhai is built as a multi-tenant platform with three distinct service tiers tailored for different business scales.
+
+| Feature                      | **Silver** (Starter) | **Gold** (Growth)   | **Platinum** (Scale) |
+|:-----------------------------|:---------------------|:--------------------|:---------------------|
+| **Pricing**                  | ৳1,000 / mo          | ৳2,500 / mo         | ৳5,000 / mo          |
+| **Staff Accounts**           | 2                    | 5                   | 15                   |
+| **Product Limit**            | 50                   | 500                 | **Unlimited**        |
+| **Order Limit**              | 100 / month          | 1,000 / month       | **Unlimited**        |
+| **Analytics**                | Basic                | Advanced            | **Real-time**        |
+| **Support**                  | Standard             | Priority            | **24/7 Dedicated**   |
+| **Custom Domain**            | ❌                   | ✅                 | ✅                   |
+| **Multiple Hubs/Branches**   | ❌                   | ✅                 | ✅                   |
+| **Email Marketing**          | ❌                   | ✅                 | ✅                   |
+| **Payment Gateways**         | ❌                   | ✅                 | ✅                   |
+| **IP Calling Integration**   | ❌                   | ❌                 | ✅                   |
+| **Courier Integration**      | ❌                   | ❌                 | ✅                   |
+
+> [!TIP]
+> Each plan is hosted on a physically isolated instance for maximum security and data privacy. Subscriptions can be upgraded at any time through the Super Admin dashboard.
 
 ---
 
@@ -254,19 +278,28 @@ If Cloudinary credentials are missing or valid keys are not provided:
 - **Note**: This is intended for development or emergency fallback, not high-volume production use.
 
 
-## 🏢 SaaS Architecture (Multi-Tenancy)
+## 🏢 System Design
 
-This project has been transformed into a **Multi-Tenant SaaS Platform**. It allows multiple vendors (Shops) to run their own white-labeled storefronts on a single software instance.
+Detailed documentation including **ERD (Entity Relationship Diagram)**, **Deployment Flow**, and **Data Isolation Sequences** can be found in the [Full System Design Guide](./docs/SYSTEM_DESIGN.md).
 
-### Core Concepts
-*   **Tenants (Shops)**: Each shop is a `Tenant` with its own isolated data (Products, Orders, Users).
-*   **Shared Database**: All tenants share one Postgres database. Data is isolated using **Row-Level Security** (via `tenantId` columns).
-*   **Dynamic Routing**: Next.js Middleware inspects the **Hostname** (`shop.platform.com` or `custom.com`) to determine which Tenant to load.
+For new shop registrations, refer to the [Tenant Onboarding Guide](./docs/TENANT_ONBOARDING.md).
 
-### Key Features
-*   **Super Admin Dashboard**: A master control panel (`app.platform.com`) to manage Companies, Plans, and Billing.
-*   **Logical Isolation**: `tenantId` is stamped on every record. Strict filtering prevents data leaks.
-*   **Unified Codebase**: 100% code reuse. Fix a bug once, update it for everyone.
+### 1. Primary Strategy: Multi-Instance (Isolated)
+We have adopted a **Multi-Instance (Tenant-per-Project)** hosting strategy on Vercel to ensure maximum isolation, customizability, and efficient use of the hobby tier.
+
+- **Isolated Projects**: Each tenant project (e.g., CrabKhai, Textile) is connected to its own **Git Branch**.
+- **Dedicated Branches**: 
+  - `crabkhai` branch -> serves `crabkhai.com`
+  - `tenant-textile` branch -> serves textile-related shops.
+- **Environment Separation**: Each project maintains its own isolated `DATABASE_URL` and API keys.
+- **Frontend Customization**: Unique theme injectors allow each branch to provide a different storefront experience while sharing the core admin logic.
+
+### 2. Standard Multi-Tenant Design (Internal)
+The system remains fundamentally built on a **Shared-Database Multi-Tenancy** model for internal scaling:
+*   **Tenants (Shops)**: Every piece of data is tagged with a `tenantId` for logical isolation.
+*   **Dynamic Resolution**: Next.js Middleware inspects the **Hostname** to resolve the correct tenant context at the request level.
+*   **Logical Isolation**: Strict internal filters ensure that even if hosted in a single project, data remains secure and separated.
+
 
 ## Contributing
 
