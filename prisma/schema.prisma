@@ -13,6 +13,8 @@ model Tenant {
   slug          String   @unique
   customDomain  String?  @unique
   plan          String   @default("FREE") 
+  setupFee      Int      @default(6000)
+  setupFeePaid  Boolean  @default(false)
   isActive      Boolean  @default(true)
   enabledModules String[] @default([])
   createdAt     DateTime @default(now())

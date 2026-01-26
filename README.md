@@ -107,6 +107,18 @@ CrabKhai is built as a multi-tenant platform with three distinct service tiers t
 | **IP Calling Integration**   | ❌                   | ❌                 | ✅                   |
 | **Courier Integration**      | ❌                   | ❌                 | ✅                   |
 
+> [!IMPORTANT]
+> **One-Time Setup Charge: ৳6,000**
+>
+> A foundational fee required to provision your dedicated environment.
+> **What this covers:**
+> 1.  **Domain Name**: 1-year registration for your custom `.com` or `.com.bd` domain.
+> 2.  **Dedicated Hosting**: Configuration of your isolated server instance on our high-performance cloud.
+> 3.  **Database Provisioning**: Setup of your secure, isolated database to ensure data privacy.
+>
+> **Why is this required?**
+> Unlike shared marketplaces, your shop gets its own dedicated resources to ensure speed, security, and brand independence. This one-time fee covers the actual infrastructure costs to get you started.
+
 > [!TIP]
 > Each plan is hosted on a physically isolated instance for maximum security and data privacy. Subscriptions can be upgraded at any time through the Super Admin dashboard.
 

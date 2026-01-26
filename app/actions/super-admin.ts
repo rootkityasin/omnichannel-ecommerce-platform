@@ -28,6 +28,7 @@ export async function createTenant(data: {
     email: string;
     password?: string;
     plan?: string;
+    setupFeePaid?: boolean;
 }) {
     await checkSuperAdmin();
 
@@ -38,6 +39,8 @@ export async function createTenant(data: {
                 name: data.name,
                 slug: data.slug,
                 plan: data.plan || 'FREE',
+                setupFee: 6000,
+                setupFeePaid: data.setupFeePaid || false,
                 siteConfig: {
                     create: {
                         shopName: data.name,

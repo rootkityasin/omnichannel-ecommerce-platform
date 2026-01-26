@@ -39,6 +39,18 @@ Select the tier that best fits your business scale. Our system provides 100% dat
 | Feature                      | **Silver** (Starter) | **Gold** (Growth)   | **Platinum** (Scale) |
 |:-----------------------------|:---------------------|:--------------------|:---------------------|
 | **Pricing**                  | ৳1,000 / mo          | ৳2,500 / mo         | ৳5,000 / mo          |
+
+> [!IMPORTANT]
+> **One-Time Setup Charge: ৳6,000**
+>
+> A foundational fee required to provision your dedicated environment.
+> **What this covers:**
+> 1.  **Domain Name**: 1-year registration for your custom `.com` or `.com.bd` domain.
+> 2.  **Dedicated Hosting**: Configuration of your isolated server instance on our high-performance cloud.
+> 3.  **Database Provisioning**: Setup of your secure, isolated database to ensure data privacy.
+>
+> **Why is this required?**
+> Unlike shared marketplaces, your shop gets its own dedicated resources to ensure speed, security, and brand independence. This one-time fee covers the actual infrastructure costs to get you started.
 | **Staff Accounts**           | 2                    | 5                   | 15                   |
 | **Product Limit**            | 50                   | 500                 | **Unlimited**        |
 | **Order Limit**              | 100 / month          | 1,000 / month       | **Unlimited**        |
