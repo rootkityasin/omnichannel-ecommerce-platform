@@ -76,7 +76,7 @@ export async function getAdminOrders() {
         });
 
         // Calculate order counts per phone number
-        const phoneCounts = orders.reduce((acc: Record<string, number>, order) => {
+        const phoneCounts = orders.reduce((acc: Record<string, number>, order: any) => {
             const phone = order.customerPhone;
             acc[phone] = (acc[phone] || 0) + 1;
             return acc;

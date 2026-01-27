@@ -18,7 +18,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     if (!order) return notFound();
 
     // Calculate Subtotal
-    const subtotal = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const subtotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
     const delivery = 60; // Standard delivery, or should be stored in order? 
     // Schema doesn't have deliveryCharge field on Order, assuming standard or included in total?
     // Wait, Order.totalAmount is stored.
@@ -74,7 +74,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     </tr>
                 </thead>
                 <tbody>
-                    {order.items.map((item, i) => (
+                    {order.items.map((item: any, i: any) => (
                         <tr key={i} className="border-b border-gray-100">
                             <td className="py-2">
                                 <span className="block font-bold">{item.product.name}</span>

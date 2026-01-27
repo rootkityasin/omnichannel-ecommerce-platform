@@ -6,7 +6,10 @@ import { revalidatePath } from 'next/cache';
 export async function getStorySections() {
     try {
         const sections = await prisma.storySection.findMany();
-        return sections;
+        return sections.map((section: any) => ({
+            ...section,
+            updatedAt: section.updatedAt.toISOString()
+        }));
     } catch (error) {
         console.error("Failed to fetch story sections:", error);
         return [];

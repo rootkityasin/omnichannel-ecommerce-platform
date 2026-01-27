@@ -52,7 +52,7 @@ export async function GET() {
                     where: { id: section.id },
                     data: {
                         products: {
-                            connect: selected.map(p => ({ id: p.id }))
+                            connect: selected.map((p: any) => ({ id: p.id }))
                         }
                     }
                 });

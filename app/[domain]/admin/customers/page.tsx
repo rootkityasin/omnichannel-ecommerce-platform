@@ -38,7 +38,7 @@ export default function CustomersPage() {
         const fetchUsers = async () => {
             const users = await getAllUsers();
             // Map Prisma users to the UI shape
-            const formatted = users.map(u => ({
+            const formatted = users.map((u: any) => ({
                 id: u.id,
                 name: u.name,
                 email: u.email,
@@ -56,7 +56,7 @@ export default function CustomersPage() {
     const [sortBy, setSortBy] = useState('newest');
 
     const filteredCustomers = customers
-        .filter(c =>
+        .filter((c: any) =>
             (c.name.toLowerCase().includes(search.toLowerCase()) ||
                 (c.phone && c.phone.includes(search))) &&
             c.spent >= minSpent &&
@@ -90,7 +90,7 @@ export default function CustomersPage() {
 
         if (editingId) {
             // Update existing
-            setCustomers(customers.map(c => c.id === editingId ? { ...c, ...newCustomer } : c));
+            setCustomers(customers.map((c: any) => c.id === editingId ? { ...c, ...newCustomer } : c));
         } else {
             // Add new
             const customer = {
@@ -111,7 +111,7 @@ export default function CustomersPage() {
         const headers = ['ID', 'Name', 'Phone', 'Email', 'Orders', 'Spent', 'Points'];
         const csvContent = [
             headers.join(','),
-            ...filteredCustomers.map(c => [
+            ...filteredCustomers.map((c: any) => [
                 c.id,
                 `"${c.name}"`,
                 c.phone,
@@ -190,7 +190,7 @@ export default function CustomersPage() {
                 // Refresh list
                 hasFetched.current = false;
                 const users = await getAllUsers();
-                const formatted = users.map(u => ({
+                const formatted = users.map((u: any) => ({
                     id: u.id,
                     name: u.name,
                     email: u.email,
@@ -442,7 +442,7 @@ export default function CustomersPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {filteredCustomers.map((customer) => (
+                            {filteredCustomers.map((customer: any) => (
                                 <tr key={customer.id} className="hover:bg-gray-50/50">
                                     <td className="p-4"><input type="checkbox" /></td>
                                     <td className="p-4">

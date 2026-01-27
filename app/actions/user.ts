@@ -43,7 +43,7 @@ export async function createUserWithRole(data: { name: string; email: string; ph
     const session = await auth();
     // Only Super Admin can creating other Admins
     if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
-        // Allow if initializing or local dev checks (optional), but enforced here
+        return { success: false, error: "Unauthorized: Only Super Admins can create users with roles." };
     }
 
     try {

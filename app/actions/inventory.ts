@@ -51,9 +51,9 @@ export async function getInventoryStats() {
     });
 
     let totalStockValue = 0;
-    products.forEach(p => {
+    products.forEach((p: any) => {
         // Sum up inventory from hubs + base pieces if modeled that way
-        const inventoryCount = p.inventory.reduce((acc, inv) => acc + inv.quantity, 0);
+        const inventoryCount = p.inventory.reduce((acc: number, inv: any) => acc + inv.quantity, 0);
         const stock = inventoryCount > 0 ? inventoryCount : p.pieces; // Fallback or logic choice
         totalStockValue += stock * p.price;
     });
@@ -62,11 +62,11 @@ export async function getInventoryStats() {
     const paidOrders = await prisma.order.findMany({
         where: { status: 'DELIVERED' } // or statuses that imply payment
     });
-    const totalSales = paidOrders.reduce((acc, order) => acc + order.totalAmount, 0);
+    const totalSales = paidOrders.reduce((acc: number, order: any) => acc + order.totalAmount, 0);
 
     // 3. Total Expenses
     const allExpenses = await prisma.expense.findMany();
-    const totalExpenses = allExpenses.reduce((acc, e) => acc + e.amount, 0);
+    const totalExpenses = allExpenses.reduce((acc: number, e: any) => acc + e.amount, 0);
 
     return {
         stockValue: totalStockValue,

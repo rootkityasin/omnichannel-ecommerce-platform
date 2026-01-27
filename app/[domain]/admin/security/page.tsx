@@ -39,7 +39,7 @@ export default async function SecurityDashboard() {
 
                 <TabsContent value="overview" className="space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* 4. Danger Zone (Moved to Top for Visibility) */}
+                        {/* 0. Danger Zone (Moved to Top for Visibility) */}
                         <div className="md:col-span-2">
                             <DangerZone />
                         </div>
@@ -68,7 +68,7 @@ export default async function SecurityDashboard() {
                                 Trusted Devices (30-Day Access)
                             </h2>
                             <div className="space-y-4">
-                                {devices.map((device) => (
+                                {devices.map((device: any) => (
                                     <div key={device.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100">
                                         <div>
                                             <p className="font-bold text-slate-800">{device.name}</p>
@@ -93,7 +93,7 @@ export default async function SecurityDashboard() {
                                 Security Audit Log
                             </h2>
                             <div className="space-y-0 divide-y divide-slate-100 h-[300px] overflow-y-auto">
-                                {logs.map((log) => (
+                                {logs.map((log: any) => (
                                     <div key={log.id} className="py-3 flex items-start justify-between">
                                         <div>
                                             <p className="text-sm font-bold text-slate-800">{log.action}</p>
@@ -113,7 +113,6 @@ export default async function SecurityDashboard() {
                             </div>
                         </div>
 
-                        {/* 3. Security Audit Log */}
                     </div>
                 </TabsContent>
 

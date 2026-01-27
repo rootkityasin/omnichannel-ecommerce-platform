@@ -38,7 +38,7 @@ export async function GET() {
 
         // 4. Delete
         const deleted = await prisma.category.deleteMany({
-            where: { id: { in: badCategories.map(c => c.id) } }
+            where: { id: { in: badCategories.map((c: any) => c.id) } }
         });
 
         return NextResponse.json({
