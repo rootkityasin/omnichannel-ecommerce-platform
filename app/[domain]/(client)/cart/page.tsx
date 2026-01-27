@@ -14,7 +14,7 @@ async function getCartData() {
             getSiteConfig()
         ]);
 
-        const cartSection = sections.find((s) => s.type === 'CART_TEXTS');
+        const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
         const cartTexts = cartSection?.content ? (cartSection.content as any) : null;
 
         return {

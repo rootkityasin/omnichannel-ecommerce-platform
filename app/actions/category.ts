@@ -28,7 +28,8 @@ export async function getCategories(domain?: string) {
                 _count: {
                     select: { products: true }
                 }
-            }
+            },
+            cacheStrategy: { ttl: 60, swr: 60 }
         });
 
         return categories;

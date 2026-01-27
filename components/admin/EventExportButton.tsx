@@ -31,7 +31,7 @@ export function EventExportButton() {
 
             // CSV Creation
             const headers = ['Time', 'Event Name', 'Customer Name', 'Phone', 'City/Area', 'IP Address', 'Source URL', 'Signal Data'];
-            const rows = events.map(event => [
+            const rows = events.map((event: any) => [
                 new Date(event.createdAt).toLocaleString(),
                 event.eventName,
                 `"${event.customerName || 'Anonymous'}"`,
@@ -44,7 +44,7 @@ export function EventExportButton() {
 
             const csvContent = [
                 headers.join(','),
-                ...rows.map(r => r.join(','))
+                ...rows.map((r: any) => r.join(','))
             ].join('\n');
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

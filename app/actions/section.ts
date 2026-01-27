@@ -50,11 +50,11 @@ export const getHomeSections = unstable_cache(
                     }
                 }
             });
-            return sections.map(section => ({
+            return sections.map((section: any) => ({
                 ...section,
                 createdAt: section.createdAt.toISOString(),
                 updatedAt: section.updatedAt.toISOString(),
-                products: section.products.map(product => ({
+                products: section.products.map((product: any) => ({
                     ...product,
                     createdAt: product.createdAt.toISOString(),
                 }))
@@ -152,7 +152,7 @@ export async function seedDefaultSections() {
 
         const bestSellers = sections.find(s => s.slug === 'best-sellers');
         if (bestSellers) {
-            const pIds = products.slice(0, 3).map(p => ({ id: p.id }));
+            const pIds = products.slice(0, 3).map((p: any) => ({ id: p.id }));
             if (pIds.length > 0) {
                 await prisma.productSection.update({
                     where: { id: bestSellers.id },
@@ -163,7 +163,7 @@ export async function seedDefaultSections() {
 
         const newArrivals = sections.find(s => s.slug === 'new-arrivals');
         if (newArrivals) {
-            const pIds = products.slice(3, 6).map(p => ({ id: p.id }));
+            const pIds = products.slice(3, 6).map((p: any) => ({ id: p.id }));
             if (pIds.length > 0) {
                 await prisma.productSection.update({
                     where: { id: newArrivals.id },
@@ -174,7 +174,7 @@ export async function seedDefaultSections() {
 
         const superSavings = sections.find(s => s.slug === 'super-savings');
         if (superSavings) {
-            const pIds = products.slice(6, 8).map(p => ({ id: p.id }));
+            const pIds = products.slice(6, 8).map((p: any) => ({ id: p.id }));
             if (pIds.length > 0) {
                 await prisma.productSection.update({
                     where: { id: superSavings.id },
@@ -190,7 +190,7 @@ export async function seedDefaultSections() {
 
 export async function reorderSections(items: { id: string; order: number }[]) {
     try {
-        await prisma.$transaction(
+        await (prisma as any).$transaction(
             items.map((item) =>
                 prisma.productSection.update({
                     where: { id: item.id },
