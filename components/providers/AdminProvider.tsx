@@ -178,7 +178,7 @@ export function AdminProvider({ children, initialUser }: { children: React.React
 
         if (typeof window !== 'undefined') {
             // 1. Try LocalStorage for settings/products (not orders anymore, orders are handled by server)
-            const savedData = localStorage.getItem('crab-khai-admin-data-v7');
+            const savedData = localStorage.getItem('crab-khai-admin-data-v8');
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
@@ -217,7 +217,13 @@ export function AdminProvider({ children, initialUser }: { children: React.React
                 settings: settings,
                 paymentConfig: paymentConfig
             };
-            localStorage.setItem('crab-khai-admin-data-v7', JSON.stringify(dataToSave));
+            try {
+                // Cleanup old version to free space
+                localStorage.removeItem('crab-khai-admin-data-v7');
+                localStorage.setItem('crab-khai-admin-data-v8', JSON.stringify(dataToSave));
+            } catch (e) {
+                console.warn("Failed to save to localStorage:", e);
+            }
         }
     }, [products, settings, paymentConfig]);
 
