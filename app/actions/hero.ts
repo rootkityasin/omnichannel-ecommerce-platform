@@ -16,7 +16,7 @@ export async function getHeroSlides(domain?: string) {
             orderBy: { order: 'asc' }
         });
 
-        return slides.map(slide => ({
+        return slides.map((slide: any) => ({
             ...slide,
             createdAt: slide.createdAt.toISOString(),
             updatedAt: slide.updatedAt.toISOString(),

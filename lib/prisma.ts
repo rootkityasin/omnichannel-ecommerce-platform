@@ -4,10 +4,10 @@ import { PrismaClient } from '@prisma/client'
 
 import { withAccelerate } from '@prisma/extension-accelerate'
 
-const connectionString = `${process.env.DATABASE_URL}`
+const connectionString = `${process.env.PRISMA_DATABASE_URL || process.env.DATABASE_URL}`
 
 // Only use the PG adapter if NOT using Accelerate (which handles its own pooling)
-const useAdapter = !connectionString.startsWith('prisma://');
+const useAdapter = !connectionString.startsWith('prisma://') && !connectionString.startsWith('prisma+postgres://');
 
 let adapter;
 if (useAdapter) {

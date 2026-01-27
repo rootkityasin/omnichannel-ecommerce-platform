@@ -30,7 +30,7 @@ export async function GET() {
         // Best Sellers
         const bestSellers = sections.find(s => s.slug === 'best-sellers');
         if (bestSellers && products.length > 0) {
-            const pIds = products.slice(0, 3).map(p => ({ id: p.id }));
+            const pIds = products.slice(0, 3).map((p: any) => ({ id: p.id }));
             await prisma.productSection.update({
                 where: { id: bestSellers.id },
                 data: { products: { connect: pIds } }
@@ -40,7 +40,7 @@ export async function GET() {
         // New Arrivals
         const newArrivals = sections.find(s => s.slug === 'new-arrivals');
         if (newArrivals && products.length > 3) {
-            const pIds = products.slice(3, 6).map(p => ({ id: p.id }));
+            const pIds = products.slice(3, 6).map((p: any) => ({ id: p.id }));
             await prisma.productSection.update({
                 where: { id: newArrivals.id },
                 data: { products: { connect: pIds } }
@@ -50,7 +50,7 @@ export async function GET() {
         // Super Savings
         const superSavings = sections.find(s => s.slug === 'super-savings');
         if (superSavings && products.length > 6) {
-            const pIds = products.slice(6, 8).map(p => ({ id: p.id }));
+            const pIds = products.slice(6, 8).map((p: any) => ({ id: p.id }));
             await prisma.productSection.update({
                 where: { id: superSavings.id },
                 data: { products: { connect: pIds } }
