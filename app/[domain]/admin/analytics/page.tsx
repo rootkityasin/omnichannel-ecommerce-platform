@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-lg text-slate-800">Revenue Trends</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full">
+                        <div className="h-[300px] w-full min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={trendData}>
                                     <defs>
@@ -184,7 +184,7 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-lg text-slate-800">Sales by Source</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full flex items-center justify-center">
+                        <div className="h-[300px] w-full flex items-center justify-center min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-lg text-slate-800">Traffic vs Sales</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full">
+                        <div className="h-[300px] w-full min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={trendData}>
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />

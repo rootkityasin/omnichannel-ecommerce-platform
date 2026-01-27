@@ -213,8 +213,7 @@ export function AdminProvider({ children, initialUser }: { children: React.React
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const dataToSave = {
-                // Not saving orders to localStorage anymore to avoid stale data
-                products: products,
+                // products: products, // Too large for localStorage, fetches fresh from DB anyway
                 settings: settings,
                 paymentConfig: paymentConfig
             };

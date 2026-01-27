@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   // Image Optimization - Allow remote images
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: '**.easykoro.com' },
+      { protocol: 'https', hostname: '*.easykoro.com' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' }, // Google avatars
@@ -56,12 +56,12 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.facebook.net https://*.facebook.com https://*.fbcdn.net",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' blob: data: https://**.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net",
-              "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.vercel-insights.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net",
-              "frame-src 'self' https://*.facebook.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.facebook.net https://*.facebook.com https://*.fbcdn.net https://vercel.live https://*.vercel.live",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
+              "img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://vercel.live https://*.vercel.live",
+              "font-src 'self' https://fonts.gstatic.com data: https://vercel.live",
+              "connect-src 'self' https://*.vercel-insights.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://vercel.live https://*.vercel.live wss://*.vercel.live",
+              "frame-src 'self' https://*.facebook.com https://vercel.live",
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'self'",
@@ -86,7 +86,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+            value: 'camera=(), microphone=(), geolocation=(self)',
           },
         ],
       },
