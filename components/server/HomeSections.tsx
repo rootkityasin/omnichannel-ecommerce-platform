@@ -6,5 +6,5 @@ export async function HomeSections({ domain }: { domain?: string }) {
     // It will not block the main page rendering
     const sections = await getHomeSections(domain);
 
-    return <SectionList sections={JSON.parse(JSON.stringify(sections))} />;
+    return <SectionList sections={sections} />;
 }

@@ -17,9 +17,9 @@ export default async function HomePage({ params }: { params: Promise<{ domain: s
 
     return (
         <HomeClient
-            heroSlides={JSON.parse(JSON.stringify(heroSlides))}
-            config={JSON.parse(JSON.stringify(config))}
-            categories={JSON.parse(JSON.stringify(categories))}
+            heroSlides={heroSlides}
+            config={config}
+            categories={categories}
         >
             <Suspense fallback={<SectionsLoading />}>
                 <HomeSections domain={domain} />

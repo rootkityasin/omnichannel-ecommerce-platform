@@ -6,8 +6,9 @@ import { ShopType } from '@prisma/client';
 import { auth } from '@/auth';
 
 
-export const getSiteConfig = unstable_cache(
-    async (domain?: string) => {
+// Internal cached function for public domain access
+const getPublicSiteConfig = unstable_cache(
+    async (domain: string) => {
         const defaults = {
             contactPhone: "",
             contactEmail: "",
@@ -32,30 +33,17 @@ export const getSiteConfig = unstable_cache(
         };
 
         try {
-            let config;
-            if (domain) {
-                const tenantWhere = {
-                    OR: [
-                        { slug: domain },
-                        { customDomain: domain },
-                        { slug: domain.split('.')[0] }
-                    ]
-                };
-                config = await prisma.siteConfig.findFirst({
-                    where: { tenant: tenantWhere },
-                    include: { tenant: true }
-                });
-            } else {
-                // Admin context or unknown - try Auth
-                const session = await auth();
-                const tenantId = (session?.user as any)?.tenantId;
-                if (tenantId) {
-                    config = await prisma.siteConfig.findFirst({
-                        where: { tenantId },
-                        include: { tenant: true }
-                    });
-                }
-            }
+            const tenantWhere = {
+                OR: [
+                    { slug: domain },
+                    { customDomain: domain },
+                    { slug: domain.split('.')[0] }
+                ]
+            };
+            const config = await prisma.siteConfig.findFirst({
+                where: { tenant: tenantWhere },
+                include: { tenant: true }
+            });
 
             if (!config) return defaults;
             return {
@@ -71,9 +59,17 @@ export const getSiteConfig = unstable_cache(
             return defaults;
         }
     },
-    ['site-config'],
+    ['site-config-public'],
     { revalidate: 3600, tags: ['site-config'] }
 );
+
+export async function getSiteConfig(domain?: string) {
+    if (domain) {
+        return getPublicSiteConfig(domain);
+    }
+    // Fallback to admin/auth context (uncached to prevent leaks)
+    return getAdminSiteConfig();
+}
 
 export async function getAdminSiteConfig() {
     const session = await auth();
@@ -214,7 +210,7 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        revalidateTag('site-config');
+        revalidateTag('site-config', {});
         revalidatePath('/', 'layout');
         revalidatePath('/admin/shop', 'page');
         return { success: true };

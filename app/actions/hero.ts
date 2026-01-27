@@ -15,7 +15,12 @@ export async function getHeroSlides(domain?: string) {
         const slides = await prisma.heroSlide.findMany({
             orderBy: { order: 'asc' }
         });
-        return slides;
+
+        return slides.map(slide => ({
+            ...slide,
+            createdAt: slide.createdAt.toISOString(),
+            updatedAt: slide.updatedAt.toISOString(),
+        }));
     } catch (error) {
         console.error("Failed to fetch hero slides:", error);
         return [];

@@ -50,13 +50,21 @@ export const getHomeSections = unstable_cache(
                     }
                 }
             });
-            return sections;
+            return sections.map(section => ({
+                ...section,
+                createdAt: section.createdAt.toISOString(),
+                updatedAt: section.updatedAt.toISOString(),
+                products: section.products.map(product => ({
+                    ...product,
+                    createdAt: product.createdAt.toISOString(),
+                }))
+            }));
         } catch (error) {
             console.error("Failed to fetch home sections:", error);
             return [];
         }
     },
-    ['home-sections'], // Warning: We need to ensure domain uniqueness. 
+    ['home-sections'], // Warning: We need to ensure domain uniqueness.
     { revalidate: 3600, tags: ['home-sections'] }
 );
 
