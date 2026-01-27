@@ -58,10 +58,17 @@ export function MediaUpload({
         const resourceType = 'image';
 
         try {
+            console.log("Attempting Cloudinary upload...", { cloudName: cloudName ? 'Present' : 'Missing', uploadPreset: uploadPreset ? 'Present' : 'Missing' });
+
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
                 { method: 'POST', body: formData }
             );
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Cloudinary Error (${response.status}): ${errText}`);
+            }
 
             const data = await response.json();
 
@@ -72,7 +79,8 @@ export function MediaUpload({
                 return await getLocalFallback();
             }
         } catch (error) {
-            console.error("Upload Network Error:", error);
+            console.error("Upload Failed (Falling back to local):", error);
+            // toast.error(`Upload error: ${(error as any).message}`); // Optional: don't annoy user if fallback works
             return await getLocalFallback();
         }
     };

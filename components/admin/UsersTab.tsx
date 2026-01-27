@@ -20,7 +20,6 @@ export function UsersTab() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
-    const [activeTab, setActiveTab] = useState('Users Management');
 
     // Form State
     const [newUser, setNewUser] = useState({
@@ -82,21 +81,6 @@ export function UsersTab() {
 
     return (
         <div className="space-y-6 bg-white min-h-screen p-6 rounded-xl">
-            {/* Top Navigation / Breadcrumbs style tabs */}
-            <div className="flex border-b border-gray-100">
-                {['Roles Management', 'Users Management', 'Group Management'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === tab
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
 
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-2">

@@ -4,16 +4,11 @@ import { useEffect } from 'react';
 
 export function ThemeInjector({ primaryColor, secondaryColor }: { primaryColor?: string, secondaryColor?: string }) {
 
-    useEffect(() => {
-        if (!primaryColor) return;
-
+    const applyStyles = (pColor?: string, sColor?: string) => {
+        if (!pColor) return;
         const root = document.documentElement;
+        root.style.setProperty('--crab-red', pColor);
 
-        // 1. Set Hex Variable
-        root.style.setProperty('--crab-red', primaryColor);
-
-        // 2. Set HSL Variable for Shadcn/Tailwind 'primary'
-        // Helper to convert hex to HSL
         const hexToHsl = (hex: string) => {
             let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             if (!result) return null;
@@ -40,16 +35,31 @@ export function ThemeInjector({ primaryColor, secondaryColor }: { primaryColor?:
             return `${h} ${s}% ${l}%`;
         }
 
-        const primaryHsl = hexToHsl(primaryColor);
+        const primaryHsl = hexToHsl(pColor);
         if (primaryHsl) {
             root.style.setProperty('--primary', primaryHsl);
         }
 
-        // Secondary Color Logic (optional)
-        if (secondaryColor) {
-            // Maybe map to --secondary or --slate-900 equivalent if used
+        if (sColor) {
+            // Apply Secondary Color as Main Background
+            root.style.setProperty('--background', sColor);
+            // Also force body background if variable usage is inconsistent
+            document.body.style.backgroundColor = sColor;
         }
+    };
 
+    useEffect(() => {
+        applyStyles(primaryColor, secondaryColor);
+
+        // Listen for preview messages
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'THEME_PREVIEW') {
+                applyStyles(event.data.primaryColor, event.data.secondaryColor);
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
     }, [primaryColor, secondaryColor]);
 
     return null; // Headless component

@@ -56,7 +56,7 @@ export const getHomeSections = unstable_cache(
             return [];
         }
     },
-    ['home-sections'],
+    ['home-sections'], // Warning: We need to ensure domain uniqueness. 
     { revalidate: 3600, tags: ['home-sections'] }
 );
 

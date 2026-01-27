@@ -19,9 +19,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from "@/components/ui/switch";
 import { getProducts, createProduct, updateProduct, deleteProduct, generateUniqueSku } from '@/app/actions/product';
 import { getCategories } from '@/app/actions/category';
-import { getSiteConfig } from '@/app/actions/settings';
+import { getSiteConfig, getAdminSiteConfig } from '@/app/actions/settings';
 import { getSections } from '@/app/actions/section';
 // Removed: import { smartParse, generateMagicDescription, getBanglaSuggestion } from '@/lib/ai-utils';
+import Link from 'next/link';
+import Image from 'next/image';
 import { generateDescriptionAI, smartParseAI, translateToBanglaAI } from '@/app/actions/ai';
 
 export default function ProductsPage() {
@@ -68,7 +70,7 @@ export default function ProductsPage() {
                 getProducts(),
                 getCategories(),
                 getSections(),
-                getSiteConfig()
+                getAdminSiteConfig()
             ]);
             setProducts(pData);
             setCategories(cData);
@@ -694,7 +696,7 @@ export default function ProductsPage() {
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
-                                                            {product.image && <img src={product.image} alt={product.name} className="w-full h-full object-cover" />}
+                                                            {product.image && <Image src={product.image} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />}
                                                         </div>
                                                         <div>
                                                             <div className="font-bold text-slate-800">{product.name}</div>

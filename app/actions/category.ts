@@ -4,14 +4,26 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getTenantByDomain } from './tenant';
 
+import { auth } from '@/auth';
+
 export async function getCategories(domain?: string) {
     try {
-        const tenant = domain ? await getTenantByDomain(domain) : null;
+        let tenantId: string | undefined;
+
+        if (domain) {
+            const tenant = await getTenantByDomain(domain);
+            tenantId = tenant?.id;
+        } else {
+            const session = await auth();
+            tenantId = (session?.user as any)?.tenantId;
+        }
+
+        if (!tenantId) return [];
 
         const categories = await prisma.category.findMany({
-            where: domain ? {
-                tenantId: tenant?.id || 'none'
-            } : undefined,
+            where: {
+                tenantId: tenantId
+            },
             include: {
                 _count: {
                     select: { products: true }
@@ -28,8 +40,13 @@ export async function getCategories(domain?: string) {
 
 export async function createCategory(name: string, animationType: string = "AUTO", icon: string = "Package") {
     try {
+        const session = await auth();
+        const tenantId = (session?.user as any)?.tenantId;
+        if (!tenantId) return { success: false, error: "Unauthorized" };
+
         const category = await prisma.category.create({
             data: {
+                tenantId,
                 name,
                 animationType,
                 icon

@@ -32,28 +32,36 @@ export const getSiteConfig = unstable_cache(
         };
 
         try {
-            let tenantWhere = {};
+            let config;
             if (domain) {
-                tenantWhere = {
+                const tenantWhere = {
                     OR: [
                         { slug: domain },
                         { customDomain: domain },
-                        { slug: domain.split('.')[0] } // Fallback for 'slug.localhost'
+                        { slug: domain.split('.')[0] }
                     ]
                 };
+                config = await prisma.siteConfig.findFirst({
+                    where: { tenant: tenantWhere },
+                    include: { tenant: true }
+                });
+            } else {
+                // Admin context or unknown - try Auth
+                const session = await auth();
+                const tenantId = (session?.user as any)?.tenantId;
+                if (tenantId) {
+                    config = await prisma.siteConfig.findFirst({
+                        where: { tenantId },
+                        include: { tenant: true }
+                    });
+                }
             }
-
-            const config = await prisma.siteConfig.findFirst({
-                where: domain ? {
-                    tenant: tenantWhere
-                } : undefined,
-                include: { tenant: true }
-            });
 
             if (!config) return defaults;
             return {
                 ...defaults,
                 ...config,
+                tenant: undefined, // Explicitly remove to avoid serialization error
                 shopType: config.shopType || defaults.shopType,
                 customDomain: config.tenant?.customDomain || "",
                 slug: config.tenant?.slug || ""
@@ -106,6 +114,7 @@ export async function getAdminSiteConfig() {
         return {
             ...defaults,
             ...config,
+            tenant: undefined, // Explicitly remove tenant relation to avoid serialization error (Date objects)
             shopType: (config.shopType as any) || defaults.shopType, // Ensure enum cast
             customDomain: config.tenant?.customDomain || "",
             slug: config.tenant?.slug || ""
@@ -205,6 +214,7 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
+        revalidateTag('site-config');
         revalidatePath('/', 'layout');
         revalidatePath('/admin/shop');
         return { success: true };

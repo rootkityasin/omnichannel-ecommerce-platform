@@ -4,14 +4,30 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getTenantByDomain } from './tenant';
 
+import { auth } from '@/auth';
+
 export async function getProducts(domain?: string) {
     try {
-        const tenant = domain ? await getTenantByDomain(domain) : null;
+        let tenantId: string | undefined;
+
+        if (domain) {
+            const tenant = await getTenantByDomain(domain);
+            tenantId = tenant?.id;
+        } else {
+            const session = await auth();
+            tenantId = (session?.user as any)?.tenantId;
+        }
+
+        if (!tenantId) {
+            // If we can't determine context, return empty to be safe/fast
+            // or return strictly public variants? For Admin, empty is safer.
+            return [];
+        }
 
         const products = await prisma.product.findMany({
-            where: domain ? {
-                tenantId: tenant?.id || 'none'
-            } : undefined,
+            where: {
+                tenantId: tenantId
+            },
             orderBy: { sku: 'asc' },
             select: {
                 id: true,
@@ -60,8 +76,13 @@ export async function getProduct(id: string) {
 
 export async function createProduct(data: any) {
     try {
+        const session = await auth();
+        const tenantId = (session?.user as any)?.tenantId;
+        if (!tenantId) return { success: false, error: "Unauthorized" };
+
         const product = await prisma.product.create({
             data: {
+                tenantId,
                 name: data.name,
                 sku: data.sku,
                 price: parseInt(String(data.price || 0)) || 0,
