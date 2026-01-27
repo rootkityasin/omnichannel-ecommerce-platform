@@ -216,7 +216,7 @@ export async function updateSiteConfig(data: any) {
 
         revalidateTag('site-config');
         revalidatePath('/', 'layout');
-        revalidatePath('/admin/shop');
+        revalidatePath('/admin/shop', 'page');
         return { success: true };
     } catch (error) {
         console.error("Failed to update settings:", error);
@@ -286,7 +286,7 @@ export async function updatePaymentConfig(data: any) {
             }
         });
 
-        revalidatePath('/admin/shop');
+        revalidatePath('/admin/shop', 'page');
         return { success: true };
     } catch (error) {
         console.error("Update Payment Config Error:", error);
@@ -344,7 +344,7 @@ export async function updateDeliveryConfig(data: any) {
             }
         });
 
-        revalidatePath('/admin/shop');
+        revalidatePath('/admin/shop', 'page');
         return { success: true };
     } catch (error) {
         console.error("Failed to update delivery config:", error);
