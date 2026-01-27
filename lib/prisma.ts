@@ -20,10 +20,18 @@ if (useAdapter) {
 
 const globalForPrisma = globalThis as unknown as { prisma: any }
 
-const baseClient = new PrismaClient({
-    adapter: useAdapter ? adapter : undefined,
+const prismaOptions: any = {
     log: ['error', 'warn'],
-})
+};
+
+if (useAdapter && adapter) {
+    prismaOptions.adapter = adapter;
+} else {
+    // Explicitly pass connection string as accelerateUrl for Driver Adapter mode (forced by schema)
+    (prismaOptions as any).accelerateUrl = connectionString;
+}
+
+const baseClient = new PrismaClient(prismaOptions)
 
 export const prisma = globalForPrisma.prisma || baseClient.$extends(withAccelerate())
 
