@@ -17,7 +17,7 @@ export async function getPendingOrderCount() {
 export async function getAdminSetupToken() {
     // try to find config
     const config = await prisma.siteConfig.findFirst();
-    return config?.adminSetupToken || "crab-secret-setup-123";
+    return config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
 }
 
 export async function updateAdminSetupToken(newToken: string) {

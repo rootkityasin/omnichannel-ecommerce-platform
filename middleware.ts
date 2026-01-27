@@ -48,7 +48,12 @@ export default async function middleware(req: NextRequest) {
     }
 
     // 3. Handle Tenant Domains
-    // e.g. crabkhai.vercel.pub -> /crabkhai
-    // e.g. custom-domain.com -> /custom-domain.com
-    return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-pathname', url.pathname);
+
+    return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url), {
+        request: {
+            headers: requestHeaders,
+        },
+    });
 }

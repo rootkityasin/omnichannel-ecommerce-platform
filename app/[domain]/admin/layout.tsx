@@ -41,6 +41,10 @@ export default async function AdminLayout({
     // Check if we are on the setup page to avoid loops
     const isSetupPage = pathname.includes('/admin/security/device-setup');
 
+    if (!deviceId && !isSetupPage) {
+        redirect('/admin/security/device-setup');
+    }
+
     if (deviceId) {
         // Verify against DB
         const trustedDevice = await prisma.trustedDevice.findUnique({
@@ -48,7 +52,7 @@ export default async function AdminLayout({
         });
 
         if (!trustedDevice) {
-            // Cookie exists but DB record missing (Stale/Deleted)
+            // Cookie exists but DB record missing (Stale/Deleted/Revoked)
             if (!isSetupPage) {
                 // Redirect to API route to clear cookie and then to setup
                 redirect('/api/clear-auth');

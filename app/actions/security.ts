@@ -104,6 +104,29 @@ export async function checkDeviceTrust() {
     }
 }
 
+export async function revokeDevice(deviceId: string) {
+    try {
+        await prisma.trustedDevice.delete({
+            where: { id: deviceId }
+        });
+
+        // Log it
+        await prisma.securityLog.create({
+            data: {
+                ipAddress: "ADMIN_ACTION",
+                action: "DEVICE_REVOKED",
+                severity: "HIGH",
+                details: `Revoked device ID: ${deviceId}`
+            }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Revoke Device Error:", error);
+        return { success: false, error: "Failed to revoke device" };
+    }
+}
+
 export async function logSecurityEvent(action: string, severity: string, details?: string) {
     try {
         await prisma.securityLog.create({

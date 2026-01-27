@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { UsersTab } from '@/components/admin/UsersTab';
 
 import { BlockedListTab } from '@/components/admin/BlockedListTab';
+import { TrustedDeviceRevoke } from '@/components/admin/TrustedDeviceRevoke';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export default async function SecurityDashboard() {
     });
 
     const config = await prisma.siteConfig.findFirst();
-    const currentToken = config?.adminSetupToken || 'crab-secret-setup-123';
+    const currentToken = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || 'crab-secret-setup-123';
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
@@ -76,9 +77,12 @@ export default async function SecurityDashboard() {
                                                 {device.userAgent}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs text-slate-500">Expires</p>
-                                            <p className="text-sm font-bold text-slate-700">{format(device.expiresAt, 'PPP')}</p>
+                                        <div className="text-right flex items-center gap-4">
+                                            <div>
+                                                <p className="text-xs text-slate-500">Expires</p>
+                                                <p className="text-sm font-bold text-slate-700">{format(device.expiresAt, 'PPP')}</p>
+                                            </div>
+                                            <TrustedDeviceRevoke deviceId={device.id} deviceName={device.name} />
                                         </div>
                                     </div>
                                 ))}
