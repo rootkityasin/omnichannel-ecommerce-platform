@@ -28,6 +28,18 @@ CrabKhai has been audited against **OWASP Top 10** vulnerabilities using ZAP (Ze
 - **Permissions Policy**: Restricted browser features (camera, microphone) to minimize attack surface.
 - **SRI (Subresource Integrity)**: Critical assets are validated for integrity (handled via Next.js optimization).
 
+### ISO Compliance & Enterprise Standards
+We adhere to professional engineering standards inspired by **ISO 9001** and **ISO 27001**.
+- **📜 Compliance Guide**: See [ISO_COMPLIANCE.md](./docs/ISO_COMPLIANCE.md) for a detailed breakdown of our controls.
+- **🛡️ Rate Limiting**: Intelligent adaptive rate limiting to prevent abuse.
+- **✅ CI/CD Pipeline**: Automated GitHub Actions workflow (`.github/workflows/ci.yml`) enforces quality gates on every push.
+
+### Automated Quality Assurance
+The project maintains high stability through automated verification:
+- **Unit Testing**: Powered by **Vitest**. (Run `npm test` to verify)
+- **Security Logic Verification**: Critical security controls (like rate limits) are mathematically verified via automated tests.
+- **Static Analysis**: TypeScript strict mode and ESLint enforcement.
+
 ---
 
 ## ⚡ Performance Optimizations
