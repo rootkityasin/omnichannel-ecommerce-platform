@@ -76,14 +76,26 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
 
     // Image Handling
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
+        const files = e.target.files;
+        if (!files) return;
+
+        const maxSizeInBytes = 5 * 1024 * 1024; // 5MB limit
+
+        Array.from(files).forEach(file => {
+            if (file.size > maxSizeInBytes) {
+                toast.error(`"${file.name}" is too large. Max size is 5MB.`);
+                return;
+            }
+
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImages([...images, reader.result as string]);
+                setImages(prev => [...prev, reader.result as string]);
             };
             reader.readAsDataURL(file);
-        }
+        });
+
+        // Reset input to allow re-selecting the same file
+        e.target.value = '';
     };
 
     const removeImage = (index: number) => {

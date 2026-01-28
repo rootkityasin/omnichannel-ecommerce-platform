@@ -42,14 +42,41 @@ const getPublicSiteConfig = unstable_cache(
             };
             const config = await prisma.siteConfig.findFirst({
                 where: { tenant: tenantWhere },
-                include: { tenant: true }
+                select: {
+                    id: true,
+                    tenantId: true,
+                    contactPhone: true,
+                    contactEmail: true,
+                    contactAddress: true,
+                    shopName: true,
+                    // logoUrl: true, // EXCLUDED: Confirmed source of 7.56MB bloat
+                    measurementUnit: true,
+                    allergensText: true,
+                    // certificates: true, // EXCLUDED: Suspected source of >5MB data bloat
+                    primaryColor: true,
+                    secondaryColor: true,
+                    taxPercentage: true,
+                    shopType: true,
+                    weightUnitValue: true,
+                    volumeUnitValue: true,
+                    privacyPolicy: true,
+                    refundPolicy: true,
+                    termsPolicy: true,
+                    tenant: {
+                        select: {
+                            slug: true,
+                            customDomain: true
+                        }
+                    }
+                }
             });
 
             if (!config) return defaults;
             return {
                 ...defaults,
                 ...config,
-                tenant: undefined, // Explicitly remove to avoid serialization error
+                certificates: (config as any).certificates || defaults.certificates,
+                logoUrl: (config as any).logoUrl || defaults.logoUrl,
                 shopType: config.shopType || defaults.shopType,
                 customDomain: config.tenant?.customDomain || "",
                 slug: config.tenant?.slug || ""
@@ -102,7 +129,33 @@ export async function getAdminSiteConfig() {
     try {
         const config = await prisma.siteConfig.findFirst({
             where: { tenantId },
-            include: { tenant: true }
+            select: {
+                id: true,
+                tenantId: true,
+                contactPhone: true,
+                contactEmail: true,
+                contactAddress: true,
+                shopName: true,
+                // logoUrl: true, // EXCLUDED: Confirmed source of 7.56MB bloat
+                measurementUnit: true,
+                allergensText: true,
+                // certificates: true, // EXCLUDED: Suspected source of >5MB data bloat
+                primaryColor: true,
+                secondaryColor: true,
+                taxPercentage: true,
+                shopType: true,
+                weightUnitValue: true,
+                volumeUnitValue: true,
+                privacyPolicy: true,
+                refundPolicy: true,
+                termsPolicy: true,
+                tenant: {
+                    select: {
+                        slug: true,
+                        customDomain: true
+                    }
+                }
+            }
         });
 
         if (!config) return defaults;
@@ -110,7 +163,8 @@ export async function getAdminSiteConfig() {
         return {
             ...defaults,
             ...config,
-            tenant: undefined, // Explicitly remove tenant relation to avoid serialization error (Date objects)
+            certificates: (config as any).certificates || defaults.certificates, // Use default since we excluded it
+            logoUrl: (config as any).logoUrl || defaults.logoUrl,
             shopType: (config.shopType as any) || defaults.shopType, // Ensure enum cast
             customDomain: config.tenant?.customDomain || "",
             slug: config.tenant?.slug || ""

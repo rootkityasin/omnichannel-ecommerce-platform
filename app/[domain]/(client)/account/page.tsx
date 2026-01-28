@@ -159,6 +159,13 @@ export default function AccountPage() {
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Check file size (5MB limit)
+            const maxSizeInBytes = 5 * 1024 * 1024;
+            if (file.size > maxSizeInBytes) {
+                toast.error("Image is too large. Max size is 5MB.");
+                return;
+            }
+
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result as string;

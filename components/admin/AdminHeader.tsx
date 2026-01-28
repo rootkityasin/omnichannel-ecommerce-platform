@@ -59,7 +59,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
 
         setMounted(true);
         fetchNotifications();
-        scheduleNextPoll();
+        // scheduleNextPoll(); // DISABLED: To prevent excessive requests
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);

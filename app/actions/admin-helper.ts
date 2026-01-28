@@ -16,13 +16,17 @@ export async function getPendingOrderCount() {
 
 export async function getAdminSetupToken() {
     // try to find config
-    const config = await prisma.siteConfig.findFirst();
+    const config = await prisma.siteConfig.findFirst({
+        select: { adminSetupToken: true }
+    });
     return config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
 }
 
 export async function updateAdminSetupToken(newToken: string) {
     try {
-        const config = await prisma.siteConfig.findFirst();
+        const config = await prisma.siteConfig.findFirst({
+            select: { id: true }
+        });
 
         if (config) {
             await prisma.siteConfig.update({

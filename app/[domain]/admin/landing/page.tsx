@@ -271,9 +271,9 @@ export default function LandingPage() {
                                 <Label>Slide Image (Landscape)</Label>
                                 <ImageUpload
                                     value={currentSlide.imageUrl}
-                                    onChange={(url) => setCurrentSlide({ ...currentSlide, imageUrl: url })}
+                                    onChange={(url) => setCurrentSlide({ ...currentSlide, imageUrl: url as string })}
                                     onRemove={() => setCurrentSlide({ ...currentSlide, imageUrl: '' })}
-                                    recommendedSize="1920x800"
+                                    recommendedText="1920x800"
                                 />
                             </div>
 

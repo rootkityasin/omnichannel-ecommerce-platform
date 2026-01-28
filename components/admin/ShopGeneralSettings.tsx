@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Save, MapPin, Phone, Mail, FileWarning, SlidersHorizontal, Image as ImageIcon, Settings } from 'lucide-react';
-import { MediaUpload } from '@/components/admin/MediaUpload';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 
 export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) {
     const [loading, setLoading] = useState(!initialConfig);
@@ -151,9 +151,9 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
                         </div>
                         <div className="space-y-2">
                             <Label>Shop Logo</Label>
-                            <MediaUpload
+                            <ImageUpload
                                 value={config.logoUrl || ''}
-                                onChange={(url) => setConfig({ ...config, logoUrl: url })}
+                                onChange={(url) => setConfig({ ...config, logoUrl: url as string })}
                                 onRemove={() => setConfig({ ...config, logoUrl: '' })}
                             />
                             <p className="text-xs text-slate-500">

@@ -21,7 +21,9 @@ export default async function SecurityDashboard() {
         orderBy: { lastUsed: 'desc' }
     });
 
-    const config = await prisma.siteConfig.findFirst();
+    const config = await prisma.siteConfig.findFirst({
+        select: { adminSetupToken: true }
+    });
     const currentToken = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || 'crab-secret-setup-123';
 
     return (

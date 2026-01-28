@@ -319,7 +319,7 @@ export function CartEditor() {
                                 <Label>Empty State Image (GIF/PNG)</Label>
                                 <ImageUpload
                                     value={config.emptyImage}
-                                    onChange={(url) => setConfig({ ...config, emptyImage: url })}
+                                    onChange={(url) => setConfig({ ...config, emptyImage: url as string })}
                                     onRemove={() => setConfig({ ...config, emptyImage: '' })}
                                 />
                             </div>
@@ -345,7 +345,7 @@ export function CartEditor() {
                                 <Label>Success State Image (GIF/PNG)</Label>
                                 <ImageUpload
                                     value={config.successImage}
-                                    onChange={(url) => setConfig({ ...config, successImage: url })}
+                                    onChange={(url) => setConfig({ ...config, successImage: url as string })}
                                     onRemove={() => setConfig({ ...config, successImage: '' })}
                                 />
                             </div>

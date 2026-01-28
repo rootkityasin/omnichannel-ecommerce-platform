@@ -132,7 +132,7 @@ export function StoryEditor() {
                                 </div>
                                 <div>
                                     <Label>Mascot Image</Label>
-                                    <ImageUpload value={hero.mascotImage} onChange={url => setHero({ ...hero, mascotImage: url })} onRemove={() => setHero({ ...hero, mascotImage: '' })} />
+                                    <ImageUpload value={hero.mascotImage} onChange={url => setHero({ ...hero, mascotImage: url as string })} onRemove={() => setHero({ ...hero, mascotImage: '' })} />
                                 </div>
                                 <Button
                                     disabled={saving === 'HERO'}
@@ -195,7 +195,7 @@ export function StoryEditor() {
 
                                         <ImageUpload value={img.src} onChange={url => {
                                             const newG = [...gallery];
-                                            newG[idx].src = url;
+                                            newG[idx].src = url as string;
                                             setGallery(newG);
                                         }} onRemove={() => {
                                             const newG = [...gallery];
@@ -252,7 +252,7 @@ export function StoryEditor() {
                                             <div>
                                                 <ImageUpload value={member.image} onChange={url => {
                                                     const newT = [...team];
-                                                    newT[idx].image = url;
+                                                    newT[idx].image = url as string;
                                                     setTeam(newT);
                                                 }} onRemove={() => {
                                                     const newT = [...team];
@@ -325,7 +325,7 @@ export function StoryEditor() {
                                 </div>
                                 <div>
                                     <Label>Mascot Image</Label>
-                                    <ImageUpload value={wholesale.image} onChange={url => setWholesale({ ...wholesale, image: url })} onRemove={() => setWholesale({ ...wholesale, image: '' })} />
+                                    <ImageUpload value={wholesale.image} onChange={url => setWholesale({ ...wholesale, image: url as string })} onRemove={() => setWholesale({ ...wholesale, image: '' })} />
                                 </div>
                                 <Button
                                     disabled={saving === 'WHOLESALE'}
@@ -347,7 +347,7 @@ export function StoryEditor() {
                             <div className="space-y-6">
                                 <div>
                                     <Label>Featured Story Image</Label>
-                                    <ImageUpload value={reviews.featuredImage} onChange={url => setReviews({ ...reviews, featuredImage: url })} onRemove={() => setReviews({ ...reviews, featuredImage: '' })} />
+                                    <ImageUpload value={reviews.featuredImage} onChange={url => setReviews({ ...reviews, featuredImage: url as string })} onRemove={() => setReviews({ ...reviews, featuredImage: '' })} />
                                 </div>
 
                                 <div>
@@ -357,7 +357,7 @@ export function StoryEditor() {
                                             <div key={idx} className="space-y-2">
                                                 <ImageUpload value={img.src} onChange={url => {
                                                     const newG = [...reviews.gridImages];
-                                                    newG[idx].src = url;
+                                                    newG[idx].src = url as string;
                                                     setReviews({ ...reviews, gridImages: newG });
                                                 }} onRemove={() => {
                                                     const newG = [...reviews.gridImages];

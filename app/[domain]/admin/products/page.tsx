@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from '@/lib/utils';
 import { ProductBoard } from '@/components/admin/ProductBoard';
 import { toast } from 'sonner';
-import { MediaUpload } from '@/components/admin/MediaUpload';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from "@/components/ui/switch";
 import { getProducts, createProduct, updateProduct, deleteProduct, generateUniqueSku } from '@/app/actions/product';
@@ -635,23 +635,23 @@ export default function ProductsPage() {
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Main Image</label>
-                                    <MediaUpload
+                                    <ImageUpload
                                         value={newProduct.image}
-                                        onChange={(url: string) => setNewProduct({ ...newProduct, image: url })}
+                                        onChange={(url) => setNewProduct({ ...newProduct, image: url as string })}
                                         onRemove={() => setNewProduct({ ...newProduct, image: '' })}
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1000x1000px</strong> | Max: <strong>10MB</strong></p>
+                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1000x1000px</strong> | Max: <strong>5MB</strong></p>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Gallery Images</label>
-                                    <MediaUpload
-                                        values={newProduct.images || []}
-                                        onValuesChange={(urls: string[]) => setNewProduct({ ...newProduct, images: urls })}
+                                    <ImageUpload
+                                        value={newProduct.images || []}
+                                        onChange={(urls) => setNewProduct({ ...newProduct, images: urls as string[] })}
                                         onRemove={(url?: string) => setNewProduct({ ...newProduct, images: newProduct.images.filter(i => i !== url) })}
                                         multiple={true}
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1000x1000px</strong> | Max: <strong>10MB</strong></p>
+                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1000x1000px</strong> | Max: <strong>5MB</strong></p>
                                 </div>
 
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">

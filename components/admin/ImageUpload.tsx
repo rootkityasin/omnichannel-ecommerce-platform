@@ -2,44 +2,57 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { UploadCloud, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface ImageUploadProps {
-    value?: string;
-    onChange: (url: string) => void;
-    onRemove: () => void;
-    recommendedSize?: string;
+    value?: string | string[];
+    onChange: (url: string | string[]) => void;
+    onRemove: (url?: string) => void;
+
+    // Config
+    multiple?: boolean;
+    maxSize?: number; // MB
+    recommendedText?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 export function ImageUpload({
-    value,
+    value = [],
     onChange,
     onRemove,
-    recommendedSize = "1000x1000 (1:1 Aspect Ratio)",
-    className
+    multiple = false,
+    maxSize = 5,
+    recommendedText = "1000x1000 (1:1 Aspect Ratio)",
+    className,
+    disabled = false
 }: ImageUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
 
-    const onDrop = useCallback(async (acceptedFiles: File[]) => {
-        const file = acceptedFiles[0];
-        if (!file) return;
+    // Normalize value to array for consistent rendering
+    const valuesArray = Array.isArray(value) ? value : (value ? [value] : []);
 
-        // Check if Cloudinary is configured
+    const uploadFile = async (file: File): Promise<string | null> => {
         const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
         const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-        if (!cloudName || !uploadPreset) {
-            toast.error("Cloudinary not configured. Please check environment variables.");
-            // For demo/dev purposes, we might just mock it if real upload fails
-            // But let's try to be helpful
-            return;
-        }
+        // --- FALLBACK (Local Base64) ---
+        // Warning: This can cause database bloat if used excessively.
+        const getLocalFallback = (): Promise<string> => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(file);
+            });
+        };
 
-        setIsUploading(true);
+        if (!cloudName || !uploadPreset) {
+            toast.warning("Cloudinary not configured. Using local storage (not recommended for production).");
+            return await getLocalFallback();
+        }
 
         const formData = new FormData();
         formData.append('file', file);
@@ -48,64 +61,121 @@ export function ImageUpload({
         try {
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                }
+                { method: 'POST', body: formData }
             );
 
-            const data = await response.json();
+            if (!response.ok) throw new Error("Cloudinary upload failed");
 
-            if (data.secure_url) {
-                onChange(data.secure_url);
-                toast.success("Image uploaded successfully!");
-            } else {
-                toast.error("Upload failed: " + (data.error?.message || "Unknown error"));
-            }
+            const data = await response.json();
+            return data.secure_url;
         } catch (error) {
             console.error("Upload Error:", error);
-            toast.error("Something went wrong during upload.");
+            toast.error("Upload failed, falling back to local.");
+            return await getLocalFallback();
+        }
+    };
+
+    const onDrop = useCallback(async (acceptedFiles: File[]) => {
+        if (acceptedFiles.length === 0) return;
+
+        setIsUploading(true);
+        try {
+            const uploadPromises = acceptedFiles.map(uploadFile);
+            const uploadedUrls = (await Promise.all(uploadPromises)).filter(url => url !== null) as string[];
+
+            if (uploadedUrls.length > 0) {
+                if (multiple) {
+                    // Append new URLs to existing ones
+                    const newValue = [...valuesArray, ...uploadedUrls];
+                    onChange(newValue);
+                    toast.success("Files uploaded successfully");
+                } else {
+                    // Replace with the first new URL
+                    onChange(uploadedUrls[0]);
+                    toast.success("Image uploaded successfully");
+                }
+            }
+        } catch (err) {
+            toast.error("Upload stopped due to an error");
         } finally {
             setIsUploading(false);
         }
-    }, [onChange]);
+    }, [multiple, onChange, valuesArray]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: {
-            'image/*': ['.png', '.jpg', '.jpeg', '.webp']
-        },
-        maxFiles: 1,
-        disabled: isUploading
+        accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] },
+        maxSize: maxSize * 1024 * 1024,
+        maxFiles: multiple ? 0 : 1,
+        disabled: isUploading || disabled,
+        onDropRejected: (rejections) => {
+            const error = rejections[0]?.errors[0];
+            if (error?.code === 'file-too-large') {
+                toast.error(`File is too large. Max size is ${maxSize}MB`);
+            } else {
+                toast.error(error?.message || "File rejected");
+            }
+        }
     });
 
     return (
         <div className={cn("w-full space-y-4", className)}>
-            {value ? (
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-slate-200 group">
-                    <img
-                        src={value}
-                        alt="Upload"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute top-2 right-2">
-                        <Button
-                            onClick={(e) => { e.preventDefault(); onRemove(); }}
-                            size="icon"
-                            variant="destructive"
-                            className="h-8 w-8 rounded-full shadow-sm"
+
+            {/* Grid for uploaded images */}
+            {valuesArray.length > 0 && (
+                <div className={cn("grid gap-4", multiple ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1")}>
+                    {valuesArray.map((url, index) => (
+                        <div key={index} className={cn("relative overflow-hidden rounded-lg border border-slate-200 group bg-slate-100", multiple ? "aspect-square" : "aspect-video")}>
+                            <img src={url} alt="Uploaded" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div className="absolute top-2 right-2">
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        // For multiple, we usually need the specific URL or index. 
+                                        // But logic depends on parent. We pass URL for convenience.
+                                        onRemove(url);
+                                    }}
+                                    size="icon"
+                                    variant="destructive"
+                                    type="button"
+                                    className="h-8 w-8 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* For Multiple: Show "Add More" box if needed (optional style) */}
+                    {multiple && (
+                        <div
+                            {...getRootProps()}
+                            className={cn(
+                                "aspect-square flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg transition-all cursor-pointer hover:bg-slate-50 text-slate-400 hover:text-orange-600 hover:border-orange-200",
+                                isDragActive && "border-orange-500 bg-orange-50",
+                                (isUploading || disabled) && "opacity-50 pointer-events-none"
+                            )}
                         >
-                            <X className="w-4 h-4" />
-                        </Button>
-                    </div>
+                            <input {...getInputProps()} />
+                            {isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Plus className="w-8 h-8" />}
+                            <span className="text-xs font-medium">Add Image</span>
+                        </div>
+                    )}
                 </div>
-            ) : (
+            )}
+
+            {/* Dropzone for Single (if empty) or just Hidden if Multiple (already handled above in grid) */}
+            {/* Wait, if Multiple and not empty, we showed the "Add" card in the grid. */}
+            {/* If Single and NOT empty, we showed the image preview above. */}
+            {/* So we only show this main dropzone if: (Single AND Empty) OR (Multiple AND Empty) */}
+
+            {valuesArray.length === 0 && (
                 <div
                     {...getRootProps()}
                     className={cn(
                         "relative flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-xl p-8 transition-all cursor-pointer hover:bg-slate-50/50",
                         isDragActive ? "border-orange-500 bg-orange-50/50" : "border-slate-200",
-                        isUploading && "opacity-50 pointer-events-none"
+                        (isUploading || disabled) && "opacity-50 pointer-events-none"
                     )}
                 >
                     <input {...getInputProps()} />
@@ -118,10 +188,10 @@ export function ImageUpload({
                     </div>
                     <div className="text-center space-y-1">
                         <p className="text-sm font-medium text-slate-700">
-                            {isDragActive ? "Drop the image here" : "Click or drag image to upload"}
+                            {isDragActive ? "Drop files here" : `Click or drag ${multiple ? 'files' : 'image'} to upload`}
                         </p>
                         <p className="text-xs text-slate-400">
-                            Recommended size: {recommendedSize}
+                            Recommended: {recommendedText} (Max {maxSize}MB)
                         </p>
                     </div>
                 </div>

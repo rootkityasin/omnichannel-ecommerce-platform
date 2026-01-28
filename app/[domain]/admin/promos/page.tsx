@@ -578,9 +578,9 @@ export default function PromoPage() {
                                         <Label>Hero Image</Label>
                                         <ImageUpload
                                             value={newCard.imageUrl}
-                                            onChange={(url) => setNewCard({ ...newCard, imageUrl: url })}
+                                            onChange={(url) => setNewCard({ ...newCard, imageUrl: url as string })}
                                             onRemove={() => setNewCard({ ...newCard, imageUrl: '' })}
-                                            recommendedSize="600x600 (Square)"
+                                            recommendedText="600x600 (Square)"
                                         />
                                     </div>
 

@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
-import { MediaUpload } from '@/components/admin/MediaUpload';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Loader2, Save, CreditCard } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -295,9 +295,9 @@ export function PaymentSettings() {
                                 <div className="space-y-2">
                                     <Label>Add QR Code</Label>
                                     <div className="border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50">
-                                        <MediaUpload
+                                        <ImageUpload
                                             value={config.selfMfsQrCode || ''}
-                                            onChange={(url) => setConfig({ ...config, selfMfsQrCode: url })}
+                                            onChange={(url) => setConfig({ ...config, selfMfsQrCode: url as string })}
                                             onRemove={() => setConfig({ ...config, selfMfsQrCode: '' })}
                                         />
                                         <p className="text-xs text-slate-400 mt-2 text-center">
