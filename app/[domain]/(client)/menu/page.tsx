@@ -25,4 +25,6 @@ export default async function MenuPage() {
     );
 }
 
-export const dynamic = 'force-dynamic';
+// Use ISR with 60-second revalidation
+// Products/categories already have Prisma Accelerate caching
+export const revalidate = 60;

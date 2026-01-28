@@ -12,9 +12,10 @@ export async function getHeroSlides(domain?: string) {
         // Using a stop-gap: If domain is provided but tenant not resolved, return nothing.
         if (domain && !tenant) return [];
 
-        const slides = await prisma.heroSlide.findMany({
-            orderBy: { order: 'asc' }
-        });
+        const slides = await (prisma.heroSlide.findMany({
+            orderBy: { order: 'asc' },
+            cacheStrategy: { ttl: 60, swr: 300 } // 1min fresh, 5min stale
+        }) as any);
 
         return slides.map((slide: any) => ({
             ...slide,

@@ -45,5 +45,6 @@ function SectionsLoading() {
     );
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0; // Ensure fresh data
+// Use ISR with 60-second revalidation for optimal caching
+// Admin changes trigger revalidatePath('/') to update immediately
+export const revalidate = 60;
