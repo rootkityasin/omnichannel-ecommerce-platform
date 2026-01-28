@@ -24,7 +24,7 @@ export async function getProducts(domain?: string) {
             return [];
         }
 
-        const products = await prisma.product.findMany({
+        const products = await (prisma.product.findMany({
             where: {
                 tenantId: tenantId
             },
@@ -44,8 +44,12 @@ export async function getProducts(domain?: string) {
                 nutritionImage: true,
                 cookingImage: true,
                 stage: true,
+            },
+            cacheStrategy: {
+                ttl: 60,   // Fresh data for 60 seconds
+                swr: 300   // Serve stale for 5 min while revalidating
             }
-        });
+        }) as any);
 
         return products;
     } catch (error) {
@@ -56,7 +60,7 @@ export async function getProducts(domain?: string) {
 
 export async function getProduct(id: string) {
     try {
-        const product = await prisma.product.findUnique({
+        const product = await (prisma.product.findUnique({
             where: { id },
             include: {
                 category: true,
@@ -66,8 +70,12 @@ export async function getProduct(id: string) {
                         child: true
                     }
                 }
+            },
+            cacheStrategy: {
+                ttl: 30,   // Fresh for 30 seconds
+                swr: 120   // Serve stale for 2 min while revalidating
             }
-        });
+        }) as any);
         return product;
     } catch (error) {
         return null;

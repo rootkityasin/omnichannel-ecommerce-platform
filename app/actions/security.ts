@@ -49,10 +49,19 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         });
 
         // Set Cookie
-        (await cookies()).set('trusted_device', deviceId, {
+        const cookieStore = await cookies();
+        cookieStore.set('trusted_device', deviceId, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             expires: expiresAt,
+            path: '/'
+        });
+
+        // Set verification timestamp cookie (for throttling DB checks)
+        cookieStore.set('device_verified', Date.now().toString(), {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 60 * 60 * 24, // 1 day
             path: '/'
         });
 

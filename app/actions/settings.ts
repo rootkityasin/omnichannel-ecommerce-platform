@@ -40,7 +40,7 @@ const getPublicSiteConfig = unstable_cache(
                     { slug: domain.split('.')[0] }
                 ]
             };
-            const config = await prisma.siteConfig.findFirst({
+            const config = await (prisma.siteConfig.findFirst({
                 where: { tenant: tenantWhere },
                 select: {
                     id: true,
@@ -68,8 +68,9 @@ const getPublicSiteConfig = unstable_cache(
                             customDomain: true
                         }
                     }
-                }
-            });
+                },
+                cacheStrategy: { ttl: 60 } // Cache for 1 minute
+            }) as any);
 
             if (!config) return defaults;
             return {
@@ -127,7 +128,7 @@ export async function getAdminSiteConfig() {
     if (!tenantId) return defaults;
 
     try {
-        const config = await prisma.siteConfig.findFirst({
+        const config = await (prisma.siteConfig.findFirst({
             where: { tenantId },
             select: {
                 id: true,
@@ -155,8 +156,9 @@ export async function getAdminSiteConfig() {
                         customDomain: true
                     }
                 }
-            }
-        });
+            },
+            cacheStrategy: { ttl: 30 } // Cache for 30 seconds
+        }) as any);
 
         if (!config) return defaults;
 
@@ -285,9 +287,10 @@ export async function getPaymentConfig() {
     if (!tenantId) return null;
 
     try {
-        const config = await prisma.paymentConfig.findUnique({
-            where: { tenantId }
-        });
+        const config = await (prisma.paymentConfig.findUnique({
+            where: { tenantId },
+            cacheStrategy: { ttl: 60 } // Cache for 1 minute
+        }) as any);
 
         if (!config) {
             return {
@@ -351,9 +354,10 @@ export async function getDeliveryConfig() {
     if (!tenantId) return null;
 
     try {
-        const config = await prisma.deliveryConfig.findUnique({
-            where: { tenantId }
-        });
+        const config = await (prisma.deliveryConfig.findUnique({
+            where: { tenantId },
+            cacheStrategy: { ttl: 60 } // Cache for 1 minute
+        }) as any);
         if (!config) {
             return {
                 defaultCharge: 60,

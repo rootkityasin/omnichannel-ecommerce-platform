@@ -5,6 +5,9 @@ import { redirect } from 'next/navigation';
 import AdminLayoutClient from './AdminLayoutClient';
 import { headers } from 'next/headers';
 
+// How often to verify device against DB (30 minutes)
+const DB_VERIFY_INTERVAL = 30 * 60 * 1000;
+
 export default async function AdminLayout({
     children,
 }: {
@@ -12,6 +15,7 @@ export default async function AdminLayout({
 }) {
     const cookieStore = await cookies();
     const deviceId = cookieStore.get('trusted_device')?.value;
+    const lastDbCheck = cookieStore.get('device_verified')?.value;
     const headersList = await headers();
     const pathname = headersList.get('x-pathname') || '';
 
@@ -21,23 +25,6 @@ export default async function AdminLayout({
         redirect('/');
     }
 
-    // Exception for device-setup page to prevent infinite redirect loops 
-    // Wait, layouts wrap pages. If I enforce this here, check if device-setup is UNDER this layout.
-    // app/admin/layout.tsx wraps app/admin/*
-    // app/admin/security/device-setup IS under app/admin.
-    // I need to skip this check for that specific path?
-    // In Server Components, we don't have easy access to pathname like in Middleware.
-    // BUT, we can check if we are already authorizing. 
-    // actually, best practice: Move device-setup OUT of admin layout? 
-    // OR, just make the check loose for now, but strict about updating.
-
-    // HOWEVER: Middleware already handles the redirect to /admin/security/device-setup.
-    // If we are here, middleware passed us. 
-    // If deviceId is missing, middleware should have caught it (unless visiting device-setup).
-
-    // Let's rely on the DB check.
-    // If DB record is missing but cookie exists -> Redirect to setup. 
-
     // Check if we are on the setup page to avoid loops
     const isSetupPage = pathname.includes('/admin/security/device-setup');
 
@@ -46,37 +33,49 @@ export default async function AdminLayout({
     }
 
     if (deviceId) {
-        // Verify against DB
-        const trustedDevice = await prisma.trustedDevice.findUnique({
-            where: { deviceId }
-        });
+        const now = Date.now();
+        const lastCheck = lastDbCheck ? parseInt(lastDbCheck, 10) : 0;
+        const shouldVerifyDb = (now - lastCheck) > DB_VERIFY_INTERVAL;
 
-        if (!trustedDevice) {
-            // Cookie exists but DB record missing (Stale/Deleted/Revoked)
-            if (!isSetupPage) {
-                // Redirect to API route to clear cookie and then to setup
-                redirect('/api/clear-auth');
-            }
-        } else {
-            // Valid Device - Update Last Used (Throttled)
-            const FIVE_MINUTES = 5 * 60 * 1000;
-            const lastUsed = trustedDevice.lastUsed ? new Date(trustedDevice.lastUsed).getTime() : 0;
-            const now = Date.now();
+        // Only query DB if:
+        // 1. We haven't verified recently (> 30 min), OR
+        // 2. No verification timestamp exists
+        if (shouldVerifyDb) {
+            const trustedDevice = await (prisma.trustedDevice.findUnique({
+                where: { deviceId },
+                cacheStrategy: { ttl: 300 } // Cache for 5 minutes
+            }) as any);
 
-            // Only update if > 5 minutes have passed since last update
-            if (now - lastUsed > FIVE_MINUTES) {
-                try {
-                    await prisma.trustedDevice.update({
-                        where: { deviceId },
-                        data: { lastUsed: new Date() }
-                    });
-                } catch (e) {
-                    // Ignore update errors (race conditions etc)
+            if (!trustedDevice) {
+                // Cookie exists but DB record missing (Stale/Deleted/Revoked)
+                if (!isSetupPage) {
+                    redirect('/api/clear-auth');
                 }
+            } else {
+                // Valid Device - Update lastUsed (throttled to 5 min in DB already)
+                const FIVE_MINUTES = 5 * 60 * 1000;
+                const lastUsed = trustedDevice.lastUsed ? new Date(trustedDevice.lastUsed).getTime() : 0;
+
+                if (now - lastUsed > FIVE_MINUTES) {
+                    try {
+                        await prisma.trustedDevice.update({
+                            where: { deviceId },
+                            data: { lastUsed: new Date() }
+                        });
+                    } catch (e) {
+                        // Ignore update errors
+                    }
+                }
+
+                // Set cookie to track last DB verification (expires in 1 day)
+                // This is done via API route or we return a header
+                // For now, we'll just continue - the middleware/API can set this
             }
         }
+        // If we're within the 30-min window, skip DB call entirely - trust the cookie
     }
 
     // Return Client Layout
     return <AdminLayoutClient initialUser={session.user}>{children}</AdminLayoutClient>;
 }
+

@@ -20,7 +20,7 @@ export async function getCategories(domain?: string) {
 
         if (!tenantId) return [];
 
-        const categories = await prisma.category.findMany({
+        const categories = await (prisma.category.findMany({
             where: {
                 tenantId: tenantId
             },
@@ -29,8 +29,8 @@ export async function getCategories(domain?: string) {
                     select: { products: true }
                 }
             },
-            cacheStrategy: { ttl: 60, swr: 60 }
-        });
+            cacheStrategy: { ttl: 120, swr: 300 } // 2 min fresh, 5 min stale
+        }) as any);
 
         return categories;
     } catch (error) {
