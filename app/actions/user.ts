@@ -15,16 +15,28 @@ export async function checkUserExists(phone: string) {
 }
 
 // Basic simplified create for signup
-export async function createUser(data: { name: string; phone: string; email?: string; address?: string; password?: string }) {
+export async function createUser(data: { name: string; phone: string; email?: string; address?: string; password?: string, tenantId?: string }) {
     // Bot check removed
 
 
     try {
-        const existing = await prisma.user.findFirst({ where: { phone: data.phone } });
+        // Note: data.tenantId should ideally be passed for multi-tenant apps so user is associated with a specific tenant
+        // But Users might be global in some designs? 
+        // Schema has `tenantId String?`. So it is scoped.
+
+        let tenantId = data.tenantId;
+
+        // If checking existence, should we check per tenant?
+        // Usually phone numbers are unique system-wide OR unique per tenant.
+        // If unique per tenant:
+        const whereClause = tenantId ? { phone: data.phone, tenantId } : { phone: data.phone };
+        const existing = await prisma.user.findFirst({ where: whereClause });
+
         if (existing) return { success: false, error: "User already exists" };
 
         const user = await prisma.user.create({
             data: {
+                tenantId,
                 name: data.name,
                 phone: data.phone,
                 email: data.email || `${data.phone}@placeholder.com`,
@@ -54,6 +66,7 @@ export async function createUserWithRole(data: { name: string; email: string; ph
 
         const user = await prisma.user.create({
             data: {
+                tenantId: (session?.user as any)?.tenantId, // Inherit tenant from creator
                 name: data.name,
                 email: data.email,
                 phone: data.phone,
@@ -94,8 +107,14 @@ export async function getAllUsers() {
     }
 
     try {
+        const tenantId = (session?.user as any)?.tenantId; // HUB_ADMIN/SUPER_ADMIN should belong to a tenant? 
+        // If SUPER_ADMIN is global, they might want to see all users OR keyset pagination.
+        // Assuming strict tenancy for now.
+        const where: any = { role: 'USER' };
+        if (tenantId) where.tenantId = tenantId;
+
         const users = await prisma.user.findMany({
-            where: { role: 'USER' }, // Only show customers, not admins
+            where, // Only show customers, filtered by tenant
             orderBy: { id: 'desc' },
             select: { id: true, name: true, email: true, role: true, phone: true, status: true }
         });

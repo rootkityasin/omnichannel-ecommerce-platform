@@ -2,10 +2,16 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { auth } from '@/auth';
 
 export async function getPromos() {
     try {
+        const session = await auth();
+        const tenantId = (session?.user as any)?.tenantId;
+        if (!tenantId) return [];
+
         const promos = await prisma.promoCard.findMany({
+            where: { tenantId },
             orderBy: { createdAt: 'desc' },
         });
         return promos;
@@ -15,11 +21,17 @@ export async function getPromos() {
     }
 }
 
-export async function getActivePromo() {
+export async function getActivePromo(tenantId?: string) {
     try {
+        // If passed explicit tenantId, use it.
+        // If not, we might be in a server component that can use auth()?
+        // But active promo is usually for PUBLIC store.
+        // So public callers must pass tenantId.
+        if (!tenantId) return null;
+
         const promo = await prisma.promoCard.findFirst({
-            where: { isActive: true },
-            orderBy: { updatedAt: 'desc' }, // Get the most recently updated active one? Or just one
+            where: { isActive: true, tenantId },
+            orderBy: { updatedAt: 'desc' },
         });
         return promo;
     } catch (error) {
@@ -30,16 +42,21 @@ export async function getActivePromo() {
 
 export async function createPromo(data: any) {
     try {
+        const session = await auth();
+        const tenantId = (session?.user as any)?.tenantId;
+        if (!tenantId) return { success: false, error: "Unauthorized" };
+
         // If the new promo is set to active, deactivate others (optional logic, but usually we only want 1 popup)
         if (data.isActive) {
             await prisma.promoCard.updateMany({
-                where: { isActive: true },
+                where: { isActive: true, tenantId },
                 data: { isActive: false },
             });
         }
 
         const promo = await prisma.promoCard.create({
             data: {
+                tenantId,
                 title: data.title,
                 description: data.description,
                 imageUrl: data.imageUrl,

@@ -11,6 +11,8 @@ export async function uploadToCloudinary(formData: FormData) {
         const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.replace(/['"]/g, '').trim();
         const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET?.replace(/['"]/g, '').trim();
 
+        console.log("Debug Upload Env:", { cloudName: cloudName || 'MISSING', preset: uploadPreset || 'MISSING' });
+
         if (!cloudName || !uploadPreset) {
             return { success: false, error: "Cloudinary configuration missing on server" };
         }

@@ -27,6 +27,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createOrder } from '@/app/actions/order';
+import { getStorySections } from '@/app/actions/story';
+import { useLanguageStore } from '@/lib/languageStore';
+import { translations } from '@/lib/translations';
 import { getSiteConfig } from '@/app/actions/settings';
 import { CouponSection } from './CouponSection';
 import { useRouter } from 'next/navigation';
@@ -77,11 +80,15 @@ export function GlobalCheckoutDrawer() {
     const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
     const totalAmount = discountedTotal + deliveryFee + taxAmount;
 
+    // Success State
+    const [successOrder, setSuccessOrder] = useState<any>(null);
+
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsAnimating(true);
 
         const orderData = {
+            tenantId: siteConfig?.tenantId,
             customerName: formData.name,
             customerPhone: formData.phone,
             customerAddress: `${formData.address}, ${formData.area}`,
@@ -119,19 +126,24 @@ export function GlobalCheckoutDrawer() {
             });
 
             toast.success("Order placed successfully!");
-            setTimeout(() => {
-                setIsAnimating(false);
-                clearCart();
-                closeCheckout();
-                router.push('/cart');
-            }, 1000);
+            clearCart();
+            setSuccessOrder({ id: res.orderId, total: totalAmount });
+            setIsAnimating(false);
+            // Do NOT close immediately. Show success view.
         } else {
             toast.error(res.error || "Failed to place order");
             setIsAnimating(false);
         }
     };
 
-    if (items.length === 0) return null;
+    const handleCloseSuccess = () => {
+        setSuccessOrder(null);
+        closeCheckout();
+        // Maybe redirect to home or order history if available?
+        // for now just close.
+    };
+
+    if (items.length === 0 && !successOrder) return null;
 
     // Shared Form Component
     function CheckoutForm({ className }: { className?: string }) {
@@ -168,7 +180,13 @@ export function GlobalCheckoutDrawer() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Dhaka">Dhaka</SelectItem>
-                                        <SelectItem value="Ctg">Ctg</SelectItem>
+                                        <SelectItem value="Barisal">Barisal</SelectItem>
+                                        <SelectItem value="Chittagong">Chittagong</SelectItem>
+                                        <SelectItem value="Khulna">Khulna</SelectItem>
+                                        <SelectItem value="Rajshahi">Rajshahi</SelectItem>
+                                        <SelectItem value="Sylhet">Sylhet</SelectItem>
+                                        <SelectItem value="Rangpur">Rangpur</SelectItem>
+                                        <SelectItem value="Mymensingh">Mymensingh</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -221,6 +239,63 @@ export function GlobalCheckoutDrawer() {
         );
     }
 
+    // Load Cart Texts for Success State
+    const [cartTexts, setCartTexts] = useState<any>(null);
+    useEffect(() => {
+        const loadTexts = async () => {
+            const sections = await getStorySections();
+            const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
+            if (cartSection?.content) {
+                setCartTexts(cartSection.content);
+            }
+        };
+        loadTexts();
+    }, []);
+
+    const { language } = useLanguageStore();
+    const t = translations[language as keyof typeof translations] as any;
+
+    function SuccessView() {
+        return (
+            <div className="flex flex-col items-center justify-center text-center p-8 space-y-6 animate-in fade-in zoom-in duration-300 min-h-[50vh]">
+                <div className="w-48 h-48 md:w-64 md:h-64 mb-2 flex items-center justify-center overflow-hidden">
+                    <img
+                        src={cartTexts?.successImage || "/congrates_animation.gif"}
+                        alt="Order Confirmed"
+                        className="w-full h-full object-contain scale-105"
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">
+                        {cartTexts?.successTitle || t?.cartPage?.successTitle || "Order Placed!"}
+                    </h2>
+                    <p className="text-gray-500 max-w-xs mx-auto">
+                        {cartTexts?.successMessage || `We'll call you shortly at ${formData.phone}.`}
+                    </p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 w-full max-w-xs mx-auto mt-4">
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-500 text-xs">Order ID</span>
+                        <span className="font-mono font-bold text-gray-900 text-sm">{successOrder?.id}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-xs">Total Amount</span>
+                        <span className="font-bold text-crab-red text-sm">৳{successOrder?.total}</span>
+                    </div>
+                </div>
+
+                <Button
+                    onClick={handleCloseSuccess}
+                    className="w-full max-w-xs h-12 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-all mt-6"
+                >
+                    {cartTexts?.backHome || t?.cartPage?.backHome || "Continue Shopping"}
+                </Button>
+            </div>
+        );
+    }
+
     // Shared Button Component
     function CheckoutButton() {
         return (
@@ -238,34 +313,36 @@ export function GlobalCheckoutDrawer() {
 
     if (isDesktop) {
         return (
-            <Dialog open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
+            <Dialog open={checkoutOpen} onOpenChange={(open) => !open && (successOrder ? handleCloseSuccess() : closeCheckout())}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
-                    <DialogHeader>
-                        <DialogTitle className="text-3xl font-black text-slate-900">Checkout</DialogTitle>
-                        <DialogDescription>Review your order and enter delivery details to complete your purchase.</DialogDescription>
-                    </DialogHeader>
+                    {successOrder ? (
+                        <SuccessView />
+                    ) : (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle className="text-3xl font-black text-slate-900">Checkout</DialogTitle>
+                                <DialogDescription>Review your order and enter delivery details to complete your purchase.</DialogDescription>
+                            </DialogHeader>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-                        {/* Right: Order Summary (Displayed first on mobile if we weren't using Dialog for desktop only, but here order doesn't fail accessibility) */}
-                        {/* Actually, let's put Summary on right for typical eCommerce feel */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                                {/* Left: Form */}
+                                <div className="order-2 md:order-1">
+                                    <CheckoutForm />
+                                    <div className="hidden md:block">
+                                        <CheckoutButton />
+                                    </div>
+                                </div>
 
-                        {/* Left: Form */}
-                        <div className="order-2 md:order-1">
-                            <CheckoutForm />
-                            <div className="hidden md:block">
-                                <CheckoutButton />
+                                {/* Right: Summary */}
+                                <div className="order-1 md:order-2">
+                                    <OrderSummary />
+                                    <div className="md:hidden mt-4">
+                                        <CheckoutButton />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Right: Summary */}
-                        <div className="order-1 md:order-2">
-                            <OrderSummary />
-                            {/* Mobile-only button placement if we ever switch back, but here we can just keep it simple */}
-                            <div className="md:hidden mt-4">
-                                <CheckoutButton />
-                            </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </DialogContent>
             </Dialog>
         );
@@ -273,25 +350,31 @@ export function GlobalCheckoutDrawer() {
 
     // Mobile Drawer
     return (
-        <Drawer open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
+        <Drawer open={checkoutOpen} onOpenChange={(open) => !open && (successOrder ? handleCloseSuccess() : closeCheckout())}>
             <DrawerContent className="max-h-[90vh] bg-white border-t-0">
-                <div className="w-full max-w-lg mx-auto bg-white flex flex-col h-full">
-                    <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0">
-                        <DrawerTitle className="text-2xl font-black text-center text-slate-900">Checkout</DrawerTitle>
-                        <DrawerDescription className="text-center font-medium">
-                            Complete your order
-                        </DrawerDescription>
-                    </DrawerHeader>
-
-                    <div className="p-4 overflow-y-auto flex-1 space-y-6">
-                        <OrderSummary />
-                        <CheckoutForm />
+                {successOrder ? (
+                    <div className="w-full max-w-lg mx-auto bg-white py-8">
+                        <SuccessView />
                     </div>
+                ) : (
+                    <div className="w-full max-w-lg mx-auto bg-white flex flex-col h-full">
+                        <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0">
+                            <DrawerTitle className="text-2xl font-black text-center text-slate-900">Checkout</DrawerTitle>
+                            <DrawerDescription className="text-center font-medium">
+                                Complete your order
+                            </DrawerDescription>
+                        </DrawerHeader>
 
-                    <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
-                        <CheckoutButton />
+                        <div className="p-4 overflow-y-auto flex-1 space-y-6">
+                            <OrderSummary />
+                            <CheckoutForm />
+                        </div>
+
+                        <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
+                            <CheckoutButton />
+                        </div>
                     </div>
-                </div>
+                )}
             </DrawerContent>
         </Drawer>
     );

@@ -1,5 +1,7 @@
 'use server';
 
+import { auth } from '@/auth';
+
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
@@ -78,7 +80,13 @@ export async function getInventoryStats() {
 
 // --- Stock Management ---
 export async function getProductsForStock() {
+    const session = await auth();
+    const tenantId = (session?.user as any)?.tenantId;
+
+    if (!tenantId) return [];
+
     return await prisma.product.findMany({
+        where: { tenantId },
         select: {
             id: true,
             name: true,

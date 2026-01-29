@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
 
 export async function createOrder(data: {
     customerName: string;
@@ -10,15 +11,27 @@ export async function createOrder(data: {
     totalAmount: number;
     couponCode?: string;
     discountAmount?: number;
+    tenantId?: string; // Optional but recommended
 }) {
     // Bot check removed
 
 
     try {
-        // 1. Create Order
+        // 1. Resolve Tenant
+        // For public order creation, we expect 'domain' or 'tenantId' to be passed? 
+        // Or if this is called from client component on a subdomain, we can inspect headers?
+        // Actually, best specific usage suggests passing tenantId in data or resolving it.
+        // Let's assume for now, public createOrder needs to resolve based on... something.
+        // If this is public, we can't use auth().
+        // We probably need to pass tenantId from the client (derived from page props).
+
+        let tenantId = (data as any).tenantId;
+
+        // 2. Create Order
         const order = await prisma.order.create({
             data: {
-                orderId: `ORD-${Date.now()}`, // Simple ID generation
+                tenantId, // Add Tenant Scope
+                orderId: `ORD-${Date.now()}`,
                 customerName: data.customerName,
                 customerPhone: data.customerPhone,
                 customerAddress: data.customerAddress,
@@ -34,6 +47,8 @@ export async function createOrder(data: {
                 }
             }
         });
+
+        // ... (rest of function)
 
 
 
@@ -62,7 +77,12 @@ export async function createOrder(data: {
 
 export async function getAdminOrders() {
     try {
+        const session = await auth();
+        const tenantId = (session?.user as any)?.tenantId;
+        if (!tenantId) return [];
+
         const orders = await prisma.order.findMany({
+            where: { tenantId },
             include: {
                 items: {
                     include: {
