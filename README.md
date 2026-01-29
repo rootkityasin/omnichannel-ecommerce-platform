@@ -38,7 +38,16 @@ We adhere to professional engineering standards inspired by **ISO 9001** and **I
 The project maintains high stability through automated verification:
 - **Unit Testing**: Powered by **Vitest**. (Run `npm test` to verify)
 - **Security Logic Verification**: Critical security controls (like rate limits) are mathematically verified via automated tests.
-- **Static Analysis**: TypeScript strict mode and ESLint enforcement.
+### 🏆 Certification Readiness Matrix
+This project is engineered to meet rigorous enterprise standards.
+
+| Standard | Control | Implementation Evidence |
+|:---|:---|:---|
+| **ISO 27001** | **A.14.2.8** (System Testing) | Automated Security Unit Tests (`lib/rate-limit.test.ts`) |
+| **ISO 27001** | **A.12.6.1** (Vulnerability Mgmt) | ZAP Audit + Automated Dependency Scanning |
+| **ISO 9001** | **8.1** (Operational Planning) | CI/CD Pipeline via GitHub Actions |
+| **ISO 9001** | **7.5.3** (Documented Info) | Full Compliance Documentation (`docs/ISO_COMPLIANCE.md`) |
+| **GDPR** | **Art. 25** (Privacy by Design) | Data Minimization & Cookie Consent Architecture |
 
 ---
 
