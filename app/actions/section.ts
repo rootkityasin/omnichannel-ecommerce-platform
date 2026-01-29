@@ -290,7 +290,7 @@ export async function seedDefaultSections(domain?: string) {
             }
         }
 
-        revalidateTag('home-sections');
+        revalidateTag('home-sections', {});
         revalidatePath('/');
     } catch (error) {
         console.error("Error auto-assigning products during seed:", error);

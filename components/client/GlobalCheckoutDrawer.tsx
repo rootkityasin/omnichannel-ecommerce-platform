@@ -238,7 +238,7 @@ export function GlobalCheckoutDrawer() {
     if (isDesktop) {
         return (
             <Dialog open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
                     <DialogHeader>
                         <DialogTitle className="text-3xl font-black text-slate-900">Checkout</DialogTitle>
                         <DialogDescription>Review your order and enter delivery details to complete your purchase.</DialogDescription>
@@ -274,7 +274,7 @@ export function GlobalCheckoutDrawer() {
     return (
         <Drawer open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
             <DrawerContent className="max-h-[90vh]">
-                <div className="w-full max-w-lg mx-auto bg-slate-50/50 flex flex-col h-full">
+                <div className="w-full max-w-lg mx-auto bg-white flex flex-col h-full">
                     <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0">
                         <DrawerTitle className="text-2xl font-black text-center text-slate-900">Checkout</DrawerTitle>
                         <DrawerDescription className="text-center font-medium">
