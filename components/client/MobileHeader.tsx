@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useCartStore } from '@/lib/store';
 import { menuItems } from '@/lib/data';
 import { toast } from 'sonner';
-import { getSiteConfig } from '@/app/actions/settings';
+import { useSettings } from '@/components/providers/SettingsProvider';
 
 import { translations } from '@/lib/translations';
 import { Mascot } from './Mascot';
@@ -20,7 +20,8 @@ import { useGeolocation } from '@/lib/hooks/useGeolocation';
 
 export function MobileHeader() {
     const [mounted, setMounted] = useState(false);
-    const [config, setConfig] = useState<any>(null);
+    const { settings } = useSettings();
+    const config = settings;
     const cartItems = useCartStore((state) => state.items);
     const openCheckout = useCartStore((state) => state.openCheckout);
     const { language, toggleLanguage } = useLanguageStore();
@@ -31,7 +32,6 @@ export function MobileHeader() {
 
     useEffect(() => {
         setMounted(true);
-        getSiteConfig().then(setConfig);
 
         function handleClickOutside(event: MouseEvent) {
             if (

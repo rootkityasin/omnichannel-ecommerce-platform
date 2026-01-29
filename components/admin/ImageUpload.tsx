@@ -67,52 +67,30 @@ export function ImageUpload({
     };
 
     const uploadFile = async (originalFile: File): Promise<string | null> => {
-        // Sanitize: Remove quotes and whitespace that might be in .env
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.replace(/['"]/g, '').trim();
-        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET?.replace(/['"]/g, '').trim();
-        console.log("Cloudinary Config (Sanitized):", { cloudName, uploadPreset });
-
-        // --- FALLBACK (Local Base64) ---
-        // Warning: This can cause database bloat if used excessively.
-        const getLocalFallback = (): Promise<string> => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(originalFile); // Fallback uses original format
-            });
-        };
-
-        if (!cloudName || !uploadPreset) {
-            toast.warning("Cloudinary not configured. Using local storage (not recommended for production).");
-            return await getLocalFallback();
-        }
-
         try {
-            // Convert to WebP
+            // Convert to WebP (Client-side optimization before upload)
             const file = await convertToWebP(originalFile);
 
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('upload_preset', uploadPreset);
 
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                { method: 'POST', body: formData }
-            );
+            // Use Server Action for secure upload
+            const result = await uploadToCloudinary(formData);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || "Cloudinary upload failed");
+            if (!result.success) {
+                throw new Error(result.error || "Upload failed");
             }
 
-            const data = await response.json();
-            return data.secure_url;
+            return result.url as string;
         } catch (error) {
             console.error("Upload Error:", error);
             toast.error(`Upload failed: ${String(error)}`);
-            return await getLocalFallback(); // Fallback to local (original file usually? or we try rendering the webp locally? Let's use getLocalFallback which uses originalFile)
-            // Note: convertToWebP might have failed or upload failed. If conversion failed, error is caught here.
-            // If upload failed, we fall back.
+            // Fallback to local base64 if upload fails (optional, good for offline dev)
+            return await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(originalFile);
+            });
         }
     };
 

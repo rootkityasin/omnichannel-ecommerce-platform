@@ -446,10 +446,10 @@ export default function OrdersPage() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <SummaryCard label="Today's Orders" value={orders.length.toString()} subtext="2 canceled" />
-                <SummaryCard label="Total Amount" value={`৳ ${orders.reduce((acc: number, o: any) => acc + o.price, 0).toLocaleString()}`} subtext="+12% from yesterday" />
-                <SummaryCard label="Pending Processing" value={orders.filter(o => o.status === 'Processing' || o.status === 'Placed').length.toString()} subtext="Need attention" active />
-                <SummaryCard label="Dispatched" value={orders.filter(o => o.status === 'Shipped').length.toString()} subtext="On the way" />
+                <SummaryCard label="Today's Orders" value={orders.length.toString()} subtext={`${orders.filter((o: any) => o.status === 'Cancelled').length} canceled`} />
+                <SummaryCard label="Total Amount" value={`৳ ${orders.reduce((acc: number, o: any) => acc + o.price, 0).toLocaleString()}`} subtext="Total Sales" />
+                <SummaryCard label="Pending Processing" value={orders.filter((o: any) => o.status === 'Processing' || o.status === 'Placed').length.toString()} subtext="Need attention" active />
+                <SummaryCard label="Dispatched" value={orders.filter((o: any) => o.status === 'Shipped').length.toString()} subtext="On the way" />
             </div>
 
             {/* Main Content with Tabs */}

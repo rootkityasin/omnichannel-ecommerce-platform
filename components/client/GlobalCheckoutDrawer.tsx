@@ -229,6 +229,7 @@ export function GlobalCheckoutDrawer() {
                 type="submit"
                 disabled={isAnimating}
                 className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6"
+                style={{ backgroundColor: '#E60000' }} // Force color to override any defaults
             >
                 {isAnimating ? <Loader2 className="animate-spin w-5 h-5" /> : `Place Order - ৳${totalAmount}`}
             </Button>
@@ -273,7 +274,7 @@ export function GlobalCheckoutDrawer() {
     // Mobile Drawer
     return (
         <Drawer open={checkoutOpen} onOpenChange={(open) => !open && closeCheckout()}>
-            <DrawerContent className="max-h-[90vh]">
+            <DrawerContent className="max-h-[90vh] bg-white border-t-0">
                 <div className="w-full max-w-lg mx-auto bg-white flex flex-col h-full">
                     <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0">
                         <DrawerTitle className="text-2xl font-black text-center text-slate-900">Checkout</DrawerTitle>

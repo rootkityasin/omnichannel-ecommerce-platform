@@ -37,7 +37,7 @@ const defaultSettings = {
     measurementUnit: "PCS",
     allergensText: "",
     certificates: [] as any[],
-    primaryColor: "#ea0000",
+    primaryColor: "#F40000",
     secondaryColor: "#0f172a",
     taxPercentage: 0,
     weightUnitValue: 200,
@@ -84,6 +84,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         hasFetched.current = true;
         refreshSettings();
     }, []);
+
+    // Sync CSS variables with settings
+    useEffect(() => {
+        if (settings.primaryColor) {
+            document.documentElement.style.setProperty('--crab-red', settings.primaryColor);
+        }
+        if (settings.secondaryColor) {
+            document.documentElement.style.setProperty('--ocean-blue', settings.secondaryColor);
+        }
+    }, [settings.primaryColor, settings.secondaryColor]);
 
     return (
         <SettingsContext.Provider value={{ settings, loading, refreshSettings }}>

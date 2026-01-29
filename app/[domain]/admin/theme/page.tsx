@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function ThemeSettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [primaryColor, setPrimaryColor] = useState('#e60000'); // Default Crab Red
+    const [primaryColor, setPrimaryColor] = useState('#F40000'); // Default Airtel Red
     const [secondaryColor, setSecondaryColor] = useState('#0f172a'); // Default Slate 900
     const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
     const [config, setConfig] = useState<any>(null);
@@ -165,7 +165,7 @@ export default function ThemeSettingsPage() {
                                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 {saving ? "Saving..." : "Publish Changes"}
                             </button>
-                            <button onClick={() => { setPrimaryColor('#e60000'); setSecondaryColor('#0f172a'); }} className="w-full py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-xs font-bold flex items-center justify-center gap-2">
+                            <button onClick={() => { setPrimaryColor('#F40000'); setSecondaryColor('#0f172a'); }} className="w-full py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-xs font-bold flex items-center justify-center gap-2">
                                 <RotateCcw className="w-3.5 h-3.5" /> Reset Defaults
                             </button>
                         </div>
