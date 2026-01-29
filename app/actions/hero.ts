@@ -13,8 +13,7 @@ export async function getHeroSlides(domain?: string) {
         if (domain && !tenant) return [];
 
         const slides = await (prisma.heroSlide.findMany({
-            orderBy: { order: 'asc' },
-            cacheStrategy: { ttl: 60, swr: 300 } // 1min fresh, 5min stale
+            orderBy: { order: 'asc' }
         }) as any);
 
         return slides.map((slide: any) => ({

@@ -68,8 +68,7 @@ const getPublicSiteConfig = unstable_cache(
                             customDomain: true
                         }
                     }
-                },
-                cacheStrategy: { ttl: 60 } // Cache for 1 minute
+                }
             }) as any);
 
             if (!config) return defaults;
@@ -156,8 +155,7 @@ export async function getAdminSiteConfig() {
                         customDomain: true
                     }
                 }
-            },
-            cacheStrategy: { ttl: 30 } // Cache for 30 seconds
+            }
         }) as any);
 
         if (!config) return defaults;
@@ -297,8 +295,7 @@ export async function getPaymentConfig() {
 
     try {
         const config = await (prisma.paymentConfig.findUnique({
-            where: { tenantId },
-            cacheStrategy: { ttl: 60 } // Cache for 1 minute
+            where: { tenantId }
         }) as any);
 
         if (!config) {
@@ -364,8 +361,7 @@ export async function getDeliveryConfig() {
 
     try {
         const config = await (prisma.deliveryConfig.findUnique({
-            where: { tenantId },
-            cacheStrategy: { ttl: 60 } // Cache for 1 minute
+            where: { tenantId }
         }) as any);
         if (!config) {
             return {

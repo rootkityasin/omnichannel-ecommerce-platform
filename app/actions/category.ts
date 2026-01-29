@@ -28,8 +28,7 @@ export async function getCategories(domain?: string) {
                 _count: {
                     select: { products: true }
                 }
-            },
-            cacheStrategy: { ttl: 120, swr: 300 } // 2 min fresh, 5 min stale
+            }
         }) as any);
 
         return categories;

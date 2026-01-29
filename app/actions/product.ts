@@ -45,10 +45,6 @@ export async function getProducts(domain?: string) {
                 cookingImage: true,
                 stage: true,
                 sku: true,
-            },
-            cacheStrategy: {
-                ttl: 60,   // Fresh data for 60 seconds
-                swr: 300   // Serve stale for 5 min while revalidating
             }
         }) as any);
 
@@ -71,10 +67,6 @@ export async function getProduct(id: string) {
                         child: true
                     }
                 }
-            },
-            cacheStrategy: {
-                ttl: 30,   // Fresh for 30 seconds
-                swr: 120   // Serve stale for 2 min while revalidating
             }
         }) as any);
         return product;
