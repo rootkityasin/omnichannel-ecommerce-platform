@@ -12,12 +12,17 @@ export const getTenantByDomain = unstable_cache(
         if (!domain) return null;
 
         try {
+            // Normalize domain to handle www.
+            const normalized = domain.toLowerCase().replace('www.', '');
+            const subdomain = normalized.split('.')[0];
+
             const tenant = await prisma.tenant.findFirst({
                 where: {
                     OR: [
-                        { slug: domain },
-                        { customDomain: domain },
-                        { slug: domain.split('.')[0] } // Fallback for 'slug.localhost'
+                        { slug: subdomain }, // Matches 'crabkhai' from 'crabkhai.com'
+                        { customDomain: domain }, // Exact match 'www.crabkhai.com'
+                        { customDomain: normalized }, // Match 'crabkhai.com'
+                        { slug: domain } // Fallback exact slug match
                     ]
                 }
             });
