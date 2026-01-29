@@ -5,12 +5,14 @@ import { useCartStore } from '@/lib/store';
 import { validateCoupon } from '@/app/actions/coupon';
 import { toast } from 'sonner';
 import { Loader2, Ticket, X } from 'lucide-react';
+import { useSettings } from '@/components/providers/SettingsProvider';
 
 export function CouponSection() {
     const { coupon, applyCoupon, removeCoupon, total } = useCartStore();
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const { settings } = useSettings();
 
     const handleApply = async () => {
         if (!code) return;
