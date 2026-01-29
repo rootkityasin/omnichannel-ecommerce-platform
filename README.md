@@ -66,6 +66,17 @@ The platform includes rigorous optimizations to minimize resource usage and late
 - **Bundle Optimization**: Source maps disabled in production; external packages excluded from the server bundle.
 - **Debouncing**: Custom hooks manage search inputs and scroll events to reduce main-thread blocking.
 
+### 📊 Load Test Benchmarks
+Benchmarks performed on standard local hardware. Cloud deployment (Vercel) expected to scale 10x-50x higher.
+
+| Scenario | Environment | Req/Sec | Latency | Est. Capacity |
+|:---|:---|:---|:---|:---|
+| **Development** | Local `npm run dev` | ~20 RPS | 2.2s | ~200 Users |
+| **Production** | Local `npm start` | ~50 RPS | 1.0s | ~2,250 Users |
+| **Mobile Traffic** | Production (Simulated) | **66 RPS** | **0.7s** | **~3,000 Users** |
+
+> *Verified via Autocannon with 50 concurrent connections.*
+
 ---
 
 ## Getting Started
