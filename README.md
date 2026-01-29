@@ -47,6 +47,7 @@ This project is engineered to meet rigorous enterprise standards.
 | **ISO 27001** | **A.12.6.1** (Vulnerability Mgmt) | ZAP Audit + Automated Dependency Scanning |
 | **ISO 9001** | **8.1** (Operational Planning) | CI/CD Pipeline via GitHub Actions |
 | **ISO 9001** | **7.5.3** (Documented Info) | Full Compliance Documentation (`docs/ISO_COMPLIANCE.md`) |
+| **SOC 2** | **A1.1** (Availability) | Automated Health Monitoring (`/api/health`) |
 | **GDPR** | **Art. 25** (Privacy by Design) | Data Minimization & Cookie Consent Architecture |
 
 ---
