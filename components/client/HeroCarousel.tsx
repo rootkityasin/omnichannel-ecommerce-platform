@@ -133,6 +133,7 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
                     />
                 ))}
             </div>
+
         </div>
     );
 }

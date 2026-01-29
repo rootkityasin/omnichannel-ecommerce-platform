@@ -2,8 +2,8 @@
 
 import { HeroCarousel } from '@/components/client/HeroCarousel';
 import { CategoryNav } from '@/components/client/CategoryNav';
-import { ScrollMouse } from '@/components/client/ScrollMouse';
 import TrustFooter from '@/components/client/TrustFooter';
+import { ScrollMouse } from '@/components/shared/ScrollMouse';
 import { ResourcePrefetcher } from '@/components/client/ResourcePrefetcher';
 
 interface HomeClientProps {
@@ -19,12 +19,11 @@ export function HomeClient({ heroSlides, config, categories, children }: HomeCli
             {/* Background Prefetcher */}
             <ResourcePrefetcher />
 
-            {/* Hero Section */}
             <HeroCarousel slides={heroSlides} />
 
-            {/* Scroll Indicator & Spacing - Desktop Only */}
+            {/* Scroll Indicator & Spacing - Desktop Only (Restored Position) */}
             <div className="hidden md:flex flex-col items-center pt-4 pb-24 bg-slate-50 relative z-20">
-                <ScrollMouse />
+                <ScrollMouse theme="dark" />
             </div>
 
             {/* Categories */}

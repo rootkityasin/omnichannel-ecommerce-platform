@@ -1,5 +1,7 @@
 'use client';
 
+import { ScrollMouse } from '@/components/shared/ScrollMouse';
+
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
@@ -79,20 +81,9 @@ export function HeroStory({ data }: HeroProps) {
             </motion.div>
 
             {/* Scroll Indicator */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 1.2 }}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2"
-            >
-                <motion.div
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="w-6 h-10 border-2 border-crab-red rounded-full flex items-start justify-center p-2"
-                >
-                    <motion.div className="w-1 h-2 bg-crab-red rounded-full" />
-                </motion.div>
-            </motion.div>
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20">
+                <ScrollMouse />
+            </div>
         </div>
     );
 }

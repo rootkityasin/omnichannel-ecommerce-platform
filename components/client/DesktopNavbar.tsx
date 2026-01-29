@@ -98,7 +98,7 @@ export function DesktopNavbar() {
                                 "relative z-[110] p-2 -ml-2 rounded-full transition-colors",
                                 isSidebarOpen
                                     ? "text-white hover:bg-white/10"
-                                    : !isTransparent ? "text-slate-800 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                                    : !isTransparent ? "text-ocean-blue hover:bg-slate-100" : "text-ocean-blue hover:bg-black/5"
                             )}
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             animate={isSidebarOpen ? "open" : "closed"}
@@ -147,7 +147,7 @@ export function DesktopNavbar() {
                             ) : (
                                 <span className={cn(
                                     "font-black tracking-tighter uppercase transition-colors",
-                                    !isTransparent ? "text-2xl text-slate-900" : "text-3xl text-white drop-shadow-md"
+                                    !isTransparent ? "text-2xl text-ocean-blue" : "text-3xl text-ocean-blue drop-shadow-sm"
                                 )}>
                                     {config?.shopName || "CrabKhai"}
                                 </span>
@@ -164,7 +164,7 @@ export function DesktopNavbar() {
                         }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className={cn(
-                            "flex items-center gap-8 bg-black/20 backdrop-blur-md px-8 py-2.5 rounded-full border border-white/10 shadow-sm transition-opacity duration-300",
+                            "flex items-center gap-8 bg-white/50 backdrop-blur-md px-8 py-2.5 rounded-full border border-slate-200/20 shadow-sm transition-opacity duration-300",
                             isSidebarOpen && "opacity-0 pointer-events-none",
                             "absolute left-1/2 top-1/2"
                         )}>
@@ -178,7 +178,7 @@ export function DesktopNavbar() {
                                         "text-sm font-bold tracking-wide uppercase transition-colors relative",
                                         isActive
                                             ? "text-crab-red"
-                                            : !isTransparent ? "text-slate-700 hover:text-crab-red" : "text-white hover:text-crab-red" // Text color adapts to bg
+                                            : !isTransparent ? "text-ocean-blue hover:text-crab-red" : "text-ocean-blue hover:text-crab-red" // Text color adapts to bg
                                     )}
                                 >
                                     {item.label}
@@ -209,7 +209,7 @@ export function DesktopNavbar() {
                                 language !== 'en' ? 'font-bangla' : 'font-body',
                                 !isTransparent
                                     ? "border-slate-200 text-slate-600 hover:border-crab-red hover:text-crab-red"
-                                    : "border-white/30 text-white hover:bg-white/10"
+                                    : "border-ocean-blue/20 text-ocean-blue hover:bg-black/5"
                             )}
                         >
                             {language === 'en' ? 'EN' : language === 'bn' ? 'বাংলা' : language.toUpperCase()}
@@ -219,7 +219,7 @@ export function DesktopNavbar() {
                         <button onClick={openCart} className="relative group mr-2">
                             <div className={cn(
                                 "p-2 rounded-full transition-colors",
-                                !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                                !isTransparent ? "text-ocean-blue hover:bg-slate-100" : "text-ocean-blue hover:bg-black/5"
                             )}>
                                 <ShoppingCart className="w-5 h-5" />
                                 {cartCount > 0 && (
@@ -235,7 +235,7 @@ export function DesktopNavbar() {
                             onClick={handleLocationClick}
                             className={cn(
                                 "p-2 rounded-full transition-colors",
-                                !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                                !isTransparent ? "text-ocean-blue hover:bg-slate-100" : "text-ocean-blue hover:bg-black/5"
                             )}
                         >
                             <MapPin className="w-5 h-5" />
@@ -248,7 +248,7 @@ export function DesktopNavbar() {
                                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all shadow-sm",
                                 !isTransparent
                                     ? "border-slate-200 bg-white text-slate-700 hover:border-crab-red hover:text-crab-red"
-                                    : "border-white/30 bg-white/10 backdrop-blur-md text-white hover:bg-white/20"
+                                    : "border-ocean-blue/10 bg-white/50 backdrop-blur-md text-ocean-blue hover:bg-white/80"
                             )}
                         >
                             <User className="w-4 h-4" />
