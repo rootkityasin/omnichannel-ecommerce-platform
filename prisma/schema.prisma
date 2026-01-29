@@ -30,6 +30,7 @@ model Tenant {
   categories    Category[]
   coupons       Coupon[]
   promos        PromoCard[]
+  auditLogs     AuditLog[]
 }
 
 model Product {
@@ -329,6 +330,23 @@ model SecurityLog {
   details   String?
   userAgent String?
   createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  actorName   String   // Who did it (User Name)
+  actorEmail  String   // Who did it (User Email)
+  action      String   // CREATE, UPDATE, DELETE, LOGIN
+  entity      String   // PRODUCT, ORDER, SETTINGS
+  entityId    String?
+  details     String?  // Human readable description
+  metadata    Json?    // Technical Diff { old, new }
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
 }
 
 model TrustedDevice {

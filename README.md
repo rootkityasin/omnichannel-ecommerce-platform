@@ -243,14 +243,16 @@ This project includes a robust backend administrative dashboard designed to stre
 - **Smart Admin Redirect**: Intelligent routing that instantly directs admins to the dashboard upon login.
 - **User Roles**: Granular access control for admins, kitchen staff, and managers.
 
-### 🚀 Latest Features (v2.2)
-- **Prisma Accelerate Edge Caching**: Reduces database operations by 80-90% using server-side edge caching with SWR strategy.
-- **ISR for User Pages**: Home and Menu pages use Incremental Static Regeneration for instant loads.
-- **Unified ImageUpload Component**: Consolidated file upload with 5MB limit and Cloudinary integration.
+### 🚀 Latest Features (v2.3 Enterprise)
+- **Enterprise Audit Logging**: Tracks every critical admin action (Who, What, When) for complete accountability and compliance.
+- **SOC 2 Health Check**: Automated `/api/health` endpoint for uptime monitoring.
+- **Prisma Accelerate Edge Caching**: Reduces database operations by 80-90%.
+- **ISR for User Pages**: Instant page loads with Incremental Static Regeneration.
 
-### Previous Features (v2.1)
-- **Lazy Stock Deduction**: Stock is only deducted when you **Print the Invoice**, preventing inventory drift from unconfirmed orders.
-- **Client Intelligence**:
+### Previous Features (v2.2)
+- **Unified ImageUpload Component**: Consolidated file upload with Cloudinary.
+- **Lazy Stock Deduction**: Stock is only deducted when invoice is printed.
+- **Client Intelligence**: Repeat Badge and Blocklist System.
   - **Repeat Badge**: Automatically tags returning customers (e.g., "5x Order") to help prioritize loyalty.
   - **Blocklist System**: Mark bad actors as "Fake". Future orders from them will be flagged with a Red Alert.
 - **Invoice Printing**: Integrated one-click A4/Thermal invoice generation.
