@@ -211,6 +211,7 @@ export async function updateSiteConfig(data: any) {
                     measurementUnit: data.measurementUnit,
                     allergensText: data.allergensText,
                     certificates: data.certificates || [],
+                    primaryColor: data.primaryColor,
                     secondaryColor: data.secondaryColor,
                     taxPercentage: parseFloat(data.taxPercentage || 0),
                     shopType: (data.shopType as ShopType) || ShopType.RESTAURANT,
