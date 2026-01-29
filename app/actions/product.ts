@@ -109,6 +109,7 @@ export async function createProduct(data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidatePath('/');
         return { success: true, product };
     } catch (error) {
         console.error("Create Product Error:", error);
@@ -138,6 +139,7 @@ export async function updateProduct(id: string, data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Update Product Error:", error);
@@ -150,6 +152,7 @@ export async function deleteProduct(id: string) {
         await prisma.product.delete({ where: { id } });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidatePath('/');
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to delete" };

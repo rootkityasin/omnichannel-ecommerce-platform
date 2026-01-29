@@ -80,6 +80,7 @@ export async function createSection(data: { title: string; slug: string; isActiv
             }
         });
         revalidatePath('/admin/sections');
+        revalidatePath('/');
         return { success: true, section };
     } catch (error) {
         return { success: false, error: "Failed to create section" };
@@ -93,6 +94,7 @@ export async function updateSection(id: string, data: { title?: string; slug?: s
             data
         });
         revalidatePath('/admin/sections');
+        revalidatePath('/');
         return { success: true, section };
     } catch (error) {
         return { success: false, error: "Failed to update section" };
@@ -103,6 +105,7 @@ export async function deleteSection(id: string) {
     try {
         await prisma.productSection.delete({ where: { id } });
         revalidatePath('/admin/sections');
+        revalidatePath('/');
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to delete section" };
@@ -308,6 +311,7 @@ export async function reorderSections(items: { id: string; order: number }[]) {
             )
         );
         revalidatePath('/admin/sections');
+        revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Failed to reorder sections:", error);

@@ -25,6 +25,8 @@ export async function updateStorySection(type: string, content: any) {
         });
         revalidatePath('/story'); // Update the public page
         revalidatePath('/admin/landing'); // Update the admin page
+        revalidatePath('/'); // Update the homepage
+        revalidatePath('/[domain]', 'page'); // Update domain logic if dynamic
         return { success: true };
     } catch (error) {
         console.error(`Failed to update story section ${type}:`, error);

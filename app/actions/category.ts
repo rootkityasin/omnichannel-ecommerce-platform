@@ -53,6 +53,7 @@ export async function createCategory(name: string, animationType: string = "AUTO
             }
         });
         revalidatePath('/admin/categories');
+        revalidatePath('/');
         return { success: true, category };
     } catch (error) {
         console.error("Create Category Error:", error);
@@ -64,6 +65,7 @@ export async function deleteCategory(id: string) {
     try {
         await prisma.category.delete({ where: { id } });
         revalidatePath('/admin/categories');
+        revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Delete Category Error:", error);
@@ -82,6 +84,7 @@ export async function updateCategory(id: string, name: string, animationType?: s
             }
         });
         revalidatePath('/admin/categories');
+        revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Update Category Error:", error);
