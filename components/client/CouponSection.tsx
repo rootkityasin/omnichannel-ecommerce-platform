@@ -21,7 +21,7 @@ export function CouponSection() {
         try {
             // We need tenantId to validate coupon correctly.
             // Ideally 'settings' has it.
-            const tenantId = settings?.tenantId;
+            const tenantId = (settings as any)?.tenantId;
             const result = await validateCoupon(code, total(), tenantId);
             if (result.success && result.code) { // Check for code existence to satisfy type checker if needed, mainly result.success is enough
                 applyCoupon({
