@@ -44,6 +44,7 @@ export async function getProducts(domain?: string) {
                 nutritionImage: true,
                 cookingImage: true,
                 stage: true,
+                sku: true,
             },
             cacheStrategy: {
                 ttl: 60,   // Fresh data for 60 seconds

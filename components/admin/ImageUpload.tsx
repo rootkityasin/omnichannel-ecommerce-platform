@@ -6,6 +6,7 @@ import { UploadCloud, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { uploadToCloudinary } from '@/app/actions/upload';
 
 interface ImageUploadProps {
     value?: string | string[];
@@ -35,9 +36,41 @@ export function ImageUpload({
     // Normalize value to array for consistent rendering
     const valuesArray = Array.isArray(value) ? value : (value ? [value] : []);
 
-    const uploadFile = async (file: File): Promise<string | null> => {
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    // --- WEBP CONVERSION ---
+    const convertToWebP = (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error("Canvas context not available"));
+                    return;
+                }
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp'
+                        });
+                        resolve(newFile);
+                    } else {
+                        reject(new Error("WebP conversion failed"));
+                    }
+                }, 'image/webp', 0.8); // 0.8 quality
+            };
+            img.onerror = (err) => reject(err);
+            img.src = URL.createObjectURL(file);
+        });
+    };
+
+    const uploadFile = async (originalFile: File): Promise<string | null> => {
+        // Sanitize: Remove quotes and whitespace that might be in .env
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.replace(/['"]/g, '').trim();
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET?.replace(/['"]/g, '').trim();
+        console.log("Cloudinary Config (Sanitized):", { cloudName, uploadPreset });
 
         // --- FALLBACK (Local Base64) ---
         // Warning: This can cause database bloat if used excessively.
@@ -45,7 +78,7 @@ export function ImageUpload({
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(originalFile); // Fallback uses original format
             });
         };
 
@@ -54,24 +87,32 @@ export function ImageUpload({
             return await getLocalFallback();
         }
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', uploadPreset);
-
         try {
+            // Convert to WebP
+            const file = await convertToWebP(originalFile);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
                 { method: 'POST', body: formData }
             );
 
-            if (!response.ok) throw new Error("Cloudinary upload failed");
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || "Cloudinary upload failed");
+            }
 
             const data = await response.json();
             return data.secure_url;
         } catch (error) {
             console.error("Upload Error:", error);
-            toast.error("Upload failed, falling back to local.");
-            return await getLocalFallback();
+            toast.error(`Upload failed: ${String(error)}`);
+            return await getLocalFallback(); // Fallback to local (original file usually? or we try rendering the webp locally? Let's use getLocalFallback which uses originalFile)
+            // Note: convertToWebP might have failed or upload failed. If conversion failed, error is caught here.
+            // If upload failed, we fall back.
         }
     };
 

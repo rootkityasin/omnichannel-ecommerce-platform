@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getSections, createSection, updateSection, deleteSection, seedDefaultSections, reorderSections } from '@/app/actions/section';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -171,8 +172,11 @@ export function SectionsManager() {
         }
     };
 
+    const params = useParams();
+    const domain = params?.domain as string;
+
     const handleSeed = async () => {
-        await seedDefaultSections();
+        await seedDefaultSections(domain);
         toast.success("Defaults seeded");
         fetchSections();
     };

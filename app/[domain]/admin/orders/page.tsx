@@ -27,6 +27,7 @@ import { useAdmin } from '@/components/providers/AdminProvider';
 import { format } from "date-fns"
 import { getSiteConfig } from '@/app/actions/settings';
 import { getAdminOrders, createOrder as createOrderAction, printOrderInvoice } from '@/app/actions/order';
+import { getProducts } from '@/app/actions/product';
 import { getStorySections, updateStorySection } from '@/app/actions/story';
 import { toast } from 'sonner';
 
@@ -37,10 +38,17 @@ export default function OrdersPage() {
     const [blockedPhones, setBlockedPhones] = useState<string[]>([]);
     const [blockedEmails, setBlockedEmails] = useState<string[]>([]);
 
+    // Product Selection State
+    const [availableProducts, setAvailableProducts] = useState<any[]>([]);
+    const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+
     useEffect(() => {
         getSiteConfig().then(config => {
             if (config?.shopType) setShopType(config.shopType);
         });
+
+        // Load Products
+        getProducts().then(prods => setAvailableProducts(prods));
 
         // Load Blacklist
         getStorySections().then(sections => {
@@ -95,15 +103,43 @@ export default function OrdersPage() {
         updateOrder(id, { status: newStatus });
     };
 
+    const handleProductSelect = (productId: string, checked: boolean) => {
+        let newSelected = [...selectedProductIds];
+        if (checked) {
+            newSelected.push(productId);
+        } else {
+            newSelected = newSelected.filter(id => id !== productId);
+        }
+        setSelectedProductIds(newSelected);
+
+        // Auto Price Calculation
+        const total = newSelected.reduce((sum, id) => {
+            const p = availableProducts.find(prod => prod.id === id);
+            return sum + (p ? p.price : 0);
+        }, 0);
+
+        setNewOrder(prev => ({ ...prev, price: total, items: newSelected.length || 1 }));
+    };
+
     const handleCreateOrder = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Construct items from selection
+        const orderItems = selectedProductIds.map(id => {
+            const p = availableProducts.find(prod => prod.id === id);
+            return {
+                productId: id,
+                quantity: 1, // Default to 1 per selected item
+                price: p?.price || 0
+            }
+        });
 
         const res = await createOrderAction({
             customerName: newOrder.customer,
             customerPhone: newOrder.phone,
             customerAddress: "Manual Order (No Address)",
             totalAmount: newOrder.price,
-            items: [] // Manual order currently doesn't specify items in the UI
+            items: orderItems
         });
 
         if (res.success) {
@@ -113,6 +149,7 @@ export default function OrdersPage() {
             setOrders(dbOrders);
             setIsAdding(false);
             setNewOrder({ customer: '', phone: '', price: 0, items: 1 });
+            setSelectedProductIds([]); // Reset selection
         } else {
             toast.error(res.error || "Failed to create order");
         }
@@ -320,6 +357,29 @@ export default function OrdersPage() {
                                 <div>
                                     <label className="text-sm font-medium">Phone</label>
                                     <Input value={newOrder.phone} onChange={e => setNewOrder({ ...newOrder, phone: e.target.value })} required />
+                                </div>
+
+                                {/* Product Selection */}
+                                <div className="border rounded-md p-3 bg-slate-50">
+                                    <label className="text-sm font-medium block mb-2">Select Products</label>
+                                    <div className="max-h-[150px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                                        {availableProducts.map(product => (
+                                            <div key={product.id} className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`prod-${product.id}`}
+                                                    checked={selectedProductIds.includes(product.id)}
+                                                    onChange={(e) => handleProductSelect(product.id, e.target.checked)}
+                                                    className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                />
+                                                <label htmlFor={`prod-${product.id}`} className="text-sm flex-1 cursor-pointer flex justify-between">
+                                                    <span className="truncate">{product.name}</span>
+                                                    <span className="text-slate-500">৳{product.price}</span>
+                                                </label>
+                                            </div>
+                                        ))}
+                                        {availableProducts.length === 0 && <p className="text-xs text-slate-400">Loading products...</p>}
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>

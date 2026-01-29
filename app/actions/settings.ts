@@ -188,7 +188,16 @@ export async function updateSiteConfig(data: any) {
     try {
         const existing = await prisma.siteConfig.findFirst({
             where: { tenantId },
-            include: { tenant: true }
+            select: {
+                id: true,
+                tenantId: true,
+                tenant: {
+                    select: {
+                        customDomain: true,
+                        slug: true
+                    }
+                }
+            }
         });
 
         if (existing) {
