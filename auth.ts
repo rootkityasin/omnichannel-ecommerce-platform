@@ -10,10 +10,10 @@ import { checkRateLimit } from "@/lib/rate-limit"
 
 export const runtime = "nodejs";
 
-
-if (!process.env.AUTH_SECRET) {
-    throw new Error('AUTH_SECRET is not defined in environment variables')
-}
+const isLocal = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost');
+const useSecureCookies = process.env.NODE_ENV === 'production' && !isLocal;
+const cookiePrefix = useSecureCookies ? '__Secure-' : '';
+const hostPrefix = useSecureCookies ? '__Host-' : '';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
@@ -21,29 +21,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Add Secure Cookie Configuration
     cookies: {
         sessionToken: {
-            name: `__Secure-next-auth.session-token`,
+            name: `${cookiePrefix}next-auth.session-token`,
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                secure: true,
+                secure: useSecureCookies,
             },
         },
         callbackUrl: {
-            name: `__Secure-next-auth.callback-url`,
+            name: `${cookiePrefix}next-auth.callback-url`,
             options: {
                 sameSite: 'lax',
                 path: '/',
-                secure: true,
+                secure: useSecureCookies,
             },
         },
         csrfToken: {
-            name: `__Host-next-auth.csrf-token`,
+            name: `${hostPrefix}next-auth.csrf-token`,
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                secure: true,
+                secure: useSecureCookies,
             },
         },
     },
@@ -85,7 +85,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     }
                 })
 
-                if (!user || !user.password) return null
+                if (!user || !user.password) {
+                    throw new Error("User not found");
+                }
 
                 const passwordsMatch = await bcrypt.compare(credentials.password as string, user.password)
 
@@ -95,7 +97,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         id: user.id,
                     }
                 }
-                return null
+
+                throw new Error("Invalid password");
             }
         }),
     ],

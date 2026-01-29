@@ -41,7 +41,7 @@ export default function DeviceSetupPage() {
                 <div>
                     <h1 className="text-2xl font-black text-slate-900 mb-2">Device Security Check</h1>
                     <p className="text-slate-500 text-sm">
-                        This device is not recognized. Please enter your <b>Admin Setup Token</b> to authorize this device for 30 days.
+                        This device is not recognized. Please enter your <b>Admin Setup Token</b> to authorize this device for 2 hours.
                     </p>
                 </div>
 

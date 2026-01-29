@@ -32,13 +32,14 @@ export function TrustedDeviceRevoke({ deviceId, deviceName }: { deviceId: string
 
     return (
         <Button
-            variant="ghost"
-            size="icon"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            variant="outline"
+            size="sm"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
             onClick={handleRevoke}
             disabled={isLoading}
         >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Remove Access
         </Button>
     );
 }

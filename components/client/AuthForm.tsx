@@ -80,7 +80,14 @@ export function AuthForm() {
                 });
 
                 if (res?.error) {
-                    toast.error("Login failed. Check your credentials.");
+                    // Map error codes to friendly messages
+                    if (res.error.includes("User not found")) {
+                        toast.error("No account found with this number.");
+                    } else if (res.error.includes("Invalid password")) {
+                        toast.error("Incorrect password. Please try again.");
+                    } else {
+                        toast.error("Login failed. Check your credentials.");
+                    }
                     setIsLoading(false);
                     return;
                 }

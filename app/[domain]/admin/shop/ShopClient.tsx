@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { updateSiteConfig } from '@/app/actions/settings';
 import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
 import { DomainSettings } from '@/components/admin/DomainSettings';
-
+import { ImageUpload } from '@/components/admin/ImageUpload';
 interface SiteConfig {
     storeName?: string;
     contactPhone: string;
@@ -113,11 +113,13 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
                             <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-start">
                                 <div className="space-y-1">
                                     <span className="text-xs text-slate-400">Certificate Logo</span>
-                                    <Input
-                                        placeholder="Image URL..."
-                                        value={newCert.image}
-                                        onChange={(e) => setNewCert({ ...newCert, image: e.target.value })}
-                                        className="bg-white"
+                                    <ImageUpload
+                                        value={newCert.image ? [newCert.image] : []}
+                                        onChange={(url) => {
+                                            const val = Array.isArray(url) ? url[0] : url;
+                                            setNewCert({ ...newCert, image: val });
+                                        }}
+                                        onRemove={() => setNewCert({ ...newCert, image: '' })}
                                     />
                                 </div>
                                 <div className="space-y-1">

@@ -68,7 +68,7 @@ export default async function SecurityDashboard() {
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                             <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <Smartphone className="w-5 h-5 text-blue-500" />
-                                Trusted Devices (30-Day Access)
+                                Trusted Devices (2-Hour Access)
                             </h2>
                             <div className="space-y-4">
                                 {devices.map((device: any) => (

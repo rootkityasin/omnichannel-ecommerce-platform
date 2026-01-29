@@ -33,7 +33,7 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         const ip = headersList.get('x-forwarded-for') || "127.0.0.1";
 
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 30); // 30 Days Validity
+        expiresAt.setHours(expiresAt.getHours() + 2); // 2 Hours Validity
 
         await prisma.trustedDevice.create({
             data: {
@@ -49,10 +49,12 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         });
 
         // Set Cookie
+        const isLocal = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost');
         const cookieStore = await cookies();
+
         cookieStore.set('trusted_device', deviceId, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'production' && !isLocal && !process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost'),
             expires: expiresAt,
             path: '/'
         });
@@ -60,8 +62,8 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         // Set verification timestamp cookie (for throttling DB checks)
         cookieStore.set('device_verified', Date.now().toString(), {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24, // 1 day
+            secure: process.env.NODE_ENV === 'production' && !isLocal && !process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost'),
+            maxAge: 60 * 60 * 2, // 2 hours
             path: '/'
         });
 

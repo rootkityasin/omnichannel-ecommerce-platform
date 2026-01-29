@@ -29,7 +29,8 @@ This project adheres to professional engineering standards, implementing control
 - **Content Security Policy (CSP)**: Strict restrictions on script sources to prevent XSS.
 - **Audit Logging**: Comprehensive database logging of critical administrative actions (create, update, delete) for accountability.
 - **Rate Limiting**: Adaptive traffic throttling on API endpoints.
-- **Device Authorization**: Cookie-based trusted device verification for admin access.
+- **Device Authorization**: Cookie-based trusted device verification for admin access (2-Hour Persistence).
+- **Dynamic Secure Cookies**: Intelligent cookie policy that enforces `Secure` (HTTPS) in production while automatically allowing HTTP for localhost testing.
 
 ---
 
@@ -40,6 +41,7 @@ This project adheres to professional engineering standards, implementing control
 - **System Health Checks**: Automated `/api/health` endpoint monitoring database connectivity and system uptime (SOC 2 requirement).
 - **Edge Caching**: Implemented Prisma Accelerate with SWR (Stale-While-Revalidate) strategy, reducing database load by approximately 90%.
 - **ISR Implementation**: Incremental Static Regeneration configured for user facing pages (`/`, `/menu`) to ensure sub-second page loads.
+- **Smart Access Control**: Dynamic security cookies that adapt to environment (Local vs Prod) with a strict 2-hour re-verification window.
 
 ### Core Capabilities
 - **Kitchen Management System**: Kanban-style order board for restaurant operations.

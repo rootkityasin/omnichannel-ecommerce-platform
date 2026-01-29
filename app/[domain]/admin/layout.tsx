@@ -41,10 +41,9 @@ export default async function AdminLayout({
         // 1. We haven't verified recently (> 30 min), OR
         // 2. No verification timestamp exists
         if (shouldVerifyDb) {
-            const trustedDevice = await (prisma.trustedDevice.findUnique({
+            const trustedDevice = await prisma.trustedDevice.findUnique({
                 where: { deviceId },
-                cacheStrategy: { ttl: 300 } // Cache for 5 minutes
-            }) as any);
+            });
 
             if (!trustedDevice) {
                 // Cookie exists but DB record missing (Stale/Deleted/Revoked)
