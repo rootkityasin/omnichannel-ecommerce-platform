@@ -47,6 +47,21 @@ export async function getHomeSections(domain?: string) {
                                 tenantId: tenant?.id || 'none'
                             } : undefined,
                             orderBy: { createdAt: 'desc' },
+                            take: 12, // Limit to recent 12 products per section
+                            select: {
+                                id: true,
+                                title: true,
+                                price: true,
+                                image: true,
+                                slug: true,
+                                stock: true,
+                                stage: true,
+                                isNonVeg: true,
+                                categoryId: true,
+                                tenantId: true,
+                                createdAt: true,
+                                // Exclude description and potentially large metadata
+                            }
                         }
                     }
                 });
