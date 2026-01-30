@@ -28,11 +28,16 @@ export default async function middleware(req: NextRequest) {
     const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""
         }`;
 
+    // Prepare request headers with x-pathname
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-pathname', url.pathname);
+
     // 1. Handle "App" Subdomain (Main Platform Admin)
     // e.g. app.vercel.pub -> /app
     if (hostname === `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
         return NextResponse.rewrite(
-            new URL(`/app${path === "/" ? "" : path}`, req.url)
+            new URL(`/app${path === "/" ? "" : path}`, req.url),
+            { request: { headers: requestHeaders } }
         );
     }
 
@@ -43,14 +48,12 @@ export default async function middleware(req: NextRequest) {
         hostname === process.env.NEXT_PUBLIC_ROOT_DOMAIN
     ) {
         return NextResponse.rewrite(
-            new URL(`/home${path === "/" ? "" : path}`, req.url)
+            new URL(`/home${path === "/" ? "" : path}`, req.url),
+            { request: { headers: requestHeaders } }
         );
     }
 
     // 3. Handle Tenant Domains
-    const requestHeaders = new Headers(req.headers);
-    requestHeaders.set('x-pathname', url.pathname);
-
     return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url), {
         request: {
             headers: requestHeaders,
