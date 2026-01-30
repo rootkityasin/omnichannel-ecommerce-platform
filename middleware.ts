@@ -54,18 +54,15 @@ export default async function middleware(req: NextRequest) {
     }
 
     // 3. Handle Tenant Domains
-    const requestHeaders = new Headers(req.headers);
-    requestHeaders.set('x-pathname', url.pathname);
+    // requestHeaders is already defined at the top
+    requestHeaders.set('x-pathname', url.pathname); // Re-set just in case, or redundant? It was set at top.
 
     // Enforce Trusted Device Check for Admin Routes
-    // This prevents bypassing the check via client-side navigation (sidebar clicks)
     const isAdminRoute = url.pathname.startsWith('/admin');
     const isDeviceSetup = url.pathname.includes('/admin/security/device-setup');
     const isTrusted = req.cookies.get('trusted_device');
 
     if (isAdminRoute && !isDeviceSetup && !isTrusted) {
-        // Only enforce if we have a session (optional, but good UX to let non-logged-in users fail at layout level to /)
-        // Actually, enforcing device check first is fine.
         return NextResponse.redirect(new URL('/admin/security/device-setup', req.url));
     }
 
