@@ -24,6 +24,7 @@ export async function uploadToCloudinary(formData: FormData) {
         const uploadData = new FormData();
         uploadData.append('file', file);
         uploadData.append('upload_preset', uploadPreset);
+        uploadData.append('folder', 'crab-khai');
 
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
