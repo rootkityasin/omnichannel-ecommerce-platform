@@ -40,6 +40,23 @@ export function GlobalCheckoutDrawer() {
     const { checkoutOpen, closeCheckout, items, total, discount, clearCart, coupon } = useCartStore();
     const [isAnimating, setIsAnimating] = useState(false);
     const [siteConfig, setSiteConfig] = useState<any>(null);
+
+    const { language } = useLanguageStore();
+    const t = translations[language as keyof typeof translations] as any;
+
+    // Load Cart Texts for Success State
+    const [cartTexts, setCartTexts] = useState<any>(null);
+    useEffect(() => {
+        const loadTexts = async () => {
+            const sections = await getStorySections();
+            const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
+            if (cartSection?.content) {
+                setCartTexts(cartSection.content);
+            }
+        };
+        loadTexts();
+    }, []);
+
     const router = useRouter();
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -239,21 +256,9 @@ export function GlobalCheckoutDrawer() {
         );
     }
 
-    // Load Cart Texts for Success State
-    const [cartTexts, setCartTexts] = useState<any>(null);
-    useEffect(() => {
-        const loadTexts = async () => {
-            const sections = await getStorySections();
-            const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
-            if (cartSection?.content) {
-                setCartTexts(cartSection.content);
-            }
-        };
-        loadTexts();
-    }, []);
 
-    const { language } = useLanguageStore();
-    const t = translations[language as keyof typeof translations] as any;
+
+
 
     function SuccessView() {
         return (

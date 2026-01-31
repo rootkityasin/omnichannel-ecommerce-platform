@@ -16,9 +16,10 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         const config = await prisma.siteConfig.findFirst({
             select: { adminSetupToken: true }
         });
-        const VALID_TOKEN = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+        const validTokenRaw = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+        const VALID_TOKEN = validTokenRaw.trim(); // Handle accidental trailing spaces
 
-        if (token !== VALID_TOKEN) {
+        if (token.trim() !== VALID_TOKEN) {
             return { success: false, error: "Invalid Setup Token" };
         }
 

@@ -22,7 +22,8 @@ export async function getAdminSetupToken() {
     return config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
 }
 
-export async function updateAdminSetupToken(newToken: string) {
+export async function updateAdminSetupToken(rawToken: string) {
+    const newToken = rawToken.trim(); // Sanitize input
     try {
         const config = await prisma.siteConfig.findFirst({
             select: { id: true }

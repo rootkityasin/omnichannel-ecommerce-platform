@@ -36,7 +36,7 @@ export async function getHomeSections(domain?: string) {
                 const tenant = domain ? await getTenantByDomain(domain) : null;
                 if (domain && !tenant) return [];
 
-                const sections = await prisma.productSection.findMany({
+                let sections = await prisma.productSection.findMany({
                     where: {
                         isActive: true,
                     },
@@ -60,11 +60,43 @@ export async function getHomeSections(domain?: string) {
                                 categoryId: true,
                                 tenantId: true,
                                 createdAt: true,
-                                // Exclude description and potentially large metadata
                             }
                         }
                     }
                 });
+
+                // Auto-Seed if no sections found (Self-Healing for new envs)
+                if (sections.length === 0) {
+                    console.log("[Auto-Seed] No home sections found. Creating defaults...");
+                    await seedDefaultSections(domain);
+
+                    // Re-fetch after seeding
+                    sections = await prisma.productSection.findMany({
+                        where: { isActive: true },
+                        orderBy: { order: 'asc' },
+                        include: {
+                            products: {
+                                where: domain ? { tenantId: tenant?.id || 'none' } : undefined,
+                                orderBy: { createdAt: 'desc' },
+                                take: 12,
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    price: true,
+                                    image: true,
+                                    slug: true,
+                                    stock: true,
+                                    stage: true,
+                                    isNonVeg: true,
+                                    categoryId: true,
+                                    tenantId: true,
+                                    createdAt: true,
+                                }
+                            }
+                        }
+                    });
+                }
+
                 return sections.map((section: any) => ({
                     ...section,
                     createdAt: section.createdAt.toISOString(),
@@ -82,6 +114,7 @@ export async function getHomeSections(domain?: string) {
         ['home-sections', domain ?? 'global'],
         { revalidate: 3600, tags: ['home-sections'] }
     )();
+
 }
 
 export async function createSection(data: { title: string; slug: string; isActive?: boolean; order?: number }) {
