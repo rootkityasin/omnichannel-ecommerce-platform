@@ -13,9 +13,7 @@ async function checkSuperAdmin() {
     // For now, assuming access to this action means checked by page/middleware.
     // Adding basic check:
     if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
-        // throw new Error("Unauthorized: Super Admin access required");
-        // Allowing for dev/demo purposes if role missing in some mocks, 
-        // but strictly this should be enforced.
+        throw new Error("Unauthorized: Super Admin access required");
     }
     return session;
 }

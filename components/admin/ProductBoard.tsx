@@ -30,12 +30,14 @@ interface ProductBoardProps {
     onEdit?: (product: any) => void;
     onClone?: (product: any) => void;
     onDelete?: (id: string) => void;
+    readOnly?: boolean;
 }
 
-function SortableItem({ product, formatStock, children }: any) {
+function SortableItem({ product, formatStock, children, disabled }: any) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: product.id,
-        data: { type: 'Item', product }
+        data: { type: 'Item', product },
+        disabled
     });
 
     const style = {
@@ -51,9 +53,10 @@ function SortableItem({ product, formatStock, children }: any) {
     );
 }
 
-function DroppableColumn({ col, products, renderCard, formatStock }: any) {
+function DroppableColumn({ col, products, renderCard, formatStock, readOnly }: any) {
     const { setNodeRef } = useDroppable({
         id: col.stage,
+        disabled: readOnly
     });
 
     return (
@@ -65,13 +68,13 @@ function DroppableColumn({ col, products, renderCard, formatStock }: any) {
             </div>
             <div className="p-2 space-y-2 flex-1 overflow-y-auto">
                 {products.map((product: any) => (
-                    <SortableItem key={product.id} product={product} formatStock={formatStock}>
+                    <SortableItem key={product.id} product={product} formatStock={formatStock} disabled={readOnly}>
                         {renderCard(product)}
                     </SortableItem>
                 ))}
                 {products.length === 0 && (
                     <div className="h-24 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400">
-                        Drop Here
+                        {readOnly ? "Empty" : "Drop Here"}
                     </div>
                 )}
             </div>
@@ -79,7 +82,7 @@ function DroppableColumn({ col, products, renderCard, formatStock }: any) {
     );
 }
 
-export function ProductBoard({ products, onMove, config, onEdit, onClone, onDelete }: ProductBoardProps) {
+export function ProductBoard({ products, onMove, config, onEdit, onClone, onDelete, readOnly }: ProductBoardProps) {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeProduct, setActiveProduct] = useState<Product | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -182,7 +185,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                         <span>৳{product.price}</span>
                         <span>•</span>
                         <span>{formatStock((product as any).pieces || 0, (product as any).weight || 200)}</span>
-                        {product.stage !== 'Draft' && (
+                        {product.stage !== 'Draft' && !readOnly && (
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -199,7 +202,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                     </div>
                 </div>
                 {/* Only show actions for non-Ready Stock items */}
-                {product.stage !== 'Draft' && (
+                {product.stage !== 'Draft' && (onEdit || onClone || onDelete) && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button size="icon" variant="ghost" className="h-5 w-5 text-slate-300 hover:text-slate-600 flex-shrink-0">
@@ -218,15 +221,21 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                             }}>
                                 <Share2 className="w-4 h-4 mr-2" /> Share Link
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onEdit?.(product)}>
-                                <Edit className="w-4 h-4 mr-2" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onClone?.(product)}>
-                                <Copy className="w-4 h-4 mr-2" /> Clone
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" onClick={() => onDelete?.(product.id)}>
-                                <Trash2 className="w-4 h-4 mr-2" /> Delete
-                            </DropdownMenuItem>
+                            {onEdit && (
+                                <DropdownMenuItem onClick={() => onEdit(product)}>
+                                    <Edit className="w-4 h-4 mr-2" /> Edit
+                                </DropdownMenuItem>
+                            )}
+                            {onClone && (
+                                <DropdownMenuItem onClick={() => onClone(product)}>
+                                    <Copy className="w-4 h-4 mr-2" /> Clone
+                                </DropdownMenuItem>
+                            )}
+                            {onDelete && (
+                                <DropdownMenuItem className="text-red-600" onClick={() => onDelete(product.id)}>
+                                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )}
@@ -293,7 +302,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
 
                     return (
                         <SortableContext key={col.stage} id={col.stage} items={stageProducts.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                            <DroppableColumn col={col} products={stageProducts} renderCard={renderCard} formatStock={formatStock} />
+                            <DroppableColumn col={col} products={stageProducts} renderCard={renderCard} formatStock={formatStock} readOnly={readOnly} />
                         </SortableContext>
                     );
                 })}

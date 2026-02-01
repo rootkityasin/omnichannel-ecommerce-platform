@@ -35,7 +35,8 @@ import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { Button } from '@/components/ui/button';
-import { HubSelector } from './HubSelector';
+
+import { useSession } from 'next-auth/react';
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -79,40 +80,69 @@ export function AdminSidebar() {
     }, []);
 
 
-    const menuGroups = [
+    const { data: session } = useSession();
+    const userRole = (session?.user as any)?.role;
+    const userPermissions = (session?.user as any)?.permissions || [];
+
+    // Debug Permissions
+    /*
+    useEffect(() => {
+        if (session?.user) {
+            toast.info(`Role: ${(session.user as any).role}, Perms: ${JSON.stringify((session.user as any).permissions)}`);
+        }
+    }, [session]);
+    */
+
+    // Helper to check permission
+    // If no permission key is set, the item is visible to all admins (or base role checks)
+    const canSee = (permissionKey?: string) => {
+        if (!permissionKey) return true;
+        if (userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN') return true; // Full access for Owners
+        return userPermissions.includes(permissionKey);
+    };
+
+    interface MenuItem {
+        label: string;
+        href: string;
+        icon: any; // Lucide icon type is complex, using any for simplicity or LucideIcon if imported
+        badge?: string;
+        badgeColor?: string;
+        permission?: string;
+    }
+
+    const menuGroups: { label: string, items: MenuItem[] }[] = [
         {
             label: 'Main',
             items: [
-                { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-                { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
-                { label: 'Products', href: '/admin/products', icon: Package },
-                { label: 'Categories', href: '/admin/categories', icon: Layers },
-                { label: 'Customers', href: '/admin/customers', icon: Users },
-            ],
+                { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, permission: 'VIEW_DASHBOARD' }, // Restricted
+                { label: 'Orders', href: '/admin/orders', icon: ShoppingBag, permission: 'VIEW_ORDERS' },
+                { label: 'Products', href: '/admin/products', icon: Package, permission: 'VIEW_PRODUCTS' },
+                { label: 'Categories', href: '/admin/categories', icon: Layers, permission: 'VIEW_CATEGORIES' },
+                { label: 'Customers', href: '/admin/customers', icon: Users, permission: 'VIEW_CUSTOMERS' },
+            ].filter(item => canSee(item.permission)),
         },
         {
             label: 'CONFIGURATION',
             items: [
-                { label: 'Manage Shop', href: '/admin/shop', icon: Settings },
-                { label: 'Customize Theme', href: '/admin/theme', icon: Palette },
-                { label: 'Landing Page', href: '/admin/landing', icon: LayoutTemplate },
-                { label: 'Promo Codes', href: '/admin/promos', icon: Ticket },
+                { label: 'Manage Shop', href: '/admin/shop', icon: Settings, permission: 'MANAGE_SHOP' },
+                { label: 'Customize Theme', href: '/admin/theme', icon: Palette, permission: 'MANAGE_THEME' },
+                { label: 'Landing Page', href: '/admin/landing', icon: LayoutTemplate, permission: 'MANAGE_LANDING' },
+                { label: 'Promo Codes', href: '/admin/promos', icon: Ticket, permission: 'MANAGE_PROMOS' },
 
-                { label: 'Security', icon: ShieldCheck, href: '/admin/security', badge: 'NEW', badgeColor: "bg-blue-100 text-blue-600" },
-                { label: 'Inventory', icon: ClipboardList, href: '/admin/inventory' },
-                { label: 'Automation', href: '/admin/automation', icon: Zap, badge: 'HOT', badgeColor: "bg-red-100 text-red-600" },
-            ],
+                { label: 'Security', icon: ShieldCheck, href: '/admin/security', badge: 'NEW', badgeColor: "bg-blue-100 text-blue-600", permission: 'MANAGE_SECURITY' },
+                { label: 'Inventory', icon: ClipboardList, href: '/admin/inventory', permission: 'MANAGE_INVENTORY' },
+                { label: 'Automation', href: '/admin/automation', icon: Zap, badge: 'HOT', badgeColor: "bg-red-100 text-red-600", permission: 'MANAGE_AUTOMATION' },
+            ].filter(item => canSee(item.permission)),
         },
         {
             label: 'REPORTS',
             items: [
-                { label: 'Event Matrix', href: '/admin/events', icon: BarChart3, badge: 'LIVE', badgeColor: "bg-green-100 text-green-600" },
-                { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-                { label: 'Reviews', href: '/admin/reviews', icon: Megaphone, badge: 'NEW', badgeColor: "bg-purple-100 text-purple-600" },
-            ],
+                { label: 'Event Matrix', href: '/admin/events', icon: BarChart3, badge: 'LIVE', badgeColor: "bg-green-100 text-green-600", permission: 'VIEW_REPORTS' },
+                { label: 'Analytics', href: '/admin/analytics', icon: BarChart3, permission: 'VIEW_ANALYTICS' },
+                { label: 'Reviews', href: '/admin/reviews', icon: Megaphone, badge: 'NEW', badgeColor: "bg-purple-100 text-purple-600", permission: 'VIEW_REVIEWS' },
+            ].filter(item => canSee(item.permission)),
         },
-
-    ];
+    ].filter(group => group.items.length > 0);
 
     return (
         <>
@@ -161,8 +191,7 @@ export function AdminSidebar() {
                     )}
                 </div>
 
-                {/* Hub Selector / Role Simulator */}
-                <HubSelector />
+                {/* Hub Selector removed as per request */}
 
                 {/* Menu */}
                 <div className="flex-1 overflow-y-auto py-4 space-y-6">

@@ -25,8 +25,15 @@ import { getSections } from '@/app/actions/section';
 import Link from 'next/link';
 import Image from 'next/image';
 import { generateDescriptionAI, smartParseAI, translateToBanglaAI } from '@/app/actions/ai';
+import { useSession } from 'next-auth/react';
 
 export default function ProductsPage() {
+    const { data: session } = useSession();
+    const userRole = (session?.user as any)?.role;
+    const userPermissions = (session?.user as any)?.permissions || [];
+
+    const canManageProducts = userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN' || userPermissions.includes('MANAGE_PRODUCTS');
+
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [sectionsList, setSectionsList] = useState<any[]>([]);
@@ -359,13 +366,15 @@ export default function ProductsPage() {
                                 </div>
                             </PopoverContent>
                         </Popover>
-                        <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
-                            setEditingId(null);
-                            setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [], sections: [] });
-                            setIsAdding(true);
-                        }}>
-                            <Plus className="w-4 h-4 mr-2" /> Add Product
-                        </Button>
+                        {canManageProducts && (
+                            <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
+                                setEditingId(null);
+                                setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [], sections: [] });
+                                setIsAdding(true);
+                            }}>
+                                <Plus className="w-4 h-4 mr-2" /> Add Product
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -843,12 +852,16 @@ export default function ProductsPage() {
                                                             }}>
                                                                 <Share2 className="w-4 h-4 mr-2" /> Share Link
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleEdit(product)}>
-                                                                <Edit className="w-4 h-4 mr-2" /> Edit
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleClone(product)}>
-                                                                <Copy className="w-4 h-4 mr-2" /> Clone
-                                                            </DropdownMenuItem>
+                                                            {canManageProducts && (
+                                                                <>
+                                                                    <DropdownMenuItem onClick={() => handleEdit(product)}>
+                                                                        <Edit className="w-4 h-4 mr-2" /> Edit
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => handleClone(product)}>
+                                                                        <Copy className="w-4 h-4 mr-2" /> Clone
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
                                                             <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(product.id)}>
                                                                 <Trash2 className="w-4 h-4 mr-2" /> Delete
                                                             </DropdownMenuItem>

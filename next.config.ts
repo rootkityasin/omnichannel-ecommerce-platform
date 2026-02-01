@@ -66,6 +66,7 @@ const nextConfig: NextConfig = {
               "form-action 'self'",
               "frame-ancestors 'self'",
               "upgrade-insecure-requests",
+              "report-uri /api/csp-report",
             ].join('; '),
           },
           {

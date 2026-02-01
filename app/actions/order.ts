@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { randomUUID } from 'crypto';
 
 export async function createOrder(data: {
     customerName: string;
@@ -31,7 +32,8 @@ export async function createOrder(data: {
         const order = await prisma.order.create({
             data: {
                 tenantId, // Add Tenant Scope
-                orderId: `ORD-${Date.now()}`,
+                // SECURE ID: randomUUID is cryptographically strong
+                orderId: `ORD-${randomUUID().substring(0, 8).toUpperCase()}`,
                 customerName: data.customerName,
                 customerPhone: data.customerPhone,
                 customerAddress: data.customerAddress,

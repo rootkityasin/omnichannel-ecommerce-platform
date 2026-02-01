@@ -1,25 +1,51 @@
 # Environment Setup Guide
 
-To enable features like "Continue with Google", you need to configure your environment variables.
+## Required Environment Variables
 
-1.  **Create or Edit `.env`**:
-    In the root of your project, locate the `.env` file (create it if it doesn't exist).
+### 1. Database & Infrastructure
+```env
+DATABASE_URL="postgresql://user:password@host:port/db?schema=public"
+DIRECT_URL="postgresql://user:password@host:port/db?schema=public" # For migrations
+```
 
-2.  **Add Google Credentials**:
-    Add the following lines to the file:
+### 2. Authentication (NextAuth)
+```env
+AUTH_SECRET="generate-a-random-string-here" # Run `openssl rand -base64 32`
+NEXT_PUBLIC_ROOT_DOMAIN="localhost:3000" # or your production domain
+```
 
-    ```env
-    GOOGLE_CLIENT_ID="your-client-id-from-google-cloud"
-    GOOGLE_CLIENT_SECRET="your-client-secret-from-google-cloud"
-    ```
+### 3. Security (CRITICAL)
+```env
+# REQUIRED: Prevents unauthorized admin access
+ADMIN_SETUP_SECRET="change-this-to-a-secure-random-string"
+```
 
-## How to get Google Credentials
+### 4. OAuth Providers (Google)
+```env
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
 
-1.  Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2.  Create a new project or select an existing one.
-3.  Navigate to **APIs & Services** > **Credentials**.
-4.  Click **Create Credentials** > **OAuth client ID**.
-5.  Select **Web application**.
-6.  Add `http://localhost:3000` to **Authorized JavaScript origins**.
-7.  Add `http://localhost:3000/api/auth/callback/google` to **Authorized redirect URIs**.
-8.  Copy the Client ID and Client Secret and paste them into your `.env` file.
+### 5. Optional (Recommended for Production)
+```env
+# Upstash Redis (For Rate Limiting)
+UPSTASH_REDIS_REST_URL="https://..."
+UPSTASH_REDIS_REST_TOKEN="hit..."
+
+# Analytics
+NEXT_PUBLIC_ANALYTICS_ID="Vercel-Analytics-ID"
+```
+
+## How to obtain credentials
+
+### Google OAuth
+1.  Go to [Google Cloud Console](https://console.cloud.google.com/).
+2.  APIs & Services > Credentials > Create Credentials > OAuth client ID.
+3.  **Authorized Origins**: `http://localhost:3000` (and `https://your-domain.com`).
+4.  **Authorized Redirect URIs**: `http://localhost:3000/api/auth/callback/google` (and `https://your-domain.com/api/auth/callback/google`).
+
+### Admin Setup Secret
+1.  Generate a strong random string (e.g., using a password manager).
+2.  Set this in your `.env` (local) and Vercel Environment Variables (production).
+3.  **Note**: If this is not set, admin features requiring authorization will fail securely.
+

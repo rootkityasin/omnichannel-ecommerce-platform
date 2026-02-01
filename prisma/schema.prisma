@@ -436,8 +436,10 @@ enum DiscountType {
 
 enum Role {
   SUPER_ADMIN
-  HUB_ADMIN
-  USER
+  TENANT_ADMIN // Shop Admin (Owner of the domain/shop)
+  HUB_ADMIN    // Branch Manager
+  STAFF        // Worker/Employee
+  USER         // Customer
 }
 
 model DeliveryConfig {

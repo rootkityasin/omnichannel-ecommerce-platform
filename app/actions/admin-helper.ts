@@ -15,11 +15,15 @@ export async function getPendingOrderCount() {
 }
 
 export async function getAdminSetupToken() {
-    // try to find config
     const config = await prisma.siteConfig.findFirst({
         select: { adminSetupToken: true }
     });
-    return config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+    const token = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET;
+
+    // STRICT SECURITY: Do not allow default fallbacks in production
+    // if (!token) throw new Error("ADMIN_SETUP_SECRET is missing");
+
+    return token || "";
 }
 
 export async function updateAdminSetupToken(rawToken: string) {

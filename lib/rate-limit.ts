@@ -6,7 +6,7 @@ interface RateLimitContext {
 
 const activeWindows = new Map<string, RateLimitContext>();
 
-export function checkRateLimit(ipOrIdentifier: string, limit: number = 5, windowMs: number = 60000): boolean {
+export async function checkRateLimit(ipOrIdentifier: string, limit: number = 5, windowMs: number = 60000): Promise<boolean> {
     const now = Date.now();
     const context = activeWindows.get(ipOrIdentifier) || { count: 0, lastReset: now };
 

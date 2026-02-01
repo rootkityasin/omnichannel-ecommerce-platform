@@ -31,9 +31,17 @@ import { getProducts } from '@/app/actions/product';
 import { getStorySections, updateStorySection } from '@/app/actions/story';
 import { toast } from 'sonner';
 
+import { useSession } from 'next-auth/react';
+
 export default function OrdersPage() {
     // Global State
     const { orders, addOrder, updateOrder, deleteOrder, setOrders } = useAdmin();
+    const { data: session } = useSession();
+    const userRole = (session?.user as any)?.role;
+    const userPermissions = (session?.user as any)?.permissions || [];
+
+    const canManageOrders = userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN' || userPermissions.includes('MANAGE_ORDERS');
+
     const [shopType, setShopType] = useState('RESTAURANT');
     const [blockedPhones, setBlockedPhones] = useState<string[]>([]);
     const [blockedEmails, setBlockedEmails] = useState<string[]>([]);
@@ -336,7 +344,9 @@ export default function OrdersPage() {
                         )}
                     </div>
 
-                    <Button onClick={() => setIsAdding(true)} className="bg-orange-600 hover:bg-orange-700 text-white"><Plus className="w-4 h-4 mr-2" /> Create</Button>
+                    {canManageOrders && (
+                        <Button onClick={() => setIsAdding(true)} className="bg-orange-600 hover:bg-orange-700 text-white"><Plus className="w-4 h-4 mr-2" /> Create</Button>
+                    )}
                 </div>
             </div>
 
@@ -547,28 +557,32 @@ export default function OrdersPage() {
                                                             <Printer className="w-4 h-4" />
                                                         </Button>
 
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="outline" size="sm" className="h-8">Status <ChevronDown className="w-3 h-3 ml-1" /></Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="w-[200px]">
-                                                                <DropdownMenuLabel>Update Status</DropdownMenuLabel>
-                                                                <DropdownMenuSeparator />
-                                                                {getAllStatuses().map(status => (
-                                                                    <DropdownMenuItem key={status} onClick={() => handleStatusChange(order.id, status)}>
-                                                                        {status} {order.status === status && <Check className="w-3 h-3 ml-auto" />}
-                                                                    </DropdownMenuItem>
-                                                                ))}
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem onClick={() => handleMarkAsFake(order)} className="text-red-600 focus:text-red-700 bg-red-50 focus:bg-red-100 mt-2">
-                                                                    <Ban className="w-3 h-3 mr-2" /> Mark as Fake
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
+                                                        {canManageOrders && (
+                                                            <>
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="outline" size="sm" className="h-8">Status <ChevronDown className="w-3 h-3 ml-1" /></Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end" className="w-[200px]">
+                                                                        <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                                                                        <DropdownMenuSeparator />
+                                                                        {getAllStatuses().map(status => (
+                                                                            <DropdownMenuItem key={status} onClick={() => handleStatusChange(order.id, status)}>
+                                                                                {status} {order.status === status && <Check className="w-3 h-3 ml-auto" />}
+                                                                            </DropdownMenuItem>
+                                                                        ))}
+                                                                        <DropdownMenuSeparator />
+                                                                        <DropdownMenuItem onClick={() => handleMarkAsFake(order)} className="text-red-600 focus:text-red-700 bg-red-50 focus:bg-red-100 mt-2">
+                                                                            <Ban className="w-3 h-3 mr-2" /> Mark as Fake
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
 
-                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 bg-blue-50" onClick={() => handleEditClick(order)}>
-                                                            <Edit className="w-4 h-4" />
-                                                        </Button>
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 bg-blue-50" onClick={() => handleEditClick(order)}>
+                                                                    <Edit className="w-4 h-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -586,7 +600,7 @@ export default function OrdersPage() {
                     </Tabs>
                 </Card >
             ) : (
-                <FulfillmentBoard orders={filteredOrders} onStatusChange={handleStatusChange} />
+                <FulfillmentBoard orders={filteredOrders} onStatusChange={handleStatusChange} readOnly={!canManageOrders} />
             )
             }
         </div >

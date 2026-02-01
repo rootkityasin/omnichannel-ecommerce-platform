@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies, headers } from 'next/headers';
 import { UAParser } from 'ua-parser-js';
 
-const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET;
 
 // Generate a random device ID
 function generateDeviceId() {
@@ -16,7 +16,9 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         const config = await prisma.siteConfig.findFirst({
             select: { adminSetupToken: true }
         });
-        const validTokenRaw = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+        const validTokenRaw = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET;
+        if (!validTokenRaw) return { success: false, error: "Setup Secret Not Configured" };
+
         const VALID_TOKEN = validTokenRaw.trim(); // Handle accidental trailing spaces
 
         if (token.trim() !== VALID_TOKEN) {

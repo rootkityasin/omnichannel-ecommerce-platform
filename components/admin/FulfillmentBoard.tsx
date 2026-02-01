@@ -17,9 +17,10 @@ interface Order {
 interface FulfillmentBoardProps {
     orders: any[]; // Using any[] to match the flexible order structure for now, ideally strictly typed
     onStatusChange: (id: string, newStatus: string) => void;
+    readOnly?: boolean;
 }
 
-export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardProps) {
+export function FulfillmentBoard({ orders, onStatusChange, readOnly }: FulfillmentBoardProps) {
     const columns = [
         { title: 'Pending', status: 'Placed', icon: Clock, color: 'bg-gray-100 text-gray-500' },
         { title: 'Ready to Process', status: 'Ready to Process', icon: Package, color: 'bg-indigo-100 text-indigo-600' },
@@ -69,23 +70,25 @@ export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardPro
                                     <p className="text-sm font-medium text-slate-600 mb-2">{order.items} items • {order.customer}</p>
 
                                     {/* Quick Actions */}
-                                    <div className="flex gap-2">
-                                        {order.status !== 'Shipped' && (
-                                            <Button
-                                                size="sm"
-                                                variant="secondary"
-                                                className="w-full h-7 text-xs bg-white border border-gray-100 shadow-sm hover:bg-gray-50"
-                                                onClick={() => onStatusChange(order.id, getNextStatus(order.status))}
-                                            >
-                                                {order.status === 'Placed' ? 'Confirm' : 'Next'} <ArrowRight className="w-3 h-3 ml-1" />
-                                            </Button>
-                                        )}
-                                        {col.status === 'Placed' && (
-                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50">
-                                                <X className="w-4 h-4" />
-                                            </Button>
-                                        )}
-                                    </div>
+                                    {!readOnly && (
+                                        <div className="flex gap-2">
+                                            {order.status !== 'Shipped' && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="w-full h-7 text-xs bg-white border border-gray-100 shadow-sm hover:bg-gray-50"
+                                                    onClick={() => onStatusChange(order.id, getNextStatus(order.status))}
+                                                >
+                                                    {order.status === 'Placed' ? 'Confirm' : 'Next'} <ArrowRight className="w-3 h-3 ml-1" />
+                                                </Button>
+                                            )}
+                                            {col.status === 'Placed' && (
+                                                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50">
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
                                 </Card>
                             ))}
                         {orders.filter(o => {

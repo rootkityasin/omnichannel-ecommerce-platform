@@ -18,6 +18,50 @@ const hostPrefix = useSecureCookies ? '__Host-' : '';
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
     secret: process.env.AUTH_SECRET,
+    callbacks: {
+        ...authConfig.callbacks,
+        async jwt({ token, user, trigger, session }) {
+            // 1. Initial Sign In - Copy user data to token
+            if (user) {
+                token.id = user.id;
+                token.role = (user as any).role;
+                token.phone = (user as any).phone;
+                token.tenantId = (user as any).tenantId;
+                token.permissions = (user as any).permissions;
+                return token;
+            }
+
+            // 2. Subsequent verification - Check User Existence (Throttled)
+            // Checks at most once every 30 seconds to spare resources while ensuring security
+            const now = Date.now();
+            const lastChecked = (token.lastChecked as number) || 0;
+            const CHECK_INTERVAL = 30 * 1000; // 30 seconds
+
+            if (!user && token.id && (now - lastChecked > CHECK_INTERVAL)) {
+                try {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: token.id as string },
+                        select: { id: true, role: true, permissions: true, tenantId: true, phone: true }
+                    });
+
+                    if (!dbUser) {
+                        console.log(`❌ Session Invalidated: User ${token.id} not found in DB`);
+                        return null;
+                    }
+
+                    // Sync latest state & Update timestamp
+                    token.role = dbUser.role;
+                    token.permissions = dbUser.permissions;
+                    token.tenantId = dbUser.tenantId;
+                    token.lastChecked = now;
+
+                } catch (e) {
+                    console.error("Session Validation Error", e);
+                }
+            }
+            return token;
+        },
+    },
     // Add Secure Cookie Configuration
     cookies: {
         sessionToken: {
@@ -64,41 +108,99 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 password: { label: "Password", type: "password" }
             },
             authorize: async (credentials) => {
-                if (!credentials?.phone || !credentials?.password) return null
+                try {
+                    if (!credentials?.phone || !credentials?.password) return null
 
-                if (!credentials?.phone || !credentials?.password) return null
+                    const phoneInput = credentials.phone as string;
 
-                // Rate Limit Check (5 attempts per minute)
-                const phone = credentials.phone as string;
-                if (!checkRateLimit(phone)) {
-                    console.warn(`Rate limit exceeded for phone: ${phone}`);
+                    // --- Impersonation Logic ---
+                    if (phoneInput.startsWith('impersonate:')) {
+                        const targetUserId = phoneInput.split(':')[1];
+                        const token = credentials.password as string;
+
+                        console.log(`🔐 Impersonation Attempt for User ${targetUserId}`);
+
+                        const verification = await prisma.verificationToken.findFirst({
+                            where: {
+                                identifier: `impersonate:${targetUserId}`,
+                                token: token
+                            }
+                        });
+
+                        if (verification && verification.expires > new Date()) {
+                            console.log('✅ Impersonation Token Valid');
+                            // Valid Token - Use deleteMany to avoid unique constraint issues if identifier isn't unique alone
+                            await prisma.verificationToken.deleteMany({
+                                where: {
+                                    identifier: `impersonate:${targetUserId}`
+                                }
+                            });
+
+                            const user = await prisma.user.findUnique({ where: { id: targetUserId } });
+                            if (user) {
+                                // Return plain object to avoid serialization issues
+                                return {
+                                    id: user.id,
+                                    name: user.name,
+                                    email: user.email,
+                                    phone: user.phone,
+                                    role: user.role,
+                                    tenantId: user.tenantId,
+                                    hubId: user.hubId,
+                                    image: user.image,
+                                    permissions: user.permissions
+                                };
+                            }
+                        }
+                        console.log('❌ Impersonation Token Invalid or Expired');
+                        return null; // Invalid token
+                    }
+                    // ---------------------------
+
+                    // Rate Limit Check (5 attempts per minute)
+                    const phone = credentials.phone as string;
+                    if (!await checkRateLimit(phone)) {
+                        console.warn(`Rate limit exceeded for phone: ${phone}`);
+                        return null;
+                    }
+
+                    // Find user by phone (or email allow)
+                    const user = await prisma.user.findFirst({
+                        where: {
+                            OR: [
+                                { phone: credentials.phone as string },
+                                { email: credentials.phone as string }
+                            ]
+                        }
+                    })
+
+                    if (!user || !user.password) {
+                        console.error("User not found or password not set.");
+                        return null;
+                    }
+
+                    const passwordsMatch = await bcrypt.compare(credentials.password as string, user.password)
+
+                    if (passwordsMatch) {
+                        return {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            phone: user.phone,
+                            role: user.role,
+                            tenantId: user.tenantId,
+                            hubId: user.hubId,
+                            image: user.image,
+                            permissions: user.permissions
+                        };
+                    }
+
+                    console.error("Invalid password for user:", user.email || user.phone);
+                    return null;
+                } catch (e) {
+                    console.error("Authorize Error:", e);
                     return null;
                 }
-
-                // Find user by phone (or email allow)
-                const user = await prisma.user.findFirst({
-                    where: {
-                        OR: [
-                            { phone: credentials.phone as string },
-                            { email: credentials.phone as string }
-                        ]
-                    }
-                })
-
-                if (!user || !user.password) {
-                    throw new Error("User not found");
-                }
-
-                const passwordsMatch = await bcrypt.compare(credentials.password as string, user.password)
-
-                if (passwordsMatch) {
-                    return {
-                        ...user,
-                        id: user.id,
-                    }
-                }
-
-                throw new Error("Invalid password");
             }
         }),
     ],

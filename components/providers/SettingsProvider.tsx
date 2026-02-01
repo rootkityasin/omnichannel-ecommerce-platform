@@ -105,7 +105,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 export function useSettings() {
     const context = useContext(SettingsContext);
     if (context === undefined) {
-        throw new Error('useSettings must be used within a SettingsProvider');
+        console.warn('useSettings must be used within a SettingsProvider. Using default settings.');
+        return {
+            settings: defaultSettings,
+            loading: false,
+            refreshSettings: async () => { }
+        };
     }
     return context;
 }
