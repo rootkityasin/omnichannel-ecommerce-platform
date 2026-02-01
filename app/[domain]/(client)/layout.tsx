@@ -5,7 +5,7 @@ import PageTransition from "@/components/PageTransition";
 import { getSiteConfig } from "@/app/actions/settings";
 import { DesktopNavbar } from "@/components/client/DesktopNavbar";
 import { CartDrawer } from "@/components/client/CartDrawer";
-import { GlobalCheckoutDrawer } from "@/components/client/GlobalCheckoutDrawer";
+import { DynamicCheckout } from "@/components/client/DynamicCheckout";
 
 export default async function ClientLayout({
     children,
@@ -26,7 +26,7 @@ export default async function ClientLayout({
                 </div>
                 <DesktopNavbar />
                 <CartDrawer />
-                <GlobalCheckoutDrawer />
+                <DynamicCheckout />
                 <main className="flex-1 w-full relative">
                     <PageTransition>
                         {children}

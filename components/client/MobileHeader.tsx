@@ -114,6 +114,7 @@ export function MobileHeader() {
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             className="relative z-[110] p-1 -ml-2 text-white hover:bg-white/10 rounded-full transition-colors"
                             animate={isSidebarOpen ? "open" : "closed"}
+                            transition={{ duration: 0.2 }}
                         >
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <motion.line
@@ -209,7 +210,7 @@ export function MobileHeader() {
                             initial={{ x: "-100%" }}
                             animate={{ x: 0 }}
                             exit={{ x: "-100%" }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
                             className="fixed top-0 left-0 bottom-0 w-[280px] bg-slate-950 z-[70] shadow-2xl px-6 pb-6 pt-24 flex flex-col"
                         >
                             <nav className="space-y-6">

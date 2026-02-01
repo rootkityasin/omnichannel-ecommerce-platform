@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, memo } from 'react';
+
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useAnimationStore } from '@/lib/animationStore';
 import { useCartStore } from '@/lib/store';
@@ -18,7 +19,7 @@ interface ProductCardProps {
     price: string | number;
     price_bn?: string;
     image: string;
-    images?: string[]; // Gallery support
+    images?: string[];
     categoryId?: string;
     nutritionImage?: string;
     cookingImage?: string;
@@ -30,11 +31,12 @@ interface ProductCardProps {
     stage?: string;
 }
 
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
     id, name, name_bn, price, price_bn, image, images = [],
     nutritionImage, cookingImage, nutrition, cookingInstructions, pieces,
     totalSold, weightOptions, stage
 }: ProductCardProps) {
+
     const addItem = useCartStore((state) => state.addItem);
     const { language } = useLanguageStore();
     const { triggerFly } = useAnimationStore();
@@ -241,4 +243,4 @@ export function ProductCard({
             />
         </>
     );
-}
+});
