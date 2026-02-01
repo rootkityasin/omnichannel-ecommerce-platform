@@ -53,11 +53,17 @@ const getPublicSiteConfig = unstable_cache(
 
         try {
             console.log(`[getPublicSiteConfig] Fetching for domain: ${domain}`);
+
+            // Normalize domain to handle www. similar to getTenantByDomain
+            const normalized = domain.toLowerCase().replace('www.', '');
+            const subdomain = normalized.split('.')[0];
+
             const tenantWhere = {
                 OR: [
-                    { slug: domain },
+                    { slug: subdomain },
                     { customDomain: domain },
-                    { slug: domain.split('.')[0] }
+                    { customDomain: normalized },
+                    { slug: domain }
                 ]
             };
             const config = await (prisma.siteConfig.findFirst({
