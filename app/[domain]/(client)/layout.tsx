@@ -7,7 +7,7 @@ import { DesktopNavbar } from "@/components/client/DesktopNavbar";
 import { CartDrawer } from "@/components/client/CartDrawer";
 import { DynamicCheckout } from "@/components/client/DynamicCheckout";
 import { Metadata } from "next";
-import TrustFooter from "@/components/client/TrustFooter";
+
 
 export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }): Promise<Metadata> {
     const { domain } = await params;
@@ -93,7 +93,6 @@ export default async function ClientLayout({
                         {children}
                     </PageTransition>
                 </main>
-                <TrustFooter config={config} />
                 <BottomNav />
             </div>
         </>

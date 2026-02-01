@@ -2,6 +2,7 @@
 
 import { HeroCarousel } from '@/components/client/HeroCarousel';
 import { CategoryNav } from '@/components/client/CategoryNav';
+import TrustFooter from '@/components/client/TrustFooter';
 import { ScrollMouse } from '@/components/shared/ScrollMouse';
 import { ResourcePrefetcher } from '@/components/client/ResourcePrefetcher';
 
@@ -31,6 +32,8 @@ export function HomeClient({ heroSlides, config, categories, children }: HomeCli
             {/* Content is now injected via children or rendered separately */}
             {children}
 
+            {/* Trust Footer - Home Page Only */}
+            <TrustFooter config={config} />
         </main>
     );
 }
