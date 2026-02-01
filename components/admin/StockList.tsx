@@ -156,21 +156,27 @@ export function StockList({ products }: { products: any[] }) {
                                                     : (siteConfig?.volumeUnitValue || 1000);
 
                                                 if (unit === 'VOLUME') {
-                                                    const totalVolume = p.pieces * unitValue;
+                                                    // p.pieces is Total ml
+                                                    const totalVolume = p.pieces;
+                                                    const unitValue = siteConfig?.volumeUnitValue || 1000;
+                                                    const units = Math.floor(totalVolume / unitValue);
                                                     const display = totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)} Ltr` : `${totalVolume} ml`;
+
+                                                    const isLowStock = units < 10;
                                                     return (
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${p.pieces < 10 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                             {display}
-                                                            <span className="ml-1 opacity-75">({p.pieces})</span>
+                                                            <span className="ml-1 opacity-75">({units} units)</span>
                                                         </span>
                                                     );
                                                 }
 
                                                 // Default to WEIGHT - pieces IS grams now (stored directly)
-                                                const weightInGrams = p.pieces; // No multiplication needed
+                                                // Default to WEIGHT - pieces IS grams
+                                                const weightInGrams = p.pieces;
                                                 const weightUnitVal = siteConfig?.weightUnitValue || 200;
-                                                const units = Math.floor(weightInGrams / weightUnitVal); // Calculate units for reference
-                                                const isLowStock = weightInGrams < 1000; // Low stock if < 1kg
+                                                const units = Math.floor(weightInGrams / weightUnitVal);
+                                                const isLowStock = units < 10; // Standardized: Low stock if < 10 units
                                                 return (
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                         {weightInGrams >= 1000

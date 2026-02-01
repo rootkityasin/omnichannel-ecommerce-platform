@@ -792,8 +792,10 @@ export default function ProductsPage() {
                                                                 const totalVolume = product.pieces;
                                                                 const units = Math.floor(totalVolume / unitValue);
                                                                 const display = totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)} Ltr` : `${totalVolume} ml`;
+
+                                                                const isLowStock = units < 10;
                                                                 return (
-                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.pieces < unitValue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                                         {display}
                                                                         <span className="ml-1 opacity-75">({units} units)</span>
                                                                     </span>
