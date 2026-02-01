@@ -36,7 +36,7 @@ export async function getHomeSections(domain?: string) {
                 const tenant = domain ? await getTenantByDomain(domain) : null;
                 if (domain && !tenant) return [];
 
-                let sections = await prisma.productSection.findMany({
+                let sections = await (prisma.productSection.findMany({
                     where: {
                         isActive: true,
                     },
@@ -50,20 +50,20 @@ export async function getHomeSections(domain?: string) {
                             take: 12, // Limit to recent 12 products per section
                             select: {
                                 id: true,
-                                title: true,
+                                name: true,
                                 price: true,
                                 image: true,
-                                slug: true,
-                                stock: true,
+                                sku: true,
+                                isAvailable: true,
                                 stage: true,
-                                isNonVeg: true,
                                 categoryId: true,
                                 tenantId: true,
                                 createdAt: true,
                             }
                         }
-                    }
-                });
+                    },
+                    cacheStrategy: { ttl: 60, swr: 60 } // Prisma Accelerate Caching (Edge)
+                }) as any);
 
                 // Auto-Seed if no sections found (Self-Healing for new envs)
                 if (sections.length === 0) {
@@ -81,13 +81,12 @@ export async function getHomeSections(domain?: string) {
                                 take: 12,
                                 select: {
                                     id: true,
-                                    title: true,
+                                    name: true,
                                     price: true,
                                     image: true,
-                                    slug: true,
-                                    stock: true,
+                                    sku: true,
+                                    isAvailable: true,
                                     stage: true,
-                                    isNonVeg: true,
                                     categoryId: true,
                                     tenantId: true,
                                     createdAt: true,

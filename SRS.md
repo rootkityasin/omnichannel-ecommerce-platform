@@ -1,54 +1,139 @@
 # Software Requirements Specification (SRS)
-**Version:** 1.0.0
+**Project Name:** Crab & Khai - Omnichannel E-Commerce Platform
+**Version:** 2.0.0
 **Last Updated:** 2026-01-31
 
-## 1. System Overview
-**Crab & Khai** is a high-performance, omnichannel e-commerce platform built on **Next.js 15 (App Router)**. It features a multi-tenant architecture (supporting Subdomains and Custom Domains) and a robust Admin Dashboard.
+---
 
-## 2. Key Architecture Features
+## 1. Introduction
 
-### 2.1 Caching System (High Performance)
-The platform implements a multi-layer caching strategy to ensure sub-second response times and reduced database load.
+### 1.1 Purpose
+The purpose of this document is to define the software requirements for the **Crab & Khai** platform, a high-performance, multi-tenant e-commerce solution. It outlines the architectural design, functional capabilities, security protocols, and performance standards required to support multiple storefronts (tenants) from a single code base.
 
-*   **Layer 1: Database Caching (Prisma Accelerate)**
-    *   **Technology**: Prisma Accelerate (Edge Caching & Connection Pooling).
-    *   **Strategy**: query-level caching for high-read/low-write data.
-    *   **TTL**: Auto-cached based on query frequency and data volatility.
+### 1.2 Scope
+The system is a "Multi-Instance" e-commerce application built on Next.js 15. It encompasses:
+*   **Customer Storefront**: Product browsing, cart management, checkout, and order tracking.
+*   **Admin Dashboard**: Inventory management, order processing, analytics, and security controls.
+*   **Tenant Management**: Support for custom domains and subdomains with strict data isolation.
+*   **Infrastructure**: Serverless deployment (Vercel), distributed database (Prisma Accelerate), and edge caching.
 
-*   **Layer 2: Application Data Cache**
-    *   **Technology**: Next.js `unstable_cache` API.
-    *   **Mechanism**: Functions like `getHomeSections` are memoized and cached in the Data Cache.
-    *   **Revalidation**: Uses **Tag-based Revalidation** (`revalidateTag`). When data changes (checkouts, inventory updates), specific cache tags are invalidated instantly.
+---
 
-*   **Layer 3: Payload Optimization**
-    *   **Selective Fetching**: API responses (e.g., Homepage) are optimized to fetch only essential fields (`id`, `title`, `price`, `image`), reducing payload size by ~70% and avoiding Vercel's 2MB limit.
-    *   **Pagination**: Lists are limited (e.g., Top 12 Products) to prevent over-fetching.
+## 2. System Architecture
 
-### 2.2 Security Architecture
-A "Defense in Depth" approach securing the Admin Panel.
+### 2.1 Multitenancy Model
+The platform employs a **Logical Multitenancy** model enforced at the application and database layers.
 
-*   **Trusted Device Enforcement**:
-    *   **Middleware Guard**: `middleware.ts` intercepts **ALL** requests to `/admin/*`.
-    *   **Verification**: Checks for `trusted_device` cookie. If missing, forces redirect to Device Setup.
-    *   **Bypass Prevention**: Server-side logic prevents bypassing checks via client-side routing.
+```mermaid
+erDiagram
+    Tenant ||--o{ User : "manages"
+    Tenant ||--o{ Product : "owns"
+    Tenant ||--o{ Order : "processes"
+    Tenant ||--o| SiteConfig : "configures"
 
-*   **Admin Access Control**:
-    *   **Setup Token**: Requires a secure, rotating `ADMIN_SETUP_SECRET` to authorize new devices.
-    *   **Session Management**: NextAuth.js (v5) handles session validation alongside device trust checks.
+    Product {
+        string id PK
+        string tenantId FK "Isolation Key"
+        string sku UK
+    }
 
-### 2.3 Automation & Self-Healing
-*   **Auto-Seeding**: The `HomeSection` system is self-healing. If a deployment (or local environment) lacks configuration, the system automatically detects this on the first visit and:
-    1.  Creates default sections (Best Sellers, New Arrivals).
-    2.  Populates them with existing inventory.
-    3.  Self-repairs without manual admin intervention.
+    Order {
+        string id PK
+        string tenantId FK "Isolation Key"
+        string status
+    }
+```
 
-## 3. Technology Stack
-*   **Framework**: Next.js 15 (App Router, Server Actions)
-*   **Database**: PostgreSQL + Prisma ORM
-*   **Authentication**: NextAuth.js v5
-*   **Storage**: Cloudinary (Organized by Project Folder)
-*   **UI**: Tailwind CSS, Lucide React, Radix UI
+### 2.2 Data Isolation Flow
+Requests are routed and filtered based on the incoming hostname, ensuring strict data segregation.
 
-## 4. Future Roadmap
-*   **Real-Time Order Sync**: WebSockets for admin order dashboard.
-*   **Advanced Analytics**: Customer retention and cohort analysis.
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Middleware
+    participant ServerAction
+    participant Database
+
+    Browser->>Middleware: GET crabkhai.com
+    Middleware->>Middleware: Resolve Tenant (crabkhai)
+    Middleware->>ServerAction: Rewrite to /[domain]
+    ServerAction->>Database: Query Data + WHERE tenantId = "crabkhai"
+    Database-->>ServerAction: Return Tenant-Scoped Data
+    ServerAction-->>Browser: Render Storefront
+```
+
+---
+
+## 3. Functional Requirements
+
+### 3.1 Caching & Performance
+**Goal**: Sub-second response times (< 200ms TTFB) and high scalability.
+
+*   **FR-01: Multi-Layer Caching**
+    *   **L1 Database**: Prisma Accelerate handles connection pooling and query result caching at the edge.
+    *   **L2 Application**: Next.js Data Cache (`unstable_cache`) memoizes expensive computations (e.g., specific product sections).
+    *   **L3 TLS/Edge**: Static assets and ISR pages are cached at the CDN edge (Vercel Edge Network).
+
+*   **FR-02: Tag-Based Invalidation**
+    *   System must use `revalidateTag` to purge stale data instantly upon admin updates (e.g., changing a product price instantly updates the storefront).
+
+*   **FR-03: Optimization**
+    *   **Payload Reduction**: API responses for list views (Home, Menu) must exclude large fields (descriptions, metadata) to prevent exceeding serverless payload limits (2MB).
+    *   **Auto-Scroll Removal**: Carousel interactions must be seamless without interfering with vertical page scrolling.
+
+### 3.2 Security & Access Control
+**Goal**: Zero-trust security model for administrative actions.
+
+*   **FR-04: Trusted Device Enforcement**
+    *   **Middleware Guard**: All routes under `/admin` must verify a valid `trusted_device` cookie.
+    *   **Device Authorization**: New devices must be authorized via a rotating `ADMIN_SETUP_SECRET`.
+    *   **Force Redirect**: Unauthorized access attempts must be redirected to `/admin/security/device-setup` regardless of authentication status.
+
+*   **FR-05: Session Management**
+    *   Authentication via NextAuth.js v5.
+    *   Admins must be re-verified against the database periodically (Session + Device Trust).
+
+### 3.3 Automation & Self-Healing
+**Goal**: Minimize manual configuration for new deployments.
+
+*   **FR-06: Auto-Seeding**
+    *   Upon first access to the Homepage, the system must detect missing configuration (e.g., missing Product Sections).
+    *   If missing, it must automatically provision default sections ("Best Sellers", "New Arrivals") and populate them with available products.
+
+---
+
+## 4. Non-Functional Requirements
+
+### 4.1 Scalability
+*   **Horizontal Scaling**: The codebase is stateless, allowing essentially infinite horizontal scaling via serverless functions.
+*   **Database**: Designed to support 100+ active tenants via connection pooling.
+
+### 4.2 Reliability
+*   **Uptime**: 99.9% uptime target.
+*   **Self-Correction**: Auto-seeding ensures the application recovers from empty-state configurations without downtime.
+
+### 4.3 Compliance
+*   **Audit Logging**: Critical actions (Price changes, Security authorization) are logged to `SecurityLog` and `AuditLog` tables.
+*   **Data Privacy**: Customer PII (Phone, Address) is stored securely and accessible only to authorized tenant admins.
+
+---
+
+## 5. Technology Stack
+
+| Component | Technology | Rationale |
+|-----------|------------|-----------|
+| **Frontend** | Next.js 15 (App Router) | SEO, Server Components, Streaming |
+| **Backend** | Server Actions | Type-safety, Direct DB access |
+| **Database** | PostgreSQL | Relational integrity for Orders/Inventory |
+| **ORM** | Prisma & Accelerate | Type-safety, Caching, Pooling |
+| **Auth** | NextAuth.js v5 | Standardized, Secure |
+| **Styling** | TailwindCSS + Shadcn/UI | Rapid development, Accessibility |
+| **Media** | Cloudinary | Auto-optimization (WebP), Tenant Folders |
+
+---
+
+## 6. Deployment Strategy
+*   **Platform**: Vercel
+*   **CI/CD**: Git-based deployments.
+*   **Environment Variables**: Strict separation of secrets (Database URL, API Keys).
+
