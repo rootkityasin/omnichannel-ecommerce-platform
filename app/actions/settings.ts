@@ -397,7 +397,7 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        revalidateTag('site-config');
+        revalidateTag('site-config', {});
         revalidatePath('/', 'layout');
         revalidatePath('/admin/shop', 'page');
         return { success: true };

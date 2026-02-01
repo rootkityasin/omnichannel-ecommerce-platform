@@ -57,8 +57,12 @@ export default function RootLayout({
               {children}
               <PromoPopup />
               <Toaster richColors position="top-center" />
-              <SpeedInsights />
-              <Analytics />
+              {process.env.NODE_ENV === 'production' && (
+                <>
+                  <SpeedInsights />
+                  <Analytics />
+                </>
+              )}
             </SettingsProvider>
           </SessionProvider>
         </main>
