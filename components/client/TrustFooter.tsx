@@ -26,22 +26,15 @@ interface TrustFooterProps extends React.HTMLAttributes<HTMLDivElement> {
     } | null;
 }
 
-import { getSiteConfig } from '@/app/actions/settings';
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 
-export default function TrustFooter({ config: initialConfig, ...props }: TrustFooterProps) {
-    const [config, setConfig] = useState<any>(initialConfig || null);
+export default function TrustFooter({ config, ...props }: TrustFooterProps) {
     const [policyOpen, setPolicyOpen] = useState<'privacy' | 'refund' | 'terms' | null>(null);
-    const hasFetched = useRef(false);
 
-    useEffect(() => {
-        if (hasFetched.current) return;
-        hasFetched.current = true;
-        getSiteConfig().then((data) => {
-            if (data) setConfig(data);
-        });
-    }, []);
-    // Default Fallbacks - Now matching the empty DB state
+    // Direct usage of props - no client-side refetching needed
+    // The parent (HomeClient) already provides the server-fetched config
+
+    // Default Fallbacks
     const phone = config?.contactPhone || "";
     const email = config?.contactEmail || "";
     const address = config?.contactAddress || "";
