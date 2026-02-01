@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { createTenant } from '@/app/actions/super-admin';
+import { generateImpersonationToken } from '@/app/actions/user';
 import { Loader2, Plus, Building2 } from 'lucide-react';
 
 export function AddCompanyModal() {
@@ -30,6 +31,23 @@ export function AddCompanyModal() {
             const res = await createTenant(formData);
             if (res.success) {
                 toast.success("Company created successfully!");
+
+                // Auto Login Redirect
+                if (res.user?.id) {
+                    toast.loading("Redirecting to your shop dashboard...");
+                    const tokenRes = await generateImpersonationToken(res.user.id);
+
+                    if (tokenRes.success && tokenRes.token) {
+                        const protocol = window.location.protocol;
+                        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+                        // Construct tenant URL
+                        const tenantUrl = `${protocol}//${res.tenant.slug}.${rootDomain}/account?impersonate=${res.user.id}&token=${tokenRes.token}`;
+
+                        window.location.href = tenantUrl;
+                        return;
+                    }
+                }
+
                 setOpen(false);
                 setFormData({ name: '', slug: '', email: '', password: '' });
             } else {

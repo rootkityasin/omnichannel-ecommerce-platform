@@ -152,6 +152,30 @@ model SiteConfig {
   privacyPolicy   String?  @default("We value your privacy. Your data is safe with us.")
   refundPolicy    String?  @default("Refunds are processed within 5-7 business days.")
   termsPolicy     String?  @default("By using our service, you agree to our terms of service.")
+
+  // SEO & Social
+  seoTitle        String?
+  seoDescription  String?
+  seoKeywords     String?
+  
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+
+  twitterCard        String? @default("summary_large_image")
+  twitterTitle       String?
+  twitterDescription String?
+  twitterImage       String?
+
+  jsonLdType      String? @default("Restaurant")
+  robots          String? @default("index, follow")
+  canonicalUrl    String?
+
+  socialFacebook  String?
+  socialInstagram String?
+  socialTwitter   String?
+  socialLinkedIn  String?
+  socialYoutube   String?
 }
 
 model Hub {

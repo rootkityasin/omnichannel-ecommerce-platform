@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Globe, Shield, Truck, ChevronRight, Store, Mail, Phone, MapPin, AlertTriangle, BadgeCheck, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, FolderOpen, Folder, X, Bold, Italic, Heading, Palette } from 'lucide-react';
+import { Settings, Globe, Shield, Truck, ChevronRight, Store, Mail, Phone, MapPin, AlertTriangle, BadgeCheck, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, FolderOpen, Folder, X, Bold, Italic, Heading, Palette, Search } from 'lucide-react';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { DeliverySettings } from '@/components/admin/DeliverySettings';
 import { Card } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { updateSiteConfig } from '@/app/actions/settings';
 import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
 import { DomainSettings } from '@/components/admin/DomainSettings';
 import { ImageUpload } from '@/components/admin/ImageUpload';
+import { SeoSettings } from '@/components/admin/SeoSettings';
 interface SiteConfig {
     storeName?: string;
     contactPhone: string;
@@ -731,6 +732,7 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
 
     const modules = [
         { id: 'general', label: 'General Information', icon: Settings, desc: 'Store Name, Address, Contacts' },
+        { id: 'seo', label: 'Search & Social', icon: Search, desc: 'SEO Meta, OpenGraph, Twitter Cards' },
         { id: 'footer', label: 'Footer & Trust', icon: LayoutTemplate, desc: 'Certifications, Allergens, Warnings' },
         { id: 'payment', label: 'Payment Gateways', icon: CreditCard, desc: 'bKash, COD, Manual MFS, Advance' },
         { id: 'backup', label: 'Database Backup', icon: Database, desc: 'Backup database to local disk' },
@@ -762,6 +764,10 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
             {activeModule === 'general' ? (
                 <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <ShopGeneralSettings initialConfig={initialConfig} />
+                </Card>
+            ) : activeModule === 'seo' ? (
+                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <SeoSettings initialConfig={initialConfig} />
                 </Card>
             ) : activeModule === 'footer' ? (
                 <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">

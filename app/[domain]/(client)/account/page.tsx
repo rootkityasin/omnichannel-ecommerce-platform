@@ -4,18 +4,44 @@ import { useState, useEffect } from 'react';
 import { User, Package, MapPin, CreditCard, LogOut, ChevronRight, HelpCircle, Camera, Edit2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 import { checkUserExists, createUser, getUserProfile } from '@/app/actions/user';
 import { toast } from 'sonner';
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut, signIn } from "next-auth/react";
 import { AuthForm } from '@/components/client/AuthForm';
 
 export default function AccountPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { data: session, status } = useSession();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // Auto-Login Logic for Cross-Domain Impersonation
+    useEffect(() => {
+        const impersonateId = searchParams.get('impersonate');
+        const token = searchParams.get('token');
+
+        if (impersonateId && token && status === 'unauthenticated') {
+            const toastId = toast.loading("Setting up your admin session...");
+
+            signIn('credentials', {
+                phone: `impersonate:${impersonateId}`,
+                password: token,
+                redirect: false
+            }).then((res) => {
+                if (res?.ok) {
+                    toast.success("Login Successful", { id: toastId });
+                    // Force redirect to admin panel
+                    window.location.href = '/admin';
+                } else {
+                    toast.error("Auto-login failed: " + res?.error, { id: toastId });
+                }
+            });
+        }
+    }, [searchParams, status]);
+
     const { language } = useLanguageStore();
     const t = translations[language];
 
@@ -45,8 +71,9 @@ export default function AccountPage() {
             if (status === 'authenticated' && session?.user) {
                 // Admin Redirect Check
                 // @ts-ignore
+                // @ts-ignore
                 const role = session.user.role;
-                if (role === 'SUPER_ADMIN' || role === 'HUB_ADMIN') {
+                if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                     router.push('/admin');
                     return;
                 }

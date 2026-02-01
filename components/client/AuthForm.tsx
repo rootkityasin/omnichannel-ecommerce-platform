@@ -95,8 +95,9 @@ export function AuthForm() {
                 // Check Role immediately
                 const session = await getSession();
                 // @ts-ignore
+                // @ts-ignore
                 const role = session?.user?.role;
-                if (role === 'SUPER_ADMIN' || role === 'HUB_ADMIN') {
+                if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                     router.push('/admin');
                 } else {
                     router.push('/account');
@@ -135,8 +136,9 @@ export function AuthForm() {
                         // Check Role immediately
                         const session = await getSession();
                         // @ts-ignore
+                        // @ts-ignore
                         const role = session?.user?.role;
-                        if (role === 'SUPER_ADMIN' || role === 'HUB_ADMIN') {
+                        if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                             router.push('/admin');
                         } else {
                             router.push('/account');

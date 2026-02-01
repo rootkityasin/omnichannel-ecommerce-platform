@@ -50,7 +50,7 @@ export async function createTenant(data: {
 
         // 2. Create Default Admin User for Tenant
         const hashedPassword = await hash(data.password || 'password123', 12);
-        await prisma.user.create({
+        const user = await prisma.user.create({
             data: {
                 name: `${data.name} Admin`,
                 email: data.email,
@@ -61,7 +61,7 @@ export async function createTenant(data: {
         });
 
         revalidatePath('/app');
-        return { success: true, tenant };
+        return { success: true, tenant, user };
     } catch (error) {
         console.error("Create Tenant Error:", error);
         return { success: false, error: String(error) };
