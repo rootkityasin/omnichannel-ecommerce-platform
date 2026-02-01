@@ -47,24 +47,24 @@ export function StockList({ products }: { products: any[] }) {
 
     const handleAdjustment = async () => {
         if (!selectedProduct || !amount) return;
-        const inputVal = parseInt(amount);
-        if (isNaN(inputVal) || inputVal <= 0) {
+
+        const inputVal = parseFloat(amount || '0');
+        if (inputVal <= 0) {
             toast.error("Invalid amount");
             return;
         }
 
-        // No conversion - store input directly
-        // WEIGHT mode: input is grams, stored as grams
-        // PCS mode: input is pieces, stored as pieces
+        // NEW LOGIC: Input IS the Weight (Grams/Ml) or Pieces (if PCS)
+        // No multiplication needed for Weight/Volume modes anymore as per user request.
         const delta = adjustType === 'add' ? inputVal : -inputVal;
 
-        // Optimistic check
+        // Optimistic check for removal (if applicable)
         if (adjustType === 'remove' && selectedProduct.pieces < inputVal) {
             toast.error("Cannot remove more than current stock");
             return;
         }
 
-        setLoading(selectedProduct.id);
+        setLoading(selectedProduct.id); // Keep loading state for UI feedback
         const res = await adjustStock(selectedProduct.id, delta);
         if (res.success) {
             const unit = siteConfig?.measurementUnit || 'PCS';
@@ -232,19 +232,47 @@ export function StockList({ products }: { products: any[] }) {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                        <label className="text-xs font-bold text-slate-500 mb-2 block">
-                            {siteConfig?.measurementUnit === 'WEIGHT'
-                                ? `Enter grams to ${adjustType === 'add' ? 'add' : 'remove'}`
-                                : `Quantity to ${adjustType === 'add' ? 'add' : 'remove'}`
-                            }
-                        </label>
-                        <Input
-                            type="number"
-                            placeholder="0"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            autoFocus
-                        />
+                        <div className="space-y-4">
+                            {siteConfig?.measurementUnit !== 'PCS' && (selectedProduct?.weight || siteConfig?.weightUnitValue) ? (
+                                <>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-2 block">
+                                            {adjustType === 'add' ? 'Add' : 'Remove'} {siteConfig?.measurementUnit === 'WEIGHT' ? 'Weight (grams)' : 'Volume (ml)'}
+                                            <span className="font-normal ml-1">(Input raw {siteConfig?.measurementUnit === 'WEIGHT' ? 'g' : 'ml'})</span>
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                type="number"
+                                                placeholder="0"
+                                                value={amount}
+                                                onChange={(e) => setAmount(e.target.value)}
+                                                autoFocus
+                                                min={0}
+                                                onWheel={(e) => e.currentTarget.blur()}
+                                            />
+                                            <div className="flex items-center text-xs text-slate-500 bg-slate-100 px-3 rounded border whitespace-nowrap">
+                                                ≈ {(Number(amount || 0) / (selectedProduct?.weight || siteConfig?.weightUnitValue || 1)).toFixed(1)} Units
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 mb-2 block">
+                                        Quantity to {adjustType === 'add' ? 'add' : 'remove'}
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        autoFocus
+                                        min={0}
+                                        onWheel={(e) => e.currentTarget.blur()}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
@@ -257,6 +285,6 @@ export function StockList({ products }: { products: any[] }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

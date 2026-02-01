@@ -99,10 +99,23 @@ export default function ProductsPage() {
     // Format Stock Helper
     const formatStock = (pieces: number) => {
         const unit = config.measurementUnit || 'PCS';
-        if (unit === 'VOLUME') return `${pieces} Ltr`;
+        const unitValue = unit === 'WEIGHT'
+            ? (config.weightUnitValue || 200)
+            : (config.volumeUnitValue || 1000);
+
+        if (unit === 'VOLUME') {
+            // pieces is Total ml
+            const units = Math.floor(pieces / unitValue);
+            const display = pieces >= 1000 ? `${(pieces / 1000).toFixed(1)} Ltr` : `${pieces} ml`;
+            return `${display} (${units})`;
+        }
         if (unit === 'WEIGHT') {
-            const weight = pieces * 200;
-            return weight >= 1000 ? `${(weight / 1000).toFixed(1)} kg` : `${weight} g`;
+            // pieces is Total Grams
+            const weight = pieces;
+            const units = Math.floor(weight / unitValue);
+            return weight >= 1000
+                ? `${(weight / 1000).toFixed(1)} kg (${units})`
+                : `${weight} g (${units})`;
         }
         return `${pieces} Units`;
     };
@@ -564,6 +577,8 @@ export default function ProductsPage() {
                                             value={newProduct.price}
                                             onChange={e => setNewProduct({ ...newProduct, price: e.target.value === '' ? '' : parseFloat(e.target.value) })}
                                             required
+                                            min={0}
+                                            onWheel={(e) => e.currentTarget.blur()}
                                         />
                                     </div>
                                     {config.measurementUnit !== 'PCS' && (
@@ -576,21 +591,57 @@ export default function ProductsPage() {
                                                 placeholder="e.g. 200"
                                                 value={newProduct.weight}
                                                 onChange={e => setNewProduct({ ...newProduct, weight: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                                min={0}
+                                                onWheel={(e) => e.currentTarget.blur()}
                                             />
                                             <p className="text-[10px] text-slate-500">1 Unit = {newProduct.weight || 0} {config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'}</p>
                                         </div>
                                     )}
                                     {newProduct.type !== 'COMBO' && (
-                                        <div>
-                                            <label className="text-sm font-medium">
-                                                Stock ({config.measurementUnit === 'WEIGHT' ? 'Kg/Gm' : config.measurementUnit === 'VOLUME' ? 'Ltr' : 'Pieces'})
+                                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                            <label className="text-sm font-medium flex justify-between">
+                                                <span>Stock Quantity</span>
+                                                <span className="text-xs text-slate-500 font-normal">
+                                                    {config.measurementUnit === 'PCS' ? '(Pieces)' : `(Units of ${newProduct.weight || 0}${config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'})`}
+                                                </span>
                                             </label>
-                                            <Input
-                                                type="number"
-                                                placeholder="0"
-                                                value={newProduct.pieces}
-                                                onChange={e => setNewProduct({ ...newProduct, pieces: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                                            />
+
+                                            {config.measurementUnit === 'PCS' ? (
+                                                <Input
+                                                    type="number"
+                                                    placeholder="0"
+                                                    value={newProduct.pieces}
+                                                    onChange={e => setNewProduct({ ...newProduct, pieces: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                                    className="mt-1 bg-white"
+                                                    min={0}
+                                                    onWheel={(e) => e.currentTarget.blur()}
+                                                />
+                                            ) : (
+                                                <>
+                                                    <div className="flex gap-2 mt-1">
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="0"
+                                                            // Calculate units from total pieces (weight)
+                                                            value={newProduct.pieces && newProduct.weight ? Math.floor(Number(newProduct.pieces) / Number(newProduct.weight)) : 0}
+                                                            onChange={e => {
+                                                                const units = parseFloat(e.target.value) || 0;
+                                                                const unitWeight = Number(newProduct.weight) || (config.weightUnitValue || 0); // fallback if product weight not set
+                                                                setNewProduct({
+                                                                    ...newProduct,
+                                                                    pieces: units * unitWeight
+                                                                });
+                                                            }}
+                                                            className="bg-white"
+                                                            min={0}
+                                                            onWheel={(e) => e.currentTarget.blur()}
+                                                        />
+                                                        <div className="flex items-center text-xs text-slate-500 whitespace-nowrap px-2 bg-white border rounded">
+                                                            = {newProduct.pieces || 0} {config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'}
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -602,6 +653,8 @@ export default function ProductsPage() {
                                             placeholder="0"
                                             value={newProduct.pointsReward}
                                             onChange={e => setNewProduct({ ...newProduct, pointsReward: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                            min={0}
+                                            onWheel={(e) => e.currentTarget.blur()}
                                         />
                                     </div>
                                     <div>
@@ -735,26 +788,30 @@ export default function ProductsPage() {
                                                                 : (config.volumeUnitValue || 1000);
 
                                                             if (unit === 'VOLUME') {
-                                                                const totalVolume = product.pieces * unitValue;
+                                                                // pieces is Total ml
+                                                                const totalVolume = product.pieces;
+                                                                const units = Math.floor(totalVolume / unitValue);
                                                                 const display = totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)} Ltr` : `${totalVolume} ml`;
                                                                 return (
-                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.pieces < 10 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.pieces < unitValue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                                         {display}
-                                                                        <span className="ml-1 opacity-75">({product.pieces})</span>
+                                                                        <span className="ml-1 opacity-75">({units} units)</span>
                                                                     </span>
                                                                 );
                                                             }
 
                                                             // Default to WEIGHT
-                                                            const weightInGrams = product.pieces * unitValue;
-                                                            const isLowStock = product.pieces < 10;
+                                                            // pieces is Total Grams
+                                                            const weightInGrams = product.pieces;
+                                                            const units = Math.floor(weightInGrams / unitValue);
+                                                            const isLowStock = units < 10;
                                                             return (
                                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                                     {weightInGrams >= 1000
                                                                         ? `${(weightInGrams / 1000).toFixed(1)} kg`
                                                                         : `${weightInGrams} g`
                                                                     }
-                                                                    <span className="ml-1 opacity-75">({product.pieces})</span>
+                                                                    <span className="ml-1 opacity-75">({units} units)</span>
                                                                 </span>
                                                             );
                                                         })()

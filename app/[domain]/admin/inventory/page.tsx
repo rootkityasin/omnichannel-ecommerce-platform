@@ -1,5 +1,5 @@
 import { getInventoryStats, getExpenses, getProductsForStock } from "@/app/actions/inventory";
-import { InventoryTabs } from "@/components/admin/InventoryTabs";
+import { DynamicInventoryTabs } from "@/components/admin/DynamicInventoryTabs";
 import { ClipboardList } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export default async function InventoryPage() {
                 <p className="text-slate-500 mt-1">Manage your product stock and track business expenses separately.</p>
             </div>
 
-            <InventoryTabs
+            <DynamicInventoryTabs
                 stats={stats}
                 expenses={expenses}
                 products={products}
