@@ -24,6 +24,7 @@ export default function AddressesPage() {
     const [newAddress, setNewAddress] = useState('');
     const [newPhone, setNewPhone] = useState('');
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [errors, setErrors] = useState<any>({});
 
     useEffect(() => {
         // Load addresses from local storage
@@ -55,8 +56,16 @@ export default function AddressesPage() {
     }, []);
 
     const handleSaveAddress = () => {
-        if (!newAddress || !newPhone) {
-            toast.error("Please fill in all fields");
+        setErrors({});
+        const newErrors: any = {};
+
+        if (!newAddress.trim()) newErrors.address = "Address is required";
+        if (!newPhone.trim()) newErrors.phone = "Contact number is required";
+        else if (!/^(\+88)?01[3-9]\d{8}$/.test(newPhone.replace(/\D/g, ''))) newErrors.phone = "Invalid BD Mobile Number";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            toast.error("Please fix the errors");
             return;
         }
 
@@ -85,6 +94,7 @@ export default function AddressesPage() {
         setEditingId(null);
         setNewAddress('');
         setNewPhone('');
+        setErrors({});
     };
 
     const handleEdit = (addr: Address) => {
@@ -93,6 +103,7 @@ export default function AddressesPage() {
         setNewPhone(addr.phone);
         setEditingId(addr.id);
         setIsAdding(true);
+        setErrors({});
     };
 
     const handleDelete = (id: string) => {
@@ -164,9 +175,10 @@ export default function AddressesPage() {
                                     value={newAddress}
                                     onChange={(e) => setNewAddress(e.target.value)}
                                     placeholder="House, Road, Block, Area..."
-                                    className="w-full p-3 !bg-gray-50 rounded-xl border-0 ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 focus:!bg-white transition-all text-sm font-medium !text-gray-900 placeholder:text-gray-400 resize-none"
+                                    className={`w-full p-3 !bg-gray-50 rounded-xl border ring-1 focus:ring-2 focus:ring-crab-red/20 focus:!bg-white transition-all text-sm font-medium !text-gray-900 placeholder:text-gray-400 resize-none ${errors.address ? 'border-red-500 ring-red-50' : 'border-0 ring-gray-100'}`}
                                     rows={3}
                                 />
+                                {errors.address && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.address}</p>}
                             </div>
 
                             <div>
@@ -176,13 +188,17 @@ export default function AddressesPage() {
                                     value={newPhone}
                                     onChange={(e) => setNewPhone(e.target.value)}
                                     placeholder="+880..."
-                                    className="w-full p-3 !bg-gray-50 rounded-xl border-0 ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 focus:!bg-white transition-all text-sm font-medium !text-gray-900 placeholder:text-gray-400"
+                                    className={`w-full p-3 !bg-gray-50 rounded-xl border ring-1 focus:ring-2 focus:ring-crab-red/20 focus:!bg-white transition-all text-sm font-medium !text-gray-900 placeholder:text-gray-400 ${errors.phone ? 'border-red-500 ring-red-50' : 'border-0 ring-gray-100'}`}
                                 />
+                                {errors.phone && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.phone}</p>}
                             </div>
 
                             <div className="flex gap-3 pt-2">
                                 <button
-                                    onClick={() => setIsAdding(false)}
+                                    onClick={() => {
+                                        setIsAdding(false);
+                                        setErrors({});
+                                    }}
                                     className="flex-1 py-3 text-sm font-bold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
                                 >
                                     Cancel

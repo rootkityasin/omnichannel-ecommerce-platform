@@ -1,7 +1,8 @@
 'use client';
 
 import { useCartStore } from '@/lib/store';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
@@ -36,6 +37,173 @@ import { useRouter } from 'next/navigation';
 import { trackEvent } from '@/lib/track';
 import { useMediaQuery } from '@/lib/hooks/use-media-query';
 
+// --- Extracted Components ---
+
+function CheckoutForm({
+    formData,
+    setFormData,
+    handlePlaceOrder,
+    errors = {}
+}: {
+    formData: any,
+    setFormData: any,
+    handlePlaceOrder: (e: React.FormEvent) => void,
+    errors?: any
+}) {
+    return (
+        <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-4">
+            <div className="space-y-4">
+                <h3 className="font-bold text-gray-900 border-b pb-2">Delivery Details</h3>
+                <div className="space-y-3">
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Full Name"
+                            className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        />
+                        {errors.name && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.name}</p>}
+                    </div>
+                    <div>
+                        <input
+                            type="tel"
+                            placeholder="Phone Number (01...)"
+                            className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.phone ? 'border-red-500' : 'border-gray-200'}`}
+                            value={formData.phone}
+                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                        {errors.phone && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.phone}</p>}
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="col-span-1">
+                            <Select
+                                value={formData.area}
+                                onValueChange={(val) => setFormData({ ...formData, area: val })}
+                            >
+                                <SelectTrigger className={`w-full h-[58px] !bg-white border rounded-xl focus:ring-crab-red/20 !text-gray-900 ${errors.area ? 'border-red-500' : 'border-gray-200'}`}>
+                                    <SelectValue placeholder="Area" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Dhaka">Dhaka</SelectItem>
+                                    <SelectItem value="Barisal">Barisal</SelectItem>
+                                    <SelectItem value="Chittagong">Chittagong</SelectItem>
+                                    <SelectItem value="Khulna">Khulna</SelectItem>
+                                    <SelectItem value="Rajshahi">Rajshahi</SelectItem>
+                                    <SelectItem value="Sylhet">Sylhet</SelectItem>
+                                    <SelectItem value="Rangpur">Rangpur</SelectItem>
+                                    <SelectItem value="Mymensingh">Mymensingh</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.area && <p className="text-red-500 text-[10px] mt-1 ml-1 font-medium">{errors.area}</p>}
+                        </div>
+                        <div className="col-span-2">
+                            <input
+                                type="text"
+                                placeholder="Address"
+                                className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.address ? 'border-red-500' : 'border-gray-200'}`}
+                                value={formData.address}
+                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                            />
+                            {errors.address && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.address}</p>}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    );
+}
+
+function OrderSummary({ items, subTotalAmount, deliveryFee, discountAmount, totalAmount }: any) {
+    return (
+        <div className="space-y-4 h-full">
+            <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 space-y-4 shadow-sm">
+                <h3 className="font-bold text-gray-900 border-b border-orange-200 pb-2">Order Summary</h3>
+
+                <div className="flex justify-between text-base">
+                    <span className="text-gray-600">Subtotal ({items.length} items)</span>
+                    <span className="font-bold">৳{subTotalAmount}</span>
+                </div>
+                <div className="flex justify-between text-base">
+                    <span className="text-gray-600">Delivery Fee</span>
+                    <span className="font-bold">৳{deliveryFee}</span>
+                </div>
+                {discountAmount > 0 && (
+                    <div className="flex justify-between text-base text-green-600 font-bold">
+                        <span>Discount</span>
+                        <span>-৳{discountAmount}</span>
+                    </div>
+                )}
+                <div className="border-t border-orange-200 pt-3 flex justify-between text-xl font-black text-crab-red">
+                    <span>Total to Pay</span>
+                    <span>৳{totalAmount}</span>
+                </div>
+            </div>
+
+            <div className="pt-2">
+                <CouponSection />
+            </div>
+        </div>
+    );
+}
+
+function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData }: any) {
+    return (
+        <div className="flex flex-col items-center justify-center text-center p-8 space-y-6 animate-in fade-in zoom-in duration-300 min-h-[50vh]">
+            <div className="w-48 h-48 md:w-64 md:h-64 mb-2 flex items-center justify-center overflow-hidden">
+                <img
+                    src={cartTexts?.successImage || "/congrates_animation.gif"}
+                    alt="Order Confirmed"
+                    className="w-full h-full object-contain scale-105"
+                />
+            </div>
+
+            <div className="space-y-2">
+                <h2 className="text-2xl md:text-3xl font-black text-gray-900">
+                    {cartTexts?.successTitle || t?.cartPage?.successTitle || "Order Placed!"}
+                </h2>
+                <p className="text-gray-500 max-w-xs mx-auto">
+                    {cartTexts?.successMessage || `We'll call you shortly at ${formData.phone}.`}
+                </p>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 w-full max-w-xs mx-auto mt-4">
+                <div className="flex justify-between items-center mb-1">
+                    <span className="text-gray-500 text-xs">Order ID</span>
+                    <span className="font-mono font-bold text-gray-900 text-sm">{successOrder?.id}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span className="text-gray-500 text-xs">Total Amount</span>
+                    <span className="font-bold text-crab-red text-sm">৳{successOrder?.total}</span>
+                </div>
+            </div>
+
+            <Button
+                onClick={handleCloseSuccess}
+                className="w-full max-w-xs h-12 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-all mt-6"
+            >
+                {cartTexts?.backHome || t?.cartPage?.backHome || "Continue Shopping"}
+            </Button>
+        </div>
+    );
+}
+
+function CheckoutButton({ isAnimating, totalAmount }: { isAnimating: boolean, totalAmount: number }) {
+    return (
+        <Button
+            form="checkout-form"
+            type="submit"
+            disabled={isAnimating}
+            className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6"
+            style={{ backgroundColor: '#E60000' }}
+        >
+            {isAnimating ? <Loader2 className="animate-spin w-5 h-5" /> : `Place Order - ৳${totalAmount}`}
+        </Button>
+    );
+}
+
+// --- Main Component ---
+
 export function GlobalCheckoutDrawer() {
     const { checkoutOpen, closeCheckout, items, total, discount, clearCart, coupon } = useCartStore();
     const [isAnimating, setIsAnimating] = useState(false);
@@ -44,7 +212,6 @@ export function GlobalCheckoutDrawer() {
     const { language } = useLanguageStore();
     const t = translations[language as keyof typeof translations] as any;
 
-    // Load Cart Texts for Success State
     const [cartTexts, setCartTexts] = useState<any>(null);
     useEffect(() => {
         const loadTexts = async () => {
@@ -60,17 +227,40 @@ export function GlobalCheckoutDrawer() {
     const router = useRouter();
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
-    // Form State
     const [formData, setFormData] = useState<any>({
         name: '',
         phone: '',
         area: '',
         address: ''
     });
+    const [errors, setErrors] = useState<any>({});
+
+    const { data: session } = useSession();
 
     useEffect(() => {
         getSiteConfig().then(setSiteConfig);
     }, []);
+
+    useEffect(() => {
+        if (session?.user) {
+            setFormData((prev: any) => ({
+                ...prev,
+                name: prev.name || session?.user?.name || '',
+                phone: prev.phone || (session?.user as any)?.phone || session?.user?.email || '',
+            }));
+        }
+    }, [session]);
+
+    // Totals
+    const subTotalAmount = total();
+    const discountAmount = discount();
+    const discountedTotal = Math.max(0, subTotalAmount - discountAmount);
+    const deliveryFee = 60;
+    const taxRate = siteConfig?.taxPercentage || 0;
+    const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
+    const totalAmount = discountedTotal + deliveryFee + taxAmount;
+
+    const [successOrder, setSuccessOrder] = useState<any>(null);
 
     // Track InitiateCheckout when drawer opens
     useEffect(() => {
@@ -88,21 +278,25 @@ export function GlobalCheckoutDrawer() {
         }
     }, [checkoutOpen]);
 
-    // Totals
-    const subTotalAmount = total();
-    const discountAmount = discount();
-    const discountedTotal = Math.max(0, subTotalAmount - discountAmount);
-    const deliveryFee = 60;
-    const taxRate = siteConfig?.taxPercentage || 0;
-    const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
-    const totalAmount = discountedTotal + deliveryFee + taxAmount;
-
-    // Success State
-    const [successOrder, setSuccessOrder] = useState<any>(null);
-
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsAnimating(true);
+        setErrors({});
+
+        // Client-side Validation
+        const newErrors: any = {};
+        if (!formData.name?.trim()) newErrors.name = "Name is required";
+        if (!formData.phone?.trim()) newErrors.phone = "Phone is required";
+        else if (!/^01[3-9]\d{8}$/.test(formData.phone.replace(/\D/g, ''))) newErrors.phone = "Invalid BD Phone Number (e.g., 017...)";
+        if (!formData.area) newErrors.area = "Area is required";
+        if (!formData.address?.trim()) newErrors.address = "Address is required";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            setIsAnimating(false);
+            toast.error("Please fix the highlighted errors");
+            return;
+        }
 
         const orderData = {
             tenantId: siteConfig?.tenantId,
@@ -162,187 +356,56 @@ export function GlobalCheckoutDrawer() {
 
     if (items.length === 0 && !successOrder) return null;
 
-    // Shared Form Component
-    function CheckoutForm({ className }: { className?: string }) {
-        return (
-            <form id="checkout-form" onSubmit={handlePlaceOrder} className={`space-y-4 ${className}`}>
-                <div className="space-y-4">
-                    <h3 className="font-bold text-gray-900 border-b pb-2">Delivery Details</h3>
-                    <div className="space-y-3">
-                        <input
-                            type="text"
-                            placeholder="Full Name"
-                            required
-                            className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                        />
-                        <input
-                            type="tel"
-                            placeholder="Phone Number"
-                            required
-                            className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
-                            value={formData.phone}
-                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                        />
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-1">
-                                <Select
-                                    value={formData.area}
-                                    onValueChange={(val) => setFormData({ ...formData, area: val })}
-                                    required
-                                >
-                                    <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-black">
-                                        <SelectValue placeholder="Area" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Dhaka">Dhaka</SelectItem>
-                                        <SelectItem value="Barisal">Barisal</SelectItem>
-                                        <SelectItem value="Chittagong">Chittagong</SelectItem>
-                                        <SelectItem value="Khulna">Khulna</SelectItem>
-                                        <SelectItem value="Rajshahi">Rajshahi</SelectItem>
-                                        <SelectItem value="Sylhet">Sylhet</SelectItem>
-                                        <SelectItem value="Rangpur">Rangpur</SelectItem>
-                                        <SelectItem value="Mymensingh">Mymensingh</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Address"
-                                required
-                                className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-black"
-                                value={formData.address}
-                                onChange={e => setFormData({ ...formData, address: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </form>
-        );
-    }
-
-    // Shared Order Summary Component
-    function OrderSummary() {
-        return (
-            <div className="space-y-4 h-full">
-                <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 space-y-4 shadow-sm">
-                    <h3 className="font-bold text-gray-900 border-b border-orange-200 pb-2">Order Summary</h3>
-
-                    <div className="flex justify-between text-base">
-                        <span className="text-gray-600">Subtotal ({items.length} items)</span>
-                        <span className="font-bold">৳{subTotalAmount}</span>
-                    </div>
-                    <div className="flex justify-between text-base">
-                        <span className="text-gray-600">Delivery Fee</span>
-                        <span className="font-bold">৳{deliveryFee}</span>
-                    </div>
-                    {discountAmount > 0 && (
-                        <div className="flex justify-between text-base text-green-600 font-bold">
-                            <span>Discount</span>
-                            <span>-৳{discountAmount}</span>
-                        </div>
-                    )}
-                    <div className="border-t border-orange-200 pt-3 flex justify-between text-xl font-black text-crab-red">
-                        <span>Total to Pay</span>
-                        <span>৳{totalAmount}</span>
-                    </div>
-                </div>
-
-                <div className="pt-2">
-                    <CouponSection />
-                </div>
-            </div>
-        );
-    }
-
-
-
-
-
-    function SuccessView() {
-        return (
-            <div className="flex flex-col items-center justify-center text-center p-8 space-y-6 animate-in fade-in zoom-in duration-300 min-h-[50vh]">
-                <div className="w-48 h-48 md:w-64 md:h-64 mb-2 flex items-center justify-center overflow-hidden">
-                    <img
-                        src={cartTexts?.successImage || "/congrates_animation.gif"}
-                        alt="Order Confirmed"
-                        className="w-full h-full object-contain scale-105"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">
-                        {cartTexts?.successTitle || t?.cartPage?.successTitle || "Order Placed!"}
-                    </h2>
-                    <p className="text-gray-500 max-w-xs mx-auto">
-                        {cartTexts?.successMessage || `We'll call you shortly at ${formData.phone}.`}
-                    </p>
-                </div>
-
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 w-full max-w-xs mx-auto mt-4">
-                    <div className="flex justify-between items-center mb-1">
-                        <span className="text-gray-500 text-xs">Order ID</span>
-                        <span className="font-mono font-bold text-gray-900 text-sm">{successOrder?.id}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-gray-500 text-xs">Total Amount</span>
-                        <span className="font-bold text-crab-red text-sm">৳{successOrder?.total}</span>
-                    </div>
-                </div>
-
-                <Button
-                    onClick={handleCloseSuccess}
-                    className="w-full max-w-xs h-12 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-all mt-6"
-                >
-                    {cartTexts?.backHome || t?.cartPage?.backHome || "Continue Shopping"}
-                </Button>
-            </div>
-        );
-    }
-
-    // Shared Button Component
-    function CheckoutButton() {
-        return (
-            <Button
-                form="checkout-form"
-                type="submit"
-                disabled={isAnimating}
-                className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6"
-                style={{ backgroundColor: '#E60000' }} // Force color to override any defaults
-            >
-                {isAnimating ? <Loader2 className="animate-spin w-5 h-5" /> : `Place Order - ৳${totalAmount}`}
-            </Button>
-        );
-    }
-
     if (isDesktop) {
         return (
             <Dialog open={checkoutOpen} onOpenChange={(open) => !open && (successOrder ? handleCloseSuccess() : closeCheckout())}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
                     {successOrder ? (
-                        <SuccessView />
+                        <SuccessView
+                            cartTexts={cartTexts}
+                            successOrder={successOrder}
+                            handleCloseSuccess={handleCloseSuccess}
+                            t={t}
+                            formData={formData}
+                        />
                     ) : (
                         <>
-                            <DialogHeader>
+                            <DialogHeader className="relative">
                                 <DialogTitle className="text-3xl font-black text-slate-900">Checkout</DialogTitle>
                                 <DialogDescription>Review your order and enter delivery details to complete your purchase.</DialogDescription>
+                                <button
+                                    onClick={closeCheckout}
+                                    className="absolute right-0 top-0 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
                             </DialogHeader>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
                                 {/* Left: Form */}
                                 <div className="order-2 md:order-1">
-                                    <CheckoutForm />
+                                    <CheckoutForm
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        handlePlaceOrder={handlePlaceOrder}
+                                        errors={errors}
+                                    />
                                     <div className="hidden md:block">
-                                        <CheckoutButton />
+                                        <CheckoutButton isAnimating={isAnimating} totalAmount={totalAmount} />
                                     </div>
                                 </div>
 
                                 {/* Right: Summary */}
                                 <div className="order-1 md:order-2">
-                                    <OrderSummary />
+                                    <OrderSummary
+                                        items={items}
+                                        subTotalAmount={subTotalAmount}
+                                        deliveryFee={deliveryFee}
+                                        discountAmount={discountAmount}
+                                        totalAmount={totalAmount}
+                                    />
                                     <div className="md:hidden mt-4">
-                                        <CheckoutButton />
+                                        <CheckoutButton isAnimating={isAnimating} totalAmount={totalAmount} />
                                     </div>
                                 </div>
                             </div>
@@ -359,24 +422,47 @@ export function GlobalCheckoutDrawer() {
             <DrawerContent className="max-h-[90vh] bg-white border-t-0">
                 {successOrder ? (
                     <div className="w-full max-w-lg mx-auto bg-white py-8">
-                        <SuccessView />
+                        <SuccessView
+                            cartTexts={cartTexts}
+                            successOrder={successOrder}
+                            handleCloseSuccess={handleCloseSuccess}
+                            t={t}
+                            formData={formData}
+                        />
                     </div>
                 ) : (
                     <div className="w-full max-w-lg mx-auto bg-white flex flex-col h-full">
-                        <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0">
+                        <DrawerHeader className="border-b border-gray-100 pb-4 bg-white flex-shrink-0 relative">
                             <DrawerTitle className="text-2xl font-black text-center text-slate-900">Checkout</DrawerTitle>
                             <DrawerDescription className="text-center font-medium">
                                 Complete your order
                             </DrawerDescription>
+                            <button
+                                onClick={closeCheckout}
+                                className="absolute right-4 top-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
+                            >
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
                         </DrawerHeader>
 
                         <div className="p-4 overflow-y-auto flex-1 space-y-6">
-                            <OrderSummary />
-                            <CheckoutForm />
+                            <OrderSummary
+                                items={items}
+                                subTotalAmount={subTotalAmount}
+                                deliveryFee={deliveryFee}
+                                discountAmount={discountAmount}
+                                totalAmount={totalAmount}
+                            />
+                            <CheckoutForm
+                                formData={formData}
+                                setFormData={setFormData}
+                                handlePlaceOrder={handlePlaceOrder}
+                                errors={errors}
+                            />
                         </div>
 
                         <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
-                            <CheckoutButton />
+                            <CheckoutButton isAnimating={isAnimating} totalAmount={totalAmount} />
                         </div>
                     </div>
                 )}
