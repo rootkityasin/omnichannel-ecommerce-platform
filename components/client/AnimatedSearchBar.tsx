@@ -84,9 +84,9 @@ export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w
                     // Open state: White bg, dark text
                     isOpen ? "bg-white text-slate-900 border-gray-200 shadow-lg" :
                         // Closed state:
-                        // Transparent mode -> White text, white border (Original)
+                        // Transparent mode -> Dark Blue text, Dark Blue border (High Contrast)
                         // Solid mode -> Slate text, Slate border (New for /account page)
-                        isTransparent ? "bg-white/10 hover:bg-white/20 text-white border-white/10" : "bg-transparent hover:bg-slate-100 text-slate-800 border-slate-200",
+                        isTransparent ? "bg-[#0A3D62]/5 hover:bg-[#0A3D62]/10 text-[#0A3D62] border-[#0A3D62]/10" : "bg-transparent hover:bg-slate-100 text-slate-800 border-slate-200",
                     "h-10 rounded-full",
                     isOpen ? width : "w-10 cursor-pointer"
                 )}

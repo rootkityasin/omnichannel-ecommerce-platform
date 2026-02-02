@@ -33,6 +33,7 @@ if (useAdapter && adapter) {
 
 const baseClient = new PrismaClient(prismaOptions)
 
-export const prisma = globalForPrisma.prisma || baseClient.$extends(withAccelerate())
+export const prisma = globalForPrisma.prisma ||
+    (useAdapter ? baseClient : baseClient.$extends(withAccelerate()))
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
