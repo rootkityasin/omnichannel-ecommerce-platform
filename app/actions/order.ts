@@ -12,26 +12,29 @@ export async function createOrder(data: {
     totalAmount: number;
     couponCode?: string;
     discountAmount?: number;
-    tenantId?: string; // Optional but recommended
+    tenantId?: string;
+    source?: 'WEB' | 'MANUAL' | 'WHATSAPP';
 }) {
     // Bot check removed
 
 
     try {
         // 1. Resolve Tenant
-        // For public order creation, we expect 'domain' or 'tenantId' to be passed? 
-        // Or if this is called from client component on a subdomain, we can inspect headers?
-        // Actually, best specific usage suggests passing tenantId in data or resolving it.
-        // Let's assume for now, public createOrder needs to resolve based on... something.
-        // If this is public, we can't use auth().
-        // We probably need to pass tenantId from the client (derived from page props).
+        let tenantId = data.tenantId;
+        if (!tenantId) {
+            const session = await auth();
+            tenantId = (session?.user as any)?.tenantId;
+        }
 
-        let tenantId = (data as any).tenantId;
+        if (!tenantId) {
+            console.error("Create Order Failed: Missing Tenant ID");
+            return { success: false, error: "System Error: Missing Tenant Context" };
+        }
 
         // 2. Create Order
         const order = await prisma.order.create({
             data: {
-                tenantId, // Add Tenant Scope
+                tenantId,
                 // SECURE ID: randomUUID is cryptographically strong
                 orderId: `ORD-${randomUUID().substring(0, 8).toUpperCase()}`,
                 customerName: data.customerName,
@@ -40,6 +43,7 @@ export async function createOrder(data: {
                 totalAmount: data.totalAmount,
                 couponCode: data.couponCode,
                 discountAmount: data.discountAmount,
+                source: data.source || 'WEB',
                 items: {
                     create: data.items.map(item => ({
                         productId: item.productId,

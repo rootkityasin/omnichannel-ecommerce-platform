@@ -75,6 +75,6 @@ export default async function AdminLayout({
     }
 
     // Return Client Layout
-    return <AdminLayoutClient initialUser={session.user}>{children}</AdminLayoutClient>;
+    return <AdminLayoutClient initialUser={session.user} session={session}>{children}</AdminLayoutClient>;
 }
 

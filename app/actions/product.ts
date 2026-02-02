@@ -81,6 +81,8 @@ export async function createProduct(data: any) {
         const tenantId = (session?.user as any)?.tenantId;
         if (!tenantId) return { success: false, error: "Unauthorized" };
 
+        if (!data.categoryId) return { success: false, error: "Category is required" };
+
         const product = await prisma.product.create({
             data: {
                 tenantId,
@@ -111,8 +113,11 @@ export async function createProduct(data: any) {
         revalidatePath('/admin/inventory');
         revalidatePath('/');
         return { success: true, product };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Create Product Error:", error);
+        if (error.code === 'P2002' && error.meta?.target?.includes('sku')) {
+            return { success: false, error: "Product with this SKU already exists" };
+        }
         return { success: false, error: "Failed to create product" };
     }
 }
@@ -141,8 +146,11 @@ export async function updateProduct(id: string, data: any) {
         revalidatePath('/admin/inventory');
         revalidatePath('/');
         return { success: true };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Update Product Error:", error);
+        if (error.code === 'P2002' && error.meta?.target?.includes('sku')) {
+            return { success: false, error: "Product with this SKU already exists" };
+        }
         return { success: false, error: "Failed to update" };
     }
 }

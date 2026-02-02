@@ -245,7 +245,14 @@ export function AdminHeader({ title }: AdminHeaderProps) {
                         <DropdownMenuSeparator />
                         <div className="px-2 py-1.5">
                             <p className="text-sm font-medium leading-none">{currentUser?.name}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{currentUser?.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Hub Manager'}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {{
+                                    'SUPER_ADMIN': 'Super Admin',
+                                    'TENANT_ADMIN': 'Shop Admin',
+                                    'HUB_ADMIN': 'Hub Manager',
+                                    'STAFF': 'Staff'
+                                }[currentUser?.role || ''] || 'User'}
+                            </p>
                         </div>
                         <DropdownMenuSeparator />
                         <div className="px-2 py-1.5 flex items-center gap-2 text-slate-500">

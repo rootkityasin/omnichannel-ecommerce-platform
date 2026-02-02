@@ -481,8 +481,9 @@ export default function PromoPage() {
                                         type="number"
                                         placeholder="e.g. 100"
                                         value={newCoupon.discountValue}
-                                        onChange={e => setNewCoupon({ ...newCoupon, discountValue: e.target.value })}
+                                        onChange={e => setNewCoupon({ ...newCoupon, discountValue: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)).toString() })}
                                         required
+                                        min={0}
                                     />
                                 </div>
                             </div>
@@ -490,7 +491,7 @@ export default function PromoPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Min Order (৳)</Label>
-                                    <Input type="number" value={newCoupon.minOrderAmount} onChange={e => setNewCoupon({ ...newCoupon, minOrderAmount: e.target.value })} />
+                                    <Input type="number" min={0} value={newCoupon.minOrderAmount} onChange={e => setNewCoupon({ ...newCoupon, minOrderAmount: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)).toString() })} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Expires</Label>
@@ -500,7 +501,7 @@ export default function PromoPage() {
 
                             <div className="space-y-2">
                                 <Label>Usage Limit (Optional)</Label>
-                                <Input type="number" placeholder="e.g. 100" value={newCoupon.usageLimit} onChange={e => setNewCoupon({ ...newCoupon, usageLimit: e.target.value })} />
+                                <Input type="number" min={0} placeholder="e.g. 100" value={newCoupon.usageLimit} onChange={e => setNewCoupon({ ...newCoupon, usageLimit: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)).toString() })} />
                             </div>
 
                             <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold h-11 shadow-lg shadow-orange-900/10">
@@ -563,11 +564,11 @@ export default function PromoPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Price (Optional)</Label>
-                                            <Input placeholder="e.g. 1200" value={newCard.price} onChange={e => setNewCard({ ...newCard, price: e.target.value })} />
+                                            <Input type="number" min={0} placeholder="e.g. 1200" value={newCard.price} onChange={e => setNewCard({ ...newCard, price: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)).toString() })} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Original Price</Label>
-                                            <Input placeholder="e.g. 1320" value={newCard.originalPrice} onChange={e => setNewCard({ ...newCard, originalPrice: e.target.value })} />
+                                            <Input type="number" min={0} placeholder="e.g. 1320" value={newCard.originalPrice} onChange={e => setNewCard({ ...newCard, originalPrice: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)).toString() })} />
                                         </div>
                                     </div>
                                 </div>

@@ -254,9 +254,10 @@ export default function CustomersPage() {
                                             id="minSpent"
                                             type="number"
                                             value={minSpent}
-                                            onChange={(e) => setMinSpent(Number(e.target.value))}
+                                            onChange={(e) => setMinSpent(Math.max(0, Number(e.target.value)))}
                                             className="col-span-2 h-8"
                                             placeholder="0"
+                                            min={0}
                                         />
                                     </div>
                                     <div className="grid grid-cols-3 items-center gap-4">
@@ -265,9 +266,10 @@ export default function CustomersPage() {
                                             id="minOrders"
                                             type="number"
                                             value={minOrders}
-                                            onChange={(e) => setMinOrders(Number(e.target.value))}
+                                            onChange={(e) => setMinOrders(Math.max(0, Number(e.target.value)))}
                                             className="col-span-2 h-8"
                                             placeholder="0"
+                                            min={0}
                                         />
                                     </div>
                                 </div>

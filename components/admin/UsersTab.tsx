@@ -254,7 +254,8 @@ export function UsersTab() {
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border border-gray-100 overflow-hidden">
+            {/* Table */}
+            <div className="rounded-lg border border-gray-100">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold tracking-wider">
                         <tr>
@@ -322,7 +323,7 @@ export function UsersTab() {
                                 <td className="p-4">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <Button variant="ghost" className="h-8 w-8 p-0 text-gray-500 hover:text-gray-900 hover:bg-gray-100">
                                                 <span className="sr-only">Open menu</span>
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>

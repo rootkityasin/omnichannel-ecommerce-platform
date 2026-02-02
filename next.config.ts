@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' }, // Google avatars
+      { protocol: 'https', hostname: 'www.transparenttextures.com' },
+      { protocol: 'https', hostname: 'api.dicebear.com' },
     ],
     // Reduce image sizes for faster load
     deviceSizes: [640, 750, 828, 1080, 1200],
@@ -58,7 +60,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.facebook.net https://*.facebook.com https://*.fbcdn.net https://vercel.live https://*.vercel.live",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
-              "img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://vercel.live https://*.vercel.live",
+              "img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://vercel.live https://*.vercel.live https://www.transparenttextures.com https://api.dicebear.com",
               "font-src 'self' https://fonts.gstatic.com data: https://vercel.live",
               "connect-src 'self' https://*.vercel-insights.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://vercel.live https://*.vercel.live wss://*.vercel.live",
               "frame-src 'self' https://*.facebook.com https://vercel.live",

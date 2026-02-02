@@ -15,12 +15,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Calendar } from "@/components/ui/calendar"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "@/app/styles/datepicker.css";
 import { cn } from '@/lib/utils';
 import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
@@ -68,13 +72,24 @@ export default function OrdersPage() {
             }
         });
     }, []);
+    // Helper for BD Time
+    const getBDDate = () => {
+        const now = new Date();
+        const bdTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+        return bdTime;
+    };
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterSource, setFilterSource] = useState('all');
     const [date, setDate] = useState<Date | undefined>(undefined); // Date Filter State (Date Object)
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
 
     // Edit Order State
@@ -87,6 +102,8 @@ export default function OrdersPage() {
     // Add Order Form
     const [newOrder, setNewOrder] = useState({ customer: '', phone: '', price: 0, items: 1 });
 
+    // ...
+
     const filteredOrders = orders.filter(o => {
         const matchesStatus = filterStatus === 'all' ||
             (filterStatus === 'repeated' ? o.isRepeat : o.status.toLowerCase() === filterStatus.toLowerCase());
@@ -96,16 +113,18 @@ export default function OrdersPage() {
         let matchesDate = true;
         if (date) {
             const orderDateObj = new Date(o.date);
-
             // Normalize both dates to YYYY-MM-DD for comparison (ignoring time)
             const orderStr = orderDateObj.toDateString();
             const filterStr = date.toDateString();
-
             matchesDate = orderStr === filterStr;
         }
 
         return matchesStatus && matchesSource && matchesDate;
     });
+
+    // ...
+
+
 
     const handleStatusChange = (id: string, newStatus: string) => {
         updateOrder(id, { status: newStatus });
@@ -132,6 +151,23 @@ export default function OrdersPage() {
     const handleCreateOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validation
+        const phoneRegex = /^01[3-9]\d{8}$/;
+        if (!phoneRegex.test(newOrder.phone)) {
+            toast.error("Invalid phone number. Format: 01XXXXXXXXX");
+            return;
+        }
+
+        if (selectedProductIds.length === 0) {
+            toast.error("Please select at least one product");
+            return;
+        }
+
+        if (newOrder.price <= 0 || newOrder.items <= 0) {
+            toast.error("Price and quantity must be greater than 0");
+            return;
+        }
+
         // Construct items from selection
         const orderItems = selectedProductIds.map(id => {
             const p = availableProducts.find(prod => prod.id === id);
@@ -147,7 +183,8 @@ export default function OrdersPage() {
             customerPhone: newOrder.phone,
             customerAddress: "Manual Order (No Address)",
             totalAmount: newOrder.price,
-            items: orderItems
+            items: orderItems,
+            source: 'MANUAL'
         });
 
         if (res.success) {
@@ -177,6 +214,19 @@ export default function OrdersPage() {
 
     const handleUpdateOrder = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation
+        const phoneRegex = /^01[3-9]\d{8}$/;
+        if (!phoneRegex.test(editForm.phone)) {
+            toast.error("Invalid phone number. Format: 01XXXXXXXXX");
+            return;
+        }
+
+        if (editForm.price <= 0 || editForm.items <= 0) {
+            toast.error("Price and quantity must be greater than 0");
+            return;
+        }
+
         updateOrder(editingId!, editForm);
         setEditingId(null);
     };
@@ -263,22 +313,22 @@ export default function OrdersPage() {
                     <p className="text-sm text-slate-500">Manage your kitchen flow here.</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                    <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
-                        <button
-                            onClick={() => setView('table')}
-                            className={cn("p-1.5 rounded-md transition-all", view === 'table' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
-                        >
-                            <List className="w-4 h-4" />
-                        </button>
-                        {shopType === 'RESTAURANT' && (
+                    {shopType === 'RESTAURANT' && (
+                        <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
+                            <button
+                                onClick={() => setView('table')}
+                                className={cn("p-1.5 rounded-md transition-all", view === 'table' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                            >
+                                <List className="w-4 h-4" />
+                            </button>
                             <button
                                 onClick={() => setView('kanban')}
                                 className={cn("p-1.5 rounded-md transition-all", view === 'kanban' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Search */}
                     <div className="relative">
@@ -287,35 +337,135 @@ export default function OrdersPage() {
                     </div>
 
                     {/* Date Filter (Modern Shadcn) */}
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant={"outline"}
-                                className={cn(
-                                    "w-[180px] justify-start text-left font-normal bg-white",
-                                    !date && "text-muted-foreground"
-                                )}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {date ? format(date, "PPP") : <span>Pick a date</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                            <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                initialFocus
-                            />
-                            {date && (
-                                <div className="p-2 border-t border-gray-100">
-                                    <Button variant="ghost" className="w-full h-8 text-xs text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDate(undefined)}>
-                                        Clear Filter
-                                    </Button>
-                                </div>
-                            )}
-                        </PopoverContent>
-                    </Popover>
+                    {/* Date Filter (React Datepicker) */}
+                    <div className="relative z-50">
+                        <DatePicker
+                            selected={date}
+                            onChange={(date: Date | null) => setDate(date || undefined)}
+                            dateFormat="MMM d, yyyy"
+                            maxDate={getBDDate()} // Disable future dates based on BD Time
+                            placeholderText="Filter by Date"
+                            className="bg-white border border-gray-200 rounded-md px-3 py-2 text-sm w-[240px]"
+                            renderCustomHeader={({
+                                date,
+                                changeYear,
+                                changeMonth,
+                                decreaseMonth,
+                                increaseMonth,
+                                prevMonthButtonDisabled,
+                                nextMonthButtonDisabled,
+                            }) => {
+                                const bdNow = getBDDate();
+                                const currentYear = bdNow.getFullYear();
+                                const currentMonth = bdNow.getMonth();
+                                const selectedYear = date.getFullYear();
+
+                                // Generate years from 2024 up to current year
+                                const years = Array.from({ length: currentYear - 2024 + 1 }, (_, i) => 2024 + i);
+
+                                // Filter months: if current year selected, show only up to current month (inclusive)
+                                const availableMonths = selectedYear === currentYear
+                                    ? months.slice(0, currentMonth + 1)
+                                    : months;
+
+                                return (
+                                    <div className="flex items-center justify-between px-2 py-2 border-b border-gray-100 bg-white rounded-t-lg">
+                                        <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled} type="button" className="p-1 hover:bg-gray-100 rounded-full text-slate-500 disabled:opacity-30">
+                                            <ChevronDown className="h-4 w-4 rotate-90" />
+                                        </button>
+
+                                        <div className="flex gap-2">
+                                            <Select
+                                                value={date.getFullYear().toString()}
+                                                onValueChange={(value) => changeYear(Number(value))}
+                                            >
+                                                <SelectTrigger className="h-7 w-[80px] text-xs font-medium border-gray-200 bg-gray-50 hover:bg-gray-100 focus:ring-0">
+                                                    <SelectValue placeholder="Year" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper" className="min-w-[80px] z-[60]">
+                                                    {years.map((year) => (
+                                                        <SelectItem key={year} value={year.toString()} className="text-xs">
+                                                            {year}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+
+                                            <Select
+                                                value={months[date.getMonth()]}
+                                                onValueChange={(value) => changeMonth(months.indexOf(value))}
+                                            >
+                                                <SelectTrigger className="h-7 w-[100px] text-xs font-medium border-gray-200 bg-gray-50 hover:bg-gray-100 focus:ring-0">
+                                                    <SelectValue placeholder="Month" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper" className="min-w-[100px] z-[60] h-[200px]">
+                                                    {availableMonths.map((option) => (
+                                                        <SelectItem key={option} value={option} className="text-xs">
+                                                            {option}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <button
+                                            onClick={increaseMonth}
+                                            // Disable next button if we are in current month of current year (future prevention)
+                                            disabled={nextMonthButtonDisabled || (selectedYear === currentYear && date.getMonth() === currentMonth)}
+                                            type="button"
+                                            className="p-1 hover:bg-gray-100 rounded-full text-slate-500 disabled:opacity-30"
+                                        >
+                                            <ChevronDown className="h-4 w-4 -rotate-90" />
+                                        </button>
+                                    </div>
+                                );
+                            }}
+                            customInput={
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-[240px] justify-start text-left font-normal bg-white",
+                                        !date && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {date ? format(date, "MMM d, yyyy") : <span>Filter by Date</span>}
+                                    {date && (
+                                        <X
+                                            className="ml-auto h-4 w-4 text-gray-400 hover:text-gray-600 z-50"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDate(undefined);
+                                            }}
+                                        />
+                                    )}
+                                </Button>
+                            }
+                        >
+                            <div className="p-2 border-b border-gray-100 flex gap-2 justify-center bg-gray-50/50">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-xs bg-white text-slate-600 hover:text-orange-600 hover:border-orange-200"
+                                    onClick={() => setDate(getBDDate())}
+                                >
+                                    Today
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-xs bg-white text-slate-600 hover:text-orange-600 hover:border-orange-200"
+                                    onClick={() => {
+                                        const yesterday = getBDDate();
+                                        yesterday.setDate(yesterday.getDate() - 1);
+                                        setDate(yesterday);
+                                    }}
+                                >
+                                    Yesterday
+                                </Button>
+                            </div>
+                        </DatePicker>
+                    </div>
 
                     {/* Source Filter Dropdown */}
                     <div className="relative">
@@ -394,11 +544,11 @@ export default function OrdersPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: parseInt(e.target.value) || 0 })} required />
+                                        <Input type="number" min="0" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: Math.max(0, parseInt(e.target.value) || 0) })} required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">Items Qty</label>
-                                        <Input type="number" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: parseInt(e.target.value) || 0 })} required />
+                                        <Input type="number" min="1" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: Math.max(1, parseInt(e.target.value) || 0) })} required />
                                     </div>
                                 </div>
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">Place Order</Button>
@@ -429,11 +579,11 @@ export default function OrdersPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: parseInt(e.target.value) || 0 })} required />
+                                        <Input type="number" min="0" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: Math.max(0, parseInt(e.target.value) || 0) })} required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">Items Qty</label>
-                                        <Input type="number" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: parseInt(e.target.value) || 0 })} required />
+                                        <Input type="number" min="1" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: Math.max(1, parseInt(e.target.value) || 0) })} required />
                                     </div>
                                 </div>
                                 <div className="flex gap-2 justify-end pt-2">

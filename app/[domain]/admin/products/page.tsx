@@ -67,6 +67,7 @@ export default function ProductsPage() {
     const [isParsing, setIsParsing] = useState(false);
 
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
     const [filterStock, setFilterStock] = useState<string>('all');
     const [filterStage, setFilterStage] = useState<string>('all');
 
@@ -138,7 +139,9 @@ export default function ProductsPage() {
         const matchesStock = filterStock === 'all' ? true :
             filterStock === 'instock' ? (p.pieces > 0) : (p.pieces <= 0);
         const matchesStage = filterStage === 'all' ? true : p.stage === filterStage;
-        return matchesStock && matchesStage;
+        const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
+            (p.sku && p.sku.toLowerCase().includes(search.toLowerCase()));
+        return matchesStock && matchesStage && matchesSearch;
     });
 
     const handleDelete = async (id: string) => {
@@ -272,6 +275,11 @@ export default function ProductsPage() {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (!newProduct.categoryId) {
+            toast.error("Category is required");
+            return;
+        }
+
         if (editingId) {
             const res = await updateProduct(editingId, newProduct);
             if (res.success) {
@@ -280,7 +288,7 @@ export default function ProductsPage() {
                 setEditingId(null);
                 fetchData();
             } else {
-                toast.error("Update failed");
+                toast.error(res.error || "Update failed");
             }
         } else {
             const res = await createProduct(newProduct);
@@ -289,7 +297,7 @@ export default function ProductsPage() {
                 setIsAdding(false);
                 fetchData();
             } else {
-                toast.error("Creation failed");
+                toast.error(res.error || "Creation failed");
             }
         }
     };
@@ -326,7 +334,13 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                            <Input type="search" placeholder="Search..." className="pl-9 w-[150px] lg:w-[200px] bg-white" />
+                            <Input
+                                type="search"
+                                placeholder="Search..."
+                                className="pl-9 w-[150px] lg:w-[200px] bg-white"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </div>
                         <Popover>
                             <PopoverTrigger asChild>
@@ -442,7 +456,7 @@ export default function ProductsPage() {
                                         </Select>
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">Category</label>
+                                        <label className="text-sm font-medium">Category <span className="text-red-500">*</span></label>
                                         <Select value={newProduct.categoryId} onValueChange={(val) => setNewProduct({ ...newProduct, categoryId: val })}>
                                             <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
                                             <SelectContent>
@@ -510,9 +524,10 @@ export default function ProductsPage() {
                                                     value={item.quantity}
                                                     onChange={(e) => {
                                                         const updated = [...(newProduct.comboItems || [])];
-                                                        updated[idx].quantity = parseInt(e.target.value) || 0;
+                                                        updated[idx].quantity = Math.max(0, parseInt(e.target.value) || 0);
                                                         setNewProduct({ ...newProduct, comboItems: updated });
                                                     }}
+                                                    min={0}
                                                 />
                                                 <Button
                                                     type="button"
@@ -584,7 +599,7 @@ export default function ProductsPage() {
                                         <Input
                                             type="number"
                                             value={newProduct.price}
-                                            onChange={e => setNewProduct({ ...newProduct, price: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                            onChange={e => setNewProduct({ ...newProduct, price: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)) })}
                                             required
                                             min={0}
                                             onWheel={(e) => e.currentTarget.blur()}
@@ -599,7 +614,7 @@ export default function ProductsPage() {
                                                 type="number"
                                                 placeholder="e.g. 200"
                                                 value={newProduct.weight}
-                                                onChange={e => setNewProduct({ ...newProduct, weight: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                                onChange={e => setNewProduct({ ...newProduct, weight: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)) })}
                                                 min={0}
                                                 onWheel={(e) => e.currentTarget.blur()}
                                             />
@@ -620,7 +635,7 @@ export default function ProductsPage() {
                                                     type="number"
                                                     placeholder="0"
                                                     value={newProduct.pieces}
-                                                    onChange={e => setNewProduct({ ...newProduct, pieces: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                                    onChange={e => setNewProduct({ ...newProduct, pieces: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)) })}
                                                     className="mt-1 bg-white"
                                                     min={0}
                                                     onWheel={(e) => e.currentTarget.blur()}
@@ -634,7 +649,7 @@ export default function ProductsPage() {
                                                             // Calculate units from total pieces (weight)
                                                             value={newProduct.pieces && newProduct.weight ? Math.floor(Number(newProduct.pieces) / Number(newProduct.weight)) : 0}
                                                             onChange={e => {
-                                                                const units = parseFloat(e.target.value) || 0;
+                                                                const units = Math.max(0, parseFloat(e.target.value) || 0);
                                                                 const unitWeight = Number(newProduct.weight) || (config.weightUnitValue || 0); // fallback if product weight not set
                                                                 setNewProduct({
                                                                     ...newProduct,
@@ -661,7 +676,7 @@ export default function ProductsPage() {
                                             type="number"
                                             placeholder="0"
                                             value={newProduct.pointsReward}
-                                            onChange={e => setNewProduct({ ...newProduct, pointsReward: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                            onChange={e => setNewProduct({ ...newProduct, pointsReward: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)) })}
                                             min={0}
                                             onWheel={(e) => e.currentTarget.blur()}
                                         />
@@ -729,11 +744,7 @@ export default function ProductsPage() {
             {(view === 'table' || config.shopType === 'GROCERY') ? (
                 <Card className="border-none shadow-none bg-transparent">
                     <Tabs defaultValue="all" className="w-full">
-                        <div className="overflow-x-auto pb-2">
-                            <TabsList className="bg-white p-1 border border-gray-100 h-auto inline-flex">
-                                <TabsTrigger value="all" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white">All Products</TabsTrigger>
-                            </TabsList>
-                        </div>
+
 
                         <TabsContent value="all" className="mt-4">
                             <div className="rounded-lg border border-gray-100 bg-white shadow-sm overflow-x-auto custom-table-scrollbar">

@@ -1,6 +1,7 @@
 'use client';
 
 // Imports removed
+import { SessionProvider } from 'next-auth/react';
 import { AdminProvider, useAdmin } from '@/components/providers/AdminProvider';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -9,22 +10,26 @@ import { cn } from '@/lib/utils';
 export default function AdminLayoutClient({
     children,
     initialUser,
+    session
 }: {
     children: React.ReactNode;
     initialUser: any;
+    session: any;
 }) {
 
 
 
     return (
-        <AdminProvider initialUser={initialUser}>
-            <div className="min-h-screen bg-gray-50">
-                <AdminSidebar />
-                <MainContentWrapper>
-                    {children}
-                </MainContentWrapper>
-            </div>
-        </AdminProvider>
+        <SessionProvider session={session}>
+            <AdminProvider initialUser={initialUser}>
+                <div className="min-h-screen bg-gray-50">
+                    <AdminSidebar />
+                    <MainContentWrapper>
+                        {children}
+                    </MainContentWrapper>
+                </div>
+            </AdminProvider>
+        </SessionProvider>
     );
 }
 
