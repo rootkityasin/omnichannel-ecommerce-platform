@@ -10,6 +10,7 @@ import { Loader2, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { createUser } from '@/app/actions/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { PolicyModal } from './PolicyModal';
 
 export function AuthForm() {
     const [isLogin, setIsLogin] = useState(true);
@@ -345,7 +346,7 @@ export function AuthForm() {
                 </p>
 
                 <div className="text-[10px] text-gray-400 font-medium font-body px-8 leading-tight">
-                    By continuing, you agree to our <span className="text-blue-600 hover:text-blue-700 underline cursor-pointer font-bold">Terms of Service</span> and <span className="text-blue-600 hover:text-blue-700 underline cursor-pointer font-bold">Privacy Policy</span>.
+                    By continuing, you agree to our <span className="text-gray-600 hover:text-crab-red underline cursor-pointer font-bold transition-colors">Terms of Service</span> and <span className="text-gray-600 hover:text-crab-red underline cursor-pointer font-bold transition-colors">Privacy Policy</span>.
                 </div>
             </div>
         </motion.div >

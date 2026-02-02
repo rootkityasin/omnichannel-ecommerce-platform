@@ -174,7 +174,7 @@ export function MobileHeader() {
 
                     {/* Right: Icons (Search, Pin, Cart, User) */}
                     <div className={cn("flex items-center gap-3 transition-opacity duration-300", isSidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100")}>
-                        <AnimatedSearchBar width="w-48" className="bg-transparent hover:bg-white/10" />
+                        <AnimatedSearchBar width="w-48" className="bg-transparent hover:bg-white/10" iconColor="text-white" />
                         <button onClick={() => useCartStore.getState().openCart()} className="relative p-1 text-white">
                             <ShoppingCart className="w-5 h-5" />
                             {cartCount > 0 && (

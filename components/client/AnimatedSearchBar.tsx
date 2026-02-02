@@ -17,9 +17,10 @@ interface AnimatedSearchBarProps {
     width?: string; // Expanded width
     isTransparent?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
+    iconColor?: string;
 }
 
-export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w-64", isTransparent = true, onOpenChange }: AnimatedSearchBarProps) {
+export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w-64", isTransparent = true, onOpenChange, iconColor }: AnimatedSearchBarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
@@ -105,7 +106,7 @@ export function AnimatedSearchBar({ className, onSearch, placeholder, width = "w
                         }}
                         className={cn(
                             "flex items-center justify-center flex-shrink-0 w-10 h-10 transition-colors",
-                            isOpen ? "text-crab-red" : "text-current"
+                            isOpen ? "text-crab-red" : (iconColor || "text-current")
                         )}
                     >
                         <Search className="w-5 h-5" />

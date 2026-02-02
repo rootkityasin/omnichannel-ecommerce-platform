@@ -11,6 +11,7 @@ import { CouponSection } from '@/components/client/CouponSection';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 import { getStorySections } from '@/app/actions/story';
+import { formatQuantity } from '@/lib/format';
 
 export function CartDrawer() {
     const { language } = useLanguageStore();
@@ -258,6 +259,15 @@ export function CartDrawer() {
                                     <div className="flex justify-between items-start gap-2">
                                         <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-tight">
                                             {item.name}
+                                            <span className="ml-1 text-xs font-normal text-gray-500">
+                                                ({settings.measurementUnit === 'WEIGHT'
+                                                    ? (() => {
+                                                        const grams = (settings.weightUnitValue || 200);
+                                                        return grams >= 1000 ? `${(grams / 1000).toFixed(1)}kg` : `${grams}g`;
+                                                    })()
+                                                    : '1 pcs'
+                                                })
+                                            </span>
                                         </h3>
                                         <button
                                             onClick={() => removeItem(item.id)}
@@ -284,13 +294,9 @@ export function CartDrawer() {
                                                 <Minus className="w-3 h-3" />
                                             </button>
                                             <span className="text-xs font-bold min-w-[32px] text-center">
-                                                {settings.measurementUnit === 'WEIGHT'
-                                                    ? (() => {
-                                                        const grams = item.quantity * (settings.weightUnitValue || 200);
-                                                        return grams >= 1000 ? `${(grams / 1000).toFixed(1)}kg` : `${grams}g`;
-                                                    })()
-                                                    : item.quantity
-                                                }
+                                                <span className="text-xs font-bold min-w-[32px] text-center">
+                                                    {formatQuantity(item.quantity, settings)}
+                                                </span>
                                             </span>
                                             <button
                                                 onClick={() => addItem({ ...item, quantity: 1 })}

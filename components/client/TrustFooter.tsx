@@ -198,14 +198,14 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     &copy; {new Date().getFullYear()} {shopName}. All rights reserved.
                 </p>
 
-                <div className="flex gap-6 text-xs text-white/70 font-medium tracking-wide">
-                    <button onClick={() => setPolicyOpen('privacy')} className="hover:text-amber-200 transition-colors uppercase">
+                <div className="flex gap-6 text-xs text-white/90 font-medium tracking-wide">
+                    <button onClick={() => setPolicyOpen('privacy')} className="hover:text-amber-200 transition-colors uppercase border-b border-transparent hover:border-amber-200">
                         Privacy Policy
                     </button>
-                    <button onClick={() => setPolicyOpen('refund')} className="hover:text-amber-200 transition-colors uppercase">
+                    <button onClick={() => setPolicyOpen('refund')} className="hover:text-amber-200 transition-colors uppercase border-b border-transparent hover:border-amber-200">
                         Refund Policy
                     </button>
-                    <button onClick={() => setPolicyOpen('terms')} className="hover:text-amber-200 transition-colors uppercase">
+                    <button onClick={() => setPolicyOpen('terms')} className="hover:text-amber-200 transition-colors uppercase border-b border-transparent hover:border-amber-200">
                         Terms & Conditions
                     </button>
                 </div>
@@ -233,46 +233,4 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
     );
 }
 
-function PolicyModal({ isOpen, onClose, title, content }: { isOpen: boolean; onClose: () => void; title: string; content: string }) {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-slate-950 text-slate-200 border border-white/5 shadow-2xl shadow-black ring-1 ring-white/10 p-0 overflow-hidden rounded-xl">
-                {/* Decorative Top Bar */}
-                <div className="sticky top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent z-50 opacity-80" />
-
-                <div className="p-8 md:p-10 relative">
-                    {/* Background Texture Effect */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none" />
-
-                    <DialogHeader className="mb-8 text-center space-y-4 relative z-10">
-                        <div className="flex flex-col items-center gap-3">
-                            <span className="text-[10px] uppercase tracking-[0.3em] text-amber-500/80 font-mono">Official Document</span>
-                            <DialogTitle className="text-3xl md:text-4xl font-serif text-white tracking-wide font-medium">
-                                {title}
-                            </DialogTitle>
-                        </div>
-                        <div className="mx-auto w-24 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                    </DialogHeader>
-
-                    <div className="relative z-10 prose prose-invert prose-sm max-w-none 
-                        prose-headings:font-serif prose-headings:text-amber-50 prose-headings:font-normal prose-headings:tracking-wide
-                        prose-p:text-slate-400 prose-p:leading-loose prose-p:font-light
-                        prose-strong:text-amber-200 prose-strong:font-medium
-                        prose-li:text-slate-400">
-                        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{content}</ReactMarkdown>
-                    </div>
-
-                    <div className="mt-12 pt-8 border-t border-white/5 text-center relative z-10">
-                        <div className="flex justify-center items-center gap-2 opacity-50">
-                            <div className="w-2 h-2 rounded-full bg-amber-900" />
-                            <p className="text-[10px] text-amber-700 font-serif italic tracking-widest uppercase">
-                                Crab & Khai Quality Assurance
-                            </p>
-                            <div className="w-2 h-2 rounded-full bg-amber-900" />
-                        </div>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
+import { PolicyModal } from './PolicyModal';
