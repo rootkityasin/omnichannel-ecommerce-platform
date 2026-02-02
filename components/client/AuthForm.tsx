@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { signIn, getSession } from 'next-auth/react';
 import { toast } from 'sonner';
-import { Loader2, ChevronDown } from 'lucide-react';
+import { Loader2, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { createUser } from '@/app/actions/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ export function AuthForm() {
 
     // State to track detected type
     const [inputType, setInputType] = useState<'PHONE' | 'EMAIL' | 'UNKNOWN'>('UNKNOWN');
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         // Simple detection logic
@@ -283,18 +284,27 @@ export function AuthForm() {
 
                 <div className="space-y-2">
                     <Label htmlFor="password" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Enter password</Label>
-                    <Input
-                        id="password"
-                        name="password"
-                        autoComplete="current-password"
-                        required
-                        type="password"
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        minLength={6}
-                        className="w-full px-5 py-6 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 font-medium text-gray-900 transition-all font-body"
-                    />
+                    <div className="relative">
+                        <Input
+                            id="password"
+                            name="password"
+                            autoComplete="current-password"
+                            required
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            minLength={6}
+                            className="w-full px-5 py-6 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 font-medium text-gray-900 transition-all font-body pr-12"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                    </div>
                 </div>
 
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="pt-2">
@@ -326,7 +336,7 @@ export function AuthForm() {
                 </p>
 
                 <div className="text-[10px] text-gray-400 font-medium font-body px-8 leading-tight">
-                    By continuing, you agree to our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
+                    By continuing, you agree to our <span className="text-blue-600 hover:text-blue-700 underline cursor-pointer font-bold">Terms of Service</span> and <span className="text-blue-600 hover:text-blue-700 underline cursor-pointer font-bold">Privacy Policy</span>.
                 </div>
             </div>
         </motion.div >

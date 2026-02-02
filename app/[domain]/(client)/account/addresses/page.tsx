@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPin, Plus, ArrowLeft, Trash2, CheckCircle2 } from 'lucide-react';
+import { MapPin, Plus, ArrowLeft, Trash2, CheckCircle2, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -23,6 +23,7 @@ export default function AddressesPage() {
     const [newTag, setNewTag] = useState('Home');
     const [newAddress, setNewAddress] = useState('');
     const [newPhone, setNewPhone] = useState('');
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     useEffect(() => {
         // Load addresses from local storage
@@ -59,22 +60,39 @@ export default function AddressesPage() {
             return;
         }
 
-        const newAddr: Address = {
-            id: Date.now().toString(),
-            tag: newTag,
-            address: newAddress,
-            phone: newPhone,
-            isDefault: addresses.length === 0
-        };
-
-        const updated = [...addresses, newAddr];
-        setAddresses(updated);
-        localStorage.setItem('crabkhai_addresses', JSON.stringify(updated));
+        if (editingId) {
+            // Update existing
+            const updated = addresses.map(a => a.id === editingId ? { ...a, tag: newTag, address: newAddress, phone: newPhone } : a);
+            setAddresses(updated);
+            localStorage.setItem('crabkhai_addresses', JSON.stringify(updated));
+            toast.success("Address updated successfully");
+        } else {
+            // Create new
+            const newAddr: Address = {
+                id: Date.now().toString(),
+                tag: newTag,
+                address: newAddress,
+                phone: newPhone,
+                isDefault: addresses.length === 0
+            };
+            const updated = [...addresses, newAddr];
+            setAddresses(updated);
+            localStorage.setItem('crabkhai_addresses', JSON.stringify(updated));
+            toast.success("Address added successfully!");
+        }
 
         setIsAdding(false);
+        setEditingId(null);
         setNewAddress('');
         setNewPhone('');
-        toast.success("Address added successfully!");
+    };
+
+    const handleEdit = (addr: Address) => {
+        setNewTag(addr.tag);
+        setNewAddress(addr.address);
+        setNewPhone(addr.phone);
+        setEditingId(addr.id);
+        setIsAdding(true);
     };
 
     const handleDelete = (id: string) => {
@@ -119,7 +137,7 @@ export default function AddressesPage() {
             <div className="p-4 space-y-4">
                 {isAdding && (
                     <div className="bg-white p-5 rounded-2xl shadow-lg border border-orange-100 animate-in slide-in-from-top-4 fade-in duration-300">
-                        <h3 className="font-bold text-gray-900 mb-4">Add New Address</h3>
+                        <h3 className="font-bold text-gray-900 mb-4">{editingId ? 'Edit Address' : 'Add New Address'}</h3>
 
                         <div className="space-y-4">
                             <div>
@@ -146,7 +164,7 @@ export default function AddressesPage() {
                                     value={newAddress}
                                     onChange={(e) => setNewAddress(e.target.value)}
                                     placeholder="House, Road, Block, Area..."
-                                    className="w-full p-3 bg-gray-50 rounded-xl border-0 ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 focus:bg-white transition-all text-sm font-medium resize-none"
+                                    className="w-full p-3 !bg-gray-50 rounded-xl border-0 ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 focus:!bg-white transition-all text-sm font-medium !text-gray-900 placeholder:text-gray-400 resize-none"
                                     rows={3}
                                 />
                             </div>
@@ -158,7 +176,7 @@ export default function AddressesPage() {
                                     value={newPhone}
                                     onChange={(e) => setNewPhone(e.target.value)}
                                     placeholder="+880..."
-                                    className="w-full p-3 bg-gray-50 rounded-xl border-0 ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 focus:bg-white transition-all text-sm font-medium"
+                                    className="w-full p-3 !bg-gray-50 rounded-xl border-0 ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 focus:!bg-white transition-all text-sm font-medium !text-gray-900 placeholder:text-gray-400"
                                 />
                             </div>
 
@@ -234,15 +252,26 @@ export default function AddressesPage() {
                                 )}
 
                                 {!addr.isDefault && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(addr.id);
-                                        }}
-                                        className="absolute bottom-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute bottom-4 right-4 flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEdit(addr);
+                                            }}
+                                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(addr.id);
+                                            }}
+                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         ))}
