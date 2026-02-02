@@ -262,14 +262,14 @@ export function AuthForm() {
 
                 <div className="space-y-2">
                     <Label htmlFor="contact" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Phone Number or Email
+                        Enter phone number or email
                     </Label>
 
                     <Input
                         id="contact"
                         name="contact"
                         required
-                        placeholder="017..."
+                        placeholder="017... or email@example.com"
                         value={formData.contact}
                         onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                         className="w-full px-5 py-6 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 font-medium text-gray-900 transition-all font-body"
@@ -282,7 +282,7 @@ export function AuthForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="password" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Password</Label>
+                    <Label htmlFor="password" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Enter password</Label>
                     <Input
                         id="password"
                         name="password"
