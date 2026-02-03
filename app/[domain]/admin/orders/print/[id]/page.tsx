@@ -41,11 +41,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
                 {/* Modern Background Watermark */}
                 {config?.logoUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none select-none overflow-hidden p-12">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.12] pointer-events-none select-none overflow-hidden">
                         <img
                             src={config.logoUrl}
                             alt="Watermark"
-                            className="w-1/2 h-1/2 object-contain"
+                            className="w-1/3 h-auto max-h-[40%] object-contain grayscale-[0.2]"
                         />
                     </div>
                 )}
@@ -180,6 +180,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     <div className="mt-20 flex justify-between items-end gap-12">
                         <div className="text-center w-32 border-t border-slate-200 pt-2">
                             <p className="text-[10px] text-slate-400 font-bold uppercase">Customer Sign</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-2">
+                            <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${order.orderId}`}
+                                alt="Order QR Code"
+                                className="w-20 h-20 border border-slate-100 p-1"
+                            />
+                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">Scan to Verify: {order.orderId}</p>
                         </div>
                         <div className="text-center w-32 border-t border-slate-200 pt-2 relative">
                             {/* Optional Stamp Spot */}
