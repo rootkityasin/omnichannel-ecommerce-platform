@@ -41,11 +41,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
                 {/* Modern Background Watermark */}
                 {config?.logoUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none overflow-hidden p-20">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none select-none overflow-hidden p-12">
                         <img
                             src={config.logoUrl}
                             alt="Watermark"
-                            className="w-full h-full object-contain grayscale scale-125 rotate-[-15deg]"
+                            className="w-1/2 h-1/2 object-contain"
                         />
                     </div>
                 )}
