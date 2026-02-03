@@ -34,8 +34,9 @@ export default function InvoiceSettingsPage() {
 
     useEffect(() => {
         if (settings) {
+            const invoiceSettings = settings as any;
             setConfig({
-                invoiceTheme: settings.invoiceTheme || 'modern',
+                invoiceTheme: invoiceSettings.invoiceTheme || 'modern',
                 invoiceDetails: {
                     showSeller: true,
                     showBuyer: true,
@@ -44,7 +45,7 @@ export default function InvoiceSettingsPage() {
                     fontSize: 14,
                     showQr: true,
                     showLogo: true,
-                    ...settings.invoiceDetails
+                    ...(invoiceSettings.invoiceDetails || {})
                 }
             });
         }
