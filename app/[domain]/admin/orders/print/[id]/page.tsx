@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import PrintButton from './PrintButton';
 
 // Force dynamic to ensure we get fresh data
 export const dynamic = 'force-dynamic';
@@ -19,25 +20,13 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
     // Calculate Subtotal
     const subtotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
-    const delivery = 60; // Standard delivery, or should be stored in order? 
-    // Schema doesn't have deliveryCharge field on Order, assuming standard or included in total?
-    // Wait, Order.totalAmount is stored.
-    // So Delivery = Total - Subtotal + Discount
-    // Let's rely on stored total.
     const discount = order.discountAmount || 0;
-    const calcTotal = subtotal - discount + delivery;
-    // If order.totalAmount differs, we should respect order.totalAmount as the truth.
 
     return (
         <div className="min-h-screen bg-white text-black p-8 font-mono text-sm max-w-3xl mx-auto">
             {/* Print Trigger */}
             <div className="print:hidden mb-8 flex justify-end">
-                <button
-                    onClick={() => window.print()}
-                    className="bg-black text-white px-4 py-2 rounded-md font-sans font-bold hover:bg-gray-800"
-                >
-                    Print Invoice
-                </button>
+                <PrintButton />
             </div>
 
             {/* Header */}
