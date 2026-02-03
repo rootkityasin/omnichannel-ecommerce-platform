@@ -639,7 +639,6 @@ export default function OrdersPage() {
                                 <table className="w-full text-sm text-left min-w-[800px]">
                                     <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
                                         <tr>
-                                            <th className="p-4 w-4"><input type="checkbox" /></th>
                                             <th className="p-4">Order ID</th>
                                             <th className="p-4">Date & Time</th>
                                             <th className="p-4">Customer</th>
@@ -653,7 +652,6 @@ export default function OrdersPage() {
                                     <tbody className="divide-y divide-gray-50">
                                         {filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                             <tr key={order.id} className={cn("hover:bg-gray-50/50", isSuspect(order) && "bg-red-50/30")}>
-                                                <td className="p-4"><input type="checkbox" /></td>
                                                 <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
                                                     {order.id}
                                                     {isSuspect(order) && (
