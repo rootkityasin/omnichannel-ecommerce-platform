@@ -180,6 +180,12 @@ model SiteConfig {
   // Invoice Maker Configuration
   invoiceTheme    String   @default("modern")
   invoiceDetails  Json     @default("{\"showSeller\": true, \"showBuyer\": true, \"showSignature\": true, \"watermarkOpacity\": 0.1, \"fontSize\": 14}")
+
+  // LabsMail Lead Integration
+  labsmailBaseUrl         String?
+  labsmailLeadKey         String?
+  labsmailActive          Boolean  @default(false)
+  labsmailLastExportedAt  DateTime?
 }
 
 model Hub {
