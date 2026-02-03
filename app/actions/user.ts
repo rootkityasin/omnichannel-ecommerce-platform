@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
 import { randomBytes } from 'crypto';
+import { revalidatePath } from 'next/cache';
 
 export async function checkUserExists(phone: string) {
     if (!phone) return false;
@@ -13,6 +14,11 @@ export async function checkUserExists(phone: string) {
     } catch (error) {
         return false;
     }
+}
+
+export async function getCurrentUserRole() {
+    const session = await auth();
+    return (session?.user as any)?.role || null;
 }
 
 // Basic simplified create for signup
@@ -186,6 +192,7 @@ export async function deleteUser(userId: string) {
         }
 
         await prisma.user.delete({ where: { id: userId } });
+        revalidatePath('/admin/customers');
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to delete" };
@@ -257,6 +264,69 @@ export async function getAllUsers() {
     }
 }
 
+export async function getCustomers() {
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+    const userTenantId = (session?.user as any)?.tenantId;
+
+    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(userRole)) {
+        throw new Error("Unauthorized");
+    }
+
+    try {
+        const where: any = {
+            role: 'USER'
+        };
+
+        if (userRole !== 'SUPER_ADMIN' && userTenantId) {
+            where.tenantId = userTenantId;
+        }
+
+        const customers = await prisma.user.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, email: true, phone: true, createdAt: true, points: true }
+        });
+
+        // Get orders for these phones to calculate spent and count
+        const phones = customers.map((c: any) => c.phone).filter(Boolean) as string[];
+
+        const ordersWhere: any = {
+            customerPhone: { in: phones }
+        };
+        // Only filter by tenantId if not a SUPER_ADMIN
+        if (userRole !== 'SUPER_ADMIN' && userTenantId) {
+            ordersWhere.tenantId = userTenantId;
+        }
+
+        const orders = await prisma.order.findMany({
+            where: ordersWhere,
+            select: { customerPhone: true, totalAmount: true, status: true }
+        });
+
+        // Group by phone
+        const statsMap = orders.reduce((acc: any, order: any) => {
+            if (!acc[order.customerPhone]) {
+                acc[order.customerPhone] = { count: 0, spent: 0 };
+            }
+            if (order.status !== 'CANCELLED') {
+                acc[order.customerPhone].count++;
+                acc[order.customerPhone].spent += order.totalAmount;
+            }
+            return acc;
+        }, {} as Record<string, { count: number; spent: number }>);
+
+        return customers.map((c: any) => ({
+            ...c,
+            orders: statsMap[c.phone || '']?.count || 0,
+            spent: statsMap[c.phone || '']?.spent || 0
+        }));
+    } catch (error) {
+        console.error("getCustomers Error:", error);
+        return [];
+    }
+}
+
 export async function getUserProfile(userId: string) {
     try {
         const user = await prisma.user.findUnique({
@@ -273,7 +343,10 @@ export async function getUserProfile(userId: string) {
  */
 export async function bulkImportCustomers(customers: { name: string; phone: string; email?: string }[]) {
     const session = await auth();
-    if ((session?.user as any)?.role !== 'SUPER_ADMIN' && (session?.user as any)?.role !== 'HUB_ADMIN') {
+    const role = (session?.user as any)?.role;
+    const tenantId = (session?.user as any)?.tenantId;
+
+    if (!['SUPER_ADMIN', 'TENANT_ADMIN'].includes(role)) {
         return { success: false, error: "Unauthorized", imported: 0, skipped: 0 };
     }
 
@@ -294,7 +367,8 @@ export async function bulkImportCustomers(customers: { name: string; phone: stri
                     name: customer.name,
                     phone: customer.phone,
                     email: customer.email || `${customer.phone}@placeholder.com`,
-                    role: 'USER'
+                    role: 'USER',
+                    tenantId: tenantId
                 }
             });
             imported++;
@@ -305,6 +379,7 @@ export async function bulkImportCustomers(customers: { name: string; phone: stri
     }
 
     // ... existing code ...
+    revalidatePath('/admin/customers');
     return { success: true, imported, skipped };
 }
 
@@ -383,6 +458,62 @@ export async function generateImpersonationToken(targetUserId: string) {
     } catch (error) {
         console.error("Impersonation error:", error);
         return { success: false, error: "Failed to generate token" };
+    }
+}
+
+export async function createCustomer(data: { name: string; phone: string; email?: string }) {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+
+    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(role)) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const tenantId = (session?.user as any)?.tenantId;
+
+        // Check duplicate
+        const existing = await prisma.user.findFirst({ where: { phone: data.phone } });
+        if (existing) return { success: false, error: "Phone number already exists" };
+
+        const user = await prisma.user.create({
+            data: {
+                name: data.name,
+                phone: data.phone,
+                email: data.email || `${data.phone}@placeholder.com`, // Fallback email
+                role: 'USER',
+                tenantId: tenantId, // Bind to tenant if available
+            }
+        });
+        revalidatePath('/admin/customers');
+        return { success: true, user };
+    } catch (error: any) {
+        console.error("createCustomer Error:", error);
+        return { success: false, error: error.message || "Failed to create customer" };
+    }
+}
+
+export async function updateCustomer(id: string, data: { name: string; phone: string; email?: string }) {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+
+    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(role)) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        await prisma.user.update({
+            where: { id },
+            data: {
+                name: data.name,
+                phone: data.phone,
+                email: data.email
+            }
+        });
+        revalidatePath('/admin/customers');
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: "Failed to update customer" };
     }
 }
 

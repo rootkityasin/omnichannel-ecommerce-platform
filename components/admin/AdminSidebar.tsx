@@ -29,7 +29,8 @@ import {
     Megaphone, // Added
     Paintbrush, // Added
     LayoutTemplate, // Added
-    FlaskConical // Added
+    FlaskConical, // Added
+    Printer // Added
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
@@ -127,7 +128,8 @@ export function AdminSidebar() {
                 { label: 'Manage Shop', href: '/admin/shop', icon: Settings, permission: 'MANAGE_SHOP' },
                 { label: 'Customize Theme', href: '/admin/theme', icon: Palette, permission: 'MANAGE_THEME' },
                 { label: 'Landing Page', href: '/admin/landing', icon: LayoutTemplate, permission: 'MANAGE_LANDING' },
-                { label: 'Promo Codes', href: '/admin/promos', icon: Ticket, permission: 'MANAGE_PROMOS' },
+                { label: 'Promotions', href: '/admin/promos', icon: Ticket, permission: 'MANAGE_PROMOS' },
+                { label: 'Invoice', href: '/admin/settings/invoice', icon: Printer, permission: 'MANAGE_SHOP' }, // Reusing MANAGE_SHOP for now or MANAGE_SETTINGS
 
                 { label: 'Security', icon: ShieldCheck, href: '/admin/security', badge: 'NEW', badgeColor: "bg-blue-100 text-blue-600", permission: 'MANAGE_SECURITY' },
                 { label: 'Inventory', icon: ClipboardList, href: '/admin/inventory', permission: 'MANAGE_INVENTORY' },

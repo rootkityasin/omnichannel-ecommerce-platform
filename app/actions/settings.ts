@@ -186,6 +186,8 @@ export async function getAdminSiteConfig() {
         // Tenant
         customDomain: "",
         slug: "",
+        invoiceTheme: "modern",
+        invoiceDetails: { showSeller: true, showBuyer: true, showSignature: true, watermarkOpacity: 0.1, fontSize: 14 } as any,
         plan: "FREE"
     };
 
@@ -214,6 +216,8 @@ export async function getAdminSiteConfig() {
                 privacyPolicy: true,
                 refundPolicy: true,
                 termsPolicy: true,
+                invoiceTheme: true,
+                invoiceDetails: true,
                 // SEO
                 seoTitle: true,
                 seoDescription: true,
@@ -350,7 +354,12 @@ export async function updateSiteConfig(data: any) {
             shopType: (data.shopType as ShopType) || ShopType.RESTAURANT,
             weightUnitValue: parseInt(data.weightUnitValue || 200),
             volumeUnitValue: parseInt(data.volumeUnitValue || 1000),
-            ...seoPayload // Apply filtered SEO fields
+            privacyPolicy: data.privacyPolicy,
+            refundPolicy: data.refundPolicy,
+            termsPolicy: data.termsPolicy,
+            ...seoPayload, // Apply filtered SEO fields
+            invoiceTheme: data.invoiceTheme || 'modern',
+            invoiceDetails: data.invoiceDetails || {}
         };
 
         if (existing) {
@@ -441,6 +450,8 @@ export async function getPaymentConfig() {
                 nagadMerchantNumber: '',
                 nagadPublicKey: '',
                 nagadPrivateKey: '',
+                bkashLogo: '',
+                nagadLogo: '',
                 selfMfsEnabled: false,
                 selfMfsType: 'bkash',
                 selfMfsPhone: '',
@@ -464,7 +475,7 @@ export async function updatePaymentConfig(data: any) {
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
     try {
-        const { id, createdAt, updatedAt, tenantId: _, ...updateData } = data;
+        const { id, createdAt, updatedAt, tenantId: _, bkashImage, ...updateData } = data;
 
         await prisma.paymentConfig.upsert({
             where: { tenantId },

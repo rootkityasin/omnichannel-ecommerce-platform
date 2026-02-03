@@ -218,15 +218,75 @@ export async function updateProduct(id: string, data: any) {
 
 export async function deleteProduct(id: string) {
     try {
-        await prisma.product.delete({ where: { id } });
+        // 1. Check for orders
+        const ordersCount = await prisma.orderItem.count({
+            where: { productId: id }
+        });
+
+        if (ordersCount > 0) {
+            return { success: false, error: "failed to deleted ordered item" };
+        }
+
+        // 2. Delete dependencies manually (since no Cascade in schema for some)
+        await prisma.$transaction([
+            prisma.inventory.deleteMany({ where: { productId: id } }),
+            prisma.modifier.deleteMany({ where: { productId: id } }),
+            prisma.review.deleteMany({ where: { productId: id } }),
+            prisma.comboItem.deleteMany({ where: { childId: id } }), // Remove as child from other combos
+            prisma.comboItem.deleteMany({ where: { parentId: id } }), // Remove its own combo items
+            prisma.product.delete({ where: { id } })
+        ]);
+
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
         revalidatePath('/');
         return { success: true };
-    } catch (error) {
-        return { success: false, error: "Failed to delete" };
+    } catch (error: any) {
+        console.error("Delete Product Error:", error);
+        return { success: false, error: error.message || "Failed to delete product" };
     }
 }
+
+export async function archiveProduct(id: string) {
+    try {
+        await prisma.product.update({
+            where: { id },
+            data: {
+                isAvailable: false,
+                stage: "Archived"
+            }
+        });
+
+        revalidatePath('/admin/products');
+        revalidatePath('/admin/inventory');
+        revalidatePath('/');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Archive Product Error:", error);
+        return { success: false, error: error.message || "Failed to archive product" };
+    }
+}
+
+export async function unarchiveProduct(id: string) {
+    try {
+        await prisma.product.update({
+            where: { id },
+            data: {
+                isAvailable: true,
+                stage: "Draft"
+            }
+        });
+
+        revalidatePath('/admin/products');
+        revalidatePath('/admin/inventory');
+        revalidatePath('/');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Unarchive Product Error:", error);
+        return { success: false, error: error.message || "Failed to unarchive product" };
+    }
+}
+
 
 export async function generateUniqueSku() {
     try {

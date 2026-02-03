@@ -497,7 +497,7 @@ export function CartEditor() {
                                                             {paymentMethod === 'BKASH' && <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />}
                                                         </div>
                                                         <span className="font-bold text-gray-800">Pay with bKash</span>
-                                                        <img src="/images/bkash-logo.png" alt="bKash" className="h-6 object-contain ml-auto" />
+                                                        <img src={paymentConfig.bkashLogo || "/images/bkash-logo.png"} alt="bKash" className="h-6 object-contain ml-auto" />
                                                     </div>
                                                 </div>
 
@@ -507,7 +507,7 @@ export function CartEditor() {
                                                             {paymentMethod === 'NAGAD' && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                                                         </div>
                                                         <span className="font-bold text-gray-800">Pay with Nagad</span>
-                                                        <img src="/images/nagad-logo.png" alt="Nagad" className="h-6 object-contain ml-auto" />
+                                                        <img src={paymentConfig.nagadLogo || "/images/nagad-logo.png"} alt="Nagad" className="h-6 object-contain ml-auto" />
                                                     </div>
                                                 </div>
 

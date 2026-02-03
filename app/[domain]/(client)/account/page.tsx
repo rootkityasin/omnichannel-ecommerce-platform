@@ -11,8 +11,10 @@ import { checkUserExists, createUser, getUserProfile } from '@/app/actions/user'
 import { toast } from 'sonner';
 import { useSession, signOut, signIn } from "next-auth/react";
 import { AuthForm } from '@/components/client/AuthForm';
+import { useSettings } from '@/components/providers/SettingsProvider';
 
 export default function AccountPage() {
+    const { settings } = useSettings();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { data: session, status } = useSession();
@@ -128,12 +130,12 @@ export default function AccountPage() {
                 return;
             }
 
-            // Create User in DB
             const result = await createUser({
                 name: formData.name,
                 phone: formData.phone,
                 email: formData.email,
-                address: formData.address
+                address: formData.address,
+                tenantId: settings.tenantId
             });
 
             if (!result.success) {

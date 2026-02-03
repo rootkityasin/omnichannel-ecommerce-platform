@@ -26,6 +26,16 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "@/app/styles/datepicker.css";
 import { cn } from '@/lib/utils';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { format } from "date-fns"
@@ -94,6 +104,7 @@ export default function OrdersPage() {
 
     // Edit Order State
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState({ customer: '', phone: '', price: 0, items: 1 });
     const [originalEditForm, setOriginalEditForm] = useState<any>(null); // Track original for changes
 
@@ -232,9 +243,7 @@ export default function OrdersPage() {
     };
 
     const handleDelete = (id: string) => {
-        if (confirm('Delete Order?')) {
-            deleteOrder(id);
-        }
+        setDeleteId(id);
     }
 
     const handlePrint = async (order: any) => {
@@ -753,7 +762,24 @@ export default function OrdersPage() {
                 <FulfillmentBoard orders={filteredOrders} onStatusChange={handleStatusChange} readOnly={!canManageOrders} />
             )
             }
-        </div >
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Order?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the order from the database.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteId && deleteOrder(deleteId)} className="bg-red-600 hover:bg-red-700">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
     );
 }
 

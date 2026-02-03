@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Save, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, Save, CheckCircle, Printer } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAdmin } from '@/components/providers/AdminProvider';
 
@@ -220,6 +221,27 @@ export default function SettingsPage() {
                                 </button>
                             </div>
                         ))}
+                    </div>
+                </Card>
+                {/* Configuration Links */}
+                <Card className="p-6">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span className="w-2 h-6 bg-purple-500 rounded-full" />
+                        Configuration
+                    </h2>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Link href="/admin/settings/invoice" className="block">
+                            <div className="border rounded-lg p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="p-2 bg-purple-100 rounded-lg text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                        <Printer className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded-full">New</span>
+                                </div>
+                                <h3 className="font-bold text-slate-800">Invoice</h3>
+                                <p className="text-sm text-slate-500 mt-1">Customize receipt layout, themes, and QR codes.</p>
+                            </div>
+                        </Link>
                     </div>
                 </Card>
             </div>

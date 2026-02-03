@@ -647,7 +647,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="/images/images.png" alt="Redx" className="w-full h-full object-contain" />
+                                <img src="/images/redx_logo.png" alt="Redx" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Redx</CardTitle>
@@ -663,7 +663,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Redx Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="/images/images.png" alt="Redx" className="h-6 object-contain" />
+                                <img src="/images/redx_logo.png" alt="Redx" className="h-6 object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Redx</span>
                             </div>

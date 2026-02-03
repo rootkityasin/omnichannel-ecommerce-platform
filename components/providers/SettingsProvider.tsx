@@ -2,10 +2,11 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { getSiteConfig } from '@/app/actions/settings';
-// import { getPaymentConfig } from '@/app/actions/settings'; // If needed for public checkout
+import { useParams } from 'next/navigation';
 
 export interface SettingsContextType {
     settings: {
+        tenantId?: string;
         contactPhone: string;
         contactEmail: string;
         contactAddress: string;
@@ -29,6 +30,7 @@ export interface SettingsContextType {
 }
 
 const defaultSettings = {
+    tenantId: undefined as string | undefined, // Added for registration sync
     contactPhone: "",
     contactEmail: "",
     contactAddress: "",
@@ -54,14 +56,17 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SettingsContextType['settings']>(defaultSettings);
     const [loading, setLoading] = useState(true);
     const hasFetched = useRef(false);
+    const params = useParams();
+    const domain = params?.domain as string;
 
     const refreshSettings = async () => {
         try {
-            const data = await getSiteConfig();
+            const data = await getSiteConfig(domain);
             if (data) {
                 setSettings(prev => ({
                     ...prev,
                     ...data,
+                    tenantId: data.tenantId || prev.tenantId,
                     logoUrl: data.logoUrl || prev.logoUrl,
                     contactPhone: data.contactPhone || prev.contactPhone,
                     contactEmail: data.contactEmail || prev.contactEmail,

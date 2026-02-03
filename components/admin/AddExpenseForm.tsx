@@ -20,11 +20,18 @@ export function AddExpenseForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const amount = Number(formData.amount);
+        if (isNaN(amount) || amount <= 0) {
+            toast.error("Please enter a valid amount greater than 0");
+            return;
+        }
+
         setLoading(true);
 
         const res = await addExpense({
             title: formData.title,
-            amount: Number(formData.amount),
+            amount: amount,
             category: formData.category,
             description: formData.description
         });
@@ -60,6 +67,8 @@ export function AddExpenseForm() {
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                     required
+                    min="0.01"
+                    step="0.01"
                     className="bg-white"
                 />
             </div>

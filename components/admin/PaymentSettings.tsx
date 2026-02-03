@@ -148,8 +148,8 @@ export function PaymentSettings() {
             <Card className={config.bkashEnabled ? "border-pink-200 bg-pink-50/10" : ""}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center p-1">
-                            <img src="/images/bkash-logo.png" alt="bKash" className="w-full h-full object-contain" />
+                        <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center p-1 overflow-hidden">
+                            <img src={config.bkashLogo || "/images/bkash-logo.png"} alt="bKash" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <CardTitle className="text-base">bKash Merchant</CardTitle>
@@ -181,6 +181,14 @@ export function PaymentSettings() {
                                     <Label>Merchant Password</Label>
                                     <Input type="password" value={config.bkashPassword || ''} onChange={(e) => setConfig({ ...config, bkashPassword: e.target.value })} placeholder="Password" />
                                 </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label className="text-xs font-bold text-slate-500 uppercase">Custom bKash Logo</Label>
+                                    <ImageUpload
+                                        value={config.bkashLogo || ''}
+                                        onChange={(url) => setConfig({ ...config, bkashLogo: url })}
+                                        onRemove={() => setConfig({ ...config, bkashLogo: '' })}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </CardContent>
@@ -191,8 +199,8 @@ export function PaymentSettings() {
             <Card className={config.nagadEnabled ? "border-orange-200 bg-orange-50/10" : ""}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center p-1">
-                            <img src="/images/nagad-logo.png" alt="Nagad" className="w-full h-full object-contain" />
+                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center p-1 overflow-hidden">
+                            <img src={config.nagadLogo || "/images/nagad-logo.png"} alt="Nagad" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <CardTitle className="text-base">Nagad Merchant</CardTitle>
@@ -219,6 +227,14 @@ export function PaymentSettings() {
                                 <div className="space-y-2">
                                     <Label>Private Key</Label>
                                     <Input type="password" value={config.nagadPrivateKey || ''} onChange={(e) => setConfig({ ...config, nagadPrivateKey: e.target.value })} placeholder="Private Key" />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label className="text-xs font-bold text-slate-500 uppercase">Custom Nagad Logo</Label>
+                                    <ImageUpload
+                                        value={config.nagadLogo || ''}
+                                        onChange={(url) => setConfig({ ...config, nagadLogo: url })}
+                                        onRemove={() => setConfig({ ...config, nagadLogo: '' })}
+                                    />
                                 </div>
                             </div>
                         </div>

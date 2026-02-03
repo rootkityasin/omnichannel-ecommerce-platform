@@ -9,8 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, MoreVertical, User, Plus, X, Phone, Mail, Edit, Trash2, Download, Upload, Loader2, FileSpreadsheet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { getAllUsers, bulkImportCustomers } from '@/app/actions/user';
+import { getCustomers, bulkImportCustomers, createCustomer, updateCustomer, deleteUser, getCurrentUserRole } from '@/app/actions/user';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 import {
     Dialog,
     DialogContent,
@@ -19,36 +20,60 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<any[]>([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', email: '' });
     const [search, setSearch] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [showUploadGuide, setShowUploadGuide] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const hasFetched = useRef(false);
 
     useEffect(() => {
-        if (hasFetched.current) return;
-        hasFetched.current = true;
+        const fetchInitialData = async () => {
+            if (hasFetched.current) return;
+            hasFetched.current = true;
 
-        const fetchUsers = async () => {
-            const users = await getAllUsers();
-            // Map Prisma users to the UI shape
-            const formatted = users.map((u: any) => ({
-                id: u.id,
-                name: u.name,
-                email: u.email,
-                phone: u.phone || 'N/A',
-                orders: 0, // Placeholder
-                spent: 0   // Placeholder
-            }));
-            setCustomers(formatted);
+            try {
+                const [users, role] = await Promise.all([
+                    getCustomers(),
+                    getCurrentUserRole()
+                ]);
+
+                setUserRole(role);
+
+                const formatted = users.map((u: any) => ({
+                    id: u.id,
+                    name: u.name,
+                    email: u.email,
+                    phone: u.phone || 'N/A',
+                    orders: u.orders || 0,
+                    spent: u.spent || 0,
+                    points: u.points || 0,
+                    createdAt: u.createdAt
+                }));
+                setCustomers(formatted);
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+                toast.error("Failed to load data");
+            }
         };
-        fetchUsers();
+        fetchInitialData();
     }, []);
 
     const [minSpent, setMinSpent] = useState(0);
@@ -66,9 +91,9 @@ export default function CustomersPage() {
             if (sortBy === 'spent_high') return b.spent - a.spent;
             if (sortBy === 'spent_low') return a.spent - b.spent;
             if (sortBy === 'orders_high') return b.orders - a.orders;
-            // 'newest' fallback depends on ID or joining date if available. 
-            // Since ID is mock 'customer.length + 1' or string, let's assume higher ID = newer or implementation specific.
-            // But real users have string IDs. Let's just return 0 for now or rely on array order.
+            if (sortBy === 'newest') {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            }
             return 0;
         });
 
@@ -78,33 +103,54 @@ export default function CustomersPage() {
         setIsAdding(true);
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to remove this customer?')) {
-            setCustomers(customers.filter(c => c.id !== id));
-        }
+    const handleDelete = async (id: string) => {
+        setDeleteId(id);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newCustomer.name || !newCustomer.phone) return;
 
-        if (editingId) {
-            // Update existing
-            setCustomers(customers.map((c: any) => c.id === editingId ? { ...c, ...newCustomer } : c));
-        } else {
-            // Add new
-            const customer = {
-                id: customers.length + 1,
-                ...newCustomer,
-                orders: 0,
-                spent: 0
-            };
-            setCustomers([...customers, customer]);
+        // Validate BD Phone Number
+        const phoneRegex = /^01[3-9]\d{8}$/;
+        if (!phoneRegex.test(newCustomer.phone)) {
+            toast.error("Invalid phone number. Must be a valid 11-digit BD mobile number (e.g., 017XXXXXXXX).");
+            return;
         }
 
-        setIsAdding(false);
-        setNewCustomer({ name: '', phone: '', email: '' });
-        setEditingId(null);
+        if (editingId) {
+            // Update existing
+            const res = await updateCustomer(editingId, newCustomer);
+            if (res.success) {
+                setCustomers(customers.map((c: any) => c.id === editingId ? { ...c, ...newCustomer } : c));
+                toast.success("Customer updated successfully");
+                setIsAdding(false);
+                setNewCustomer({ name: '', phone: '', email: '' });
+                setEditingId(null);
+            } else {
+                toast.error(res.error || "Failed to update customer");
+            }
+        } else {
+            // Add new
+            const res = await createCustomer(newCustomer);
+            if (res.success && res.user) {
+                const customer = {
+                    id: res.user.id,
+                    ...newCustomer,
+                    orders: 0,
+                    spent: 0,
+                    points: res.user.points || 0,
+                    createdAt: res.user.createdAt
+                };
+                setCustomers([customer, ...customers]); // Prepend new customer
+                toast.success("Customer added successfully");
+                setIsAdding(false);
+                setNewCustomer({ name: '', phone: '', email: '' });
+                setEditingId(null);
+            } else {
+                toast.error(res.error || "Failed to add customer");
+            }
+        }
     };
 
     const handleDownload = () => {
@@ -139,80 +185,155 @@ export default function CustomersPage() {
 
         setIsUploading(true);
         try {
-            const text = await file.text();
-            toast.info('Parsing your file...');
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    const ab = evt.target?.result as ArrayBuffer;
+                    const wb = XLSX.read(new Uint8Array(ab), { type: 'array' });
+                    const wsname = wb.SheetNames[0];
+                    const ws = wb.Sheets[wsname];
+                    const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
 
-            // Simple CSV parsing logic
-            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-            if (lines.length < 2) {
-                toast.error('File must have header row and at least one data row');
-                setIsUploading(false);
-                return;
-            }
+                    if (data.length === 0) {
+                        toast.error('File appears to be empty');
+                        setIsUploading(false);
+                        return;
+                    }
 
-            // Parse header - find column indices
-            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
-            const nameIdx = headers.findIndex(h => ['name', 'full name', 'customer name', 'full_name', 'customer_name'].includes(h));
-            const phoneIdx = headers.findIndex(h => ['phone', 'mobile', 'contact', 'phone number', 'phone_number'].includes(h));
-            const emailIdx = headers.findIndex(h => ['email', 'email address', 'mail'].includes(h));
+                    // Robust Header Search
+                    let headerIdx = -1;
+                    let nameIdx = -1;
+                    let phoneIdx = -1;
+                    let emailIdx = -1;
 
-            if (nameIdx === -1 || phoneIdx === -1) {
-                toast.error('File must have "Name" and "Phone" columns');
-                setIsUploading(false);
-                return;
-            }
+                    // Search first 15 rows for the header
+                    for (let r = 0; r < Math.min(data.length, 15); r++) {
+                        const row = data[r];
+                        if (!row || !Array.isArray(row)) continue;
 
-            // Parse data rows
-            const parsed: { name: string; phone: string; email?: string }[] = [];
-            for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(',').map(c => c.replace(/"/g, '').trim());
-                const name = cols[nameIdx];
-                const phone = cols[phoneIdx]?.replace(/\D/g, ''); // Keep only digits
-                const email = emailIdx !== -1 ? cols[emailIdx] : '';
+                        const currentHeaders = row.map((h: any) => String(h || '').trim().toLowerCase());
 
-                if (name && phone && phone.length >= 10) {
-                    parsed.push({ name, phone, email: email || undefined });
+                        const nIdx = currentHeaders.findIndex(h => ['name', 'full name', 'customer name', 'full_name', 'customer_name', 'customer', 'names'].includes(h));
+                        const pIdx = currentHeaders.findIndex(h => ['phone', 'mobile', 'contact', 'phone number', 'phone_number', 'mobile number', 'mobile_number', 'contact_number', 'phone_no', 'mobile_no', 'contact no', 'contact_no'].includes(h));
+                        const eIdx = currentHeaders.findIndex(h => ['email', 'email address', 'mail', 'email_address'].includes(h));
+
+                        if (nIdx !== -1 && pIdx !== -1) {
+                            headerIdx = r;
+                            nameIdx = nIdx;
+                            phoneIdx = pIdx;
+                            emailIdx = eIdx;
+                            break;
+                        }
+                    }
+
+                    if (headerIdx === -1) {
+                        const foundHeaders = data[0] ? data[0].filter(Boolean).join(', ') : 'none';
+                        toast.error(`Could not find "Name" and "Phone" columns. Found: ${foundHeaders}`);
+                        setIsUploading(false);
+                        return;
+                    }
+
+                    const parsed: { name: string; phone: string; email?: string }[] = [];
+                    for (let i = headerIdx + 1; i < data.length; i++) {
+                        const row = data[i];
+                        if (!row || row[nameIdx] === undefined) continue;
+
+                        const name = String(row[nameIdx] || '').trim();
+                        let rawPhone = String(row[phoneIdx] || '').trim();
+
+                        // Clean phone number: keep only digits
+                        let cleanPhone = rawPhone.replace(/\D/g, '');
+
+                        // Normalize BD phone number
+                        if (cleanPhone.startsWith('880')) cleanPhone = cleanPhone.substring(3);
+                        if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+
+                        // If it's 10 digits, it's a valid BD mobile number
+                        if (name && cleanPhone.length === 10) {
+                            const formattedPhone = `+880${cleanPhone}`;
+                            const email = emailIdx !== -1 ? String(row[emailIdx] || '').trim() : '';
+                            parsed.push({
+                                name,
+                                phone: formattedPhone,
+                                email: email || undefined
+                            });
+                        }
+                    }
+
+                    if (parsed.length === 0) {
+                        toast.error('No valid customers found. Please ensure phone numbers are valid BD mobile numbers.');
+                        setIsUploading(false);
+                        return;
+                    }
+
+                    toast.info(`Found ${parsed.length} valid customers. Importing...`);
+                    const result = await bulkImportCustomers(parsed);
+
+                    if (result.success) {
+                        toast.success(`Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`);
+                        const users = await getCustomers();
+                        const formatted = users.map((u: any) => ({
+                            id: u.id,
+                            name: u.name,
+                            email: u.email,
+                            phone: u.phone || 'N/A',
+                            orders: u.orders || 0,
+                            spent: u.spent || 0,
+                            points: u.points || 0,
+                            createdAt: u.createdAt
+                        }));
+                        setCustomers(formatted);
+                    } else {
+                        toast.error(result.error || 'Import failed');
+                    }
+                } catch (err) {
+                    console.error('XLSX Parsing Error:', err);
+                    toast.error('Error parsing file content');
+                } finally {
+                    setIsUploading(false);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
                 }
-            }
-
-            if (parsed.length === 0) {
-                toast.error('No valid customers found in file');
-                setIsUploading(false);
-                return;
-            }
-
-            toast.info(`Found ${parsed.length} customers. Importing...`);
-
-            const result = await bulkImportCustomers(parsed);
-
-            if (result.success) {
-                toast.success(`Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`);
-                // Refresh list
-                hasFetched.current = false;
-                const users = await getAllUsers();
-                const formatted = users.map((u: any) => ({
-                    id: u.id,
-                    name: u.name,
-                    email: u.email,
-                    phone: u.phone || 'N/A',
-                    orders: 0,
-                    spent: 0
-                }));
-                setCustomers(formatted);
-            } else {
-                toast.error(result.error || 'Import failed');
-            }
+            };
+            reader.readAsArrayBuffer(file);
         } catch (error) {
-            console.error(error);
-            toast.error('Failed to process file');
-        } finally {
+            console.error('File Reading Error:', error);
+            toast.error('Failed to read file');
             setIsUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
     return (
         <div className="space-y-6 relative">
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Customer?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to remove this customer? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700"
+                            onClick={async () => {
+                                if (deleteId) {
+                                    const res = await deleteUser(deleteId);
+                                    if (res.success) {
+                                        setCustomers(customers.filter(c => c.id !== deleteId));
+                                        toast.success('Customer removed successfully');
+                                    } else {
+                                        toast.error(res.error || 'Failed to remove customer');
+                                    }
+                                    setDeleteId(null);
+                                }
+                            }}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-800">👥 Customers</h1>
@@ -279,24 +400,28 @@ export default function CustomersPage() {
                     <Button variant="outline" onClick={handleDownload}>
                         <Download className="w-4 h-4 mr-2" /> Download CSV
                     </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => setShowUploadGuide(true)}
-                        disabled={isUploading}
-                    >
-                        {isUploading ? (
-                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importing...</>
-                        ) : (
-                            <><Upload className="w-4 h-4 mr-2" /> Upload Excel</>
-                        )}
-                    </Button>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".csv,.xlsx,.xls"
-                        onChange={handleUpload}
-                        className="hidden"
-                    />
+                    {(userRole === 'TENANT_ADMIN' || userRole === 'SUPER_ADMIN') && (
+                        <>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowUploadGuide(true)}
+                                disabled={isUploading}
+                            >
+                                {isUploading ? (
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importing...</>
+                                ) : (
+                                    <><Upload className="w-4 h-4 mr-2" /> Upload Excel</>
+                                )}
+                            </Button>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".csv,.xlsx,.xls"
+                                onChange={handleUpload}
+                                className="hidden"
+                            />
+                        </>
+                    )}
 
                     {/* Upload Guide Dialog */}
                     <Dialog open={showUploadGuide} onOpenChange={setShowUploadGuide}>
@@ -392,7 +517,7 @@ export default function CustomersPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Phone</label>
+                                    <label className="text-sm font-medium text-slate-700">Phone Number</label>
                                     <Input
                                         placeholder="017..."
                                         value={newCustomer.phone}
@@ -464,7 +589,7 @@ export default function CustomersPage() {
                                     </td>
                                     <td className="p-4">
                                         <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100">
-                                            {Math.floor(customer.spent / 10)} pts
+                                            {customer.points} pts
                                         </Badge>
                                     </td>
                                     <td className="p-4">

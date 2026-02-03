@@ -6,6 +6,8 @@ import { getSiteConfig } from "@/app/actions/settings";
 import { DesktopNavbar } from "@/components/client/DesktopNavbar";
 import { CartDrawer } from "@/components/client/CartDrawer";
 import { DynamicCheckout } from "@/components/client/DynamicCheckout";
+import { PromoModal } from "@/components/client/PromoModal";
+import { getActivePromo } from "@/app/actions/promo";
 import { Metadata } from "next";
 
 
@@ -48,6 +50,7 @@ export default async function ClientLayout({
 }) {
     const { domain } = await params;
     const config = await getSiteConfig(domain);
+    const activePromo = await getActivePromo(config.tenantId);
 
     // ... (JSON-LD construction remains same)
 
@@ -94,6 +97,7 @@ export default async function ClientLayout({
                     </PageTransition>
                 </main>
                 <BottomNav />
+                <PromoModal promo={activePromo} />
             </div>
         </>
     );

@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Filter, Pencil, Trash2, X, AlertTriangle, Image as ImageIcon, Sparkles, MoreHorizontal, Upload, Copy, Eye, Share2, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Filter, Pencil, Trash2, X, AlertTriangle, Image as ImageIcon, Sparkles, MoreHorizontal, MoreVertical, Upload, Copy, Eye, Share2, LayoutGrid, List, Edit } from 'lucide-react';
 import { toast } from 'sonner';
+import { smartParseAI } from '@/app/actions/ai';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,7 +29,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from "@/components/ui/switch";
-import { getProducts, getAdminProducts, getProductById, createProduct, updateProduct, deleteProduct, generateUniqueSku } from '@/app/actions/product';
+import { getProducts, getAdminProducts, getProductById, createProduct, updateProduct, deleteProduct, archiveProduct, unarchiveProduct, generateUniqueSku } from '@/app/actions/product';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getCategories } from '@/app/actions/category';
 import { getAdminSiteConfig } from '@/app/actions/settings';
 import { getHomeSections } from '@/app/actions/section';
@@ -87,6 +98,10 @@ export default function ProductsPage() {
         comboItems: [] as { childId: string, quantity: number }[],
         sections: [] as string[]
     });
+
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [archiveRequired, setArchiveRequired] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const [showSmartPaste, setShowSmartPaste] = useState(false);
     const [smartPasteInput, setSmartPasteInput] = useState('');
@@ -192,29 +207,79 @@ export default function ProductsPage() {
 
 
     // Filter Logic - for RESTAURANT, table view only shows Draft (Ready Stock) items
-    const stages = Array.from(new Set(products.map(p => p.stage)));
+    const stages = Array.from(new Set(products.map(p => p.stage))).filter(s => s !== 'Archived');
     const filteredProducts = products.filter(p => {
         // For RESTAURANT: Only show Draft items in table (batch items are for Kanban only)
-        if (config.shopType === 'RESTAURANT' && view === 'table' && p.stage !== 'Draft') {
+        if (config.shopType === 'RESTAURANT' && view === 'table' && p.stage !== 'Draft' && p.stage !== 'Archived') {
             return false;
         }
         const matchesStock = filterStock === 'all' ? true :
             filterStock === 'instock' ? (p.pieces > 0) : (p.pieces <= 0);
-        const matchesStage = filterStage === 'all' ? true : p.stage === filterStage;
+        const matchesStage = filterStage === 'all' ? p.stage !== 'Archived' : p.stage === filterStage;
         const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
             (p.sku && p.sku.toLowerCase().includes(search.toLowerCase()));
         return matchesStock && matchesStage && matchesSearch;
     });
 
     const handleDelete = async (id: string) => {
-        if (confirm('Delete this product?')) {
-            const res = await deleteProduct(id);
+        setDeleteId(id);
+        setArchiveRequired(false);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
+        try {
+            const res = await deleteProduct(deleteId);
             if (res.success) {
                 toast.success("Product deleted");
+                setDeleteId(null);
+                fetchData();
+            } else if (res.error === "failed to deleted ordered item") {
+                setArchiveRequired(true);
+            } else {
+                toast.error(res.error || "Failed to delete");
+                setDeleteId(null);
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+            setDeleteId(null);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleArchive = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
+        try {
+            const res = await archiveProduct(deleteId);
+            if (res.success) {
+                toast.success("Product archived successfully");
+                setDeleteId(null);
+                setArchiveRequired(false);
                 fetchData();
             } else {
-                toast.error("Failed to delete");
+                toast.error(res.error || "Failed to archive");
             }
+        } catch (error) {
+            toast.error("An error occurred");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleUnarchive = async (id: string) => {
+        try {
+            const res = await unarchiveProduct(id);
+            if (res.success) {
+                toast.success("Product restored successfully");
+                fetchData();
+            } else {
+                toast.error(res.error || "Failed to restore product");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
         }
     };
 
@@ -433,8 +498,9 @@ export default function ProductsPage() {
                                             <Select value={filterStage} onValueChange={setFilterStage}>
                                                 <SelectTrigger className="col-span-2 h-8"><SelectValue placeholder="All" /></SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">All Stages</SelectItem>
+                                                    <SelectItem value="all">All Products</SelectItem>
                                                     {stages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                    <SelectItem value="Archived" className="text-orange-600 font-bold">📂 Archived</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -929,12 +995,20 @@ export default function ProductsPage() {
                                                             </DropdownMenuItem>
                                                             {canManageProducts && (
                                                                 <>
-                                                                    <DropdownMenuItem onClick={() => handleEditClick(product)}>
-                                                                        <Edit className="w-4 h-4 mr-2" /> Edit
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem onClick={() => handleClone(product)}>
-                                                                        <Copy className="w-4 h-4 mr-2" /> Clone
-                                                                    </DropdownMenuItem>
+                                                                    {product.stage === 'Archived' ? (
+                                                                        <DropdownMenuItem onClick={() => handleUnarchive(product.id)}>
+                                                                            <Plus className="w-4 h-4 mr-2" /> Restore / Unarchive
+                                                                        </DropdownMenuItem>
+                                                                    ) : (
+                                                                        <>
+                                                                            <DropdownMenuItem onClick={() => handleEditClick(product)}>
+                                                                                <Edit className="w-4 h-4 mr-2" /> Edit
+                                                                            </DropdownMenuItem>
+                                                                            <DropdownMenuItem onClick={() => handleClone(product)}>
+                                                                                <Copy className="w-4 h-4 mr-2" /> Clone
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    )}
                                                                 </>
                                                             )}
                                                             <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(product.id)}>
@@ -1054,6 +1128,41 @@ export default function ProductsPage() {
                     </div>
                 </div>
             )}
+            {/* Delete/Archive AlertDialog */}
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && !isDeleting && setDeleteId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {archiveRequired ? "Failed to delete: ordered item" : "Delete Product?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {archiveRequired
+                                ? "This product has been ordered and cannot be deleted. Would you like to archive it instead? It will be hidden from customers but preserved for order history."
+                                : "Are you sure you want to delete this product? This action cannot be undone."}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        {archiveRequired ? (
+                            <AlertDialogAction
+                                onClick={(e) => { e.preventDefault(); handleArchive(); }}
+                                disabled={isDeleting}
+                                className="bg-orange-600 hover:bg-orange-700"
+                            >
+                                {isDeleting ? "Archiving..." : "Archive Product"}
+                            </AlertDialogAction>
+                        ) : (
+                            <AlertDialogAction
+                                onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                {isDeleting ? "Deleting..." : "Delete Permanently"}
+                            </AlertDialogAction>
+                        )}
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

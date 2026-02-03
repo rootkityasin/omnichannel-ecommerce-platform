@@ -11,8 +11,10 @@ import { createUser } from '@/app/actions/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { PolicyModal } from './PolicyModal';
+import { useSettings } from '@/components/providers/SettingsProvider';
 
 export function AuthForm() {
+    const { settings } = useSettings();
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -143,6 +145,7 @@ export function AuthForm() {
                     name: formData.name,
                     phone: phoneForReg,
                     password: formData.password,
+                    tenantId: settings.tenantId
                 });
 
                 if (res.success) {

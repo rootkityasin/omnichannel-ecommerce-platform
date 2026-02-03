@@ -86,6 +86,19 @@ export default function PromoPage() {
     const handleAddCard = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validation
+        const price = parseFloat(newCard.price || '0');
+        const origPrice = parseFloat(newCard.originalPrice || '0');
+
+        if (newCard.price && (isNaN(price) || price < 0)) {
+            toast.error("Price cannot be negative");
+            return;
+        }
+        if (newCard.originalPrice && (isNaN(origPrice) || origPrice < 0)) {
+            toast.error("Original price cannot be negative");
+            return;
+        }
+
         let res;
         if (editingPromoId) {
             res = await updatePromo(editingPromoId, newCard);
@@ -157,6 +170,23 @@ export default function PromoPage() {
             return;
         }
 
+        const dVal = parseFloat(newCoupon.discountValue);
+        if (isNaN(dVal) || dVal <= 0) {
+            toast.error("Discount value must be greater than 0");
+            return;
+        }
+
+        if (newCoupon.discountType === 'PERCENTAGE' && dVal > 100) {
+            toast.error("Percentage discount cannot exceed 100%");
+            return;
+        }
+
+        const minAmt = parseFloat(newCoupon.minOrderAmount || '0');
+        if (isNaN(minAmt) || minAmt < 0) {
+            toast.error("Minimum order amount cannot be negative");
+            return;
+        }
+
         let res;
         if (editingCouponId) {
             res = await updateCoupon(editingCouponId, newCoupon);
@@ -224,17 +254,19 @@ export default function PromoPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Promotions</h1>
-                    <p className="text-sm text-slate-500">Manage coupons and website popups.</p>
+                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <Ticket className="w-6 h-6 text-orange-600" /> Promotions
+                    </h1>
+                    <p className="text-sm text-slate-500">Manage campaign popups and discount coupons.</p>
                 </div>
             </div>
 
             <Tabs defaultValue="popups" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-                    <TabsTrigger value="popups">Website Popups</TabsTrigger>
-                    <TabsTrigger value="coupons">Coupons</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-slate-100 p-1 rounded-xl">
+                    <TabsTrigger value="popups" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Campaign Popups</TabsTrigger>
+                    <TabsTrigger value="coupons" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Discount Coupons</TabsTrigger>
                 </TabsList>
 
                 {/* --- POPUPS TAB --- */}
