@@ -281,7 +281,7 @@ export default function OrdersPage() {
     };
 
     const getAllStatuses = () => [
-        "Placed", "Confirmed", "Ready to Process", "Ready To Fry", "Processing", "Ready", "Shipped", "Delivered", "Completed", "Cancelled", "Returned", "Payment OnProcess", "Payment Failed"
+        "Placed", "Confirmed", "Processing", "Ready", "Shipped", "Delivered", "Completed", "Cancelled", "Returned", "Payment OnProcess", "Payment Failed"
     ];
 
     const getStatusColor = (status: string) => {
