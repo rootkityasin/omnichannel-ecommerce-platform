@@ -699,10 +699,12 @@ export default function OrdersPage() {
                                                             variant="ghost"
                                                             className={cn(
                                                                 "h-8 w-8",
-                                                                order.stockDeducted ? "text-green-600 bg-green-50" : "text-gray-600 bg-gray-100 hover:bg-gray-200"
+                                                                order.stockDeducted ? "text-green-600 bg-green-50" : "text-gray-600 bg-gray-100 hover:bg-gray-200",
+                                                                (order.status !== 'Ready' && order.status !== 'Invoice Printed') && "opacity-30 cursor-not-allowed"
                                                             )}
-                                                            onClick={() => handlePrint(order)}
-                                                            title="Print Invoice & Deduct Stock"
+                                                            onClick={() => (order.status === 'Ready' || order.status === 'Invoice Printed') && handlePrint(order)}
+                                                            title={order.status === 'Ready' || order.status === 'Invoice Printed' ? "Print Invoice & Deduct Stock" : "Only available in Ready status"}
+                                                            disabled={order.status !== 'Ready' && order.status !== 'Invoice Printed'}
                                                         >
                                                             <Printer className="w-4 h-4" />
                                                         </Button>

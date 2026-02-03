@@ -190,6 +190,11 @@ export async function printOrderInvoice(orderId: string) {
 
         if (!order) return { success: false, error: "Order not found" };
 
+        // Restrict printing: Only if 'Ready' or already 'Printed'
+        if (order.status !== 'Ready' && order.status !== 'Invoice Printed') {
+            return { success: false, error: `Cannot print invoice for order in '${order.status}' status. Must be 'Ready'.` };
+        }
+
         // Only deduct stock if not already deducted
         if (!order.stockDeducted) {
             // Deduct Stock Logic (Moved from createOrder)
