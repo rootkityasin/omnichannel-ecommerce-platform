@@ -40,10 +40,12 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
     const categoryId = searchParams.get('category') || 'all';
     const filterId = searchParams.get('filter') || null;
+    const sectionSlug = searchParams.get('section') || null;
     const initialSearch = searchParams.get('search') || '';
 
     const [activeCategory, setActiveCategory] = useState(categoryId);
     const [activeFilter, setActiveFilter] = useState<string | null>(filterId);
+    const [activeSection, setActiveSection] = useState<string | null>(sectionSlug);
 
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const debouncedSearch = useDebounce(searchQuery, 400);
@@ -68,7 +70,13 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
             if (activeFilter === 'super-savings') {
                 matchesFilter = item.type === 'COMBO';
             }
-            return matchesSearch && matchesCategory && matchesFilter;
+
+            let matchesSection = true;
+            if (activeSection) {
+                matchesSection = item.sections?.some((s: any) => s.slug === activeSection);
+            }
+
+            return matchesSearch && matchesCategory && matchesFilter && matchesSection;
         });
 
         // Sorting
@@ -83,7 +91,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         }
 
         return items;
-    }, [initialProducts, debouncedSearch, activeCategory, activeFilter]);
+    }, [initialProducts, debouncedSearch, activeCategory, activeFilter, activeSection]);
 
     const displayedProducts = useMemo(() => {
         return filteredItems.slice(0, displayCount);
@@ -114,17 +122,21 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         if (activeFilter) params.set('filter', activeFilter);
         else params.delete('filter');
 
+        if (activeSection) params.set('section', activeSection);
+        else params.delete('section');
+
         if (debouncedSearch) params.set('search', debouncedSearch);
         else params.delete('search');
 
         const newPath = `${window.location.pathname}?${params.toString()}`;
         window.history.replaceState({ ...window.history.state, as: newPath, url: newPath }, '', newPath);
 
-    }, [debouncedSearch, activeCategory, activeFilter]);
+    }, [debouncedSearch, activeCategory, activeFilter, activeSection]);
 
     const updateQuery = (key: string, value: string) => {
         if (key === 'category') setActiveCategory(value);
         if (key === 'filter') setActiveFilter(value === 'all' ? null : value);
+        if (key === 'section') setActiveSection(value === 'all' ? null : value);
     };
 
     // Calculate counts for sidebar
@@ -330,7 +342,12 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                                     </p>
 
                                     <button
-                                        onClick={() => { setSearchQuery(''); updateQuery('category', 'all'); }}
+                                        onClick={() => {
+                                            setSearchQuery('');
+                                            setActiveCategory('all');
+                                            setActiveFilter(null);
+                                            setActiveSection(null);
+                                        }}
                                         className="relative group px-8 py-3 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/20 hover:scale-105 transition-all overflow-hidden"
                                     >
                                         <span className="relative z-10">Clear All Filters</span>

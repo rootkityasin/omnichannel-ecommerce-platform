@@ -396,7 +396,7 @@ export default function ProductsPage() {
             {/* Modal */}
             {isAdding && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
+                    <Card className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Product' : 'New Product'}</h2>
@@ -626,11 +626,11 @@ export default function ProductsPage() {
                                             <label className="text-sm font-medium flex justify-between">
                                                 <span>Stock Quantity</span>
                                                 <span className="text-xs text-slate-500 font-normal">
-                                                    {config.measurementUnit === 'PCS' ? '(Pieces)' : `(Units of ${newProduct.weight || 0}${config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'})`}
+                                                    {(config.measurementUnit || 'PCS') === 'PCS' ? '(Pieces)' : `(Units of ${newProduct.weight || 0}${(config.measurementUnit || 'PCS') === 'WEIGHT' ? 'g' : 'ml'})`}
                                                 </span>
                                             </label>
 
-                                            {config.measurementUnit === 'PCS' ? (
+                                            {(config.measurementUnit || 'PCS') === 'PCS' ? (
                                                 <Input
                                                     type="number"
                                                     placeholder="0"
@@ -646,14 +646,16 @@ export default function ProductsPage() {
                                                         <Input
                                                             type="number"
                                                             placeholder="0"
-                                                            // Calculate units from total pieces (weight)
-                                                            value={newProduct.pieces && newProduct.weight ? Math.floor(Number(newProduct.pieces) / Number(newProduct.weight)) : 0}
+                                                            // Calculate units from total pieces (weight). If weight is 0, treat as 1 to avoid /0 or *0 lock
+                                                            value={newProduct.pieces ? Math.floor(Number(newProduct.pieces) / (Number(newProduct.weight) || 1)) : ''}
                                                             onChange={e => {
-                                                                const units = Math.max(0, parseFloat(e.target.value) || 0);
-                                                                const unitWeight = Number(newProduct.weight) || (config.weightUnitValue || 0); // fallback if product weight not set
+                                                                const val = e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value));
+                                                                const units = Number(val) || 0;
+                                                                // Use weight or fallback to 1 so we can at least save the number of "units" effectively
+                                                                const unitWeight = Number(newProduct.weight) || 1;
                                                                 setNewProduct({
                                                                     ...newProduct,
-                                                                    pieces: units * unitWeight
+                                                                    pieces: val === '' ? '' : (units * unitWeight)
                                                                 });
                                                             }}
                                                             className="bg-white"
@@ -661,7 +663,7 @@ export default function ProductsPage() {
                                                             onWheel={(e) => e.currentTarget.blur()}
                                                         />
                                                         <div className="flex items-center text-xs text-slate-500 whitespace-nowrap px-2 bg-white border rounded">
-                                                            = {newProduct.pieces || 0} {config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'}
+                                                            = {newProduct.pieces || 0} {(config.measurementUnit || 'PCS') === 'WEIGHT' ? 'g' : 'ml'}
                                                         </div>
                                                     </div>
                                                 </>

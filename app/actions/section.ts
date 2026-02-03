@@ -111,7 +111,7 @@ export async function getHomeSections(domain?: string) {
             }
         },
         ['home-sections', domain ?? 'global'],
-        { revalidate: 3600, tags: ['home-sections'] }
+        { revalidate: 60, tags: ['home-sections'] }
     )();
 
 }

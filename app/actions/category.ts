@@ -44,6 +44,8 @@ export async function createCategory(name: string, animationType: string = "AUTO
         const tenantId = (session?.user as any)?.tenantId;
         if (!tenantId) return { success: false, error: "Unauthorized" };
 
+        if (!name || !name.trim()) return { success: false, error: "Category name is required" };
+
         const category = await prisma.category.create({
             data: {
                 tenantId,

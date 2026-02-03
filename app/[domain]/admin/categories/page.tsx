@@ -196,7 +196,10 @@ export default function CategoriesPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newItemName) return;
+        if (!newItemName.trim()) {
+            toast.error("Category name is required");
+            return;
+        }
 
         const res = await createCategory(newItemName, animationType, iconName);
         if (res.success) {

@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getTenantByDomain } from './tenant';
 
 import { auth } from '@/auth';
@@ -45,6 +45,9 @@ export async function getProducts(domain?: string) {
                 cookingImage: true,
                 stage: true,
                 sku: true,
+                sections: {
+                    select: { slug: true }
+                }
             }
         }) as any);
 
@@ -112,6 +115,7 @@ export async function createProduct(data: any) {
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
         revalidatePath('/');
+        revalidateTag('home-sections');
         return { success: true, product };
     } catch (error: any) {
         console.error("Create Product Error:", error);
@@ -145,6 +149,7 @@ export async function updateProduct(id: string, data: any) {
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
         revalidatePath('/');
+        revalidateTag('home-sections');
         return { success: true };
     } catch (error: any) {
         console.error("Update Product Error:", error);

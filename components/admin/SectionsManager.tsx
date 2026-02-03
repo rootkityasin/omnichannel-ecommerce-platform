@@ -68,10 +68,31 @@ function SortableSection({ section, index, onDelete, onUpdate }: { section: any,
                         onChange={(e) => onUpdate(section.id, { title: e.target.value })}
                         className="font-bold border-transparent hover:border-black/10 focus:border-black/20 focus:bg-white/50 px-2 h-auto py-1 text-lg mb-1 bg-transparent rounded-md transition-all"
                     />
-                    <div className="text-xs text-slate-500 flex gap-2 px-2">
-                        <span className="font-mono bg-black/5 px-1 rounded">/{section.slug}</span>
+                    <div className="text-xs text-slate-500 flex flex-wrap items-center gap-2 px-2 mt-1">
+                        <div className="flex items-center bg-white border border-slate-200 rounded-md shadow-sm h-7 max-w-[250px] overflow-hidden focus-within:ring-1 focus-within:ring-orange-500 focus-within:border-orange-500">
+                            <span className="pl-2 pr-1 text-slate-400 select-none">/menu?section=</span>
+                            <input
+                                value={section.slug}
+                                onChange={(e) => onUpdate(section.id, { slug: e.target.value })}
+                                className="h-full border-none bg-transparent p-0 text-xs font-mono text-slate-700 focus:ring-0 placeholder:text-slate-300 w-full"
+                                placeholder="slug-here"
+                            />
+                        </div>
+
+                        <a
+                            href={`/menu?section=${section.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-slate-100 p-1.5 rounded-md text-slate-500 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+                            title="Test Link"
+                        >
+                            Test Link
+                        </a>
                         <span>•</span>
-                        <span>{section._count?.products || 0} Products</span>
+                        <span className={section._count?.products === 0 ? "text-red-500 font-medium" : ""}>
+                            {section._count?.products || 0} Products
+                            {(!section._count?.products || section._count?.products === 0) && " (Hidden on Home)"}
+                        </span>
                     </div>
                 </div>
 
