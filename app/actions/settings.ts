@@ -75,7 +75,7 @@ const getPublicSiteConfig = unstable_cache(
                     contactEmail: true,
                     contactAddress: true,
                     shopName: true,
-                    // logoUrl: true, // EXCLUDED: Confirmed source of 7.56MB bloat
+                    logoUrl: true, // Re-enabled for Dynamic Invoice & Header
                     measurementUnit: true,
                     allergensText: true,
                     // certificates: true, // EXCLUDED: Suspected source of >5MB data bloat
@@ -201,7 +201,7 @@ export async function getAdminSiteConfig() {
                 contactEmail: true,
                 contactAddress: true,
                 shopName: true,
-                // logoUrl: true, 
+                logoUrl: true, // Re-enabled for Dynamic Invoice Watermark
                 measurementUnit: true,
                 allergensText: true,
                 // certificates: true, 
