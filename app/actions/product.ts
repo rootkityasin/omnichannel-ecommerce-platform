@@ -6,6 +6,64 @@ import { getTenantByDomain } from './tenant';
 
 import { auth } from '@/auth';
 
+export async function getAdminProducts(domain?: string) {
+    try {
+        let tenantId: string | undefined;
+
+        if (domain) {
+            const tenant = await getTenantByDomain(domain);
+            tenantId = tenant?.id;
+        } else {
+            const session = await auth();
+            tenantId = (session?.user as any)?.tenantId;
+        }
+
+        if (!tenantId) return [];
+
+        const products = await (prisma.product.findMany({
+            where: { tenantId },
+            orderBy: { createdAt: 'desc' }, // Latest first is usually better for admin
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                image: true,
+                categoryId: true,
+                pieces: true,
+                weight: true, // Needed for unit calc
+                type: true,
+                stage: true,
+                sku: true,
+                totalSold: true,
+                comboItems: {
+                    include: { child: { select: { pieces: true } } }
+                }
+            }
+        }) as any);
+
+        return products;
+    } catch (error) {
+        console.error("Get Admin Products Error:", error);
+        return [];
+    }
+}
+
+export async function getProductById(id: string) {
+    try {
+        const product = await prisma.product.findUnique({
+            where: { id },
+            include: {
+                comboItems: true,
+                sections: { select: { id: true, slug: true } } // Needed for edit form
+            }
+        });
+        return product;
+    } catch (error) {
+        console.error("Get Product By ID Error:", error);
+        return null;
+    }
+}
+
 export async function getProducts(domain?: string) {
     try {
         let tenantId: string | undefined;

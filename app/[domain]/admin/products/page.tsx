@@ -1,36 +1,53 @@
 'use client';
 
-import { Search, Plus, MoreVertical, Copy, X, Trash2, Edit, LayoutGrid, List, Filter, Eye, Share2, Sparkles } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { cn } from '@/lib/utils';
-import { ProductBoard } from '@/components/admin/ProductBoard';
+import { Plus, Search, Filter, Pencil, Trash2, X, AlertTriangle, Image as ImageIcon, Sparkles, MoreHorizontal, Upload, Copy, Eye, Share2, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Badge } from '@/components/ui/badge';
+import { Label } from "@/components/ui/label";
+import { useDebounce } from '@/lib/hooks/useDebounce';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from "@/components/ui/switch";
-import { getProducts, createProduct, updateProduct, deleteProduct, generateUniqueSku } from '@/app/actions/product';
+import { getProducts, getAdminProducts, getProductById, createProduct, updateProduct, deleteProduct, generateUniqueSku } from '@/app/actions/product';
 import { getCategories } from '@/app/actions/category';
-import { getSiteConfig, getAdminSiteConfig } from '@/app/actions/settings';
-import { getSections } from '@/app/actions/section';
-// Removed: import { smartParse, generateMagicDescription, getBanglaSuggestion } from '@/lib/ai-utils';
+import { getAdminSiteConfig } from '@/app/actions/settings';
+import { getHomeSections } from '@/app/actions/section';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ProductBoard } from '@/components/admin/ProductBoard';
+import { cn } from '@/lib/utils';
+// import { smartParse, generateMagicDescription, getBanglaSuggestion } from '@/lib/ai-utils';
 import Link from 'next/link';
 import Image from 'next/image';
-import { generateDescriptionAI, smartParseAI, translateToBanglaAI } from '@/app/actions/ai';
+import { generateDescriptionAI, translateToBanglaAI } from '@/app/actions/ai';
 import { useSession } from 'next-auth/react';
+import { useParams } from 'next/navigation';
 
 export default function ProductsPage() {
     const { data: session } = useSession();
     const userRole = (session?.user as any)?.role;
     const userPermissions = (session?.user as any)?.permissions || [];
+    const params = useParams();
+    const domain = params.domain as string;
 
     const canManageProducts = userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN' || userPermissions.includes('MANAGE_PRODUCTS');
 
@@ -38,10 +55,19 @@ export default function ProductsPage() {
     const [categories, setCategories] = useState<any[]>([]);
     const [sectionsList, setSectionsList] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fetchLoading, setFetchLoading] = useState(false); // For on-demand details
     const [config, setConfig] = useState<any>({});
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
+    const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 300);
+
+    const [filterStock, setFilterStock] = useState("all");
+    const [filterStage, setFilterStage] = useState("all");
+
     const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+
     const [newProduct, setNewProduct] = useState({
         name: '',
         price: '' as number | string,
@@ -66,18 +92,14 @@ export default function ProductsPage() {
     const [smartPasteInput, setSmartPasteInput] = useState('');
     const [isParsing, setIsParsing] = useState(false);
 
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [search, setSearch] = useState('');
-    const [filterStock, setFilterStock] = useState<string>('all');
-    const [filterStage, setFilterStage] = useState<string>('all');
-
-    // Initial Fetch
+    // Initial Fetch (Optimized)
     const fetchData = async () => {
         try {
+            setLoading(true);
             const [pData, cData, sData, confData] = await Promise.all([
-                getProducts(),
-                getCategories(),
-                getSections(),
+                getAdminProducts(domain),
+                getCategories(domain),
+                getHomeSections(domain),
                 getAdminSiteConfig()
             ]);
             setProducts(pData);
@@ -85,9 +107,49 @@ export default function ProductsPage() {
             setSectionsList(sData);
             setConfig(confData || { measurementUnit: 'PCS' });
         } catch (error) {
+            console.error(error);
             toast.error("Failed to load data");
         } finally {
             setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // Helper for Edit Click
+    const handleEditClick = async (product: any) => {
+        setFetchLoading(true);
+        // Reset state first to avoid stale data
+        setEditingId(product.id);
+
+        try {
+            // Optimistic or placeholder for immediate feedback could go here
+            const fullProduct = await getProductById(product.id);
+
+            if (fullProduct) {
+                setNewProduct({
+                    ...fullProduct,
+                    price: fullProduct.price,
+                    sku: fullProduct.sku,
+                    categoryId: fullProduct.categoryId,
+                    images: fullProduct.images || [],
+                    weight: fullProduct.weight || '',
+                    pieces: fullProduct.pieces || '',
+                    comboItems: fullProduct.comboItems || [],
+                    sections: fullProduct.sections?.map((s: any) => s.id) || []
+                } as any);
+                setIsAdding(true);
+            } else {
+                toast.error("Failed to load product details");
+                setEditingId(null);
+            }
+        } catch (error) {
+            toast.error("Error loading product");
+            setEditingId(null);
+        } finally {
+            setFetchLoading(false);
         }
     };
 
@@ -867,7 +929,7 @@ export default function ProductsPage() {
                                                             </DropdownMenuItem>
                                                             {canManageProducts && (
                                                                 <>
-                                                                    <DropdownMenuItem onClick={() => handleEdit(product)}>
+                                                                    <DropdownMenuItem onClick={() => handleEditClick(product)}>
                                                                         <Edit className="w-4 h-4 mr-2" /> Edit
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuItem onClick={() => handleClone(product)}>
