@@ -144,6 +144,12 @@ export function AdminSidebar() {
                 { label: 'Reviews', href: '/admin/reviews', icon: Megaphone, badge: 'NEW', badgeColor: "bg-purple-100 text-purple-600", permission: 'VIEW_REVIEWS' },
             ].filter(item => canSee(item.permission)),
         },
+        {
+            label: 'LEADS',
+            items: [
+                { label: 'LabsMail', href: '/admin/labsmail', icon: FlaskConical }
+            ]
+        }
     ].filter(group => group.items.length > 0);
 
     return (
