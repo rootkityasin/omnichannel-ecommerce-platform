@@ -31,7 +31,7 @@ export default async function sitemap({ params }: { params: Promise<{ domain: st
     ]);
 
     // 3. Product Routes
-    const productRoutes = products.map((product) => ({
+    const productRoutes = products.map((product: any) => ({
         url: `${baseUrl}/buy/${product.id}`,
         lastModified: new Date(product.updatedAt || product.createdAt).toISOString(),
         changeFrequency: 'weekly' as const,
@@ -39,7 +39,7 @@ export default async function sitemap({ params }: { params: Promise<{ domain: st
     }));
 
     // 4. Category Routes (via Menu Filter)
-    const categoryRoutes = categories.map((category) => ({
+    const categoryRoutes = categories.map((category: any) => ({
         url: `${baseUrl}/menu?category=${category.id}`,
         lastModified: new Date().toISOString(),
         changeFrequency: 'weekly' as const,
