@@ -1,7 +1,8 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+
 import { getTenantByDomain } from './tenant';
 
 import { auth } from '@/auth';
@@ -31,6 +32,7 @@ export async function getAdminProducts(domain?: string) {
                 categoryId: true,
                 pieces: true,
                 weight: true, // Needed for unit calc
+                servingSize: true,
                 type: true,
                 stage: true,
                 sku: true,
@@ -96,6 +98,8 @@ export async function getProducts(domain?: string) {
                 images: true,
                 categoryId: true,
                 pieces: true,
+                servingSize: true,
+                weight: true,
                 totalSold: true,
                 type: true,
                 createdAt: true,
@@ -103,6 +107,7 @@ export async function getProducts(domain?: string) {
                 cookingImage: true,
                 stage: true,
                 sku: true,
+                isAvailable: true,
                 sections: {
                     select: { slug: true }
                 }
@@ -155,6 +160,7 @@ export async function createProduct(data: any) {
                 image: data.image,
                 pieces: parseInt(String(data.pieces || 0)) || 0,
                 weight: parseInt(String(data.weight || 0)) || 0,
+                servingSize: parseInt(String(data.servingSize || 1)) || 1,
                 stage: data.stage,
                 categoryId: data.categoryId,
                 images: data.images || [],
@@ -172,6 +178,7 @@ export async function createProduct(data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidateTag('home-sections');
         revalidatePath('/', 'layout');
         return { success: true, product };
     } catch (error: any) {
@@ -195,6 +202,7 @@ export async function updateProduct(id: string, data: any) {
                 image: data.image,
                 images: data.images || [],
                 weight: parseInt(String(data.weight || 0)) || 0,
+                servingSize: parseInt(String(data.servingSize || 1)) || 1,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap,
                 stage: data.stage,
@@ -205,6 +213,7 @@ export async function updateProduct(id: string, data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidateTag('home-sections');
         revalidatePath('/', 'layout');
         return { success: true };
     } catch (error: any) {
@@ -239,6 +248,7 @@ export async function deleteProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {
@@ -259,6 +269,7 @@ export async function archiveProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {
@@ -279,6 +290,7 @@ export async function unarchiveProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
+        revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {

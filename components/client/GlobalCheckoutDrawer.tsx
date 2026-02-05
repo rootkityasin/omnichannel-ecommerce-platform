@@ -242,7 +242,7 @@ export function GlobalCheckoutDrawer() {
     }, []);
 
     useEffect(() => {
-        if (session?.user) {
+        if (session?.user && (session.user as any).role === 'USER') { // Only auto-fill for customers
             setFormData((prev: any) => ({
                 ...prev,
                 name: prev.name || session?.user?.name || '',

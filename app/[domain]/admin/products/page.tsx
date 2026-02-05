@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -91,6 +91,7 @@ export default function ProductsPage() {
         cookingInstructions: '',
         pointsReward: '' as number | string,
         weight: '' as number | string,
+        servingSize: '' as number | string,
         pieces: '' as number | string,
         stage: 'Draft',
         type: 'SINGLE',
@@ -107,7 +108,13 @@ export default function ProductsPage() {
     const [smartPasteInput, setSmartPasteInput] = useState('');
     const [isParsing, setIsParsing] = useState(false);
 
-    // Initial Fetch (Optimized)
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -117,15 +124,19 @@ export default function ProductsPage() {
                 getHomeSections(domain),
                 getAdminSiteConfig()
             ]);
+
+            if (!isMounted.current) return;
+
             setProducts(pData);
             setCategories(cData);
             setSectionsList(sData);
             setConfig(confData || { measurementUnit: 'PCS' });
         } catch (error) {
+            if (!isMounted.current) return;
             console.error(error);
             toast.error("Failed to load data");
         } finally {
-            setLoading(false);
+            if (isMounted.current) setLoading(false);
         }
     };
 
@@ -151,6 +162,7 @@ export default function ProductsPage() {
                     categoryId: fullProduct.categoryId,
                     images: fullProduct.images || [],
                     weight: fullProduct.weight || '',
+                    servingSize: fullProduct.servingSize || '',
                     pieces: fullProduct.pieces || '',
                     comboItems: fullProduct.comboItems || [],
                     sections: fullProduct.sections?.map((s: any) => s.id) || []
@@ -388,6 +400,7 @@ export default function ProductsPage() {
             cookingInstructions: product.cookingInstructions || '',
             pointsReward: product.pointsReward || 0,
             weight: product.weight || 0,
+            servingSize: product.servingSize || 1,
             pieces: product.pieces || 0,
             stage: product.stage || 'Draft',
             type: product.type || 'SINGLE',
@@ -471,7 +484,7 @@ export default function ProductsPage() {
                         </div>
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className={(filterStock !== 'all' || filterStage !== 'all') ? "bg-orange-50 border-orange-200 text-orange-700" : ""}>
+                                <Button variant="outline" suppressHydrationWarning className={(filterStock !== 'all' || filterStage !== 'all') ? "bg-orange-50 border-orange-200 text-orange-700" : ""}>
                                     <Filter className="w-4 h-4 mr-2" /> Filter
                                 </Button>
                             </PopoverTrigger>
@@ -511,7 +524,7 @@ export default function ProductsPage() {
                         {canManageProducts && (
                             <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
                                 setEditingId(null);
-                                setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [], sections: [] });
+                                setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', servingSize: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [], sections: [] });
                                 setIsAdding(true);
                             }}>
                                 <Plus className="w-4 h-4 mr-2" /> Add Product
@@ -544,7 +557,7 @@ export default function ProductsPage() {
                             </div>
                             <form onSubmit={handleSave} className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium">Product Name</label>
+                                    <label className="text-sm font-medium">Product Name <span className="text-red-500">*</span></label>
                                     <div className="relative">
                                         <Input
                                             value={newProduct.name}
@@ -723,7 +736,7 @@ export default function ProductsPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">Price (৳)</label>
+                                        <label className="text-sm font-medium">Price (৳) <span className="text-red-500">*</span></label>
                                         <Input
                                             type="number"
                                             value={newProduct.price}
@@ -747,6 +760,20 @@ export default function ProductsPage() {
                                                 onWheel={(e) => e.currentTarget.blur()}
                                             />
                                             <p className="text-[10px] text-slate-500">1 Unit = {newProduct.weight || 0} {config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'}</p>
+                                        </div>
+                                    )}
+                                    {newProduct.type !== 'COMBO' && (
+                                        <div>
+                                            <label className="text-sm font-medium">Pieces Inside</label>
+                                            <Input
+                                                type="number"
+                                                placeholder="e.g. 2"
+                                                value={newProduct.servingSize}
+                                                onChange={e => setNewProduct({ ...newProduct, servingSize: e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value)) })}
+                                                min={0}
+                                                className="mt-1"
+                                                onWheel={(e) => e.currentTarget.blur()}
+                                            />
                                         </div>
                                     )}
                                     {newProduct.type !== 'COMBO' && (
@@ -791,7 +818,17 @@ export default function ProductsPage() {
                                                             onWheel={(e) => e.currentTarget.blur()}
                                                         />
                                                         <div className="flex items-center text-xs text-slate-500 whitespace-nowrap px-2 bg-white border rounded">
-                                                            = {newProduct.pieces || 0} {(config.measurementUnit || 'PCS') === 'WEIGHT' ? 'g' : 'ml'}
+                                                            {(() => {
+                                                                const val = Number(newProduct.pieces || 0);
+                                                                const unit = config.measurementUnit || 'PCS';
+                                                                if (unit === 'WEIGHT' && val >= 1000) {
+                                                                    return `= ${(val / 1000).toFixed(1).replace(/\.0$/, '')} kg`;
+                                                                }
+                                                                if (unit === 'VOLUME' && val >= 1000) {
+                                                                    return `= ${(val / 1000).toFixed(1).replace(/\.0$/, '')} L`;
+                                                                }
+                                                                return `= ${val} ${unit === 'WEIGHT' ? 'g' : 'ml'}`;
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 </>

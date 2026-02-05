@@ -4,14 +4,19 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminLayoutClient from './AdminLayoutClient';
 import { headers } from 'next/headers';
+import { getAdminOrders } from '@/app/actions/order';
+import { getAdminSiteConfig } from '@/app/actions/settings';
+import { getProducts } from '@/app/actions/product';
 
 // How often to verify device against DB (30 minutes)
 const DB_VERIFY_INTERVAL = 30 * 60 * 1000;
 
 export default async function AdminLayout({
     children,
+    params
 }: {
     children: React.ReactNode;
+    params: { domain: string };
 }) {
     const cookieStore = await cookies();
     const deviceId = cookieStore.get('trusted_device')?.value;
@@ -74,7 +79,22 @@ export default async function AdminLayout({
         // If we're within the 30-min window, skip DB call entirely - trust the cookie
     }
 
+    const { domain } = await params;
+
+    // Fast Data Load Phase 1: Fetch Server Side to avoid "Loading..." states
+    const [initialOrders, initialConfig, initialProducts] = await Promise.all([
+        getAdminOrders(),
+        getAdminSiteConfig(),
+        getProducts(domain)
+    ]);
+
+    const initialData = {
+        orders: initialOrders || [],
+        settings: initialConfig || {},
+        products: initialProducts || []
+    };
+
     // Return Client Layout
-    return <AdminLayoutClient initialUser={session.user} session={session}>{children}</AdminLayoutClient>;
+    return <AdminLayoutClient initialUser={session.user} session={session} initialData={initialData}>{children}</AdminLayoutClient>;
 }
 

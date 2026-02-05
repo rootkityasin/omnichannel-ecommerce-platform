@@ -44,6 +44,14 @@ export default function CustomersPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const hasFetched = useRef(false);
 
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+
     useEffect(() => {
         const fetchInitialData = async () => {
             if (hasFetched.current) return;
@@ -54,6 +62,8 @@ export default function CustomersPage() {
                     getCustomers(),
                     getCurrentUserRole()
                 ]);
+
+                if (!isMounted.current) return;
 
                 setUserRole(role);
 
@@ -69,6 +79,7 @@ export default function CustomersPage() {
                 }));
                 setCustomers(formatted);
             } catch (error) {
+                if (!isMounted.current) return;
                 console.error("Failed to fetch initial data:", error);
                 toast.error("Failed to load data");
             }

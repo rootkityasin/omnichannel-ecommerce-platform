@@ -103,6 +103,9 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                     totalSold={(product as any).totalSold}
                                     weightOptions={(product as any).weightOptions}
                                     images={(product as any).images}
+                                    isAvailable={(product as any).isAvailable}
+                                    servingSize={(product as any).servingSize}
+                                    weight={(product as any).weight}
                                     stage={(product as any).stage}
                                 />
                             </motion.div>
@@ -143,6 +146,9 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                 weightOptions={(product as any).weightOptions}
                                 images={(product as any).images}
                                 stage={(product as any).stage}
+                                isAvailable={(product as any).isAvailable}
+                                servingSize={(product as any).servingSize}
+                                weight={(product as any).weight}
                             />
                         </ScrollRevealItem>
                     ))}

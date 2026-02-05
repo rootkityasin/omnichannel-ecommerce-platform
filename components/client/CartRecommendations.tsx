@@ -49,6 +49,8 @@ export function CartRecommendations() {
                                 images={product.images}
                                 pieces={product.pieces}
                                 weightOptions={product.weightOptions}
+                                weight={product.weight}
+                                servingSize={product.servingSize}
                             />
                         </div>
                     ))}

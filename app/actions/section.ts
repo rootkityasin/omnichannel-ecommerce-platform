@@ -59,6 +59,9 @@ export async function getHomeSections(domain?: string) {
                                 categoryId: true,
                                 tenantId: true,
                                 createdAt: true,
+                                pieces: true,
+                                servingSize: true,
+                                weight: true,
                             }
                         }
                     },
@@ -90,6 +93,8 @@ export async function getHomeSections(domain?: string) {
                                     categoryId: true,
                                     tenantId: true,
                                     createdAt: true,
+                                    pieces: true,
+                                    servingSize: true,
                                 }
                             }
                         }

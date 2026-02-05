@@ -42,7 +42,7 @@ export function ReviewSection({ data }: ReviewProps) {
                 >
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-800">
                         <img
-                            src={featuredImage}
+                            src={featuredImage || "https://placehold.co/800x400/1e293b/FFF?text=No+Featured+Image"}
                             alt="A heartfelt note from our team"
                             className="w-full h-auto object-contain"
                         />
@@ -62,7 +62,7 @@ export function ReviewSection({ data }: ReviewProps) {
                             className="group relative aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-800"
                         >
                             <img
-                                src={item.src}
+                                src={item.src || "https://placehold.co/400x600/1e293b/FFF?text=No+Image"}
                                 alt={item.alt}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />

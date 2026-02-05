@@ -318,6 +318,8 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                                             totalSold={item.totalSold}
                                             weightOptions={item.weightOptions}
                                             images={item.images}
+                                            weight={item.weight}
+                                            servingSize={item.servingSize}
                                         />
                                     ))}
                                 </motion.div>

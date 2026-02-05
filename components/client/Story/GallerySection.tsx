@@ -63,7 +63,7 @@ export function GallerySection({ data }: GalleryProps) {
                         className="relative group w-full max-w-xs md:max-w-sm aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/5 bg-slate-800"
                     >
                         <img
-                            src={img.src}
+                            src={img.src || "https://placehold.co/400x500/1e293b/FFF?text=No+Image"}
                             alt={img.alt}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />

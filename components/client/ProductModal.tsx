@@ -46,6 +46,7 @@ interface ProductModalProps {
         cookingInstructions?: string;
         totalSold?: number;
         weightOptions?: string[];
+        weight?: number;
     };
 }
 
@@ -64,8 +65,9 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
     // Combine main image and gallery images, checking for duplicates
-    const rawImages = [product.image, ...(product.images || [])].filter(Boolean);
-    const galleryImages = Array.from(new Set(rawImages)); // Dedup
+    const rawImages = [product.image, ...(product.images || [])].filter((img) => img && img.trim() !== '');
+    const uniqueImages = Array.from(new Set(rawImages));
+    const galleryImages = uniqueImages.length > 0 ? uniqueImages : ['/logo.svg'];
 
     React.useEffect(() => {
         if (isOpen) {
@@ -260,7 +262,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                             {/* Dynamic Description based on Settings */}
                             {settings.shopType === 'GROCERY'
                                 ? settings.measurementUnit === 'WEIGHT'
-                                    ? `Premium quality pack. Sold in increments of ${settings.weightUnitValue || 200}g. Sustainably sourced.`
+                                    ? `Premium quality pack. Sold in increments of ${product?.weight || settings.weightUnitValue || 200}g. Sustainably sourced.`
                                     : `Verified grocery item. Quality checked and sealed for freshness.`
                                 : `Sustainably sourced, fresh soft shell crab. Cleaned and processed for immediate cooking.`
                             }
@@ -343,7 +345,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                     <label className="text-sm font-bold text-slate-700">Select Quantity by Weight</label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {[1, 2, 3, 5, 10].map((qty) => {
-                                                            const unitVal = settings.weightUnitValue || 200;
+                                                            const unitVal = product.weight || settings.weightUnitValue || 200;
                                                             const totalWeight = qty * unitVal;
                                                             const label = totalWeight >= 1000 ? `${totalWeight / 1000} kg` : `${totalWeight} g`;
 
@@ -363,7 +365,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                             );
                                                         })}
                                                     </div>
-                                                    <p className="text-xs text-slate-400">Based on standard unit size of {settings.weightUnitValue || 200}g.</p>
+                                                    <p className="text-xs text-slate-400">Based on standard unit size of {product.weight || settings.weightUnitValue || 200}g.</p>
                                                 </div>
                                             )
                                         )}
@@ -470,7 +472,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                 // Base nutrition is for 100g.
                                                 // If Unit=WEIGHT, Total Weight = Quantity * UnitValue (e.g. 200g).
                                                 // Multiplier = Total Weight / 100.
-                                                const unitVal = settings.measurementUnit === 'WEIGHT' ? (settings.weightUnitValue || 200) : 100;
+                                                const unitVal = settings.measurementUnit === 'WEIGHT' ? (product.weight || settings.weightUnitValue || 200) : 100;
                                                 const totalWeight = quantity * unitVal;
                                                 const multiplier = totalWeight / 100;
 
@@ -550,7 +552,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                         return ml >= 1000 ? `${(ml / 1000).toFixed(1)} Ltr` : `${ml} ml`;
                                     }
                                     if (unit === 'WEIGHT') {
-                                        const grams = quantity * (settings.weightUnitValue || 200); // Default 200g
+                                        const grams = quantity * (product.weight || settings.weightUnitValue || 200); // Prioritize product weight
                                         return grams >= 1000 ? `${(grams / 1000).toFixed(1)} kg` : `${grams} g`;
                                     }
                                     return quantity;

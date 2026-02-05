@@ -6,22 +6,26 @@ import { AdminProvider, useAdmin } from '@/components/providers/AdminProvider';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 export default function AdminLayoutClient({
     children,
     initialUser,
-    session
+    session,
+    initialData
 }: {
     children: React.ReactNode;
     initialUser: any;
     session: any;
+    initialData?: {
+        orders?: any[];
+        products?: any[];
+        settings?: any;
+    };
 }) {
-
-
-
     return (
         <SessionProvider session={session}>
-            <AdminProvider initialUser={initialUser}>
+            <AdminProvider initialUser={initialUser} initialData={initialData}>
                 <div className="min-h-screen bg-gray-50">
                     <AdminSidebar />
                     <MainContentWrapper>
@@ -44,4 +48,3 @@ function MainContentWrapper({ children }: { children: React.ReactNode }) {
         </main>
     )
 }
-

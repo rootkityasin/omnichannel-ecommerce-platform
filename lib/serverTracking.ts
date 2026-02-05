@@ -81,8 +81,13 @@ export async function trackMetaEvent(
     }
 
     // 2. Meta CAPI (External Signal with Hashed PII)
-    const pixelId = process.env.META_PIXEL_ID;
-    const accessToken = process.env.META_ACCESS_TOKEN;
+    // Fetch Credentials from DB first, fallback to Env
+    const config = await prisma.siteConfig.findFirst({
+        select: { metaPixelId: true, metaAccessToken: true }
+    });
+
+    const pixelId = config?.metaPixelId || process.env.META_PIXEL_ID;
+    const accessToken = config?.metaAccessToken || process.env.META_ACCESS_TOKEN;
 
     if (!pixelId || !accessToken) {
         console.warn('Meta Pixel ID or Access Token missing. Skipping Meta CAPI signal.');

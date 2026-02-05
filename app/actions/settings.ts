@@ -41,6 +41,8 @@ const getPublicSiteConfig = unstable_cache(
             jsonLdType: "Restaurant",
             robots: "index, follow",
             canonicalUrl: "",
+            metaPixelId: "",
+            metaAccessToken: "",
             socialFacebook: "",
             socialInstagram: "",
             socialTwitter: "",
@@ -101,6 +103,9 @@ const getPublicSiteConfig = unstable_cache(
                     jsonLdType: true,
                     robots: true,
                     canonicalUrl: true,
+                    sitelinks: true,
+                    metaPixelId: true,
+                    metaAccessToken: true,
                     socialFacebook: true,
                     socialInstagram: true,
                     socialTwitter: true,
@@ -178,6 +183,8 @@ export async function getAdminSiteConfig() {
         jsonLdType: "Restaurant",
         robots: "index, follow",
         canonicalUrl: "",
+        metaPixelId: "",
+        metaAccessToken: "",
         socialFacebook: "",
         socialInstagram: "",
         socialTwitter: "",
@@ -232,6 +239,9 @@ export async function getAdminSiteConfig() {
                 jsonLdType: true,
                 robots: true,
                 canonicalUrl: true,
+                sitelinks: true,
+                metaPixelId: true,
+                metaAccessToken: true,
                 socialFacebook: true,
                 socialInstagram: true,
                 socialTwitter: true,
@@ -251,12 +261,6 @@ export async function getAdminSiteConfig() {
             console.log(`[getAdminSiteConfig] No config found for tenant ${tenantId}`);
             return defaults;
         }
-
-        console.log(`[getAdminSiteConfig] Found config for tenant ${tenantId}:`, {
-            phone: config.contactPhone,
-            email: config.contactEmail,
-            address: config.contactAddress
-        });
 
         return {
             ...defaults,
@@ -283,15 +287,15 @@ export async function updateSiteConfig(data: any) {
     }
 
     try {
+
+
         // 1. Fetch Tenant Plan for Gating
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
             select: { plan: true }
         });
         const plan = tenant?.plan || 'FREE';
-        const isFree = plan === 'FREE';
-        const isBasic = plan === 'BASIC';
-        const isStandardOrHigher = plan === 'STANDARD' || plan === 'PLATINUM' || plan === 'ENTERPRISE';
+        const isStandardOrHigher = ['STANDARD', 'PLATINUM', 'ENTERPRISE'].includes(plan);
 
         // 2. Validate SEO Access
         // Identify if SEO fields are present in the update payload
@@ -299,8 +303,9 @@ export async function updateSiteConfig(data: any) {
             'seoTitle', 'seoDescription', 'seoKeywords',
             'ogTitle', 'ogDescription', 'ogImage',
             'twitterCard', 'twitterTitle', 'twitterDescription', 'twitterImage',
-            'jsonLdType', 'robots', 'canonicalUrl',
-            'socialFacebook', 'socialInstagram', 'socialTwitter', 'socialLinkedIn', 'socialYoutube'
+            'jsonLdType', 'robots', 'canonicalUrl', 'sitelinks',
+            'socialFacebook', 'socialInstagram', 'socialTwitter', 'socialLinkedIn', 'socialYoutube',
+            'metaPixelId', 'metaAccessToken'
         ];
 
         // Construct safe SEO payload based on plan
@@ -308,18 +313,14 @@ export async function updateSiteConfig(data: any) {
 
         for (const field of seoFields) {
             if (data[field] !== undefined) {
-                if (isFree) {
-                    // Ignore SEO updates for Free plan (or throw error? Silent ignore is smoother for mixed forms)
-                    // But if they explicitly tried to save it, maybe we should warn?
-                    // For now, let's just NOT add it to payload.
-                } else if (isBasic) {
-                    // Basic allows only Meta Title/Desc
-                    if (field === 'seoTitle' || field === 'seoDescription') {
+                if (isStandardOrHigher) {
+                    // Premium users get everything
+                    seoPayload[field] = data[field];
+                } else {
+                    // Free/Basic users ONLY get Basic SEO + Social Image
+                    if (['seoTitle', 'seoDescription', 'seoKeywords', 'ogImage'].includes(field)) {
                         seoPayload[field] = data[field];
                     }
-                } else {
-                    // Standard+ allows all
-                    seoPayload[field] = data[field];
                 }
             }
         }
@@ -358,6 +359,8 @@ export async function updateSiteConfig(data: any) {
             refundPolicy: data.refundPolicy,
             termsPolicy: data.termsPolicy,
             ...seoPayload, // Apply filtered SEO fields
+            metaPixelId: data.metaPixelId,
+            metaAccessToken: data.metaAccessToken,
             invoiceTheme: data.invoiceTheme || 'modern',
             invoiceDetails: data.invoiceDetails || {}
         };

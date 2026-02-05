@@ -29,12 +29,15 @@ interface ProductCardProps {
     totalSold?: number;
     weightOptions?: string[];
     stage?: string;
+    isAvailable?: boolean;
+    servingSize?: number;
+    weight?: number;
 }
 
 export const ProductCard = memo(function ProductCard({
     id, name, name_bn, price, price_bn, image, images = [],
     nutritionImage, cookingImage, nutrition, cookingInstructions, pieces,
-    totalSold, weightOptions, stage
+    totalSold, weightOptions, stage, isAvailable = true, servingSize, weight
 }: ProductCardProps) {
 
     const addItem = useCartStore((state) => state.addItem);
@@ -105,6 +108,12 @@ export const ProductCard = memo(function ProductCard({
 
     const [showModal, setShowModal] = useState(false);
 
+    // Check availability
+    // If pieces is -1, it might denote "coming soon" or specific logic, but let's stick to isAvailable
+    // Or if pieces logic is strictly "0 means out of stock" for pieces items, but we don't know type.
+    // Safest is to rely on explicitly passed availability.
+    const isOutOfStock = isAvailable === false;
+
     return (
         <>
             <motion.div
@@ -133,20 +142,12 @@ export const ProductCard = memo(function ProductCard({
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
                 >
-                    {/* Glass Pieces Tag */}
-                    {(pieces || 0) > 0 && (
-                        <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
-                            <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />
-                                {pieces} pcs inside
-                            </span>
-                        </div>
-                    )}
+
 
                     <div className="w-full h-full overflow-hidden relative">
                         <Image
                             ref={imageRef}
-                            src={activeImage}
+                            src={activeImage || "/logo.svg"}
                             alt={name}
                             fill
                             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -155,6 +156,16 @@ export const ProductCard = memo(function ProductCard({
                             onError={() => setActiveImage("/logo.svg")}
                         />
                     </div>
+
+                    {/* Glass Pieces Tag */}
+                    {(servingSize || 0) > 0 && (
+                        <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
+                            <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />
+                                {servingSize} pcs inside
+                            </span>
+                        </div>
+                    )}
 
                     {/* Gallery Thumbnails Overlay */}
                     {galleryItems.length > 1 && (
@@ -207,7 +218,7 @@ export const ProductCard = memo(function ProductCard({
                         <span className={`text-crab-red font-bold ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                             ৳{displayPrice}
                         </span>
-                        {(pieces === 0 || pieces === undefined) ? (
+                        {isOutOfStock ? (
                             <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-wide">Out of Stock</span>
                         ) : (
                             <button
@@ -238,7 +249,7 @@ export const ProductCard = memo(function ProductCard({
                 product={{
                     id, name, price, image: activeImage,
                     nutritionImage, cookingImage, nutrition, cookingInstructions,
-                    totalSold, weightOptions, images
+                    totalSold, weightOptions, images, weight
                 }}
             />
         </>

@@ -140,6 +140,12 @@ export async function updateUser(userId: string, data: {
             return { success: false, error: "Cannot modify Super Admin" };
         }
 
+        // Fix IDOR: Ensure Tenant Admin can only update users in their own tenant
+        const sessionTenantId = (session?.user as any)?.tenantId;
+        if (callerRole === 'TENANT_ADMIN' && targetUser.tenantId !== sessionTenantId) {
+            return { success: false, error: "Unauthorized: Cannot modify user from another tenant" };
+        }
+
         // Prevent Tenant Admin from modifying other Tenant Admins (unless self?)
         if (targetUser.role === 'TENANT_ADMIN' && callerRole === 'TENANT_ADMIN' && targetUser.id !== (session?.user as any)?.id) {
             // Ideally Tenant Admin manages heirarchy below them. Modifying another Tenant Admin (peer) is usually blocked or limited.

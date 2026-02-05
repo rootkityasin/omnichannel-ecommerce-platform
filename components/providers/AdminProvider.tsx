@@ -106,13 +106,21 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-export function AdminProvider({ children, initialUser }: { children: React.ReactNode; initialUser?: any }) {
+export function AdminProvider({ children, initialUser, initialData }: {
+    children: React.ReactNode;
+    initialUser?: any;
+    initialData?: {
+        orders?: any[];
+        products?: any[];
+        settings?: any;
+    };
+}) {
     // Auth State
     const [currentUser, setCurrentUser] = useState<User>(initialUser || MOCK_USERS[0]); // Fallback for dev only
     const [activeHubId, setActiveHubId] = useState<string | 'ALL'>('ALL');
 
-    const [orders, setOrdersState] = useState<any[]>([]);
-    const [products, setProductsState] = useState<any[]>([]);
+    const [orders, setOrdersState] = useState<any[]>(initialData?.orders || []);
+    const [products, setProductsState] = useState<any[]>(initialData?.products || []);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(true); // Default collapsed (mobile friendly start)
 
     // --- RBAC Logic ---
@@ -165,7 +173,8 @@ export function AdminProvider({ children, initialUser }: { children: React.React
         taxPercentage: 0,
         primaryColor: "#ea0000",
         secondaryColor: "#0f172a",
-        shopType: "RESTAURANT"
+        shopType: "RESTAURANT",
+        ...initialData?.settings // Spread initial settings if available
     });
 
     const [paymentConfig, setPaymentConfigState] = useState<PaymentConfigType>({});
@@ -202,10 +211,12 @@ export function AdminProvider({ children, initialUser }: { children: React.React
                 });
             });
 
-            // 3. Fetch Orders from DB
-            getAdminOrders().then(dbOrders => {
-                if (dbOrders) setOrdersState(dbOrders);
-            });
+            // 3. Fetch Orders from DB (IF NOT PROVIDED)
+            if (!initialData?.orders || initialData.orders.length === 0) {
+                getAdminOrders().then(dbOrders => {
+                    if (dbOrders) setOrdersState(dbOrders);
+                });
+            }
         }
     }, []);
 
