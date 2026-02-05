@@ -361,6 +361,33 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Meta Pixel (CAPI)</CardTitle>
+                                    <CardDescription>Server-side tracking configuration for Facebook Ads.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Pixel ID</label>
+                                        <Input
+                                            value={config.metaPixelId || ''}
+                                            onChange={e => setConfig({ ...config, metaPixelId: e.target.value })}
+                                            placeholder="1234567890"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Access Token (CAPI)</label>
+                                        <Input
+                                            value={config.metaAccessToken || ''}
+                                            onChange={e => setConfig({ ...config, metaAccessToken: e.target.value })}
+                                            type="password"
+                                            placeholder="EAA..."
+                                        />
+                                        <p className="text-xs text-slate-400">Required for server-side event tracking (Purchase, ViewContent).</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
                     </Tabs>
                 </div>
