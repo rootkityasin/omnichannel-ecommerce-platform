@@ -16,7 +16,7 @@ export default async function AdminLayout({
     params
 }: {
     children: React.ReactNode;
-    params: { domain: string };
+    params: Promise<{ domain: string }>;
 }) {
     const cookieStore = await cookies();
     const deviceId = cookieStore.get('trusted_device')?.value;
