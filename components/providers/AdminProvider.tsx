@@ -192,7 +192,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
                 try {
                     const parsed = JSON.parse(savedData);
                     if (parsed.products) setProductsState(parsed.products);
-                    if (parsed.settings) setSettings(prev => ({ ...prev, ...parsed.settings }));
+                    if (parsed.settings) setSettings((prev: any) => ({ ...prev, ...parsed.settings }));
                 } catch (e) { console.error(e); }
             }
 
@@ -200,7 +200,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
             import('@/app/actions/settings').then(mod => {
                 mod.getSiteConfig().then(dbConfig => {
                     if (dbConfig) {
-                        setSettings(prev => ({
+                        setSettings((prev: any) => ({
                             ...prev,
                             ...dbConfig,
                             certificates: Array.isArray(dbConfig.certificates) ? dbConfig.certificates : [],
@@ -242,8 +242,8 @@ export function AdminProvider({ children, initialUser, initialData }: {
     // --- Actions ---
     const setOrders = (newOrders: any[]) => setOrdersState(newOrders);
     const setProducts = (newProducts: any[]) => setProductsState(newProducts);
-    const updateSettings = (newSettings: any) => setSettings(prev => ({ ...prev, ...newSettings }));
-    const updatePaymentConfig = (newConfig: any) => setPaymentConfigState(prev => ({ ...prev, ...newConfig }));
+    const updateSettings = (newSettings: any) => setSettings((prev: any) => ({ ...prev, ...newSettings }));
+    const updatePaymentConfig = (newConfig: any) => setPaymentConfigState((prev: any) => ({ ...prev, ...newConfig }));
 
     const addOrder = (order: any) => {
         // Since manual orders are created via OrdersPage form, they should ideally call createOrder action
