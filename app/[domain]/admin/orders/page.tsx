@@ -764,7 +764,7 @@ export default function OrdersPage() {
             }
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="bg-white">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Order?</AlertDialogTitle>
                         <AlertDialogDescription>

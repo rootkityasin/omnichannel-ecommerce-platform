@@ -373,12 +373,6 @@ export function GlobalCheckoutDrawer() {
                             <DialogHeader className="relative">
                                 <DialogTitle className="text-3xl font-black text-slate-900">Checkout</DialogTitle>
                                 <DialogDescription>Review your order and enter delivery details to complete your purchase.</DialogDescription>
-                                <button
-                                    onClick={closeCheckout}
-                                    className="absolute right-0 top-0 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
-                                >
-                                    <X className="w-5 h-5 text-gray-500" />
-                                </button>
                             </DialogHeader>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
