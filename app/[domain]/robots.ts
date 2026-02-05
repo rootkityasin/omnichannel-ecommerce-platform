@@ -6,7 +6,7 @@ export default async function robots({ params }: { params: Promise<{ domain: str
     const config = await getSiteConfig(domain);
     const baseUrl = config.canonicalUrl || `https://${domain}`;
 
-    const rules = config.robots?.split(',').map(r => r.trim()) || ['index', 'follow'];
+    const rules = config.robots?.split(',').map((r: string) => r.trim()) || ['index', 'follow'];
     const isAllowed = rules.includes('index') && rules.includes('follow');
 
     return {
