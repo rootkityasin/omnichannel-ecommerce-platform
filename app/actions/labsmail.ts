@@ -194,7 +194,7 @@ export async function exportLabsmailLeads(options?: { days?: number }) {
         return { success: false, error: 'No customers found to export.' };
     }
 
-    const phones = Array.from(new Set(customers.map((c) => c.phone).filter(Boolean))) as string[];
+    const phones = Array.from(new Set(customers.map((c: any) => c.phone).filter(Boolean))) as string[];
 
     const orders = phones.length
         ? await prisma.order.findMany({
@@ -207,7 +207,7 @@ export async function exportLabsmailLeads(options?: { days?: number }) {
         })
         : [];
 
-    const statsMap = orders.reduce((acc, order) => {
+    const statsMap = orders.reduce((acc: any, order: any) => {
         const key = order.customerPhone || '';
         if (!key) return acc;
         if (!acc[key]) acc[key] = { count: 0, spent: 0 };
@@ -216,7 +216,7 @@ export async function exportLabsmailLeads(options?: { days?: number }) {
         return acc;
     }, {} as Record<string, { count: number; spent: number }>);
 
-    const leads = customers.map((customer) => {
+    const leads = customers.map((customer: any) => {
         const stats = customer.phone ? statsMap[customer.phone] : undefined;
         const value = stats?.spent || undefined;
         const status = stats?.count ? 'qualified' : 'new';
