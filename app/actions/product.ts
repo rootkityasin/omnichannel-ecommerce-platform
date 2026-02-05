@@ -178,7 +178,7 @@ export async function createProduct(data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        revalidateTag('home-sections');
+        // revalidateTag('home-sections');
         revalidatePath('/', 'layout');
         return { success: true, product };
     } catch (error: any) {
@@ -213,7 +213,7 @@ export async function updateProduct(id: string, data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        revalidateTag('home-sections');
+        // revalidateTag('home-sections');
         revalidatePath('/', 'layout');
         return { success: true };
     } catch (error: any) {
@@ -248,7 +248,7 @@ export async function deleteProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        revalidateTag('home-sections');
+        // revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {
@@ -269,7 +269,7 @@ export async function archiveProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        revalidateTag('home-sections');
+        // revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {
@@ -290,7 +290,7 @@ export async function unarchiveProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        revalidateTag('home-sections');
+        // revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {
