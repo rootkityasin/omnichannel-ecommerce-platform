@@ -22,9 +22,14 @@ const LABSMAIL_ALLOWED_HOSTS = (process.env.LABSMAIL_ALLOWED_HOSTS || '')
     .map((host) => host.trim().toLowerCase())
     .filter(Boolean);
 
-const isMissingColumnError = (error: unknown) => {
+const isSchemaDriftError = (error: unknown) => {
     if (!error || typeof error !== 'object') return false;
-    return (error as { code?: string }).code === 'P2022';
+
+    const prismaCode = (error as { code?: string }).code;
+    if (prismaCode === 'P2021' || prismaCode === 'P2022') return true;
+
+    const message = String((error as { message?: string }).message || '').toLowerCase();
+    return message.includes('column') && message.includes('does not exist');
 };
 
 const getErrorMeta = (error: unknown) => {
@@ -171,12 +176,19 @@ export async function getLabsmailConfig() {
             lastExportedAt: config?.labsmailLastExportedAt || null
         };
     } catch (error) {
+        const errorMeta = getErrorMeta(error);
+        console.error('[LabsMail Load Error]', {
+            tenantId: authContext.tenantId,
+            code: errorMeta.code,
+            message: errorMeta.message
+        });
+
         return {
             baseUrl: '',
             apiKey: '',
             isActive: false,
             lastExportedAt: null,
-            error: isMissingColumnError(error)
+            error: isSchemaDriftError(error)
                 ? LABSMAIL_SCHEMA_ERROR
                 : 'Unable to load LabsMail settings.'
         };
@@ -233,7 +245,7 @@ export async function saveLabsmailConfig(input: {
         });
         return {
             success: false,
-            error: isMissingColumnError(error)
+            error: isSchemaDriftError(error)
                 ? LABSMAIL_SCHEMA_ERROR
                 : LABSMAIL_SAVE_ERROR
         };
@@ -267,7 +279,7 @@ export async function exportLabsmailLeads(options?: { days?: number }) {
     } catch (error) {
         return {
             success: false,
-            error: isMissingColumnError(error)
+            error: isSchemaDriftError(error)
                 ? LABSMAIL_SCHEMA_ERROR
                 : 'Unable to load LabsMail settings.'
         };
