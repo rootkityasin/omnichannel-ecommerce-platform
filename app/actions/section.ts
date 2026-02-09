@@ -65,7 +65,7 @@ export async function getHomeSections(domain?: string) {
                             }
                         }
                     },
-                    cacheStrategy: { ttl: 60, swr: 60 } // Prisma Accelerate Caching (Edge)
+                    // cacheStrategy property removed to fix TS error
                 }) as any);
 
                 // Auto-Seed if no sections found (Self-Healing for new envs)
@@ -95,6 +95,7 @@ export async function getHomeSections(domain?: string) {
                                     createdAt: true,
                                     pieces: true,
                                     servingSize: true,
+                                    weight: true,
                                 }
                             }
                         }
@@ -135,6 +136,7 @@ export async function createSection(data: { title: string; slug: string; isActiv
         revalidatePath('/');
         return { success: true, section };
     } catch (error) {
+        console.error("Failed to create section:", error);
         return { success: false, error: "Failed to create section" };
     }
 }
@@ -149,6 +151,7 @@ export async function updateSection(id: string, data: { title?: string; slug?: s
         revalidatePath('/');
         return { success: true, section };
     } catch (error) {
+        console.error("Failed to update section:", error);
         return { success: false, error: "Failed to update section" };
     }
 }
@@ -160,6 +163,7 @@ export async function deleteSection(id: string) {
         revalidatePath('/');
         return { success: true };
     } catch (error) {
+        console.error("Failed to delete section:", error);
         return { success: false, error: "Failed to delete section" };
     }
 }
@@ -253,30 +257,33 @@ export async function seedDefaultSections(domain?: string) {
             const createdProducts = [];
             for (const p of sampleProducts) {
                 // Ensure Category Exists
-                const catSlug = p.category.toLowerCase().replace(/ /g, '-');
-                const category = await prisma.category.upsert({
-                    where: { slug: catSlug }, // Categories are currently global, or we need to scope them too? 
-                    // To be safe, if we have tenant, we should scope. But schema says Category has tenantId.
-                    // Let's assume global categories for now to minimize breakage, as existing code might rely on it.
-                    // Or actually, let's try to fetch active category for tenant?
-                    // For now, let's stick to global categories to avoid "category not found" in other parts if they are shared.
-                    // BUT products MUST be scoped.
-                    update: {},
-                    create: { title: p.category, slug: catSlug, imageUrl: p.image }
+                // Category has no slug, just name. Check if exists by name.
+                let category = await prisma.category.findFirst({
+                    where: { name: p.category }
                 });
+
+                if (!category) {
+                    category = await prisma.category.create({
+                        data: {
+                            name: p.category,
+                            // icon: 'Package' (default)
+                        }
+                    });
+                }
+
+                // Generate a pseudo-random SKU
+                const sku = `${p.title.toUpperCase().replaceAll(' ', '-')}-${Date.now().toString().slice(-4)}`;
 
                 const product = await prisma.product.create({
                     data: {
                         tenantId, // Assign to tenant!
-                        title: p.title,
-                        slug: p.title.toLowerCase().replace(/ /g, '-'),
+                        name: p.title,
                         price: p.price,
                         image: p.image,
                         categoryId: category.id,
                         stage: 'Published',
-                        stock: 50,
                         description: "Fresh premium seafood sourced daily.",
-                        isNonVeg: true
+                        sku: sku,
                     }
                 });
                 createdProducts.push(product);
@@ -332,7 +339,6 @@ export async function seedDefaultSections(domain?: string) {
             if (newArrivals) {
                 await prisma.productSection.update({
                     where: { id: newArrivals.id },
-                    // Disconnect all first to avoid duplicates? No, connect is additive.
                     data: { products: { connect: products.slice(3, 6).map((p: any) => ({ id: p.id })) } }
                 });
             }
