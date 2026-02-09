@@ -3,6 +3,11 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache } from 'next/cache';
 import { getTenantByDomain } from './tenant';
+import type { Prisma } from '@prisma/client';
+
+type HeroSlideInput = Omit<Prisma.HeroSlideCreateInput, 'order'> & {
+    order?: number;
+};
 
 export async function getHeroSlides(domain?: string) {
     try {
@@ -12,11 +17,11 @@ export async function getHeroSlides(domain?: string) {
         // Using a stop-gap: If domain is provided but tenant not resolved, return nothing.
         if (domain && !tenant) return [];
 
-        const slides = await (prisma.heroSlide.findMany({
+        const slides = await prisma.heroSlide.findMany({
             orderBy: { order: 'asc' }
-        }) as any);
+        });
 
-        return slides.map((slide: any) => ({
+        return slides.map((slide) => ({
             ...slide,
             createdAt: slide.createdAt.toISOString(),
             updatedAt: slide.updatedAt.toISOString(),
@@ -27,7 +32,7 @@ export async function getHeroSlides(domain?: string) {
     }
 }
 
-export async function createHeroSlide(data: any) {
+export async function createHeroSlide(data: HeroSlideInput) {
     try {
         await prisma.heroSlide.create({
             data: {
@@ -50,7 +55,7 @@ export async function createHeroSlide(data: any) {
     }
 }
 
-export async function updateHeroSlide(id: string, data: any) {
+export async function updateHeroSlide(id: string, data: HeroSlideInput) {
     try {
         await prisma.heroSlide.update({
             where: { id },

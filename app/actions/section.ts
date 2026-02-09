@@ -36,7 +36,7 @@ export async function getHomeSections(domain?: string) {
                 const tenant = domain ? await getTenantByDomain(domain) : null;
                 if (domain && !tenant) return [];
 
-                let sections = await (prisma.productSection.findMany({
+                let sections = await prisma.productSection.findMany({
                     where: {
                         isActive: true,
                     },
@@ -60,13 +60,11 @@ export async function getHomeSections(domain?: string) {
                                 tenantId: true,
                                 createdAt: true,
                                 pieces: true,
-                                servingSize: true,
                                 weight: true,
                             }
                         }
-                    },
-                    cacheStrategy: { ttl: 60, swr: 60 } // Prisma Accelerate Caching (Edge)
-                }) as any);
+                    }
+                });
 
                 // Auto-Seed if no sections found (Self-Healing for new envs)
                 if (sections.length === 0) {
@@ -94,18 +92,18 @@ export async function getHomeSections(domain?: string) {
                                     tenantId: true,
                                     createdAt: true,
                                     pieces: true,
-                                    servingSize: true,
+                                    weight: true,
                                 }
                             }
                         }
                     });
                 }
 
-                return sections.map((section: any) => ({
+                return sections.map((section) => ({
                     ...section,
                     createdAt: section.createdAt.toISOString(),
                     updatedAt: section.updatedAt.toISOString(),
-                    products: section.products.map((product: any) => ({
+                    products: section.products.map((product) => ({
                         ...product,
                         createdAt: product.createdAt.toISOString(),
                     }))
@@ -250,36 +248,40 @@ export async function seedDefaultSections(domain?: string) {
             ];
 
             // Create Sample Products
-            const createdProducts = [];
+            const createdProducts: Array<{ id: string }> = [];
             for (const p of sampleProducts) {
                 // Ensure Category Exists
                 const catSlug = p.category.toLowerCase().replace(/ /g, '-');
-                const category = await prisma.category.upsert({
-                    where: { slug: catSlug }, // Categories are currently global, or we need to scope them too? 
-                    // To be safe, if we have tenant, we should scope. But schema says Category has tenantId.
-                    // Let's assume global categories for now to minimize breakage, as existing code might rely on it.
-                    // Or actually, let's try to fetch active category for tenant?
-                    // For now, let's stick to global categories to avoid "category not found" in other parts if they are shared.
-                    // BUT products MUST be scoped.
-                    update: {},
-                    create: { title: p.category, slug: catSlug, imageUrl: p.image }
+                const existingCategory = await prisma.category.findFirst({
+                    where: {
+                        name: p.category,
+                        tenantId: tenantId || null
+                    }
                 });
 
-                const product = await prisma.product.create({
+                const category = existingCategory || await prisma.category.create({
+                    data: {
+                        name: p.category,
+                        tenantId: tenantId || null
+                    }
+                });
+
+                const createdProduct = await prisma.product.create({
                     data: {
                         tenantId, // Assign to tenant!
-                        title: p.title,
-                        slug: p.title.toLowerCase().replace(/ /g, '-'),
+                        name: p.title,
                         price: p.price,
                         image: p.image,
                         categoryId: category.id,
                         stage: 'Published',
-                        stock: 50,
+                        pieces: 50,
+                        sku: `SEED-${catSlug}-${createdProducts.length + 1}`,
+                        images: [],
                         description: "Fresh premium seafood sourced daily.",
-                        isNonVeg: true
-                    }
+                    },
+                    select: { id: true }
                 });
-                createdProducts.push(product);
+                createdProducts.push(createdProduct);
             }
 
             // Assign created products to sections
@@ -324,7 +326,7 @@ export async function seedDefaultSections(domain?: string) {
             if (bestSellers) {
                 await prisma.productSection.update({
                     where: { id: bestSellers.id },
-                    data: { products: { connect: products.slice(0, 3).map((p: any) => ({ id: p.id })) } }
+                    data: { products: { connect: products.slice(0, 3).map((p) => ({ id: p.id })) } }
                 });
             }
 
@@ -333,14 +335,14 @@ export async function seedDefaultSections(domain?: string) {
                 await prisma.productSection.update({
                     where: { id: newArrivals.id },
                     // Disconnect all first to avoid duplicates? No, connect is additive.
-                    data: { products: { connect: products.slice(3, 6).map((p: any) => ({ id: p.id })) } }
+                    data: { products: { connect: products.slice(3, 6).map((p) => ({ id: p.id })) } }
                 });
             }
             const superSavings = sections.find(s => s.slug === 'super-savings');
             if (superSavings) {
                 await prisma.productSection.update({
                     where: { id: superSavings.id },
-                    data: { products: { connect: products.slice(6, 8).map((p: any) => ({ id: p.id })) } }
+                    data: { products: { connect: products.slice(6, 8).map((p) => ({ id: p.id })) } }
                 });
             }
         }
@@ -354,7 +356,7 @@ export async function seedDefaultSections(domain?: string) {
 
 export async function reorderSections(items: { id: string; order: number }[]) {
     try {
-        await (prisma as any).$transaction(
+        await prisma.$transaction(
             items.map((item) =>
                 prisma.productSection.update({
                     where: { id: item.id },

@@ -32,9 +32,10 @@ export async function performBackup(backupPath: string) {
         }
 
         return { success: true, message: 'Backup completed successfully', details: stdout };
-    } catch (error: any) {
+    } catch (error) {
         console.error('Backup failed:', error);
-        return { success: false, message: error.message || 'Backup failed' };
+        const message = error instanceof Error ? error.message : 'Backup failed';
+        return { success: false, message };
     }
 }
 
@@ -53,10 +54,11 @@ export async function listBackups(backupPath: string) {
         items.sort().reverse();
 
         return { success: true, backups: items, path: backupPath };
-    } catch (error: any) {
+    } catch (error) {
         console.error('List backups failed:', error);
         // Don't fail the UI, just return empty
-        return { success: false, message: error.message, backups: [] };
+        const message = error instanceof Error ? error.message : 'Failed to list backups';
+        return { success: false, message, backups: [] };
     }
 }
 
@@ -77,8 +79,9 @@ export async function performRestore(backupFullPath: string) {
         if (stderr) console.warn('Restore stderr:', stderr);
 
         return { success: true, message: 'Restore completed successfully', details: stdout };
-    } catch (error: any) {
+    } catch (error) {
         console.error('Restore failed:', error);
-        return { success: false, message: error.message || 'Restore failed' };
+        const message = error instanceof Error ? error.message : 'Restore failed';
+        return { success: false, message };
     }
 }

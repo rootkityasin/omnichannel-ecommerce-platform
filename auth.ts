@@ -24,10 +24,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // 1. Initial Sign In - Copy user data to token
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
-                token.phone = (user as any).phone;
-                token.tenantId = (user as any).tenantId;
-                token.permissions = (user as any).permissions;
+                token.role = user.role;
+                token.phone = user.phone;
+                token.tenantId = user.tenantId;
+                token.permissions = user.permissions;
                 return token;
             }
 

@@ -72,10 +72,8 @@ export default function AccountPage() {
 
             if (status === 'authenticated' && session?.user) {
                 // Admin Redirect Check
-                // @ts-ignore
-                // @ts-ignore
                 const role = session.user.role;
-                if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
+                if (role && ['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                     router.push('/admin');
                     return;
                 }
@@ -83,14 +81,13 @@ export default function AccountPage() {
                 setIsLoggedIn(true);
 
                 // Fetch latest data from DB
-                // @ts-ignore
                 const dbUser = await getUserProfile(session.user.id);
 
                 setFormData(prev => ({
                     ...prev,
                     name: dbUser?.name || session.user?.name || prev.name,
                     email: dbUser?.email || session.user?.email || prev.email,
-                    phone: dbUser?.phone || (session.user as any).phone || prev.phone,
+                    phone: dbUser?.phone || session.user?.phone || prev.phone,
                     address: dbUser?.address || prev.address,
                     image: dbUser?.image || session.user?.image || prev.image,
                     points: dbUser?.points || 0, // Assume 0 if not found

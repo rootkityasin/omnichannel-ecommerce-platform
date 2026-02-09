@@ -9,20 +9,22 @@ import { Trash2, Star, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+type AdminReview = Awaited<ReturnType<typeof getAdminReviews>>[number];
+
 export default function ReviewsPage() {
-    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviews, setReviews] = useState<AdminReview[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadReviews();
-    }, []);
-
-    const loadReviews = async () => {
-        setLoading(true);
+    async function loadReviews() {
         const data = await getAdminReviews();
         setReviews(data);
         setLoading(false);
-    };
+    }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadReviews();
+    }, []);
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this review?")) return;
@@ -80,7 +82,7 @@ export default function ReviewsPage() {
                                         <span className="text-xs text-slate-400">• {format(new Date(review.createdAt), 'MMM d, yyyy')}</span>
                                     </div>
 
-                                    <p className="text-slate-700 mb-4 italic">"{review.comment || 'No comment provided'}"</p>
+                                    <p className="text-slate-700 mb-4 italic">&quot;{review.comment || 'No comment provided'}&quot;</p>
 
                                     <div className="flex items-center gap-4 text-sm">
                                         <div className="flex items-center gap-1 text-slate-600">
