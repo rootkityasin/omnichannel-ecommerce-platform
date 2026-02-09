@@ -65,6 +65,9 @@ export async function getHomeSections(domain?: string) {
                         }
                     }
                 });
+                    },
+                    // cacheStrategy property removed to fix TS error
+                }) as any);
 
                 // Auto-Seed if no sections found (Self-Healing for new envs)
                 if (sections.length === 0) {
@@ -92,6 +95,7 @@ export async function getHomeSections(domain?: string) {
                                     tenantId: true,
                                     createdAt: true,
                                     pieces: true,
+                                    servingSize: true,
                                     weight: true,
                                 }
                             }
@@ -133,6 +137,7 @@ export async function createSection(data: { title: string; slug: string; isActiv
         revalidatePath('/');
         return { success: true, section };
     } catch (error) {
+        console.error("Failed to create section:", error);
         return { success: false, error: "Failed to create section" };
     }
 }
@@ -147,6 +152,7 @@ export async function updateSection(id: string, data: { title?: string; slug?: s
         revalidatePath('/');
         return { success: true, section };
     } catch (error) {
+        console.error("Failed to update section:", error);
         return { success: false, error: "Failed to update section" };
     }
 }
@@ -158,6 +164,7 @@ export async function deleteSection(id: string) {
         revalidatePath('/');
         return { success: true };
     } catch (error) {
+        console.error("Failed to delete section:", error);
         return { success: false, error: "Failed to delete section" };
     }
 }
@@ -251,20 +258,22 @@ export async function seedDefaultSections(domain?: string) {
             const createdProducts: Array<{ id: string }> = [];
             for (const p of sampleProducts) {
                 // Ensure Category Exists
-                const catSlug = p.category.toLowerCase().replace(/ /g, '-');
-                const existingCategory = await prisma.category.findFirst({
-                    where: {
-                        name: p.category,
-                        tenantId: tenantId || null
-                    }
+                // Category has no slug, just name. Check if exists by name.
+                let category = await prisma.category.findFirst({
+                    where: { name: p.category }
                 });
 
-                const category = existingCategory || await prisma.category.create({
-                    data: {
-                        name: p.category,
-                        tenantId: tenantId || null
-                    }
-                });
+                if (!category) {
+                    category = await prisma.category.create({
+                        data: {
+                            name: p.category,
+                            // icon: 'Package' (default)
+                        }
+                    });
+                }
+
+                // Generate a pseudo-random SKU
+                const sku = `${p.title.toUpperCase().replaceAll(' ', '-')}-${Date.now().toString().slice(-4)}`;
 
                 const createdProduct = await prisma.product.create({
                     data: {
@@ -274,12 +283,9 @@ export async function seedDefaultSections(domain?: string) {
                         image: p.image,
                         categoryId: category.id,
                         stage: 'Published',
-                        pieces: 50,
-                        sku: `SEED-${catSlug}-${createdProducts.length + 1}`,
-                        images: [],
                         description: "Fresh premium seafood sourced daily.",
-                    },
-                    select: { id: true }
+                        sku: sku,
+                    }
                 });
                 createdProducts.push(createdProduct);
             }
@@ -334,8 +340,7 @@ export async function seedDefaultSections(domain?: string) {
             if (newArrivals) {
                 await prisma.productSection.update({
                     where: { id: newArrivals.id },
-                    // Disconnect all first to avoid duplicates? No, connect is additive.
-                    data: { products: { connect: products.slice(3, 6).map((p) => ({ id: p.id })) } }
+                    data: { products: { connect: products.slice(3, 6).map((p: any) => ({ id: p.id })) } }
                 });
             }
             const superSavings = sections.find(s => s.slug === 'super-savings');
