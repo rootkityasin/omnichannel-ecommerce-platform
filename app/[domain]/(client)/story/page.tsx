@@ -12,10 +12,16 @@ export default async function StoryPage() {
     const sections = await getStorySections();
 
     // Helper to find content by type
-    const getContent = (type: string) => sections.find((s: any) => s.type === type)?.content as any || null;
+    const getContent = (type: string) => sections.find((s) => s.type === type)?.content ?? null;
+    const getProductIds = (content: unknown): string[] => {
+        if (!content || typeof content !== 'object' || !('productIds' in content)) return [];
+        const ids = (content as { productIds?: unknown }).productIds;
+        return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
+    };
 
     const productsContent = getContent('PRODUCTS');
-    const products = productsContent?.productIds ? await getProductsByIds(productsContent.productIds) : [];
+    const productIds = getProductIds(productsContent);
+    const products = productIds.length > 0 ? await getProductsByIds(productIds) : [];
 
     const storyData = {
         hero: getContent('HERO'),

@@ -59,13 +59,10 @@ export async function createReview(productId: string, rating: number, comment: s
         const session = await import("@/auth").then(mod => mod.auth());
         if (!session?.user?.id) return { success: false, error: "You must be logged in to review" };
 
-        let validProductId = productId;
+        let validProductId: string | null = productId;
         // Handle "general" or empty productId
         if (!validProductId || validProductId === 'general') {
-            validProductId = undefined as any; // Prisma will handle optional relation if we pass undefined? No, we should omit the field or pass null depending on schema.
-            // Schema: productId String?, product Product? @relation...
-            // So we can pass null.
-            validProductId = null as any;
+            validProductId = null;
         }
 
         await prisma.review.create({

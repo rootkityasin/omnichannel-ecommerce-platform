@@ -9,7 +9,6 @@ export const authConfig = {
     callbacks: {
         jwt({ token, user }) {
             if (user) {
-                // console.log("🔑 JWT Callback: User Login", user.role);
                 token.id = user.id
                 token.role = user.role
                 token.phone = user.phone
@@ -35,8 +34,6 @@ export const authConfig = {
         authorized({ auth, request: nextUrl }) {
             const isLoggedIn = !!auth?.user;
             const isOnAdmin = nextUrl.nextUrl.pathname.startsWith('/admin');
-
-            // console.log(`🛡️ Middleware Check: ${nextUrl.nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${(auth?.user as any)?.role}`);
 
             if (isOnAdmin) {
                 // 1. Role Check

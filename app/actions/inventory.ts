@@ -5,6 +5,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+const getSessionUser = async () => (await auth())?.user;
+
 // --- Expenses ---
 export async function addExpense(data: { title: string; amount: number; category: string; description?: string; hubId?: string }) {
     try {
@@ -53,9 +55,9 @@ export async function getInventoryStats() {
     });
 
     let totalStockValue = 0;
-    products.forEach((p: any) => {
+    products.forEach((p) => {
         // Sum up inventory from hubs + base pieces if modeled that way
-        const inventoryCount = p.inventory.reduce((acc: number, inv: any) => acc + inv.quantity, 0);
+        const inventoryCount = p.inventory.reduce((acc: number, inv) => acc + inv.quantity, 0);
         const stock = inventoryCount > 0 ? inventoryCount : p.pieces; // Fallback or logic choice
         totalStockValue += stock * p.price;
     });
@@ -64,11 +66,11 @@ export async function getInventoryStats() {
     const paidOrders = await prisma.order.findMany({
         where: { status: 'DELIVERED' } // or statuses that imply payment
     });
-    const totalSales = paidOrders.reduce((acc: number, order: any) => acc + order.totalAmount, 0);
+    const totalSales = paidOrders.reduce((acc: number, order) => acc + order.totalAmount, 0);
 
     // 3. Total Expenses
     const allExpenses = await prisma.expense.findMany();
-    const totalExpenses = allExpenses.reduce((acc: number, e: any) => acc + e.amount, 0);
+    const totalExpenses = allExpenses.reduce((acc: number, e) => acc + e.amount, 0);
 
     return {
         stockValue: totalStockValue,
@@ -80,8 +82,8 @@ export async function getInventoryStats() {
 
 // --- Stock Management ---
 export async function getProductsForStock() {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
 
     if (!tenantId) return [];
 

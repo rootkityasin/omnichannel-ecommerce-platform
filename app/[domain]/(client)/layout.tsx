@@ -10,10 +10,18 @@ import { PromoModal } from "@/components/client/PromoModal";
 import { getActivePromo } from "@/app/actions/promo";
 import { Metadata } from "next";
 
+const getTwitterCardType = (card: string | null | undefined) => {
+    if (card === 'summary' || card === 'player' || card === 'app') return card;
+    return 'summary_large_image';
+};
+
 
 export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }): Promise<Metadata> {
     const { domain } = await params;
     const config = await getSiteConfig(domain);
+    let twitterImages: string[] = [];
+    if (config.twitterImage) twitterImages = [config.twitterImage];
+    else if (config.ogImage) twitterImages = [config.ogImage];
 
     return {
         title: config.seoTitle || config.shopName || 'Premium Store',
@@ -21,15 +29,15 @@ export async function generateMetadata({ params }: { params: Promise<{ domain: s
         keywords: config.seoKeywords,
         openGraph: {
             title: config.ogTitle || config.seoTitle || config.shopName,
-            description: config.ogDescription || config.seoDescription,
+            description: config.ogDescription || config.seoDescription || undefined,
             images: config.ogImage ? [{ url: config.ogImage }] : undefined,
             type: 'website',
         },
         twitter: {
-            card: (config.twitterCard as any) || 'summary_large_image',
-            title: config.twitterTitle || config.seoTitle,
-            description: config.twitterDescription || config.seoDescription,
-            images: config.twitterImage ? [config.twitterImage] : (config.ogImage ? [config.ogImage] : []),
+            card: getTwitterCardType(config.twitterCard),
+            title: config.twitterTitle || config.seoTitle || undefined,
+            description: config.twitterDescription || config.seoDescription || undefined,
+            images: twitterImages,
         },
         alternates: {
             canonical: config.canonicalUrl,
@@ -44,10 +52,10 @@ export async function generateMetadata({ params }: { params: Promise<{ domain: s
 export default async function ClientLayout({
     children,
     params,
-}: {
+}: Readonly<{
     children: React.ReactNode;
     params: Promise<{ domain: string }>;
-}) {
+}>) {
     const { domain } = await params;
     const config = await getSiteConfig(domain);
     const activePromo = await getActivePromo(config.tenantId);

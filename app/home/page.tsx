@@ -29,7 +29,7 @@ export default function PlatformLanding() {
                         className="group relative flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-6 py-4 transition-colors hover:bg-white/10 hover:border-orange-500/50"
                     >
                         <div className="flex flex-col text-left">
-                            <span className="font-semibold text-orange-400">Visit "CrabKhai"</span>
+                            <span className="font-semibold text-orange-400">Visit &quot;CrabKhai&quot;</span>
                             <span className="text-xs text-slate-500">Demo Shop Storefront</span>
                         </div>
                         <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>

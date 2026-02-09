@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, MoreVertical, User, Plus, X, Phone, Mail, Edit, Trash2, Download, Upload, Loader2, FileSpreadsheet } from 'lucide-react';
+import { Search, Filter, Plus, X, Phone, Mail, Edit, Trash2, Download, Upload, Loader2, FileSpreadsheet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getCustomers, bulkImportCustomers, createCustomer, updateCustomer, deleteUser, getCurrentUserRole } from '@/app/actions/user';
 import { toast } from 'sonner';
@@ -31,8 +31,104 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+type CustomerRow = {
+    id: string;
+    name: string;
+    email?: string;
+    phone: string;
+    orders: number;
+    spent: number;
+    points: number;
+    createdAt: string | Date;
+};
+
+type CustomerImportRow = { name: string; phone: string; email?: string };
+
+const NAME_HEADERS = new Set(['name', 'full name', 'customer name', 'full_name', 'customer_name', 'customer', 'names']);
+const PHONE_HEADERS = new Set(['phone', 'mobile', 'contact', 'phone number', 'phone_number', 'mobile number', 'mobile_number', 'contact_number', 'phone_no', 'mobile_no', 'contact no', 'contact_no']);
+const EMAIL_HEADERS = new Set(['email', 'email address', 'mail', 'email_address']);
+
+const toSafeString = (value: unknown) => {
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    return '';
+};
+
+const mapCustomerRow = (u: {
+    id: string;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    orders?: number | null;
+    spent?: number | null;
+    points?: number | null;
+    createdAt: string | Date;
+}): CustomerRow => ({
+    id: u.id,
+    name: u.name,
+    email: u.email ?? undefined,
+    phone: u.phone || 'N/A',
+    orders: u.orders || 0,
+    spent: u.spent || 0,
+    points: u.points || 0,
+    createdAt: u.createdAt,
+});
+
+const normalizeBdPhone = (phone: string) => {
+    let cleanPhone = phone.replaceAll(/\D/g, '');
+
+    if (cleanPhone.startsWith('880')) cleanPhone = cleanPhone.substring(3);
+    if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+
+    return cleanPhone.length === 10 ? `+880${cleanPhone}` : null;
+};
+
+const getHeaderIndices = (data: unknown[][]) => {
+    for (let rowIndex = 0; rowIndex < Math.min(data.length, 15); rowIndex++) {
+        const row = data[rowIndex];
+        if (!Array.isArray(row)) continue;
+
+        const headers = row.map((cell) => toSafeString(cell).toLowerCase());
+        const nameIdx = headers.findIndex((header) => NAME_HEADERS.has(header));
+        const phoneIdx = headers.findIndex((header) => PHONE_HEADERS.has(header));
+        const emailIdx = headers.findIndex((header) => EMAIL_HEADERS.has(header));
+
+        if (nameIdx > -1 && phoneIdx > -1) {
+            return { headerIdx: rowIndex, nameIdx, phoneIdx, emailIdx };
+        }
+    }
+
+    return null;
+};
+
+const parseSheetRows = (data: unknown[][], indices: { headerIdx: number; nameIdx: number; phoneIdx: number; emailIdx: number }) => {
+    const parsed: CustomerImportRow[] = [];
+
+    for (let i = indices.headerIdx + 1; i < data.length; i++) {
+        const row = data[i];
+        if (!Array.isArray(row)) continue;
+
+        const name = toSafeString(row[indices.nameIdx]);
+        if (!name) continue;
+
+        const rawPhone = toSafeString(row[indices.phoneIdx]);
+        const normalizedPhone = normalizeBdPhone(rawPhone);
+        if (!normalizedPhone) continue;
+
+        const email = indices.emailIdx > -1 ? toSafeString(row[indices.emailIdx]) : '';
+
+        parsed.push({
+            name,
+            phone: normalizedPhone,
+            ...(email ? { email } : {}),
+        });
+    }
+
+    return parsed;
+};
+
 export default function CustomersPage() {
-    const [customers, setCustomers] = useState<any[]>([]);
+    const [customers, setCustomers] = useState<CustomerRow[]>([]);
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -67,16 +163,7 @@ export default function CustomersPage() {
 
                 setUserRole(role);
 
-                const formatted = users.map((u: any) => ({
-                    id: u.id,
-                    name: u.name,
-                    email: u.email,
-                    phone: u.phone || 'N/A',
-                    orders: u.orders || 0,
-                    spent: u.spent || 0,
-                    points: u.points || 0,
-                    createdAt: u.createdAt
-                }));
+                const formatted = users.map(mapCustomerRow);
                 setCustomers(formatted);
             } catch (error) {
                 if (!isMounted.current) return;
@@ -92,9 +179,8 @@ export default function CustomersPage() {
     const [sortBy, setSortBy] = useState('newest');
 
     const filteredCustomers = customers
-        .filter((c: any) =>
-            (c.name.toLowerCase().includes(search.toLowerCase()) ||
-                (c.phone && c.phone.includes(search))) &&
+        .filter((c) =>
+            (c.name.toLowerCase().includes(search.toLowerCase()) || c.phone?.includes(search)) &&
             c.spent >= minSpent &&
             c.orders >= minOrders
         )
@@ -108,8 +194,8 @@ export default function CustomersPage() {
             return 0;
         });
 
-    const handleEdit = (customer: any) => {
-        setNewCustomer({ name: customer.name, phone: customer.phone, email: customer.email });
+    const handleEdit = (customer: CustomerRow) => {
+        setNewCustomer({ name: customer.name, phone: customer.phone, email: customer.email || '' });
         setEditingId(customer.id);
         setIsAdding(true);
     };
@@ -133,7 +219,7 @@ export default function CustomersPage() {
             // Update existing
             const res = await updateCustomer(editingId, newCustomer);
             if (res.success) {
-                setCustomers(customers.map((c: any) => c.id === editingId ? { ...c, ...newCustomer } : c));
+                setCustomers(customers.map((c) => c.id === editingId ? { ...c, ...newCustomer } : c));
                 toast.success("Customer updated successfully");
                 setIsAdding(false);
                 setNewCustomer({ name: '', phone: '', email: '' });
@@ -168,7 +254,7 @@ export default function CustomersPage() {
         const headers = ['ID', 'Name', 'Phone', 'Email', 'Orders', 'Spent', 'Points'];
         const csvContent = [
             headers.join(','),
-            ...filteredCustomers.map((c: any) => [
+            ...filteredCustomers.map((c) => [
                 c.id,
                 `"${c.name}"`,
                 c.phone,
@@ -187,7 +273,7 @@ export default function CustomersPage() {
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+        link.remove();
     };
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,120 +282,48 @@ export default function CustomersPage() {
 
         setIsUploading(true);
         try {
-            const reader = new FileReader();
-            reader.onload = async (evt) => {
-                try {
-                    const ab = evt.target?.result as ArrayBuffer;
-                    const wb = XLSX.read(new Uint8Array(ab), { type: 'array' });
-                    const wsname = wb.SheetNames[0];
-                    const ws = wb.Sheets[wsname];
-                    const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+            const worksheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[worksheetName];
+            const data = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1 });
 
-                    if (data.length === 0) {
-                        toast.error('File appears to be empty');
-                        setIsUploading(false);
-                        return;
-                    }
+            if (data.length === 0) {
+                toast.error('File appears to be empty');
+                return;
+            }
 
-                    // Robust Header Search
-                    let headerIdx = -1;
-                    let nameIdx = -1;
-                    let phoneIdx = -1;
-                    let emailIdx = -1;
+            const headerIndices = getHeaderIndices(data);
+            if (!headerIndices) {
+                const foundHeaders = Array.isArray(data[0])
+                    ? data[0].map((cell) => toSafeString(cell)).filter((cell) => cell.length > 0).join(', ')
+                    : 'none';
+                toast.error(`Could not find "Name" and "Phone" columns. Found: ${foundHeaders || 'none'}`);
+                return;
+            }
 
-                    // Search first 15 rows for the header
-                    for (let r = 0; r < Math.min(data.length, 15); r++) {
-                        const row = data[r];
-                        if (!row || !Array.isArray(row)) continue;
+            const parsed = parseSheetRows(data, headerIndices);
+            if (parsed.length === 0) {
+                toast.error('No valid customers found. Please ensure phone numbers are valid BD mobile numbers.');
+                return;
+            }
 
-                        const currentHeaders = row.map((h: any) => String(h || '').trim().toLowerCase());
+            toast.info(`Found ${parsed.length} valid customers. Importing...`);
+            const result = await bulkImportCustomers(parsed);
 
-                        const nIdx = currentHeaders.findIndex(h => ['name', 'full name', 'customer name', 'full_name', 'customer_name', 'customer', 'names'].includes(h));
-                        const pIdx = currentHeaders.findIndex(h => ['phone', 'mobile', 'contact', 'phone number', 'phone_number', 'mobile number', 'mobile_number', 'contact_number', 'phone_no', 'mobile_no', 'contact no', 'contact_no'].includes(h));
-                        const eIdx = currentHeaders.findIndex(h => ['email', 'email address', 'mail', 'email_address'].includes(h));
-
-                        if (nIdx !== -1 && pIdx !== -1) {
-                            headerIdx = r;
-                            nameIdx = nIdx;
-                            phoneIdx = pIdx;
-                            emailIdx = eIdx;
-                            break;
-                        }
-                    }
-
-                    if (headerIdx === -1) {
-                        const foundHeaders = data[0] ? data[0].filter(Boolean).join(', ') : 'none';
-                        toast.error(`Could not find "Name" and "Phone" columns. Found: ${foundHeaders}`);
-                        setIsUploading(false);
-                        return;
-                    }
-
-                    const parsed: { name: string; phone: string; email?: string }[] = [];
-                    for (let i = headerIdx + 1; i < data.length; i++) {
-                        const row = data[i];
-                        if (!row || row[nameIdx] === undefined) continue;
-
-                        const name = String(row[nameIdx] || '').trim();
-                        let rawPhone = String(row[phoneIdx] || '').trim();
-
-                        // Clean phone number: keep only digits
-                        let cleanPhone = rawPhone.replace(/\D/g, '');
-
-                        // Normalize BD phone number
-                        if (cleanPhone.startsWith('880')) cleanPhone = cleanPhone.substring(3);
-                        if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-
-                        // If it's 10 digits, it's a valid BD mobile number
-                        if (name && cleanPhone.length === 10) {
-                            const formattedPhone = `+880${cleanPhone}`;
-                            const email = emailIdx !== -1 ? String(row[emailIdx] || '').trim() : '';
-                            parsed.push({
-                                name,
-                                phone: formattedPhone,
-                                email: email || undefined
-                            });
-                        }
-                    }
-
-                    if (parsed.length === 0) {
-                        toast.error('No valid customers found. Please ensure phone numbers are valid BD mobile numbers.');
-                        setIsUploading(false);
-                        return;
-                    }
-
-                    toast.info(`Found ${parsed.length} valid customers. Importing...`);
-                    const result = await bulkImportCustomers(parsed);
-
-                    if (result.success) {
-                        toast.success(`Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`);
-                        const users = await getCustomers();
-                        const formatted = users.map((u: any) => ({
-                            id: u.id,
-                            name: u.name,
-                            email: u.email,
-                            phone: u.phone || 'N/A',
-                            orders: u.orders || 0,
-                            spent: u.spent || 0,
-                            points: u.points || 0,
-                            createdAt: u.createdAt
-                        }));
-                        setCustomers(formatted);
-                    } else {
-                        toast.error(result.error || 'Import failed');
-                    }
-                } catch (err) {
-                    console.error('XLSX Parsing Error:', err);
-                    toast.error('Error parsing file content');
-                } finally {
-                    setIsUploading(false);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
+            if (result.success) {
+                toast.success(`Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`);
+                const users = await getCustomers();
+                setCustomers(users.map(mapCustomerRow));
+            } else {
+                toast.error(result.error || 'Import failed');
+            }
         } catch (error) {
-            console.error('File Reading Error:', error);
-            toast.error('Failed to read file');
+            console.error('XLSX Parsing Error:', error);
+            toast.error('Error parsing file content');
+        } finally {
             setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -519,8 +533,9 @@ export default function CustomersPage() {
                             </div>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Full Name</label>
+                                    <Label htmlFor="customer-name" className="text-sm font-medium text-slate-700">Full Name</Label>
                                     <Input
+                                        id="customer-name"
                                         placeholder="Customer Name"
                                         value={newCustomer.name}
                                         onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
@@ -528,8 +543,9 @@ export default function CustomersPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                                    <Label htmlFor="customer-phone" className="text-sm font-medium text-slate-700">Phone Number</Label>
                                     <Input
+                                        id="customer-phone"
                                         placeholder="017..."
                                         value={newCustomer.phone}
                                         onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
@@ -537,8 +553,9 @@ export default function CustomersPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Email (Optional)</label>
+                                    <Label htmlFor="customer-email" className="text-sm font-medium text-slate-700">Email (Optional)</Label>
                                     <Input
+                                        id="customer-email"
                                         type="email"
                                         placeholder="email@example.com"
                                         value={newCustomer.email}
@@ -580,7 +597,7 @@ export default function CustomersPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {filteredCustomers.map((customer: any) => (
+                            {filteredCustomers.map((customer) => (
                                 <tr key={customer.id} className="hover:bg-gray-50/50">
                                     <td className="p-4"><input type="checkbox" /></td>
                                     <td className="p-4">
@@ -622,7 +639,7 @@ export default function CustomersPage() {
                             {filteredCustomers.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="p-8 text-center text-slate-500">
-                                        No customers found matching "{search}".
+                                        No customers found matching &quot;{search}&quot;.
                                     </td>
                                 </tr>
                             )}

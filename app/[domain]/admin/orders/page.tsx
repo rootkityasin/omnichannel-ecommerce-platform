@@ -47,12 +47,15 @@ import { toast } from 'sonner';
 
 import { useSession } from 'next-auth/react';
 
+type AdminOrder = Awaited<ReturnType<typeof getAdminOrders>>[number];
+type ProductOption = Awaited<ReturnType<typeof getProducts>>[number];
+
 export default function OrdersPage() {
     // Global State
     const { orders, addOrder, updateOrder, deleteOrder, setOrders } = useAdmin();
     const { data: session } = useSession();
-    const userRole = (session?.user as any)?.role;
-    const userPermissions = (session?.user as any)?.permissions || [];
+    const userRole = session?.user?.role;
+    const userPermissions = session?.user?.permissions || [];
 
     const canManageOrders = userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN' || userPermissions.includes('MANAGE_ORDERS');
 
@@ -61,7 +64,7 @@ export default function OrdersPage() {
     const [blockedEmails, setBlockedEmails] = useState<string[]>([]);
 
     // Product Selection State
-    const [availableProducts, setAvailableProducts] = useState<any[]>([]);
+    const [availableProducts, setAvailableProducts] = useState<ProductOption[]>([]);
     const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
     useEffect(() => {
@@ -74,11 +77,15 @@ export default function OrdersPage() {
 
         // Load Blacklist
         getStorySections().then(sections => {
-            const blockedSection = sections.find((s: any) => s.type === 'BLOCKED_CUSTOMERS');
+            const blockedSection = sections.find((s) => s.type === 'BLOCKED_CUSTOMERS');
             if (blockedSection?.content) {
-                const content = blockedSection.content as any;
-                if (Array.isArray(content.phones)) setBlockedPhones(content.phones);
-                if (Array.isArray(content.emails)) setBlockedEmails(content.emails);
+                const content = blockedSection.content;
+                if (content && typeof content === 'object' && !Array.isArray(content)) {
+                    const maybePhones = (content as Record<string, unknown>).phones;
+                    const maybeEmails = (content as Record<string, unknown>).emails;
+                    if (Array.isArray(maybePhones)) setBlockedPhones(maybePhones.filter((value): value is string => typeof value === 'string'));
+                    if (Array.isArray(maybeEmails)) setBlockedEmails(maybeEmails.filter((value): value is string => typeof value === 'string'));
+                }
             }
         });
     }, []);
@@ -106,7 +113,7 @@ export default function OrdersPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState({ customer: '', phone: '', price: 0, items: 1 });
-    const [originalEditForm, setOriginalEditForm] = useState<any>(null); // Track original for changes
+    const [originalEditForm, setOriginalEditForm] = useState<typeof editForm | null>(null); // Track original for changes
 
     const hasChanges = editingId && originalEditForm && JSON.stringify(editForm) !== JSON.stringify(originalEditForm);
 
@@ -211,7 +218,7 @@ export default function OrdersPage() {
         }
     };
 
-    const handleEditClick = (order: any) => {
+    const handleEditClick = (order: AdminOrder) => {
         setEditingId(order.id);
         const form = {
             customer: order.customer,
@@ -246,7 +253,7 @@ export default function OrdersPage() {
         setDeleteId(id);
     }
 
-    const handlePrint = async (order: any) => {
+    const handlePrint = async (order: AdminOrder) => {
         // Optimistic UI or wait? Let's wait to ensure stock is deducted.
         const res = await printOrderInvoice(order.id); // Uses orderId (e.g. ORD-123)
         if (res.success) {
@@ -261,7 +268,7 @@ export default function OrdersPage() {
         }
     };
 
-    const handleMarkAsFake = async (order: any) => {
+    const handleMarkAsFake = async (order: AdminOrder & { email?: string }) => {
         if (!confirm(`Mark order #${order.id} as Fake? This will flag future orders from ${order.phone} and ${order.email || 'this email'}.`)) return;
 
         const newBlockedPhones = order.phone && !blockedPhones.includes(order.phone)
@@ -283,7 +290,7 @@ export default function OrdersPage() {
         toast.success(`Marked ${order.customer} as a suspect/fake source.`);
     };
 
-    const isSuspect = (order: any) => {
+    const isSuspect = (order: AdminOrder & { email?: string }) => {
         const phoneMatch = order.phone && blockedPhones.includes(order.phone);
         const emailMatch = order.email && blockedEmails.includes(order.email);
         return phoneMatch || emailMatch;
@@ -615,10 +622,10 @@ export default function OrdersPage() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <SummaryCard label="Today's Orders" value={orders.length.toString()} subtext={`${orders.filter((o: any) => o.status === 'Cancelled').length} canceled`} />
-                <SummaryCard label="Total Amount" value={`৳ ${orders.reduce((acc: number, o: any) => acc + o.price, 0).toLocaleString()}`} subtext="Total Sales" />
-                <SummaryCard label="Pending Processing" value={orders.filter((o: any) => o.status === 'Processing' || o.status === 'Placed').length.toString()} subtext="Need attention" active />
-                <SummaryCard label="Dispatched" value={orders.filter((o: any) => o.status === 'Shipped').length.toString()} subtext="On the way" />
+                <SummaryCard label="Today's Orders" value={orders.length.toString()} subtext={`${orders.filter((o) => o.status === 'Cancelled').length} canceled`} />
+                <SummaryCard label="Total Amount" value={`৳ ${orders.reduce((acc: number, o) => acc + o.price, 0).toLocaleString()}`} subtext="Total Sales" />
+                <SummaryCard label="Pending Processing" value={orders.filter((o) => o.status === 'Processing' || o.status === 'Placed').length.toString()} subtext="Need attention" active />
+                <SummaryCard label="Dispatched" value={orders.filter((o) => o.status === 'Shipped').length.toString()} subtext="On the way" />
             </div>
 
             {/* Main Content with Tabs */}

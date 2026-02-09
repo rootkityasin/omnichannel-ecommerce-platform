@@ -7,6 +7,7 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import type { Session } from 'next-auth';
 
 export default function AdminLayoutClient({
     children,
@@ -15,12 +16,12 @@ export default function AdminLayoutClient({
     initialData
 }: {
     children: React.ReactNode;
-    initialUser: any;
-    session: any;
+    initialUser: Session['user'];
+    session: Session | null;
     initialData?: {
-        orders?: any[];
-        products?: any[];
-        settings?: any;
+        orders?: unknown[];
+        products?: unknown[];
+        settings?: Record<string, unknown>;
     };
 }) {
     return (

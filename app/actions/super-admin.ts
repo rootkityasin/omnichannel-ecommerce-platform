@@ -8,14 +8,14 @@ import { hash } from 'bcryptjs';
 
 // --- Security Middleware ---
 async function checkSuperAdmin() {
-    const session = await auth();
+    const sessionUser = (await auth())?.user;
     // In real app, verify role strictly. 
     // For now, assuming access to this action means checked by page/middleware.
     // Adding basic check:
-    if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
+    if (sessionUser?.role !== 'SUPER_ADMIN') {
         throw new Error("Unauthorized: Super Admin access required");
     }
-    return session;
+    return sessionUser;
 }
 
 // --- Tenant Actions ---

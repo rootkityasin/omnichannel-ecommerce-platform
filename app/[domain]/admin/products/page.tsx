@@ -53,21 +53,67 @@ import { generateDescriptionAI, translateToBanglaAI } from '@/app/actions/ai';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 
+type AdminProduct = {
+    id: string;
+    name: string;
+    price: number;
+    sku: string;
+    image: string | null;
+    images?: string[];
+    categoryId: string;
+    description?: string | null;
+    nutrition?: string | null;
+    cookingInstructions?: string | null;
+    pointsReward?: number;
+    weight: number;
+    servingSize?: number;
+    pieces: number;
+    stage: string;
+    type: string;
+    descriptionSwap?: boolean;
+    comboItems: Array<{ child?: { pieces: number }; quantity: number; childId?: string }>;
+    sections?: Array<{ id: string }>;
+};
+type CategoryItem = Awaited<ReturnType<typeof getCategories>>[number];
+type SectionItem = Awaited<ReturnType<typeof getHomeSections>>[number];
+type SiteConfig = Awaited<ReturnType<typeof getAdminSiteConfig>>;
+
+type ProductFormState = {
+    name: string;
+    price: number | string;
+    sku: string;
+    image: string;
+    images: string[];
+    categoryId: string;
+    description: string;
+    nutrition: string;
+    cookingInstructions: string;
+    pointsReward: number | string;
+    weight: number | string;
+    servingSize: number | string;
+    pieces: number | string;
+    stage: string;
+    type: string;
+    descriptionSwap: boolean;
+    comboItems: { childId?: string; quantity: number }[];
+    sections: string[];
+};
+
 export default function ProductsPage() {
     const { data: session } = useSession();
-    const userRole = (session?.user as any)?.role;
-    const userPermissions = (session?.user as any)?.permissions || [];
+    const userRole = session?.user?.role;
+    const userPermissions = session?.user?.permissions || [];
     const params = useParams();
     const domain = params.domain as string;
 
     const canManageProducts = userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN' || userPermissions.includes('MANAGE_PRODUCTS');
 
-    const [products, setProducts] = useState<any[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
-    const [sectionsList, setSectionsList] = useState<any[]>([]);
+    const [products, setProducts] = useState<AdminProduct[]>([]);
+    const [categories, setCategories] = useState<CategoryItem[]>([]);
+    const [sectionsList, setSectionsList] = useState<SectionItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [fetchLoading, setFetchLoading] = useState(false); // For on-demand details
-    const [config, setConfig] = useState<any>({});
+    const [config, setConfig] = useState<SiteConfig>({ measurementUnit: 'PCS', shopType: 'RESTAURANT' } as SiteConfig);
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [search, setSearch] = useState("");
@@ -79,7 +125,7 @@ export default function ProductsPage() {
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    const [newProduct, setNewProduct] = useState({
+    const [newProduct, setNewProduct] = useState<ProductFormState>({
         name: '',
         price: '' as number | string,
         sku: '',
@@ -145,7 +191,7 @@ export default function ProductsPage() {
     }, []);
 
     // Helper for Edit Click
-    const handleEditClick = async (product: any) => {
+    const handleEditClick = async (product: { id: string }) => {
         setFetchLoading(true);
         // Reset state first to avoid stale data
         setEditingId(product.id);
@@ -156,17 +202,25 @@ export default function ProductsPage() {
 
             if (fullProduct) {
                 setNewProduct({
-                    ...fullProduct,
+                    name: fullProduct.name || '',
                     price: fullProduct.price,
                     sku: fullProduct.sku,
                     categoryId: fullProduct.categoryId,
+                    image: fullProduct.image || '',
                     images: fullProduct.images || [],
+                    description: fullProduct.description || '',
+                    nutrition: '',
+                    cookingInstructions: '',
+                    pointsReward: 0,
                     weight: fullProduct.weight || '',
-                    servingSize: fullProduct.servingSize || '',
+                    servingSize: '',
                     pieces: fullProduct.pieces || '',
+                    stage: fullProduct.stage || 'Draft',
+                    type: fullProduct.type || 'SINGLE',
+                    descriptionSwap: Boolean(fullProduct.descriptionSwap),
                     comboItems: fullProduct.comboItems || [],
-                    sections: fullProduct.sections?.map((s: any) => s.id) || []
-                } as any);
+                    sections: fullProduct.sections?.map((s) => s.id) || []
+                });
                 setIsAdding(true);
             } else {
                 toast.error("Failed to load product details");
@@ -352,14 +406,18 @@ export default function ProductsPage() {
 
         // 2. Create Clone/Batch at new Stage
         const res = await createProduct({
-            ...product,
-            id: undefined,
-            createdAt: undefined,
-            updatedAt: undefined,
-            pieces: quantity,
-            stage: newStage,
             name: product.name,
-            sku: `${Date.now()}` // Simple unique numeric SKU
+            sku: `${Date.now()}`,
+            price: product.price,
+            description: product.description || undefined,
+            image: product.image || undefined,
+            images: product.images || [],
+            categoryId: product.categoryId,
+            pieces: quantity,
+            weight: product.weight,
+            stage: newStage,
+            type: product.type,
+            sections: product.sections?.map((s) => s.id) || []
         });
 
         if (res.success) {
@@ -371,15 +429,23 @@ export default function ProductsPage() {
         }
     };
 
-    const handleClone = async (product: any) => {
+    const handleClone = async (product: AdminProduct & { sections?: Array<{ id: string }> }) => {
         const res = await createProduct({
-            ...product,
             name: `${product.name} (Copy)`,
             sku: `${product.sku}-COPY-${Date.now()}`,
-            id: undefined, // Create new
-            updatedAt: undefined,
-            createdAt: undefined,
-            sections: product.sections?.map((s: any) => s.id) || []
+            price: product.price,
+            description: product.description || undefined,
+            image: product.image || undefined,
+            images: product.images || [],
+            categoryId: product.categoryId,
+            pieces: product.pieces,
+            weight: product.weight,
+            stage: product.stage,
+            type: product.type,
+            comboItems: (product.comboItems || [])
+                .filter((item) => Boolean(item.childId))
+                .map((item) => ({ childId: item.childId as string, quantity: item.quantity })),
+            sections: product.sections?.map((s) => s.id) || []
         });
         if (res.success) {
             toast.success("Product cloned");
@@ -387,7 +453,7 @@ export default function ProductsPage() {
         }
     };
 
-    const handleEdit = (product: any) => {
+    const handleEdit = (product: AdminProduct & { sections?: Array<{ id: string }> }) => {
         setNewProduct({
             name: product.name,
             price: product.price,
@@ -406,7 +472,7 @@ export default function ProductsPage() {
             type: product.type || 'SINGLE',
             descriptionSwap: product.descriptionSwap || false,
             comboItems: product.comboItems || [],
-            sections: product.sections?.map((s: any) => s.id) || []
+            sections: product.sections?.map((s) => s.id) || []
         });
         setEditingId(product.id);
         setIsAdding(true);
@@ -421,7 +487,12 @@ export default function ProductsPage() {
         }
 
         if (editingId) {
-            const res = await updateProduct(editingId, newProduct);
+            const res = await updateProduct(editingId, {
+                ...newProduct,
+                comboItems: newProduct.comboItems
+                    .filter((item) => Boolean(item.childId))
+                    .map((item) => ({ childId: item.childId as string, quantity: item.quantity })),
+            });
             if (res.success) {
                 toast.success("Product updated");
                 setIsAdding(false);
@@ -431,7 +502,12 @@ export default function ProductsPage() {
                 toast.error(res.error || "Update failed");
             }
         } else {
-            const res = await createProduct(newProduct);
+            const res = await createProduct({
+                ...newProduct,
+                comboItems: newProduct.comboItems
+                    .filter((item) => Boolean(item.childId))
+                    .map((item) => ({ childId: item.childId as string, quantity: item.quantity })),
+            });
             if (res.success) {
                 toast.success("Product created");
                 setIsAdding(false);
@@ -641,7 +717,7 @@ export default function ProductsPage() {
                                 {newProduct.type === 'COMBO' && (
                                     <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
                                         <label className="text-sm font-bold text-slate-700 block">Combo Contents</label>
-                                        {newProduct.comboItems?.map((item: any, idx: number) => (
+                                        {newProduct.comboItems?.map((item, idx: number) => (
                                             <div key={idx} className="flex gap-2 items-center">
                                                 <Select
                                                     value={item.childId}
@@ -951,7 +1027,7 @@ export default function ProductsPage() {
                                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                                             {(() => {
                                                                 if (!product.comboItems || product.comboItems.length === 0) return '0 Sets';
-                                                                const limits = product.comboItems.map((item: any) =>
+                                                                 const limits = product.comboItems.map((item) =>
                                                                     item.child ? Math.floor(item.child.pieces / item.quantity) : 0
                                                                 );
                                                                 return `${Math.min(...limits)} Sets`;
@@ -1064,7 +1140,7 @@ export default function ProductsPage() {
                 </Card>
             ) : (
                 <ProductBoard
-                    products={filteredProducts}
+                    products={filteredProducts.map((p) => ({ ...p, image: p.image || '', stock: p.pieces > 0 }))}
                     onMove={handleStageMove}
                     onEdit={handleEdit}
                     onDelete={handleDelete}

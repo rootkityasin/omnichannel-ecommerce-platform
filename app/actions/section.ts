@@ -65,9 +65,6 @@ export async function getHomeSections(domain?: string) {
                         }
                     }
                 });
-                    },
-                    // cacheStrategy property removed to fix TS error
-                }) as any);
 
                 // Auto-Seed if no sections found (Self-Healing for new envs)
                 if (sections.length === 0) {
@@ -95,7 +92,6 @@ export async function getHomeSections(domain?: string) {
                                     tenantId: true,
                                     createdAt: true,
                                     pieces: true,
-                                    servingSize: true,
                                     weight: true,
                                 }
                             }
@@ -186,26 +182,142 @@ export async function assignProductToSections(productId: string, sectionIds: str
     }
 }
 
+const DEFAULT_SECTIONS = [
+    { title: 'Best Sellers', slug: 'best-sellers', order: 0 },
+    { title: 'New Arrivals', slug: 'new-arrivals', order: 1 },
+    { title: 'Super Savings', slug: 'super-savings', order: 2 },
+];
+
+const SAMPLE_PRODUCTS = [
+    {
+        title: 'Premium Mud Crab',
+        price: 2500,
+        image: 'https://images.unsplash.com/photo-1569389397653-c04fe9b4cf26?auto=format&fit=crop&q=80&w=1000',
+        category: 'Live Crab',
+    },
+    {
+        title: 'Jumbo Tiger Shrimp',
+        price: 1800,
+        image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&q=80&w=1000',
+        category: 'Shrimp',
+    },
+    {
+        title: 'Fresh Lobster',
+        price: 4500,
+        image: 'https://images.unsplash.com/photo-1559304822-9eb2813c9844?auto=format&fit=crop&q=80&w=1000',
+        category: 'Lobster',
+    },
+    {
+        title: 'Atlantic Salmon',
+        price: 3200,
+        image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&q=80&w=1000',
+        category: 'Fish',
+    },
+    {
+        title: 'Yellowfin Tuna',
+        price: 2800,
+        image: 'https://images.unsplash.com/photo-1543336582-8998ab58022a?auto=format&fit=crop&q=80&w=1000',
+        category: 'Fish',
+    },
+    {
+        title: 'King Scallops',
+        price: 2100,
+        image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&q=80&w=1000',
+        category: 'Shellfish',
+    },
+];
+
+async function upsertDefaultSections() {
+    const sections = [];
+    for (const section of DEFAULT_SECTIONS) {
+        const createdSection = await prisma.productSection.upsert({
+            where: { slug: section.slug },
+            update: { isActive: true, order: section.order },
+            create: { ...section, isActive: true },
+        });
+        sections.push(createdSection);
+    }
+    return sections;
+}
+
+async function ensureCategoryId(categoryName: string) {
+    let category = await prisma.category.findFirst({ where: { name: categoryName } });
+    category ??= await prisma.category.create({ data: { name: categoryName } });
+    return category.id;
+}
+
+async function createSampleProducts(tenantId?: string) {
+    const createdProducts: Array<{ id: string }> = [];
+
+    for (const product of SAMPLE_PRODUCTS) {
+        const categoryId = await ensureCategoryId(product.category);
+        const sku = `${product.title.toUpperCase().replaceAll(' ', '-')}-${Date.now().toString().slice(-4)}`;
+
+        const createdProduct = await prisma.product.create({
+            data: {
+                tenantId,
+                name: product.title,
+                price: product.price,
+                image: product.image,
+                categoryId,
+                stage: 'Published',
+                description: 'Fresh premium seafood sourced daily.',
+                sku,
+            },
+        });
+
+        createdProducts.push(createdProduct);
+    }
+
+    return createdProducts;
+}
+
+async function connectProductsToSection(sectionId: string, productIds: string[]) {
+    if (productIds.length === 0) return;
+
+    await prisma.productSection.update({
+        where: { id: sectionId },
+        data: { products: { connect: productIds.map((id) => ({ id })) } },
+    });
+}
+
+async function assignProductsBySectionSlug(
+    sections: Array<{ id: string; slug: string }>,
+    bySlug: Record<string, string[]>
+) {
+    for (const section of sections) {
+        await connectProductsToSection(section.id, bySlug[section.slug] ?? []);
+    }
+}
+
+async function assignSampleProducts(sections: Array<{ id: string; slug: string }>, createdProducts: Array<{ id: string }>) {
+    await assignProductsBySectionSlug(sections, {
+        'best-sellers': createdProducts.slice(0, 3).map((p) => p.id),
+        'new-arrivals': createdProducts.slice(3, 6).map((p) => p.id),
+        'super-savings': [createdProducts[0]?.id, createdProducts[4]?.id].filter((id): id is string => Boolean(id)),
+    });
+}
+
+async function assignExistingProducts(sections: Array<{ id: string; slug: string }>, tenantId?: string) {
+    const products = await prisma.product.findMany({
+        take: 10,
+        where: {
+            stage: { in: ['Selling', 'Published'] },
+            tenantId: tenantId || undefined,
+        },
+    });
+
+    await assignProductsBySectionSlug(sections, {
+        'best-sellers': products.slice(0, 3).map((p) => p.id),
+        'new-arrivals': products.slice(3, 6).map((p) => p.id),
+        'super-savings': products.slice(6, 8).map((p) => p.id),
+    });
+}
+
 export async function seedDefaultSections(domain?: string) {
     const tenant = domain ? await getTenantByDomain(domain) : null;
     const tenantId = tenant?.id;
-
-    const defaults = [
-        { title: 'Best Sellers', slug: 'best-sellers', order: 0 },
-        { title: 'New Arrivals', slug: 'new-arrivals', order: 1 },
-        { title: 'Super Savings', slug: 'super-savings', order: 2 },
-    ];
-
-    const sections = [];
-    for (const s of defaults) {
-        // Upsert to ensure they exist and are active
-        const section = await prisma.productSection.upsert({
-            where: { slug: s.slug },
-            update: { isActive: true, order: s.order },
-            create: { ...s, isActive: true }
-        });
-        sections.push(section);
-    }
+    const sections = await upsertDefaultSections();
 
     try {
         // Check if products exist for this tenant
@@ -215,141 +327,11 @@ export async function seedDefaultSections(domain?: string) {
 
         if (productCount === 0) {
             console.log(`No products found for tenant ${tenantId || 'global'}. Creating sample products...`);
-            const sampleProducts = [
-                {
-                    title: "Premium Mud Crab",
-                    price: 2500,
-                    image: "https://images.unsplash.com/photo-1569389397653-c04fe9b4cf26?auto=format&fit=crop&q=80&w=1000",
-                    category: "Live Crab"
-                },
-                {
-                    title: "Jumbo Tiger Shrimp",
-                    price: 1800,
-                    image: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&q=80&w=1000",
-                    category: "Shrimp"
-                },
-                {
-                    title: "Fresh Lobster",
-                    price: 4500,
-                    image: "https://images.unsplash.com/photo-1559304822-9eb2813c9844?auto=format&fit=crop&q=80&w=1000",
-                    category: "Lobster"
-                },
-                {
-                    title: "Atlantic Salmon",
-                    price: 3200,
-                    image: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&q=80&w=1000",
-                    category: "Fish"
-                },
-                {
-                    title: "Yellowfin Tuna",
-                    price: 2800,
-                    image: "https://images.unsplash.com/photo-1543336582-8998ab58022a?auto=format&fit=crop&q=80&w=1000",
-                    category: "Fish"
-                },
-                {
-                    title: "King Scallops",
-                    price: 2100,
-                    image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&q=80&w=1000",
-                    category: "Shellfish"
-                }
-            ];
-
-            // Create Sample Products
-            const createdProducts: Array<{ id: string }> = [];
-            for (const p of sampleProducts) {
-                // Ensure Category Exists
-                // Category has no slug, just name. Check if exists by name.
-                let category = await prisma.category.findFirst({
-                    where: { name: p.category }
-                });
-
-                if (!category) {
-                    category = await prisma.category.create({
-                        data: {
-                            name: p.category,
-                            // icon: 'Package' (default)
-                        }
-                    });
-                }
-
-                // Generate a pseudo-random SKU
-                const sku = `${p.title.toUpperCase().replaceAll(' ', '-')}-${Date.now().toString().slice(-4)}`;
-
-                const createdProduct = await prisma.product.create({
-                    data: {
-                        tenantId, // Assign to tenant!
-                        name: p.title,
-                        price: p.price,
-                        image: p.image,
-                        categoryId: category.id,
-                        stage: 'Published',
-                        description: "Fresh premium seafood sourced daily.",
-                        sku: sku,
-                    }
-                });
-                createdProducts.push(createdProduct);
-            }
-
-            // Assign created products to sections
-            // Best Sellers
-            const bestSellers = sections.find(s => s.slug === 'best-sellers');
-            if (bestSellers) {
-                await prisma.productSection.update({
-                    where: { id: bestSellers.id },
-                    data: { products: { connect: createdProducts.slice(0, 3).map(p => ({ id: p.id })) } }
-                });
-            }
-            // New Arrivals
-            const newArrivals = sections.find(s => s.slug === 'new-arrivals');
-            if (newArrivals) {
-                await prisma.productSection.update({
-                    where: { id: newArrivals.id },
-                    data: { products: { connect: createdProducts.slice(3, 6).map(p => ({ id: p.id })) } }
-                });
-            }
-
-            // Super Savings (Mix)
-            const superSavings = sections.find(s => s.slug === 'super-savings');
-            if (superSavings) {
-                await prisma.productSection.update({
-                    where: { id: superSavings.id },
-                    data: { products: { connect: [{ id: createdProducts[0].id }, { id: createdProducts[4].id }] } }
-                });
-            }
+            const createdProducts = await createSampleProducts(tenantId);
+            await assignSampleProducts(sections, createdProducts);
 
         } else {
-            // Existing Logic for assigning existing products
-            const products = await prisma.product.findMany({
-                take: 10,
-                where: {
-                    stage: { in: ['Selling', 'Published'] },
-                    tenantId: tenantId || undefined // Filter by tenant if present
-                }
-            });
-
-            // Same logic as before if products exist
-            const bestSellers = sections.find(s => s.slug === 'best-sellers');
-            if (bestSellers) {
-                await prisma.productSection.update({
-                    where: { id: bestSellers.id },
-                    data: { products: { connect: products.slice(0, 3).map((p) => ({ id: p.id })) } }
-                });
-            }
-
-            const newArrivals = sections.find(s => s.slug === 'new-arrivals');
-            if (newArrivals) {
-                await prisma.productSection.update({
-                    where: { id: newArrivals.id },
-                    data: { products: { connect: products.slice(3, 6).map((p: any) => ({ id: p.id })) } }
-                });
-            }
-            const superSavings = sections.find(s => s.slug === 'super-savings');
-            if (superSavings) {
-                await prisma.productSection.update({
-                    where: { id: superSavings.id },
-                    data: { products: { connect: products.slice(6, 8).map((p) => ({ id: p.id })) } }
-                });
-            }
+            await assignExistingProducts(sections, tenantId);
         }
 
         revalidateTag('home-sections', {});

@@ -31,15 +31,15 @@ export default async function sitemap({ params }: { params: Promise<{ domain: st
     ]);
 
     // 3. Product Routes
-    const productRoutes = products.map((product: any) => ({
+    const productRoutes = products.map((product) => ({
         url: `${baseUrl}/buy/${product.id}`,
-        lastModified: new Date(product.updatedAt || product.createdAt).toISOString(),
+        lastModified: new Date().toISOString(),
         changeFrequency: 'weekly' as const,
         priority: 0.9, // High priority for products
     }));
 
     // 4. Category Routes (via Menu Filter)
-    const categoryRoutes = categories.map((category: any) => ({
+    const categoryRoutes = categories.map((category) => ({
         url: `${baseUrl}/menu?category=${category.id}`,
         lastModified: new Date().toISOString(),
         changeFrequency: 'weekly' as const,

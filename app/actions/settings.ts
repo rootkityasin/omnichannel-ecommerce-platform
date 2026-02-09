@@ -2,8 +2,15 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
-import { ShopType } from '@prisma/client';
+import { Prisma, ShopType } from '@prisma/client';
 import { auth } from '@/auth';
+
+type JsonObject = Record<string, unknown>;
+const getSessionUser = async () => (await auth())?.user;
+
+const getString = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback;
+const getNumber = (value: unknown, fallback = 0) => Number(value ?? fallback) || fallback;
+const getOptionalString = (value: unknown) => typeof value === 'string' ? value : undefined;
 
 
 // Internal cached function for public domain access
@@ -17,7 +24,7 @@ const getPublicSiteConfig = unstable_cache(
             logoUrl: "",
             measurementUnit: "PCS",
             allergensText: "",
-            certificates: [] as any,
+            certificates: [] as unknown[],
             primaryColor: "#F40000",
             secondaryColor: "#ffffff",
             taxPercentage: 0.0,
@@ -49,6 +56,7 @@ const getPublicSiteConfig = unstable_cache(
             socialLinkedIn: "",
             socialYoutube: "",
             // Tenant fields
+            tenantId: "",
             customDomain: "",
             slug: ""
         };
@@ -68,7 +76,7 @@ const getPublicSiteConfig = unstable_cache(
                     { slug: domain }
                 ]
             };
-            const config = await (prisma.siteConfig.findFirst({
+            const config = await prisma.siteConfig.findFirst({
                 where: { tenant: tenantWhere },
                 select: {
                     id: true,
@@ -103,7 +111,6 @@ const getPublicSiteConfig = unstable_cache(
                     jsonLdType: true,
                     robots: true,
                     canonicalUrl: true,
-                    sitelinks: true,
                     metaPixelId: true,
                     metaAccessToken: true,
                     socialFacebook: true,
@@ -118,15 +125,15 @@ const getPublicSiteConfig = unstable_cache(
                         }
                     }
                 }
-            }) as any);
+            });
 
             if (!config) return defaults;
             return {
                 ...defaults,
                 ...config,
-                certificates: (config as any).certificates || defaults.certificates,
-                logoUrl: (config as any).logoUrl || defaults.logoUrl,
+                logoUrl: config.logoUrl || defaults.logoUrl,
                 shopType: config.shopType || defaults.shopType,
+                tenantId: config.tenantId || "",
                 customDomain: config.tenant?.customDomain || "",
                 slug: config.tenant?.slug || ""
             };
@@ -148,8 +155,8 @@ export async function getSiteConfig(domain?: string) {
 }
 
 export async function getAdminSiteConfig() {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
 
     const defaults = {
         contactPhone: "",
@@ -159,7 +166,7 @@ export async function getAdminSiteConfig() {
         logoUrl: "",
         measurementUnit: "PCS",
         allergensText: "",
-        certificates: [] as any,
+        certificates: [] as unknown[],
         primaryColor: "#F40000",
         secondaryColor: "#ffffff",
         taxPercentage: 0.0,
@@ -191,17 +198,18 @@ export async function getAdminSiteConfig() {
         socialLinkedIn: "",
         socialYoutube: "",
         // Tenant
+        tenantId: "",
         customDomain: "",
         slug: "",
         invoiceTheme: "modern",
-        invoiceDetails: { showSeller: true, showBuyer: true, showSignature: true, watermarkOpacity: 0.1, fontSize: 14 } as any,
+        invoiceDetails: { showSeller: true, showBuyer: true, showSignature: true, watermarkOpacity: 0.1, fontSize: 14 } as JsonObject,
         plan: "FREE"
     };
 
     if (!tenantId) return defaults;
 
     try {
-        const config = await (prisma.siteConfig.findFirst({
+        const config = await prisma.siteConfig.findFirst({
             where: { tenantId },
             select: {
                 id: true,
@@ -239,7 +247,6 @@ export async function getAdminSiteConfig() {
                 jsonLdType: true,
                 robots: true,
                 canonicalUrl: true,
-                sitelinks: true,
                 metaPixelId: true,
                 metaAccessToken: true,
                 socialFacebook: true,
@@ -255,7 +262,7 @@ export async function getAdminSiteConfig() {
                     }
                 }
             }
-        }) as any);
+        });
 
         if (!config) {
             console.log(`[getAdminSiteConfig] No config found for tenant ${tenantId}`);
@@ -265,9 +272,9 @@ export async function getAdminSiteConfig() {
         return {
             ...defaults,
             ...config,
-            certificates: (config as any).certificates || defaults.certificates,
-            logoUrl: (config as any).logoUrl || defaults.logoUrl,
-            shopType: (config.shopType as any) || defaults.shopType,
+            logoUrl: config.logoUrl || defaults.logoUrl,
+            shopType: config.shopType || defaults.shopType,
+            tenantId: config.tenantId || "",
             customDomain: config.tenant?.customDomain || "",
             slug: config.tenant?.slug || "",
             plan: config.tenant?.plan || "FREE"
@@ -278,9 +285,10 @@ export async function getAdminSiteConfig() {
     }
 }
 
-export async function updateSiteConfig(data: any) {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+export async function updateSiteConfig<T extends object>(data: T) {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    const input = data as Record<string, unknown>;
 
     if (!tenantId) {
         return { success: false, error: "Unauthorized: Tenant ID not found in session." };
@@ -309,17 +317,18 @@ export async function updateSiteConfig(data: any) {
         ];
 
         // Construct safe SEO payload based on plan
-        let seoPayload: any = {};
+        const seoPayload: Record<string, unknown> = {};
 
         for (const field of seoFields) {
-            if (data[field] !== undefined) {
+                const fieldValue = input[field];
+            if (fieldValue !== undefined) {
                 if (isStandardOrHigher) {
                     // Premium users get everything
-                    seoPayload[field] = data[field];
+                    seoPayload[field] = fieldValue;
                 } else {
                     // Free/Basic users ONLY get Basic SEO + Social Image
                     if (['seoTitle', 'seoDescription', 'seoKeywords', 'ogImage'].includes(field)) {
-                        seoPayload[field] = data[field];
+                        seoPayload[field] = fieldValue;
                     }
                 }
             }
@@ -341,29 +350,32 @@ export async function updateSiteConfig(data: any) {
         });
 
         const commonData = {
-            contactPhone: data.contactPhone,
-            contactEmail: data.contactEmail,
-            contactAddress: data.contactAddress,
-            shopName: data.shopName,
-            logoUrl: data.logoUrl,
-            measurementUnit: data.measurementUnit,
-            allergensText: data.allergensText,
-            certificates: data.certificates || [],
-            primaryColor: data.primaryColor,
-            secondaryColor: data.secondaryColor,
-            taxPercentage: parseFloat(data.taxPercentage || 0),
-            shopType: (data.shopType as ShopType) || ShopType.RESTAURANT,
-            weightUnitValue: parseInt(data.weightUnitValue || 200),
-            volumeUnitValue: parseInt(data.volumeUnitValue || 1000),
-            privacyPolicy: data.privacyPolicy,
-            refundPolicy: data.refundPolicy,
-            termsPolicy: data.termsPolicy,
+            contactPhone: getString(input.contactPhone),
+            contactEmail: getString(input.contactEmail),
+            contactAddress: getString(input.contactAddress),
+            shopName: getString(input.shopName),
+            logoUrl: getString(input.logoUrl),
+            measurementUnit: getString(input.measurementUnit, 'PCS'),
+            allergensText: getString(input.allergensText),
+            certificates: Array.isArray(input.certificates) ? input.certificates : [],
+            primaryColor: getString(input.primaryColor, '#F40000'),
+            secondaryColor: getString(input.secondaryColor, '#ffffff'),
+            taxPercentage: getNumber(input.taxPercentage, 0),
+            shopType: (typeof input.shopType === 'string' ? (input.shopType as ShopType) : ShopType.RESTAURANT),
+            weightUnitValue: getNumber(input.weightUnitValue, 200),
+            volumeUnitValue: getNumber(input.volumeUnitValue, 1000),
+            privacyPolicy: getString(input.privacyPolicy),
+            refundPolicy: getString(input.refundPolicy),
+            termsPolicy: getString(input.termsPolicy),
             ...seoPayload, // Apply filtered SEO fields
-            metaPixelId: data.metaPixelId,
-            metaAccessToken: data.metaAccessToken,
-            invoiceTheme: data.invoiceTheme || 'modern',
-            invoiceDetails: data.invoiceDetails || {}
+            metaPixelId: getString(input.metaPixelId),
+            metaAccessToken: getString(input.metaAccessToken),
+            invoiceTheme: getString(input.invoiceTheme, 'modern'),
+            invoiceDetails: (typeof input.invoiceDetails === 'object' && input.invoiceDetails !== null ? input.invoiceDetails : {}) as Prisma.InputJsonValue
         };
+
+        const customDomain = getOptionalString(input.customDomain);
+        const slug = getOptionalString(input.slug);
 
         if (existing) {
             // Update Site Config
@@ -373,22 +385,22 @@ export async function updateSiteConfig(data: any) {
             });
 
             // Update Tenant Domain if changed
-            if (data.customDomain !== undefined) {
-                if (data.customDomain !== existing.tenant?.customDomain) {
+            if (customDomain !== undefined) {
+                if (customDomain !== existing.tenant?.customDomain) {
                     await prisma.tenant.update({
                         where: { id: existing.tenantId! },
                         data: {
-                            customDomain: data.customDomain || null
+                            customDomain: customDomain || null
                         }
                     });
                 }
             }
 
             // Update Tenant Slug if changed
-            if (data.slug !== undefined && data.slug !== existing.tenant?.slug) {
+            if (slug !== undefined && slug !== existing.tenant?.slug) {
                 // Check if slug is taken
                 const slugTaken = await prisma.tenant.findUnique({
-                    where: { slug: data.slug }
+                    where: { slug }
                 });
 
                 if (slugTaken) {
@@ -396,11 +408,11 @@ export async function updateSiteConfig(data: any) {
                 }
 
                 await prisma.tenant.update({
-                    where: { id: existing.tenantId! },
-                    data: {
-                        slug: data.slug
-                    }
-                });
+                        where: { id: existing.tenantId! },
+                        data: {
+                            slug
+                        }
+                    });
             }
 
         } else {
@@ -409,8 +421,8 @@ export async function updateSiteConfig(data: any) {
                 data: {
                     tenantId,
                     ...commonData,
-                    primaryColor: data.primaryColor || "#F40000",
-                    secondaryColor: data.secondaryColor || "#0f172a"
+                    primaryColor: getString(input.primaryColor, '#F40000'),
+                    secondaryColor: getString(input.secondaryColor, '#0f172a')
                 }
             });
         }
@@ -430,15 +442,15 @@ export async function updateSiteConfig(data: any) {
 
 
 export async function getPaymentConfig() {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
 
     if (!tenantId) return null;
 
     try {
-        const config = await (prisma.paymentConfig.findUnique({
+        const config = await prisma.paymentConfig.findUnique({
             where: { tenantId }
-        }) as any);
+        });
 
         if (!config) {
             return {
@@ -471,20 +483,26 @@ export async function getPaymentConfig() {
     }
 }
 
-export async function updatePaymentConfig(data: any) {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+export async function updatePaymentConfig<T extends object>(data: T) {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
 
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
     try {
-        const { id, createdAt, updatedAt, tenantId: _, bkashImage, ...updateData } = data;
+        const updateData: Record<string, unknown> = { ...(data as Record<string, unknown>) };
+        delete updateData.id;
+        delete updateData.createdAt;
+        delete updateData.updatedAt;
+        delete updateData.tenantId;
+        delete updateData.bkashImage;
+        delete updateData.tenant;
 
         await prisma.paymentConfig.upsert({
             where: { tenantId },
-            update: updateData,
+            update: updateData as Prisma.PaymentConfigUncheckedUpdateInput,
             create: {
-                ...updateData,
+                ...(updateData as Prisma.PaymentConfigUncheckedCreateInput),
                 tenantId
             }
         });
@@ -498,15 +516,15 @@ export async function updatePaymentConfig(data: any) {
 }
 
 export async function getDeliveryConfig() {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
 
     if (!tenantId) return null;
 
     try {
-        const config = await (prisma.deliveryConfig.findUnique({
+        const config = await prisma.deliveryConfig.findUnique({
             where: { tenantId }
-        }) as any);
+        });
         if (!config) {
             return {
                 defaultCharge: 60,
@@ -525,25 +543,31 @@ export async function getDeliveryConfig() {
     }
 }
 
-export async function updateDeliveryConfig(data: any) {
-    const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+export async function updateDeliveryConfig<T extends object>(data: T) {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    const input = data as Record<string, unknown>;
 
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
     try {
-        const { id, createdAt, updatedAt, tenantId: _, ...updateData } = data;
+        const updateData: Record<string, unknown> = { ...input };
+        delete updateData.id;
+        delete updateData.createdAt;
+        delete updateData.updatedAt;
+        delete updateData.tenantId;
+        delete updateData.tenant;
 
         await prisma.deliveryConfig.upsert({
             where: { tenantId },
             update: {
-                ...updateData,
-                defaultCharge: parseInt(data.defaultCharge || 0),
+                ...(updateData as Prisma.DeliveryConfigUpdateInput),
+                defaultCharge: getNumber(input.defaultCharge, 0),
             },
             create: {
-                ...updateData,
+                ...(updateData as Prisma.DeliveryConfigUncheckedCreateInput),
                 tenantId,
-                defaultCharge: parseInt(data.defaultCharge || 0),
+                defaultCharge: getNumber(input.defaultCharge, 0),
             }
         });
 

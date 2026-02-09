@@ -76,18 +76,23 @@ async function main() {
 
         console.log('✅ Super Admin created: admin@crabkhai.com / 123456');
 
-    } catch (error: any) {
-        console.error('❌ Error during reset:', error.message);
-        if (error.code) console.error('Error Code:', error.code);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        const code = typeof error === 'object' && error !== null && 'code' in error
+            ? (error as { code?: unknown }).code
+            : undefined;
+
+        console.error('❌ Error during reset:', message);
+        if (code) console.error('Error Code:', code);
         process.exit(1);
     }
 }
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+try {
+    await main();
+} catch (e) {
+    console.error(e);
+    process.exit(1);
+} finally {
+    await prisma.$disconnect();
+}

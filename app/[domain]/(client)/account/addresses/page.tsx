@@ -3,7 +3,6 @@
 import { MapPin, Plus, ArrowLeft, Trash2, CheckCircle2, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 interface Address {
@@ -15,7 +14,6 @@ interface Address {
 }
 
 export default function AddressesPage() {
-    const router = useRouter();
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [isAdding, setIsAdding] = useState(false);
 
@@ -24,12 +22,13 @@ export default function AddressesPage() {
     const [newAddress, setNewAddress] = useState('');
     const [newPhone, setNewPhone] = useState('');
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [errors, setErrors] = useState<any>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         // Load addresses from local storage
         const storedAddresses = localStorage.getItem('crabkhai_addresses');
         if (storedAddresses) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setAddresses(JSON.parse(storedAddresses));
         } else {
             // Fallback: Check if user has a profile address and migrate it
@@ -57,11 +56,11 @@ export default function AddressesPage() {
 
     const handleSaveAddress = () => {
         setErrors({});
-        const newErrors: any = {};
+        const newErrors: Record<string, string> = {};
 
         if (!newAddress.trim()) newErrors.address = "Address is required";
         if (!newPhone.trim()) newErrors.phone = "Contact number is required";
-        else if (!/^(\+88)?01[3-9]\d{8}$/.test(newPhone.replace(/\D/g, ''))) newErrors.phone = "Invalid BD Mobile Number";
+        else if (!/^(\+88)?01[3-9]\d{8}$/.test(newPhone.replaceAll(/\D/g, ''))) newErrors.phone = "Invalid BD Mobile Number";
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -123,6 +122,12 @@ export default function AddressesPage() {
         toast.success("Default address updated");
     };
 
+    const getTagClassName = (tag: string) => {
+        if (tag === 'Home') return 'bg-green-50 text-green-600';
+        if (tag === 'Work') return 'bg-blue-50 text-blue-600';
+        return 'bg-gray-100 text-gray-500';
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 relative">
             {/* Header */}
@@ -152,11 +157,12 @@ export default function AddressesPage() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Label</label>
+                                <p className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Label</p>
                                 <div className="flex gap-2">
                                     {['Home', 'Work', 'Other'].map(tag => (
                                         <button
                                             key={tag}
+                                            type="button"
                                             onClick={() => setNewTag(tag)}
                                             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${newTag === tag
                                                 ? 'bg-crab-red text-white shadow-md shadow-orange-500/20'
@@ -170,8 +176,9 @@ export default function AddressesPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Address Details</label>
+                                <label htmlFor="address-details" className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Address Details</label>
                                 <textarea
+                                    id="address-details"
                                     value={newAddress}
                                     onChange={(e) => setNewAddress(e.target.value)}
                                     placeholder="House, Road, Block, Area..."
@@ -182,8 +189,9 @@ export default function AddressesPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Contact Number</label>
+                                <label htmlFor="contact-number" className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Contact Number</label>
                                 <input
+                                    id="contact-number"
                                     type="tel"
                                     value={newPhone}
                                     onChange={(e) => setNewPhone(e.target.value)}
@@ -233,16 +241,12 @@ export default function AddressesPage() {
                         {addresses.map((addr) => (
                             <div
                                 key={addr.id}
-                                onClick={() => handleSetDefault(addr.id)}
-                                className={`bg-white p-4 rounded-xl shadow-sm border transition-all cursor-pointer relative group ${addr.isDefault
+                                className={`bg-white p-4 rounded-xl shadow-sm border transition-all relative group ${addr.isDefault
                                     ? 'border-crab-red/50 ring-1 ring-crab-red/20'
                                     : 'border-gray-100 hover:border-gray-200'
                                     }`}
                             >
-                                <div className={`absolute top-4 right-4 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md ${addr.tag === 'Home' ? 'bg-green-50 text-green-600' :
-                                    addr.tag === 'Work' ? 'bg-blue-50 text-blue-600' :
-                                        'bg-gray-100 text-gray-500'
-                                    }`}>
+                                <div className={`absolute top-4 right-4 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md ${getTagClassName(addr.tag)}`}>
                                     {addr.tag}
                                 </div>
 
@@ -270,6 +274,14 @@ export default function AddressesPage() {
                                 {!addr.isDefault && (
                                     <div className="absolute bottom-4 right-4 flex gap-2">
                                         <button
+                                            type="button"
+                                            onClick={() => handleSetDefault(addr.id)}
+                                            className="px-3 py-2 text-xs font-bold text-crab-red bg-orange-50 hover:bg-orange-100 rounded-full transition-colors"
+                                        >
+                                            Set Default
+                                        </button>
+                                        <button
+                                            type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleEdit(addr);
@@ -279,6 +291,7 @@ export default function AddressesPage() {
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDelete(addr.id);
