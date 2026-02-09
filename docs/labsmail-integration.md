@@ -13,6 +13,8 @@ This guide explains how CrabKhai admins can export customer leads to LabsMail, t
 - Access to CrabKhai admin dashboard.
 - A LabsMail lead ingestion key created in LabsMail admin.
 - The base URL for your LabsMail instance (example: `https://labsmail.yourdomain.com`).
+- (Recommended) Set `LABSMAIL_KEY_ENCRYPTION_SECRET` in CrabKhai so the LabsMail key is encrypted at rest.
+- (Optional) Set `LABSMAIL_ALLOWED_HOSTS` (comma-separated hostnames) to restrict outbound LabsMail requests.
 
 ## Connect CrabKhai to LabsMail
 
@@ -60,6 +62,7 @@ You will see a success message with counts for created, updated, and skipped lea
 
 - If export is disabled, check that **LabsMail export** is enabled and the key is present.
 - If export fails, confirm the base URL and lead key are correct in LabsMail.
+- CrabKhai only allows `https://` LabsMail URLs in production-style use (`http://` is only accepted for localhost).
 - If no leads appear, make sure CrabKhai has customer records to export.
 - Keep your LabsMail lead key private and rotate it if compromised.
 
