@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { CartClient } from '@/components/client/cart/CartClient';
 import { getPaymentConfig, getSiteConfig } from '@/app/actions/settings';
 
-export const dynamic = 'force-dynamic';
+
 
 async function getCartData() {
     try {
