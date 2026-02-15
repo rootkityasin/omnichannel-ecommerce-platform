@@ -3,11 +3,12 @@ import { getProducts } from '@/app/actions/product';
 import { getCategories } from '@/app/actions/category';
 import { MenuClient } from '@/components/client/MenuClient';
 
-export default async function MenuPage() {
+export default async function MenuPage({ params }: { params: Promise<{ domain: string }> }) {
+    const { domain } = await params;
     // Fetch initial data on the server for instant load
     const [products, categories] = await Promise.all([
-        getProducts(),
-        getCategories()
+        getProducts(domain),
+        getCategories(domain)
     ]);
 
     return (

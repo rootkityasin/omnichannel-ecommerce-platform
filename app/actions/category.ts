@@ -13,7 +13,9 @@ export async function getCategories(domain?: string) {
         if (domain) {
             const tenant = await getTenantByDomain(domain);
             tenantId = tenant?.id;
-        } else {
+        }
+
+        if (!tenantId) {
             const session = await auth();
             tenantId = (session?.user as any)?.tenantId;
         }

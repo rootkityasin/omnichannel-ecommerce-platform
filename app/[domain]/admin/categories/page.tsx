@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, X, Edit, Trash2 } from 'lucide-react';
-import { getCategories, createCategory, deleteCategory } from '@/app/actions/category';
+import { getCategories, createCategory, deleteCategory, updateCategory } from '@/app/actions/category';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionsManager } from '@/components/admin/SectionsManager';
@@ -180,6 +180,9 @@ export default function CategoriesPage() {
     const [iconName, setIconName] = useState('Package');
     const [iconSearch, setIconSearch] = useState('');
 
+    // Edit State
+    const [editingId, setEditingId] = useState<string | null>(null);
+
     const filteredIcons = ICON_OPTIONS.filter(opt =>
         opt.label.toLowerCase().includes(iconSearch.toLowerCase())
     );
@@ -194,24 +197,43 @@ export default function CategoriesPage() {
         fetchData();
     }, []);
 
-    const handleCreate = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newItemName.trim()) {
             toast.error("Category name is required");
             return;
         }
 
-        const res = await createCategory(newItemName, animationType, iconName);
+        let res;
+        if (editingId) {
+            res = await updateCategory(editingId, newItemName, animationType, iconName);
+        } else {
+            res = await createCategory(newItemName, animationType, iconName);
+        }
+
         if (res.success) {
-            toast.success("Category created");
-            setIsModalOpen(false);
-            setNewItemName('');
-            setAnimationType('AUTO');
-            setIconName('Package');
+            toast.success(editingId ? "Category updated" : "Category created");
+            closeModal();
             fetchData();
         } else {
-            toast.error("Failed to create");
+            toast.error("Failed to save");
         }
+    };
+
+    const handleEdit = (cat: any) => {
+        setEditingId(cat.id);
+        setNewItemName(cat.name);
+        setAnimationType(cat.animationType || 'AUTO');
+        setIconName(cat.icon || 'Package');
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingId(null);
+        setNewItemName('');
+        setAnimationType('AUTO');
+        setIconName('Package');
     };
 
     const handleDelete = async (id: string) => {
@@ -252,10 +274,10 @@ export default function CategoriesPage() {
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                             <Card className="w-full max-w-sm p-6">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="font-bold">Add Category</h2>
-                                    <button onClick={() => setIsModalOpen(false)}><X className="w-4 h-4" /></button>
+                                    <h2 className="font-bold">{editingId ? 'Edit Category' : 'Add Category'}</h2>
+                                    <button onClick={closeModal}><X className="w-4 h-4" /></button>
                                 </div>
-                                <form onSubmit={handleCreate} className="space-y-4">
+                                <form onSubmit={handleSubmit} className="space-y-4">
                                     <Input
                                         placeholder="Category Name (e.g. Meal)"
                                         value={newItemName}
@@ -322,7 +344,9 @@ export default function CategoriesPage() {
                                             iconName={iconName}
                                         />
                                     </div>
-                                    <Button type="submit" className="w-full bg-orange-600">Create</Button>
+                                    <Button type="submit" className="w-full bg-orange-600">
+                                        {editingId ? 'Update Category' : 'Create Category'}
+                                    </Button>
                                 </form>
                             </Card>
                         </div>
@@ -342,7 +366,10 @@ export default function CategoriesPage() {
                                     <tr key={cat.id} className="hover:bg-gray-50">
                                         <td className="p-4 font-bold text-slate-800">{cat.name}</td>
                                         <td className="p-4 text-slate-500">{cat._count?.products || 0} items</td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-4 text-right flex justify-end gap-2">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-400 hover:text-blue-600" onClick={() => handleEdit(cat)}>
+                                                <Edit className="w-4 h-4" />
+                                            </Button>
                                             <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 hover:text-red-600" onClick={() => handleDelete(cat.id)}>
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>

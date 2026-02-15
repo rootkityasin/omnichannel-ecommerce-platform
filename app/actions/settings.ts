@@ -20,6 +20,7 @@ const getPublicSiteConfig = unstable_cache(
             certificates: [] as any,
             primaryColor: "#F40000",
             secondaryColor: "#ffffff",
+            commissionRate: 0,
             taxPercentage: 0.0,
             shopType: 'RESTAURANT',
             weightUnitValue: 200,
@@ -124,6 +125,7 @@ const getPublicSiteConfig = unstable_cache(
             return {
                 ...defaults,
                 ...config,
+                commissionRate: 0,
                 certificates: (config as any).certificates || defaults.certificates,
                 logoUrl: (config as any).logoUrl || defaults.logoUrl,
                 shopType: config.shopType || defaults.shopType,
@@ -138,6 +140,7 @@ const getPublicSiteConfig = unstable_cache(
     ['site-config-public'],
     { revalidate: 3600, tags: ['site-config'] }
 );
+
 
 export async function getSiteConfig(domain?: string) {
     if (domain) {
@@ -352,7 +355,7 @@ export async function updateSiteConfig(data: any) {
             primaryColor: data.primaryColor,
             secondaryColor: data.secondaryColor,
             taxPercentage: parseFloat(data.taxPercentage || 0),
-            shopType: (data.shopType as ShopType) || ShopType.RESTAURANT,
+            shopType: data.shopType as ShopType,
             weightUnitValue: parseInt(data.weightUnitValue || 200),
             volumeUnitValue: parseInt(data.volumeUnitValue || 1000),
             privacyPolicy: data.privacyPolicy,
@@ -415,8 +418,11 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        revalidateTag('site-config', {});
+        // revalidateTag('site-config');
+        // Revalidate specific tags if we were using them. For now, checking if we can add 'site-config' to the key in a better way.
+        // Actually, let's also revalidate the specific path just in case
         revalidatePath('/', 'layout');
+        revalidatePath('/[domain]', 'layout'); // Try to catch dynamic routes
         revalidatePath('/admin/shop', 'page');
         return { success: true };
     } catch (error) {
@@ -539,11 +545,15 @@ export async function updateDeliveryConfig(data: any) {
             update: {
                 ...updateData,
                 defaultCharge: parseInt(data.defaultCharge || 0),
+                pointsReward: Number.parseFloat(String(data.pointsReward || 0)),
+                freeDeliveryOver: Number.parseInt(String(data.freeDeliveryOver || 0)),
             },
             create: {
                 ...updateData,
                 tenantId,
-                defaultCharge: parseInt(data.defaultCharge || 0),
+                defaultCharge: Number.parseInt(String(data.defaultCharge || 0)),
+                pointsReward: Number.parseFloat(String(data.pointsReward || 0)),
+                freeDeliveryOver: Number.parseInt(String(data.freeDeliveryOver || 0)),
             }
         });
 

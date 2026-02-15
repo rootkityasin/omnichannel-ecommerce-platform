@@ -44,8 +44,9 @@ export async function getHomeSections(domain?: string) {
                     include: {
                         products: {
                             where: domain ? {
-                                tenantId: tenant?.id || 'none'
-                            } : undefined,
+                                tenantId: tenant?.id || 'none',
+                                isAvailable: true,
+                            } : { isAvailable: true },
                             orderBy: { createdAt: 'desc' },
                             take: 12, // Limit to recent 12 products per section
                             select: {
@@ -53,6 +54,7 @@ export async function getHomeSections(domain?: string) {
                                 name: true,
                                 price: true,
                                 image: true,
+                                images: true,
                                 sku: true,
                                 isAvailable: true,
                                 stage: true,
@@ -87,6 +89,7 @@ export async function getHomeSections(domain?: string) {
                                     name: true,
                                     price: true,
                                     image: true,
+                                    images: true,
                                     sku: true,
                                     isAvailable: true,
                                     stage: true,

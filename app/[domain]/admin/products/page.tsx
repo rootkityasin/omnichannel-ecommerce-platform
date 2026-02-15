@@ -884,7 +884,7 @@ export default function ProductsPage() {
                                         onChange={(url) => setNewProduct({ ...newProduct, image: url as string })}
                                         onRemove={() => setNewProduct({ ...newProduct, image: '' })}
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1000x1000px</strong> | Max: <strong>5MB</strong></p>
+                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1280x720px (16:9)</strong> | Max: <strong>5MB</strong></p>
                                 </div>
 
                                 <div className="space-y-2">
@@ -895,7 +895,7 @@ export default function ProductsPage() {
                                         onRemove={(url?: string) => setNewProduct({ ...newProduct, images: newProduct.images.filter(i => i !== url) })}
                                         multiple={true}
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1000x1000px</strong> | Max: <strong>5MB</strong></p>
+                                    <p className="text-xs text-slate-500 mt-1">Dimensions: <strong>1280x720px (16:9)</strong> | Max: <strong>5MB</strong></p>
                                 </div>
 
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">

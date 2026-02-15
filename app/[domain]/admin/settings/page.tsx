@@ -6,10 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Save, CheckCircle, Printer } from 'lucide-react';
+import { Plus, Trash2, Save, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAdmin } from '@/components/providers/AdminProvider';
+import { updateSiteConfig } from '@/app/actions/settings';
 
 // Default values to mock "fetching"
 const initialConfig = {
@@ -53,15 +54,28 @@ export default function SettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [backupPath, setBackupPath] = useState('G:\\crabkhai\\backup');
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
-        updateSettings(config);
-        setTimeout(() => {
+        try {
+            // 1. Optimistic Update (Client-side)
+            updateSettings(config);
+
+            // 2. Persist to Database (Server-side)
+            const result = await updateSiteConfig(config);
+
+            if (result.success) {
+                toast.success("Settings saved successfully!");
+                setOriginalConfig(config);
+                setHasChanges(false);
+            } else {
+                toast.error(result.error || "Failed to save settings.");
+            }
+        } catch (error) {
+            console.error("Save failed:", error);
+            toast.error("An unexpected error occurred.");
+        } finally {
             setIsSaving(false);
-            setOriginalConfig(config);
-            setHasChanges(false);
-            toast.success("Settings updated successfully!");
-        }, 800);
+        }
     };
 
     const addCert = () => {

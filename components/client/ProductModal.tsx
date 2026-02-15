@@ -143,7 +143,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <DialogTitle className="sr-only">{product.name} Details</DialogTitle>
 
                 {/* Hero Gallery Section */}
-                <div className="relative h-[250px] bg-slate-100 flex-shrink-0">
+                <div className="relative w-full aspect-video bg-slate-100 flex-shrink-0">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 z-[60] p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors backdrop-blur-md"
