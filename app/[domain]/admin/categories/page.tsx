@@ -4,20 +4,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-<<<<<<< HEAD
-import { Search, Plus, X, Edit, Trash2 } from 'lucide-react';
+import { Plus, X, Edit, Trash2, type LucideIcon } from 'lucide-react';
 import { getCategories, createCategory, deleteCategory, updateCategory } from '@/app/actions/category';
-=======
-import type { LucideIcon } from 'lucide-react';
-import { getCategories, createCategory, deleteCategory } from '@/app/actions/category';
->>>>>>> f4904f87f2229682c4373837fe850f651e96ca04
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionsManager } from '@/components/admin/SectionsManager';
 import {
-    Plus,
-    X,
-    Trash2,
     Fish,
     Flame,
     Utensils,
@@ -413,6 +405,6 @@ export default function CategoriesPage() {
                     <SectionsManager />
                 </TabsContent>
             </Tabs>
-        </div>
+        </div >
     );
 }

@@ -104,17 +104,11 @@ export async function getProducts(domain?: string) {
         if (domain) {
             const tenant = await getTenantByDomain(domain);
             tenantId = tenant?.id;
-<<<<<<< HEAD
         }
 
         if (!tenantId) {
-            const session = await auth();
-            tenantId = (session?.user as any)?.tenantId;
-=======
-        } else {
             const sessionUser = await getSessionUser();
-            tenantId = sessionUser?.tenantId ?? undefined;
->>>>>>> f4904f87f2229682c4373837fe850f651e96ca04
+            tenantId = sessionUser?.tenantId || undefined;
         }
 
         if (!tenantId) {
