@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
+import type { Prisma } from '@prisma/client';
 
 async function checkPermission() {
     const session = await auth();
@@ -58,14 +59,14 @@ export async function savePlan(data: {
                 where: { id: data.id },
                 data: {
                     ...payload,
-                    features: data.features as any
+                    features: data.features as Prisma.InputJsonValue
                 }
             });
         } else {
             await prisma.plan.create({
                 data: {
                     ...payload,
-                    features: data.features as any,
+                    features: data.features as Prisma.InputJsonValue,
                     sortOrder: 0 // Default
                 }
             });

@@ -17,7 +17,7 @@ export async function generateDescriptionAI(name: string, category: string, weig
         const model = getModel();
         const quantity = weight > 0 ? `(${unit === 'WEIGHT' ? weight + 'g' : weight + ' units'})` : '';
 
-        let prompt = `
+        const prompt = `
 # ROLE
 You are a high-end Luxury Brand Copywriter and sensory psychologist. Your goal is to write a product description that triggers an immediate visceral desire (a "craving") in the shopper.
 
@@ -45,7 +45,7 @@ You are a high-end Luxury Brand Copywriter and sensory psychologist. Your goal i
 - Max length: 150 words.
 `;
 
-        const parts: any[] = [prompt];
+        const parts: Array<string | { inlineData: { data: string; mimeType: string } }> = [prompt];
 
         if (imageUrl) {
             try {
@@ -161,17 +161,24 @@ OUTPUT FORMAT (return ONLY valid JSON array, no markdown):
         const response = await result.response;
         const cleanText = response.text().replace(/```json|```/g, '').trim();
 
-        const customers = JSON.parse(cleanText);
+        const customers: unknown = JSON.parse(cleanText);
+
+        if (!Array.isArray(customers)) {
+            return [];
+        }
 
         // Validate and clean
-        return customers.filter((c: any) => c.name && c.phone).map((c: any) => ({
-            name: String(c.name).trim(),
-            phone: String(c.phone).replace(/\D/g, '').trim(),
-            email: c.email ? String(c.email).trim() : '',
-            points: Number(c.points) || 0,
-            orders: Number(c.orders) || 0,
-            spent: Number(c.spent) || 0
-        }));
+        return customers
+            .filter((c): c is Record<string, unknown> => Boolean(c) && typeof c === 'object')
+            .filter((c) => c.name && c.phone)
+            .map((c) => ({
+                name: String(c.name).trim(),
+                phone: String(c.phone).replace(/\D/g, '').trim(),
+                email: c.email ? String(c.email).trim() : '',
+                points: Number(c.points) || 0,
+                orders: Number(c.orders) || 0,
+                spent: Number(c.spent) || 0
+            }));
     } catch (error) {
         console.error("AI Excel Parse Error:", error);
         return [];

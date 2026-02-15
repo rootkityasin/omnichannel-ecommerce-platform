@@ -24,10 +24,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // 1. Initial Sign In - Copy user data to token
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
-                token.phone = (user as any).phone;
-                token.tenantId = (user as any).tenantId;
-                token.permissions = (user as any).permissions;
+                token.role = user.role;
+                token.phone = user.phone;
+                token.tenantId = user.tenantId;
+                token.permissions = user.permissions;
                 return token;
             }
 
@@ -37,15 +37,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             const lastChecked = (token.lastChecked as number) || 0;
             const CHECK_INTERVAL = 30 * 1000; // 30 seconds
 
-            if (!user && token.id && (now - lastChecked > CHECK_INTERVAL)) {
+            const tokenId = typeof token.id === 'string' ? token.id : undefined;
+
+            if (!user && tokenId && (now - lastChecked > CHECK_INTERVAL)) {
                 try {
                     const dbUser = await prisma.user.findUnique({
-                        where: { id: token.id as string },
+                        where: { id: tokenId },
                         select: { id: true, role: true, permissions: true, tenantId: true, phone: true }
                     });
 
                     if (!dbUser) {
-                        console.log(`❌ Session Invalidated: User ${token.id} not found in DB`);
+                        console.log(`❌ Session Invalidated: User ${tokenId} not found in DB`);
                         return null;
                     }
 
@@ -174,7 +176,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         }
                     })
 
-                    if (!user || !user.password) {
+                    if (!user?.password) {
                         console.error("User not found or password not set.");
                         return null;
                     }

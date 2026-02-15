@@ -4,10 +4,24 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from '@/auth';
 
+type PromoPayload = {
+    title: string;
+    description?: string | null;
+    imageUrl: string;
+    style?: string;
+    buttonText?: string | null;
+    buttonLink?: string | null;
+    price?: string | number | null;
+    originalPrice?: string | number | null;
+    isActive?: boolean;
+};
+
+const getSessionUser = async () => (await auth())?.user;
+
 export async function getPromos() {
     try {
-        const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
         if (!tenantId) return [];
 
         const promos = await prisma.promoCard.findMany({
@@ -40,10 +54,10 @@ export async function getActivePromo(tenantId?: string) {
     }
 }
 
-export async function createPromo(data: any) {
+export async function createPromo(data: PromoPayload) {
     try {
-        const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
         if (!tenantId) return { success: false, error: "Unauthorized" };
 
         // If the new promo is set to active, deactivate others (optional logic, but usually we only want 1 popup)
@@ -78,7 +92,7 @@ export async function createPromo(data: any) {
     }
 }
 
-export async function updatePromo(id: string, data: any) {
+export async function updatePromo(id: string, data: PromoPayload) {
     try {
         if (data.isActive) {
             await prisma.promoCard.updateMany({

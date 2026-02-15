@@ -26,7 +26,7 @@ export default async function AdminLayout({
 
     // Server-side Auth Check
     const session = await auth();
-    if (!session || !session.user || (session.user as any).role === 'USER') {
+    if (!session || !session.user || session.user.role === 'USER') {
         redirect('/');
     }
 
@@ -38,7 +38,7 @@ export default async function AdminLayout({
     }
 
     if (deviceId) {
-        const now = Date.now();
+        const now = new Date().getTime();
         const lastCheck = lastDbCheck ? parseInt(lastDbCheck, 10) : 0;
         const shouldVerifyDb = (now - lastCheck) > DB_VERIFY_INTERVAL;
 

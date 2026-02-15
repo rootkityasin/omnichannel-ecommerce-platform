@@ -1,20 +1,30 @@
 'use server';
 
 import { prisma as globalPrisma } from "@/lib/prisma";
-import { PrismaClient } from "@prisma/client";
+import type { DiscountType } from "@prisma/client";
 
 import { auth } from '@/auth';
 
-// Fallback to local instance if global is stale (missing coupon delegate)
-const prisma = (globalPrisma as any).coupon
-    ? globalPrisma
-    : new PrismaClient();
+const prisma = globalPrisma;
 import { revalidatePath } from "next/cache";
 
-export async function createCoupon(data: any) {
+type CouponPayload = {
+    code: string;
+    discountType: DiscountType | string;
+    discountValue: number | string;
+    minOrderAmount: number | string;
+    expiresAt?: string | Date | null;
+    isActive?: boolean;
+    usageLimit?: number | string | null;
+};
+
+const normalizeDiscountType = (value: string): DiscountType =>
+    value === 'PERCENTAGE' ? 'PERCENTAGE' : 'FIXED';
+
+export async function createCoupon(data: CouponPayload) {
     try {
         const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const tenantId = session?.user?.tenantId;
         if (!tenantId) return { success: false, error: "Unauthorized" };
 
         const existing = await prisma.coupon.findFirst({
@@ -32,7 +42,7 @@ export async function createCoupon(data: any) {
             data: {
                 tenantId,
                 code: data.code,
-                discountType: data.discountType,
+                discountType: normalizeDiscountType(data.discountType),
                 discountValue: Number(data.discountValue),
                 minOrderAmount: Number(data.minOrderAmount),
                 expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
@@ -52,7 +62,7 @@ export async function createCoupon(data: any) {
 export async function getCoupons() {
     try {
         const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const tenantId = session?.user?.tenantId;
         if (!tenantId) return [];
 
         return await prisma.coupon.findMany({
@@ -74,7 +84,7 @@ export async function deleteCoupon(id: string) {
     }
 }
 
-export async function updateCoupon(id: string, data: any) {
+export async function updateCoupon(id: string, data: CouponPayload) {
     try {
         // Check availability if code changed
         const existing = await prisma.coupon.findUnique({
@@ -89,7 +99,7 @@ export async function updateCoupon(id: string, data: any) {
             where: { id },
             data: {
                 code: data.code,
-                discountType: data.discountType,
+                discountType: normalizeDiscountType(data.discountType),
                 discountValue: Number(data.discountValue),
                 minOrderAmount: Number(data.minOrderAmount),
                 expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,

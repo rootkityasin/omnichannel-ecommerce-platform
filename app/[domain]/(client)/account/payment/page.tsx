@@ -1,4 +1,4 @@
-import { CreditCard, Wallet, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export default function PaymentPage() {
     return (

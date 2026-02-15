@@ -4,6 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { randomUUID } from 'crypto';
 
+const getSessionUser = async () => (await auth())?.user;
+
+type AdminOrderUpdateInput = {
+    customer?: string;
+    phone?: string;
+    price?: number;
+    status?: string;
+};
+
 export async function createOrder(data: {
     customerName: string;
     customerPhone: string;
@@ -22,8 +31,8 @@ export async function createOrder(data: {
         // 1. Resolve Tenant
         let tenantId = data.tenantId;
         if (!tenantId) {
-            const session = await auth();
-            tenantId = (session?.user as any)?.tenantId;
+            const sessionUser = await getSessionUser();
+            tenantId = sessionUser?.tenantId ?? undefined;
         }
 
         if (!tenantId) {
@@ -83,8 +92,8 @@ export async function createOrder(data: {
 
 export async function getAdminOrders() {
     try {
-        const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
         if (!tenantId) return [];
 
         const orders = await prisma.order.findMany({
@@ -102,20 +111,20 @@ export async function getAdminOrders() {
         });
 
         // Calculate order counts per phone number
-        const phoneCounts = orders.reduce((acc: Record<string, number>, order: any) => {
+        const phoneCounts = orders.reduce((acc: Record<string, number>, order) => {
             const phone = order.customerPhone;
             acc[phone] = (acc[phone] || 0) + 1;
             return acc;
         }, {});
 
         // Map database records to the frontend expected format if necessary
-        return orders.map((o: any) => ({
+        return orders.map((o) => ({
             id: o.orderId,
             dbId: o.id,
             date: o.createdAt.toLocaleString(),
             customer: o.customerName,
             phone: o.customerPhone,
-            items: o.items.reduce((acc: number, item: any) => acc + item.quantity, 0),
+            items: o.items.reduce((acc: number, item) => acc + item.quantity, 0),
             source: o.source,
             price: o.totalAmount,
             status: o.status,
@@ -130,7 +139,7 @@ export async function getAdminOrders() {
     }
 }
 
-export async function updateAdminOrder(id: string, updates: any) {
+export async function updateAdminOrder(id: string, updates: AdminOrderUpdateInput) {
     try {
         // Find by orderId (e.g., ORD-...)
         const order = await prisma.order.findUnique({

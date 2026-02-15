@@ -5,7 +5,7 @@ import { getCategories } from '@/app/actions/category';
 import { HomeClient } from '@/components/client/HomeClient';
 import { HomeSections } from '@/components/server/HomeSections';
 
-export default async function HomePage({ params }: { params: Promise<{ domain: string }> }) {
+export default async function HomePage({ params }: Readonly<{ params: Promise<{ domain: string }> }>) {
     // Fetch TOP FOLD data instantly
     // We do NOT wait for sections here to allow instant FCP
     const { domain } = await params;

@@ -99,8 +99,9 @@ export async function listDirectories(dirPath: string): Promise<{ success: boole
             }));
 
         return { success: true, items: directories };
-    } catch (error: any) {
+    } catch (error) {
         console.error('Failed to list directory:', error);
-        return { success: false, items: [], error: error.message };
+        const message = error instanceof Error ? error.message : 'Failed to list directory';
+        return { success: false, items: [], error: message };
     }
 }

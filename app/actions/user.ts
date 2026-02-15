@@ -5,20 +5,34 @@ import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
 import { randomBytes } from 'crypto';
 import { revalidatePath } from 'next/cache';
+import type { Prisma } from '@prisma/client';
+
+const getSessionUser = async () => (await auth())?.user;
+
+const getErrorMessage = (error: unknown) => {
+    if (error instanceof Error) return error.message;
+    return 'Unknown error';
+};
+
+const hasAdminAccess = (role?: string | null) =>
+    role === 'SUPER_ADMIN' || role === 'TENANT_ADMIN' || role === 'HUB_ADMIN' || role === 'STAFF';
+
+const hasSuperTenantAccess = (role?: string | null) =>
+    role === 'SUPER_ADMIN' || role === 'TENANT_ADMIN';
 
 export async function checkUserExists(phone: string) {
     if (!phone) return false;
     try {
         const user = await prisma.user.findFirst({ where: { phone: phone } });
         return !!user;
-    } catch (error) {
+    } catch {
         return false;
     }
 }
 
 export async function getCurrentUserRole() {
-    const session = await auth();
-    return (session?.user as any)?.role || null;
+    const sessionUser = await getSessionUser();
+    return sessionUser?.role || null;
 }
 
 // Basic simplified create for signup
@@ -31,7 +45,7 @@ export async function createUser(data: { name: string; phone: string; email?: st
         // But Users might be global in some designs? 
         // Schema has `tenantId String?`. So it is scoped.
 
-        let tenantId = data.tenantId;
+        const tenantId = data.tenantId;
 
         // If checking existence, should we check per tenant?
         // Usually phone numbers are unique system-wide OR unique per tenant.
@@ -52,8 +66,8 @@ export async function createUser(data: { name: string; phone: string; email?: st
             }
         });
         return { success: true, user };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error) {
+        return { success: false, error: getErrorMessage(error) };
     }
 }
 
@@ -68,8 +82,8 @@ export async function createUserWithRole(data: {
     tenantId?: string;
     hubId?: string;
 }) {
-    const session = await auth();
-    const callerRole = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const callerRole = sessionUser?.role;
 
     // Authorization Logic
     if (callerRole !== 'SUPER_ADMIN') {
@@ -97,8 +111,8 @@ export async function createUserWithRole(data: {
 
         const user = await prisma.user.create({
             data: {
-                tenantId: data.tenantId || (session?.user as any)?.tenantId, // Inherit or Explicit
-                hubId: data.hubId || (session?.user as any)?.hubId,
+                tenantId: data.tenantId || sessionUser?.tenantId, // Inherit or Explicit
+                hubId: data.hubId || sessionUser?.hubId,
                 name: data.name,
                 email: data.email,
                 phone: data.phone,
@@ -109,9 +123,9 @@ export async function createUserWithRole(data: {
         });
         return { success: true, user };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
-        return { success: false, error: "Failed to create user" };
+        return { success: false, error: getErrorMessage(error) };
     }
 }
 
@@ -123,8 +137,8 @@ export async function updateUser(userId: string, data: {
     permissions: string[];
     hubId?: string;
 }) {
-    const session = await auth();
-    const callerRole = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const callerRole = sessionUser?.role;
 
     // Basic Authorization (Can be refined)
     if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN') {
@@ -141,13 +155,13 @@ export async function updateUser(userId: string, data: {
         }
 
         // Fix IDOR: Ensure Tenant Admin can only update users in their own tenant
-        const sessionTenantId = (session?.user as any)?.tenantId;
+        const sessionTenantId = sessionUser?.tenantId;
         if (callerRole === 'TENANT_ADMIN' && targetUser.tenantId !== sessionTenantId) {
             return { success: false, error: "Unauthorized: Cannot modify user from another tenant" };
         }
 
         // Prevent Tenant Admin from modifying other Tenant Admins (unless self?)
-        if (targetUser.role === 'TENANT_ADMIN' && callerRole === 'TENANT_ADMIN' && targetUser.id !== (session?.user as any)?.id) {
+        if (targetUser.role === 'TENANT_ADMIN' && callerRole === 'TENANT_ADMIN' && targetUser.id !== sessionUser?.id) {
             // Ideally Tenant Admin manages heirarchy below them. Modifying another Tenant Admin (peer) is usually blocked or limited.
             // Allowing for now if same tenant, but typically Owner is singular.
         }
@@ -170,8 +184,8 @@ export async function updateUser(userId: string, data: {
 }
 
 export async function deleteUser(userId: string) {
-    const session = await auth();
-    const callerRole = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const callerRole = sessionUser?.role;
 
     if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN') {
         return { success: false, error: "Unauthorized" };
@@ -192,7 +206,7 @@ export async function deleteUser(userId: string) {
                 return { success: false, error: "Unauthorized to delete this role" };
             }
             // Must belong to same tenant (implicit)
-            if (targetUser.tenantId !== (session?.user as any)?.tenantId) {
+            if (targetUser.tenantId !== sessionUser?.tenantId) {
                 return { success: false, error: "Unauthorized" };
             }
         }
@@ -206,8 +220,8 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserStatus(userId: string, status: string) {
-    const session = await auth();
-    if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
+    const sessionUser = await getSessionUser();
+    if (sessionUser?.role !== 'SUPER_ADMIN') {
         return { success: false, error: "Unauthorized" };
     }
 
@@ -227,19 +241,19 @@ export async function updateUserStatus(userId: string, status: string) {
   The previous file had simple getAllUsers. preserving it.
 */
 export async function getAllUsers() {
-    const session = await auth();
-    const userRole = (session?.user as any)?.role;
-    const userTenantId = (session?.user as any)?.tenantId;
-    const userHubId = (session?.user as any)?.hubId;
+    const sessionUser = await getSessionUser();
+    const userRole = sessionUser?.role;
+    const userTenantId = sessionUser?.tenantId;
+    const userHubId = sessionUser?.hubId;
 
-    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(userRole)) {
+    if (!hasAdminAccess(userRole)) {
         throw new Error("Unauthorized");
     }
 
     try {
         // Base filter: Exclude customers (role: 'USER') because they have their own section.
         // Also exclude SUPER_ADMIN from this list (System Level, not Shop Level).
-        const where: any = {
+        const where: Prisma.UserWhereInput = {
             role: { notIn: ['USER', 'SUPER_ADMIN'] }
         };
 
@@ -271,16 +285,16 @@ export async function getAllUsers() {
 }
 
 export async function getCustomers() {
-    const session = await auth();
-    const userRole = (session?.user as any)?.role;
-    const userTenantId = (session?.user as any)?.tenantId;
+    const sessionUser = await getSessionUser();
+    const userRole = sessionUser?.role;
+    const userTenantId = sessionUser?.tenantId;
 
-    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(userRole)) {
+    if (!hasAdminAccess(userRole)) {
         throw new Error("Unauthorized");
     }
 
     try {
-        const where: any = {
+        const where: Prisma.UserWhereInput = {
             role: 'USER'
         };
 
@@ -295,9 +309,9 @@ export async function getCustomers() {
         });
 
         // Get orders for these phones to calculate spent and count
-        const phones = customers.map((c: any) => c.phone).filter(Boolean) as string[];
+        const phones = customers.map((c) => c.phone).filter((phone): phone is string => Boolean(phone));
 
-        const ordersWhere: any = {
+        const ordersWhere: Prisma.OrderWhereInput = {
             customerPhone: { in: phones }
         };
         // Only filter by tenantId if not a SUPER_ADMIN
@@ -311,7 +325,7 @@ export async function getCustomers() {
         });
 
         // Group by phone
-        const statsMap = orders.reduce((acc: any, order: any) => {
+        const statsMap = orders.reduce<Record<string, { count: number; spent: number }>>((acc, order) => {
             if (!acc[order.customerPhone]) {
                 acc[order.customerPhone] = { count: 0, spent: 0 };
             }
@@ -320,9 +334,9 @@ export async function getCustomers() {
                 acc[order.customerPhone].spent += order.totalAmount;
             }
             return acc;
-        }, {} as Record<string, { count: number; spent: number }>);
+        }, {});
 
-        return customers.map((c: any) => ({
+        return customers.map((c) => ({
             ...c,
             orders: statsMap[c.phone || '']?.count || 0,
             spent: statsMap[c.phone || '']?.spent || 0
@@ -348,11 +362,11 @@ export async function getUserProfile(userId: string) {
  * Bulk import customers from AI-parsed data
  */
 export async function bulkImportCustomers(customers: { name: string; phone: string; email?: string }[]) {
-    const session = await auth();
-    const role = (session?.user as any)?.role;
-    const tenantId = (session?.user as any)?.tenantId;
+    const sessionUser = await getSessionUser();
+    const role = sessionUser?.role;
+    const tenantId = sessionUser?.tenantId;
 
-    if (!['SUPER_ADMIN', 'TENANT_ADMIN'].includes(role)) {
+    if (!hasSuperTenantAccess(role)) {
         return { success: false, error: "Unauthorized", imported: 0, skipped: 0 };
     }
 
@@ -390,8 +404,8 @@ export async function bulkImportCustomers(customers: { name: string; phone: stri
 }
 
 export async function resetUserPassword(userId: string, newPassword?: string) {
-    const session = await auth();
-    const callerRole = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const callerRole = sessionUser?.role;
 
     if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN' && callerRole !== 'HUB_ADMIN') {
         return { success: false, error: "Unauthorized" };
@@ -424,8 +438,8 @@ export async function resetUserPassword(userId: string, newPassword?: string) {
 }
 
 export async function generateImpersonationToken(targetUserId: string) {
-    const session = await auth();
-    const callerRole = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const callerRole = sessionUser?.role;
 
     // Only Admins can impersonate
     if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN') {
@@ -468,15 +482,15 @@ export async function generateImpersonationToken(targetUserId: string) {
 }
 
 export async function createCustomer(data: { name: string; phone: string; email?: string }) {
-    const session = await auth();
-    const role = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const role = sessionUser?.role;
 
-    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(role)) {
+    if (!hasAdminAccess(role)) {
         return { success: false, error: "Unauthorized" };
     }
 
     try {
-        const tenantId = (session?.user as any)?.tenantId;
+        const tenantId = sessionUser?.tenantId;
 
         // Check duplicate
         const existing = await prisma.user.findFirst({ where: { phone: data.phone } });
@@ -493,17 +507,17 @@ export async function createCustomer(data: { name: string; phone: string; email?
         });
         revalidatePath('/admin/customers');
         return { success: true, user };
-    } catch (error: any) {
+    } catch (error) {
         console.error("createCustomer Error:", error);
-        return { success: false, error: error.message || "Failed to create customer" };
+        return { success: false, error: getErrorMessage(error) || "Failed to create customer" };
     }
 }
 
 export async function updateCustomer(id: string, data: { name: string; phone: string; email?: string }) {
-    const session = await auth();
-    const role = (session?.user as any)?.role;
+    const sessionUser = await getSessionUser();
+    const role = sessionUser?.role;
 
-    if (!['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN', 'STAFF'].includes(role)) {
+    if (!hasAdminAccess(role)) {
         return { success: false, error: "Unauthorized" };
     }
 
@@ -518,7 +532,7 @@ export async function updateCustomer(id: string, data: { name: string; phone: st
         });
         revalidatePath('/admin/customers');
         return { success: true };
-    } catch (error: any) {
+    } catch {
         return { success: false, error: "Failed to update customer" };
     }
 }

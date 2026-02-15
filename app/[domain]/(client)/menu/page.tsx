@@ -19,8 +19,8 @@ export default async function MenuPage({ params }: { params: Promise<{ domain: s
             </div>
         }>
             <MenuClient
-                initialProducts={JSON.parse(JSON.stringify(products))}
-                initialCategories={JSON.parse(JSON.stringify(categories))}
+                initialProducts={structuredClone(products)}
+                initialCategories={structuredClone(categories)}
             />
         </Suspense>
     );

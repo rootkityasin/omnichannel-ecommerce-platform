@@ -1,20 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Package, MapPin, CreditCard, LogOut, ChevronRight, HelpCircle, Camera, Edit2, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Package, MapPin, CreditCard, LogOut, ChevronRight, HelpCircle, Camera } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
-import { checkUserExists, createUser, getUserProfile } from '@/app/actions/user';
+import { getUserProfile } from '@/app/actions/user';
 import { toast } from 'sonner';
 import { useSession, signOut, signIn } from "next-auth/react";
 import { AuthForm } from '@/components/client/AuthForm';
-import { useSettings } from '@/components/providers/SettingsProvider';
 
 export default function AccountPage() {
-    const { settings } = useSettings();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { data: session, status } = useSession();
@@ -36,7 +34,7 @@ export default function AccountPage() {
                 if (res?.ok) {
                     toast.success("Login Successful", { id: toastId });
                     // Force redirect to admin panel
-                    window.location.href = '/admin';
+                    globalThis.location.href = '/admin';
                 } else {
                     toast.error("Auto-login failed: " + res?.error, { id: toastId });
                 }
@@ -46,6 +44,9 @@ export default function AccountPage() {
 
     const { language } = useLanguageStore();
     const t = translations[language];
+    const isBangla = language === 'bn';
+    const bodyFontClass = isBangla ? 'font-bangla' : 'font-body';
+    const headingFontClass = isBangla ? 'font-bangla' : 'font-heading';
 
     // State for form data including image
     const [formData, setFormData] = useState({
@@ -58,8 +59,6 @@ export default function AccountPage() {
         points: 0,
         status: 'Bronze'
     });
-    const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
-    const [isSigningUp, setIsSigningUp] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -72,10 +71,8 @@ export default function AccountPage() {
 
             if (status === 'authenticated' && session?.user) {
                 // Admin Redirect Check
-                // @ts-ignore
-                // @ts-ignore
                 const role = session.user.role;
-                if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
+                if (role && ['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                     router.push('/admin');
                     return;
                 }
@@ -83,14 +80,13 @@ export default function AccountPage() {
                 setIsLoggedIn(true);
 
                 // Fetch latest data from DB
-                // @ts-ignore
                 const dbUser = await getUserProfile(session.user.id);
 
                 setFormData(prev => ({
                     ...prev,
                     name: dbUser?.name || session.user?.name || prev.name,
                     email: dbUser?.email || session.user?.email || prev.email,
-                    phone: dbUser?.phone || (session.user as any).phone || prev.phone,
+                    phone: dbUser?.phone || session.user?.phone || prev.phone,
                     address: dbUser?.address || prev.address,
                     image: dbUser?.image || session.user?.image || prev.image,
                     points: dbUser?.points || 0, // Assume 0 if not found
@@ -107,66 +103,7 @@ export default function AccountPage() {
         };
 
         checkAuth();
-    }, [status, session]);
-
-    // Phone Validation Regex (Bangladesh)
-    // Supports: 01xxxxxxxxx, +8801xxxxxxxxx
-    const isValidPhone = (phone: string) => /^(?:\+88)?01[3-9]\d{8}$/.test(phone);
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Validate Phone First
-        if (!isValidPhone(formData.phone)) {
-            toast.error("Invalid phone number format");
-            return;
-        }
-
-        if (isSigningUp) {
-            // Check if user exists
-            const exists = await checkUserExists(formData.phone);
-            if (exists) {
-                toast.error("User with this phone number already exists!");
-                return;
-            }
-
-            const result = await createUser({
-                name: formData.name,
-                phone: formData.phone,
-                email: formData.email,
-                address: formData.address,
-                tenantId: settings.tenantId
-            });
-
-            if (!result.success) {
-                toast.error("Failed to create account. Please try again.");
-                return;
-            }
-
-            toast.success("Account created successfully!");
-            localStorage.setItem('crabkhai_user', JSON.stringify(formData));
-        } else {
-            // Login mode - Validate existence in DB
-            const exists = await checkUserExists(formData.phone);
-            if (!exists) {
-                toast.error("No account found with this number. Please Sign Up.");
-                return;
-            }
-
-            // Check local storage for consistency, or just log them in
-            const existingLocal = localStorage.getItem('crabkhai_user');
-            if (existingLocal) {
-                const parsed = JSON.parse(existingLocal);
-                if (parsed.phone === formData.phone) {
-                    setFormData(prev => ({ ...prev, ...parsed }));
-                }
-            } else {
-                localStorage.setItem('crabkhai_user', JSON.stringify(formData));
-            }
-            toast.success("Welcome back!");
-        }
-        setIsLoggedIn(true);
-    };
+    }, [status, session, router]);
 
     const handleLogout = async () => {
         try {
@@ -181,7 +118,7 @@ export default function AccountPage() {
             await signOut({ redirect: true, callbackUrl: '/' });
         } catch (error) {
             console.error("Logout error:", error);
-            window.location.href = '/';
+            globalThis.location.href = '/';
         }
     };
 
@@ -212,15 +149,25 @@ export default function AccountPage() {
     };
 
     // Mock User Data
-    const user = {
-        name: isLoggedIn ? formData.name || 'Foodie' : 'Guest',
-        phone: isLoggedIn ? formData.phone : '',
-        email: isLoggedIn ? formData.email : '',
-        address: isLoggedIn ? formData.address : '',
-        image: isLoggedIn ? formData.image : '',
-        memberSince: 'December 2025',
-        points: 0
-    };
+    const user = isLoggedIn
+        ? {
+            name: formData.name || 'Foodie',
+            phone: formData.phone,
+            email: formData.email,
+            address: formData.address,
+            image: formData.image,
+            memberSince: 'December 2025',
+            points: 0,
+        }
+        : {
+            name: 'Guest',
+            phone: '',
+            email: '',
+            address: '',
+            image: '',
+            memberSince: 'December 2025',
+            points: 0,
+        };
 
     if (isLoading) {
         return (
@@ -238,11 +185,57 @@ export default function AccountPage() {
         );
     }
 
-    // --- PROFILE VIEW ---
+    return (
+        <AccountProfileView
+            user={user}
+            formData={formData}
+            bodyFontClass={bodyFontClass}
+            headingFontClass={headingFontClass}
+            t={t}
+            onImageUpload={handleImageUpload}
+            onLogout={handleLogout}
+        />
+    );
+}
+
+function AccountProfileView({
+    user,
+    formData,
+    bodyFontClass,
+    headingFontClass,
+    t,
+    onImageUpload,
+    onLogout,
+}: Readonly<{
+    user: {
+        name: string;
+        phone: string;
+        email: string;
+        address: string;
+        image: string;
+        memberSince: string;
+        points: number;
+    };
+    formData: { points: number; status: string };
+    bodyFontClass: string;
+    headingFontClass: string;
+    t: {
+        profile: {
+            memberSince: string;
+            points: string;
+            myOrders: string;
+            addresses: string;
+            paymentMethods: string;
+            needHelp: string;
+            logout: string;
+        };
+    };
+    onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onLogout: () => void;
+}>) {
     return (
         <div className="bg-gray-50 min-h-screen pb-20 md:pb-0 pt-20 md:pt-28">
             <div className="max-w-4xl mx-auto px-4 md:px-0">
-                {/* Header Profile Card - Modernized Ocean Blue */}
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -263,43 +256,39 @@ export default function AccountPage() {
                             </div>
                             <label className="absolute bottom-0 right-0 bg-white text-crab-red p-2 rounded-full cursor-pointer shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
                                 <Camera className="w-4 h-4" />
-                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                <input type="file" className="hidden" accept="image/*" onChange={onImageUpload} />
                             </label>
                         </div>
 
-                        <h1 className={`text-xl font-bold tracking-tight mb-0.5 ${language === 'bn' ? 'font-bangla' : 'font-heading'}`}>{user.name}</h1>
-                        <p className={`text-white/60 font-medium text-xs ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{user.phone}</p>
+                        <h1 className={`text-xl font-bold tracking-tight mb-0.5 ${headingFontClass}`}>{user.name}</h1>
+                        <p className={`text-white/60 font-medium text-xs ${bodyFontClass}`}>{user.phone}</p>
 
                         <div className="flex items-center gap-2 mt-3 bg-white/10 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
-                            <span className={`text-[10px] font-bold tracking-wide ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.memberSince} <span className="text-white/80 font-normal">Dec 2025</span></span>
+                            <span className={`text-[10px] font-bold tracking-wide ${bodyFontClass}`}>{t.profile.memberSince} <span className="text-white/80 font-normal">Dec 2025</span></span>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Menu List - Modern Grouped Style */}
                 <motion.div
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
                     className="px-5 -mt-10 relative z-20 space-y-3"
                 >
-
-                    {/* Stats Cards */}
                     <div className="bg-white p-4 rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 grid grid-cols-2 gap-4">
                         <div className="text-center p-2 rounded-xl hover:bg-gray-50 transition-colors hover:scale-105 duration-200">
-                            <span className={`block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.points}</span>
+                            <span className={`block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 ${bodyFontClass}`}>{t.profile.points}</span>
                             <span className="block text-2xl font-black text-crab-red">{formData.points}</span>
                         </div>
                         <div className="text-center p-2 rounded-xl hover:bg-gray-50 transition-colors border-l border-gray-100 hover:scale-105 duration-200">
-                            <span className={`block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>Status</span>
+                            <span className={`block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 ${bodyFontClass}`}>Status</span>
                             <span className="block text-lg font-bold text-gray-700">{formData.status}</span>
                         </div>
                     </div>
 
-                    {/* Main Menu */}
                     <div className="space-y-4">
-                        <h3 className={`text-sm font-bold text-gray-400 uppercase tracking-wider px-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>Account</h3>
+                        <h3 className={`text-sm font-bold text-gray-400 uppercase tracking-wider px-2 ${bodyFontClass}`}>Account</h3>
 
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
                             <Link href="/account/orders" className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 transition-all hover:scale-[1.01] active:scale-[0.99] group">
@@ -307,7 +296,7 @@ export default function AccountPage() {
                                     <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <Package className="w-4 h-4" />
                                     </div>
-                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.myOrders}</span>
+                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${bodyFontClass}`}>{t.profile.myOrders}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
                             </Link>
@@ -317,7 +306,7 @@ export default function AccountPage() {
                                     <div className="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <MapPin className="w-4 h-4" />
                                     </div>
-                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.addresses}</span>
+                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${bodyFontClass}`}>{t.profile.addresses}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
                             </Link>
@@ -327,16 +316,15 @@ export default function AccountPage() {
                                     <div className="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <CreditCard className="w-4 h-4" />
                                     </div>
-                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.paymentMethods}</span>
+                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${bodyFontClass}`}>{t.profile.paymentMethods}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
                             </Link>
                         </div>
                     </div>
 
-                    {/* Support & Logout */}
                     <div className="space-y-4">
-                        <h3 className={`text-sm font-bold text-gray-400 uppercase tracking-wider px-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>Support</h3>
+                        <h3 className={`text-sm font-bold text-gray-400 uppercase tracking-wider px-2 ${bodyFontClass}`}>Support</h3>
 
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
                             <button
@@ -347,24 +335,22 @@ export default function AccountPage() {
                                     <div className="w-9 h-9 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <HelpCircle className="w-4 h-4" />
                                     </div>
-                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.needHelp}</span>
+                                    <span className={`font-semibold text-gray-700 group-hover:text-gray-900 transition-colors ${bodyFontClass}`}>{t.profile.needHelp}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
                             </button>
 
-                            <button onClick={handleLogout} className="w-full flex items-center justify-between p-4 hover:bg-red-50/50 active:bg-red-50 transition-all hover:scale-[1.01] active:scale-[0.99] group text-left">
+                            <button onClick={onLogout} className="w-full flex items-center justify-between p-4 hover:bg-red-50/50 active:bg-red-50 transition-all hover:scale-[1.01] active:scale-[0.99] group text-left">
                                 <div className="flex items-center gap-4">
                                     <div className="w-9 h-9 rounded-full bg-red-50 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <LogOut className="w-4 h-4" />
                                     </div>
-                                    <span className={`font-semibold text-gray-700 group-hover:text-red-700 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.logout}</span>
+                                    <span className={`font-semibold text-gray-700 group-hover:text-red-700 transition-colors ${bodyFontClass}`}>{t.profile.logout}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
                             </button>
                         </div>
                     </div>
-
-
                 </motion.div>
             </div>
         </div>

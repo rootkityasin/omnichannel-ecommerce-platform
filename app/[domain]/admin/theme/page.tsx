@@ -26,7 +26,7 @@ export default function ThemeSettingsPage() {
     const [primaryColor, setPrimaryColor] = useState('#F40000'); // Default Airtel Red
     const [secondaryColor, setSecondaryColor] = useState('#0f172a'); // Default Slate 900
     const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
-    const [config, setConfig] = useState<any>(null);
+    const [config, setConfig] = useState<Awaited<ReturnType<typeof getSiteConfig>> | null>(null);
 
     const [previewUrl, setPreviewUrl] = useState('');
 
@@ -53,9 +53,7 @@ export default function ThemeSettingsPage() {
 
             if (config) {
                 setConfig(config);
-                // @ts-ignore
                 if (config.primaryColor) setPrimaryColor(config.primaryColor);
-                // @ts-ignore
                 if (config.secondaryColor) setSecondaryColor(config.secondaryColor);
             }
         } finally {
@@ -113,7 +111,7 @@ export default function ThemeSettingsPage() {
                             ].map(d => (
                                 <button
                                     key={d.id}
-                                    onClick={() => setDevice(d.id as any)}
+                                    onClick={() => setDevice(d.id as 'desktop' | 'mobile')}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${device === d.id ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                                 >
                                     <d.icon className="w-4 h-4" />

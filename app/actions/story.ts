@@ -2,11 +2,12 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import type { Prisma } from '@prisma/client';
 
 export async function getStorySections() {
     try {
         const sections = await prisma.storySection.findMany();
-        return sections.map((section: any) => ({
+        return sections.map((section) => ({
             ...section,
             updatedAt: section.updatedAt.toISOString()
         }));
@@ -16,7 +17,7 @@ export async function getStorySections() {
     }
 }
 
-export async function updateStorySection(type: string, content: any) {
+export async function updateStorySection(type: string, content: Prisma.InputJsonValue) {
     try {
         await prisma.storySection.upsert({
             where: { type },

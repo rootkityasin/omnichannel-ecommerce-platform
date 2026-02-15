@@ -56,7 +56,7 @@ export function AuthForm() {
         setIsLoading(false);
     }, []);
 
-    const [errors, setErrors] = useState<any>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,7 +64,7 @@ export function AuthForm() {
         setErrors({});
 
         // Validation
-        const newErrors: any = {};
+        const newErrors: Record<string, string> = {};
         if (isLogin) {
             if (!formData.contact) newErrors.contact = "Contact is required";
         } else {
@@ -121,10 +121,8 @@ export function AuthForm() {
                 }
 
                 const session = await getSession();
-                // @ts-ignore
-                // @ts-ignore
                 const role = session?.user?.role;
-                if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
+                if (role && ['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                     router.push('/admin');
                 } else {
                     router.push('/account');
@@ -162,10 +160,8 @@ export function AuthForm() {
                         setIsLogin(true);
                     } else {
                         const session = await getSession();
-                        // @ts-ignore
-                        // @ts-ignore
                         const role = session?.user?.role;
-                        if (['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
+                        if (role && ['SUPER_ADMIN', 'HUB_ADMIN', 'TENANT_ADMIN', 'STAFF'].includes(role)) {
                             router.push('/admin');
                         } else {
                             router.push('/account');

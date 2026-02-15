@@ -1,11 +1,43 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 
 import { getTenantByDomain } from './tenant';
 
 import { auth } from '@/auth';
+
+type ProductMutationInput = {
+    name?: string;
+    sku?: string;
+    price?: number | string;
+    description?: string;
+    descriptionSwap?: boolean;
+    image?: string;
+    images?: string[];
+    pieces?: number | string;
+    weight?: number | string;
+    servingSize?: number | string;
+    stage?: string;
+    categoryId?: string;
+    type?: string;
+    sections?: string[];
+    comboItems?: Array<{ childId: string; quantity: number | string }>;
+};
+
+const getSessionUser = async () => (await auth())?.user;
+const toStringValue = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback;
+
+const isUniqueSkuError = (error: unknown) => {
+    if (!error || typeof error !== 'object') return false;
+    const candidate = error as { code?: string; meta?: { target?: string[] } };
+    return candidate.code === 'P2002' && candidate.meta?.target?.includes('sku');
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error && error.message) return error.message;
+    return fallback;
+};
 
 export async function getAdminProducts(domain?: string) {
     try {
@@ -15,13 +47,13 @@ export async function getAdminProducts(domain?: string) {
             const tenant = await getTenantByDomain(domain);
             tenantId = tenant?.id;
         } else {
-            const session = await auth();
-            tenantId = (session?.user as any)?.tenantId;
+            const sessionUser = await getSessionUser();
+            tenantId = sessionUser?.tenantId ?? undefined;
         }
 
         if (!tenantId) return [];
 
-        const products = await (prisma.product.findMany({
+        const products = await prisma.product.findMany({
             where: { tenantId },
             orderBy: { createdAt: 'desc' }, // Latest first is usually better for admin
             select: {
@@ -32,7 +64,6 @@ export async function getAdminProducts(domain?: string) {
                 categoryId: true,
                 pieces: true,
                 weight: true, // Needed for unit calc
-                servingSize: true,
                 type: true,
                 stage: true,
                 sku: true,
@@ -41,7 +72,7 @@ export async function getAdminProducts(domain?: string) {
                     include: { child: { select: { pieces: true } } }
                 }
             }
-        }) as any);
+        });
 
         return products;
     } catch (error) {
@@ -73,11 +104,17 @@ export async function getProducts(domain?: string) {
         if (domain) {
             const tenant = await getTenantByDomain(domain);
             tenantId = tenant?.id;
+<<<<<<< HEAD
         }
 
         if (!tenantId) {
             const session = await auth();
             tenantId = (session?.user as any)?.tenantId;
+=======
+        } else {
+            const sessionUser = await getSessionUser();
+            tenantId = sessionUser?.tenantId ?? undefined;
+>>>>>>> f4904f87f2229682c4373837fe850f651e96ca04
         }
 
         if (!tenantId) {
@@ -86,7 +123,7 @@ export async function getProducts(domain?: string) {
             return [];
         }
 
-        const products = await (prisma.product.findMany({
+        const products = await prisma.product.findMany({
             where: {
                 tenantId: tenantId,
                 isAvailable: true
@@ -101,7 +138,6 @@ export async function getProducts(domain?: string) {
                 images: true,
                 categoryId: true,
                 pieces: true,
-                servingSize: true,
                 weight: true,
                 totalSold: true,
                 type: true,
@@ -115,7 +151,7 @@ export async function getProducts(domain?: string) {
                     select: { slug: true }
                 }
             }
-        }) as any);
+        });
 
         return products;
     } catch (error) {
@@ -126,7 +162,7 @@ export async function getProducts(domain?: string) {
 
 export async function getProduct(id: string) {
     try {
-        const product = await (prisma.product.findUnique({
+        const product = await prisma.product.findUnique({
             where: { id },
             include: {
                 category: true,
@@ -137,17 +173,17 @@ export async function getProduct(id: string) {
                     }
                 }
             }
-        }) as any);
+        });
         return product;
-    } catch (error) {
+    } catch {
         return null;
     }
 }
 
-export async function createProduct(data: any) {
+export async function createProduct(data: ProductMutationInput) {
     try {
-        const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
         if (!tenantId) return { success: false, error: "Unauthorized" };
 
         if (!data.categoryId) return { success: false, error: "Category is required" };
@@ -155,57 +191,54 @@ export async function createProduct(data: any) {
         const product = await prisma.product.create({
             data: {
                 tenantId,
-                name: data.name,
-                sku: data.sku,
-                price: parseInt(String(data.price || 0)) || 0,
+                name: toStringValue(data.name),
+                sku: toStringValue(data.sku),
+                price: Number.parseInt(String(data.price || 0), 10) || 0,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap || false,
                 image: data.image,
-                pieces: parseInt(String(data.pieces || 0)) || 0,
-                weight: parseInt(String(data.weight || 0)) || 0,
-                servingSize: parseInt(String(data.servingSize || 1)) || 1,
+                pieces: Number.parseInt(String(data.pieces || 0), 10) || 0,
+                weight: Number.parseInt(String(data.weight || 0), 10) || 0,
                 stage: data.stage,
-                categoryId: data.categoryId,
+                categoryId: toStringValue(data.categoryId),
                 images: data.images || [],
-                type: data.type || 'SINGLE',
+                type: data.type === 'COMBO' ? 'COMBO' : 'SINGLE',
                 sections: data.sections && data.sections.length > 0 ? {
                     connect: data.sections.map((id: string) => ({ id }))
                 } : undefined,
                 comboItems: data.type === 'COMBO' && data.comboItems ? {
-                    create: data.comboItems.map((item: any) => ({
+                    create: data.comboItems.map((item) => ({
                         childId: item.childId,
-                        quantity: parseInt(item.quantity)
+                        quantity: Number.parseInt(String(item.quantity), 10)
                     }))
                 } : undefined
             }
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        // revalidateTag('home-sections');
         revalidatePath('/', 'layout');
         return { success: true, product };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Create Product Error:", error);
-        if (error.code === 'P2002' && error.meta?.target?.includes('sku')) {
+        if (isUniqueSkuError(error)) {
             return { success: false, error: "Product with this SKU already exists" };
         }
         return { success: false, error: "Failed to create product" };
     }
 }
 
-export async function updateProduct(id: string, data: any) {
+export async function updateProduct(id: string, data: ProductMutationInput) {
     try {
         await prisma.product.update({
             where: { id },
             data: {
-                name: data.name,
-                sku: data.sku,
-                price: parseInt(String(data.price || 0)) || 0,
-                pieces: parseInt(String(data.pieces || 0)) || 0,
+                name: toStringValue(data.name),
+                sku: toStringValue(data.sku),
+                price: Number.parseInt(String(data.price || 0), 10) || 0,
+                pieces: Number.parseInt(String(data.pieces || 0), 10) || 0,
                 image: data.image,
                 images: data.images || [],
-                weight: parseInt(String(data.weight || 0)) || 0,
-                servingSize: parseInt(String(data.servingSize || 1)) || 1,
+                weight: Number.parseInt(String(data.weight || 0), 10) || 0,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap,
                 stage: data.stage,
@@ -216,12 +249,11 @@ export async function updateProduct(id: string, data: any) {
         });
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        // revalidateTag('home-sections');
         revalidatePath('/', 'layout');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Update Product Error:", error);
-        if (error.code === 'P2002' && error.meta?.target?.includes('sku')) {
+        if (isUniqueSkuError(error)) {
             return { success: false, error: "Product with this SKU already exists" };
         }
         return { success: false, error: "Failed to update" };
@@ -251,12 +283,11 @@ export async function deleteProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        // revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Delete Product Error:", error);
-        return { success: false, error: error.message || "Failed to delete product" };
+        return { success: false, error: getErrorMessage(error, "Failed to delete product") };
     }
 }
 
@@ -272,12 +303,11 @@ export async function archiveProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        // revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Archive Product Error:", error);
-        return { success: false, error: error.message || "Failed to archive product" };
+        return { success: false, error: getErrorMessage(error, "Failed to archive product") };
     }
 }
 
@@ -293,12 +323,11 @@ export async function unarchiveProduct(id: string) {
 
         revalidatePath('/admin/products');
         revalidatePath('/admin/inventory');
-        // revalidateTag('home-sections');
         revalidatePath('/');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Unarchive Product Error:", error);
-        return { success: false, error: error.message || "Failed to unarchive product" };
+        return { success: false, error: getErrorMessage(error, "Failed to unarchive product") };
     }
 }
 
@@ -312,7 +341,7 @@ export async function generateUniqueSku() {
         let maxId = 0;
         for (const p of products) {
             if (p.sku && /^\d+$/.test(p.sku)) {
-                const num = parseInt(p.sku, 10);
+                const num = Number.parseInt(p.sku, 10);
                 if (num > maxId) maxId = num;
             }
         }

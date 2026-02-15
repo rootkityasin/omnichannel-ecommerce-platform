@@ -11,10 +11,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
-import { ArrowUpRight, TrendingUp, Users, ShoppingCart, Activity, DollarSign, XCircle, Download } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, Activity, DollarSign, XCircle, Download } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 
-const COLORS = ['#ea580c', '#f97316', '#fbbf24', '#94a3b8'];
+const SOURCE_COLORS = ['#ea580c', '#22c55e', '#3b82f6'];
 
 export default function AnalyticsPage() {
     const { orders } = useAdmin();
@@ -53,16 +54,19 @@ export default function AnalyticsPage() {
         ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = window.URL.createObjectURL(blob);
+        const url = globalThis.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `Sales_Report_${days}Days_${now.toISOString().split('T')[0]}.csv`;
         a.click();
-        window.URL.revokeObjectURL(url);
+        globalThis.URL.revokeObjectURL(url);
     };
 
     // 1. Calculate Summary Metrics
-    const totalRevenue = orders.reduce((acc, o) => acc + (o.status !== 'Cancelled' ? o.price : 0), 0);
+    const totalRevenue = orders.reduce((acc, o) => {
+        if (o.status === 'Cancelled') return acc;
+        return acc + o.price;
+    }, 0);
     const uniqueCustomers = new Set(orders.map(o => o.phone)).size;
     const avgOrderValue = orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0;
     const cancelledOrders = orders.filter(o => o.status === 'Cancelled').length;
@@ -97,8 +101,6 @@ export default function AnalyticsPage() {
 
     // If no data, provide at least one empty point to prevent chart crash
     if (trendData.length === 0) trendData.push({ name: 'No Data', sales: 0 });
-
-    const COLORS = ['#ea580c', '#22c55e', '#3b82f6'];
 
     return (
         <div className="space-y-6">
@@ -170,7 +172,7 @@ export default function AnalyticsPage() {
                                         domain={[0, (dataMax: number) => (dataMax === 0 ? 5000 : 'auto')]}
                                         allowDecimals={false}
                                     />
-                                    <Tooltip contentStyle={{ borderRadius: '8px' }} formatter={(value: any) => `৳ ${value}`} />
+                                    <Tooltip contentStyle={{ borderRadius: '8px' }} formatter={(value: number | string | undefined) => `৳ ${value ?? 0}`} />
                                     <Area type="monotone" dataKey="sales" stroke="#ea580c" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -198,7 +200,7 @@ export default function AnalyticsPage() {
                                         dataKey="value"
                                     >
                                         {sourceData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${entry.name}`} fill={SOURCE_COLORS[index % SOURCE_COLORS.length]} />
                                         ))}
                                     </Pie>
                                     <Tooltip />
@@ -240,7 +242,14 @@ export default function AnalyticsPage() {
     );
 }
 
-function MetricCard({ title, value, icon: Icon, sub, color, bg }: any) {
+function MetricCard({ title, value, icon: Icon, sub, color, bg }: {
+    title: string;
+    value: string | number;
+    icon: LucideIcon;
+    sub: string;
+    color: string;
+    bg?: string;
+}) {
     return (
         <Card className={`border-none shadow-sm ${bg || 'bg-white border border-gray-100'}`}>
             <CardContent className="p-6">

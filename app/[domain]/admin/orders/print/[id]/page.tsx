@@ -22,9 +22,24 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
     if (!order) return notFound();
 
-    const subtotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
+    const subtotal = order.items.reduce((acc: number, item) => acc + (item.price * item.quantity), 0);
     const discount = order.discountAmount || 0;
     const delivery = order.totalAmount - (subtotal - discount);
+
+    const invoiceDetailsSource = config.invoiceDetails;
+    const invoiceDetails =
+        typeof invoiceDetailsSource === 'object' && invoiceDetailsSource !== null && !Array.isArray(invoiceDetailsSource)
+            ? invoiceDetailsSource as Record<string, unknown>
+            : {};
+    const invoicePrefs = {
+        watermarkOpacity: typeof invoiceDetails.watermarkOpacity === 'number' ? invoiceDetails.watermarkOpacity : 0.1,
+        fontSize: typeof invoiceDetails.fontSize === 'number' ? invoiceDetails.fontSize : 14,
+        showLogo: invoiceDetails.showLogo !== false,
+        showBuyer: invoiceDetails.showBuyer !== false,
+        showSeller: invoiceDetails.showSeller !== false,
+        showSignature: invoiceDetails.showSignature !== false,
+        showQr: invoiceDetails.showQr !== false,
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 py-12 px-4 print:p-0 print:bg-white">
@@ -47,7 +62,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             src={config.logoUrl}
                             alt="Watermark"
                             className="w-1/3 h-auto max-h-[40%] object-contain grayscale-[0.2]"
-                            style={{ opacity: config.invoiceDetails?.watermarkOpacity ?? 0.1 }}
+                            style={{ opacity: invoicePrefs.watermarkOpacity }}
                         />
                     </div>
                 )}
@@ -55,7 +70,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div
                     className="relative z-10 p-8 sm:p-12 h-full flex flex-col"
                     style={{
-                        fontSize: `${config.invoiceDetails?.fontSize ?? 14}px`,
+                        fontSize: `${invoicePrefs.fontSize}px`,
                         fontFamily: config.invoiceTheme === 'classic' ? 'Times New Roman, serif' : 'inherit'
                     }}
                 >
@@ -65,7 +80,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                         <>
                             {/* Header */}
                             <div className="flex justify-between items-end border-b-4 border-slate-800 pb-2 mb-4">
-                                {config.invoiceDetails?.showLogo && config?.logoUrl ? (
+                                {invoicePrefs.showLogo && config?.logoUrl ? (
                                     <img src={config.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                                 ) : (
                                     <h1 className="text-2xl font-bold">{config?.shopName}</h1>
@@ -78,7 +93,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
                             {/* Addresses */}
                             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                                {config.invoiceDetails?.showBuyer !== false && (
+                                {invoicePrefs.showBuyer && (
                                     <div className="flex-1 border border-slate-300 p-3">
                                         <h3 className="font-bold text-xs uppercase mb-2 border-b border-slate-200 pb-1">Billing Details:</h3>
                                         <p className="font-bold">{order.customerName}</p>
@@ -86,7 +101,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                                         <p className="text-sm font-mono mt-1">{order.customerPhone}</p>
                                     </div>
                                 )}
-                                {config.invoiceDetails?.showSeller !== false && (
+                                {invoicePrefs.showSeller && (
                                     <div className="flex-1 border border-slate-300 p-3">
                                         <h3 className="font-bold text-xs uppercase mb-2 border-b border-slate-200 pb-1">Seller Details:</h3>
                                         <p className="font-bold">{config?.shopName}</p>
@@ -115,7 +130,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {order.items.map((item: any, i: number) => (
+                                    {order.items.map((item, i: number) => (
                                         <tr key={i} className="border-b border-slate-200">
                                             <td className="border-r border-slate-300 p-2 text-center">{i + 1}</td>
                                             <td className="border-r border-slate-300 p-2">
@@ -159,7 +174,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             <p className="text-sm text-slate-500 mb-8 lowercase tracking-wide">receipt #{order.orderId} • {order.createdAt.toLocaleDateString()}</p>
 
                             <div className="border border-slate-200 rounded-lg p-6 mb-8 text-left">
-                                {order.items.map((item: any, i: number) => (
+                                {order.items.map((item, i: number) => (
                                     <div key={i} className="flex justify-between py-2 border-b border-dashed border-slate-100 last:border-0">
                                         <span className="font-medium">{item.product.name} <span className="text-slate-400 text-xs">x{item.quantity}</span></span>
                                         <span>{item.price * item.quantity}</span>
@@ -191,7 +206,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             {/* Header Section */}
                             <div className="flex flex-col sm:flex-row justify-between items-start gap-8 mb-12">
                                 <div className="flex flex-col gap-4">
-                                    {config.invoiceDetails?.showLogo !== false && config?.logoUrl ? (
+                                    {invoicePrefs.showLogo && config?.logoUrl ? (
                                         <img src={config.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
                                     ) : (
                                         <h2 className="text-2xl font-black italic tracking-tighter" style={{ color: config?.primaryColor || '#000' }}>
@@ -204,7 +219,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                                     </div>
                                 </div>
 
-                                {config.invoiceDetails?.showSeller !== false && (
+                                {invoicePrefs.showSeller && (
                                     <div className="text-right flex flex-col gap-1">
                                         <h3 className="font-bold text-slate-900">{config?.shopName || 'Crab & Khai'}</h3>
                                         <p className="text-sm text-slate-500">{config?.contactAddress || '195 Green Road, Dhaka'}</p>
@@ -219,7 +234,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12 pt-8 border-t border-slate-100">
                                 {/* Bill To */}
-                                {config.invoiceDetails?.showBuyer !== false && (
+                                {invoicePrefs.showBuyer && (
                                     <div>
                                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Bill To</p>
                                         <h4 className="text-xl font-bold text-slate-900 mb-1">{order.customerName}</h4>
@@ -256,7 +271,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
-                                        {order.items.map((item: any, i: number) => (
+                                        {order.items.map((item, i: number) => (
                                             <tr key={i} className="group hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-5 text-slate-300 font-medium">{String(i + 1).padStart(2, '0')}</td>
                                                 <td className="py-5">
@@ -318,7 +333,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
                     {/* Common Footer (Signature & QR) */}
                     <div className="mt-auto pt-10 flex justify-between items-end gap-12">
-                        {config.invoiceDetails?.showSignature !== false && (
+                        {invoicePrefs.showSignature && (
                             <>
                                 <div className="text-center w-32 border-t border-slate-200 pt-2">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase">Customer Sign</p>
@@ -329,7 +344,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             </>
                         )}
 
-                        {config.invoiceDetails?.showQr !== false && (
+                        {invoicePrefs.showQr && (
                             <div className="flex flex-col items-center gap-2 ml-auto">
                                 <QRCodeSVG value={order.orderId} size={80} />
                                 <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">Scan to Verify: {order.orderId}</p>

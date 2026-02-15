@@ -7,16 +7,15 @@ import { revalidatePath } from 'next/cache';
 
 export async function resetDatabaseAction() {
     try {
-        const session = await auth();
+        const sessionUser = (await auth())?.user;
 
         // 1. Security Check: Must be SUPER_ADMIN
-        const user = session?.user as any;
-        if (!user?.id || user.role !== Role.SUPER_ADMIN) {
+        if (!sessionUser?.id || sessionUser.role !== Role.SUPER_ADMIN) {
             return { success: false, message: 'Unauthorized: Only Super Admins can reset the database.' };
         }
 
-        const currentUserId = user.id;
-        console.log(`⚠️  Database Reset Initiated by User: ${currentUserId} (${user.email})`);
+        const currentUserId = sessionUser.id;
+        console.log(`⚠️  Database Reset Initiated by User: ${currentUserId} (${sessionUser.email})`);
 
         // 2. Delete Transactional Data first (Foreign Key checks)
         await prisma.review.deleteMany();
@@ -75,8 +74,9 @@ export async function resetDatabaseAction() {
         revalidatePath('/');
         return { success: true, message: 'Database reset successfully. Your admin account was preserved.' };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('❌ Database Reset Failed:', error);
-        return { success: false, message: `Reset failed: ${error.message}` };
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return { success: false, message: `Reset failed: ${message}` };
     }
 }

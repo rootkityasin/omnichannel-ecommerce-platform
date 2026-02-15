@@ -7,7 +7,7 @@ import { addDomainToVercel, removeDomainFromVercel, verifyDomainOnVercel, getDom
 
 export async function updateDomainSettings(data: { slug?: string; customDomain?: string | null }) {
     const session = await auth();
-    const tenantId = (session?.user as any)?.tenantId;
+    const tenantId = session?.user?.tenantId;
 
     if (!tenantId) {
         return { success: false, error: "Unauthorized" };

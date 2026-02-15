@@ -4,12 +4,20 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+<<<<<<< HEAD
 import { Search, Plus, X, Edit, Trash2 } from 'lucide-react';
 import { getCategories, createCategory, deleteCategory, updateCategory } from '@/app/actions/category';
+=======
+import type { LucideIcon } from 'lucide-react';
+import { getCategories, createCategory, deleteCategory } from '@/app/actions/category';
+>>>>>>> f4904f87f2229682c4373837fe850f651e96ca04
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionsManager } from '@/components/admin/SectionsManager';
 import {
+    Plus,
+    X,
+    Trash2,
     Fish,
     Flame,
     Utensils,
@@ -70,7 +78,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { getCategoryStyle, CategoryStyle } from '@/components/client/CategoryNav';
+import { getCategoryStyle } from '@/components/client/CategoryNav';
 
 const ICON_OPTIONS = [
     // --- Base & Utility ---
@@ -138,7 +146,15 @@ const ICON_OPTIONS = [
     { label: 'Smile', value: 'Smile', icon: Smile },
 ];
 
-const ICON_MAP: Record<string, any> = {
+type CategoryItem = {
+    id: string;
+    name: string;
+    _count?: {
+        products?: number;
+    };
+};
+
+const ICON_MAP: Record<string, LucideIcon> = {
     Fish, Flame, Utensils, Drumstick, Soup, Shell, Snowflake, Package, Gift, Waves, Pizza, Beef, Microwave, Coffee,
     Apple, Candy, Cookie, Egg, IceCream, Milk, Cherry, Croissant, Beer, Wine, Sandwich, Salad,
     Banana, Bean, Cake, Carrot, Citrus, CupSoda, Grape, Lollipop, Nut, Popcorn, Rabbit, Sprout, Wheat, Zap,
@@ -146,7 +162,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 // Preview Component
-function CategoryCardPreview({ name, animationType, iconName }: { name: string, animationType: string, iconName: string }) {
+function CategoryCardPreview({ name, animationType, iconName }: Readonly<{ name: string; animationType: string; iconName: string }>) {
     const style = getCategoryStyle(name || 'Preview', 0, animationType);
     const Icon = ICON_MAP[iconName] || ICON_MAP['Package'];
 
@@ -172,7 +188,7 @@ function CategoryCardPreview({ name, animationType, iconName }: { name: string, 
 }
 
 export default function CategoriesPage() {
-    const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<CategoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newItemName, setNewItemName] = useState('');
@@ -189,12 +205,21 @@ export default function CategoriesPage() {
 
     const fetchData = async () => {
         const data = await getCategories();
-        setCategories(data);
+        setCategories(data as CategoryItem[]);
         setLoading(false);
     };
 
     useEffect(() => {
-        fetchData();
+        let isMounted = true;
+        getCategories().then((data) => {
+            if (!isMounted) return;
+            setCategories(data as CategoryItem[]);
+            setLoading(false);
+        });
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -286,9 +311,9 @@ export default function CategoriesPage() {
                                     />
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Animation Style</label>
+                                        <label htmlFor="category-animation" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Animation Style</label>
                                         <Select value={animationType} onValueChange={setAnimationType}>
-                                            <SelectTrigger>
+                                            <SelectTrigger id="category-animation">
                                                 <SelectValue placeholder="Select animation" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -305,9 +330,9 @@ export default function CategoriesPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Category Icon</label>
+                                        <label htmlFor="category-icon" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Category Icon</label>
                                         <Select value={iconName} onValueChange={setIconName}>
-                                            <SelectTrigger>
+                                            <SelectTrigger id="category-icon">
                                                 <SelectValue placeholder="Select icon" />
                                             </SelectTrigger>
                                             <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -337,7 +362,7 @@ export default function CategoriesPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Preview</label>
+                                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Preview</p>
                                         <CategoryCardPreview
                                             name={newItemName}
                                             animationType={animationType}

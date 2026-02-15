@@ -24,12 +24,15 @@ import { getPromos, createPromo, deletePromo, togglePromoStatus, updatePromo } f
 import { getCoupons, createCoupon, deleteCoupon, updateCoupon, toggleCouponStatus } from '@/app/actions/coupon';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+type PromoItem = Awaited<ReturnType<typeof getPromos>>[number];
+type CouponItem = Awaited<ReturnType<typeof getCoupons>>[number];
+
 export default function PromoPage() {
     // --- STATE ---
     const [loading, setLoading] = useState(true);
 
     // Promos
-    const [promoCards, setPromoCards] = useState<any[]>([]);
+    const [promoCards, setPromoCards] = useState<PromoItem[]>([]);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [editingPromoId, setEditingPromoId] = useState<string | null>(null);
     const [newCard, setNewCard] = useState({
@@ -45,7 +48,7 @@ export default function PromoPage() {
     });
 
     // Coupons
-    const [coupons, setCoupons] = useState<any[]>([]);
+    const [coupons, setCoupons] = useState<CouponItem[]>([]);
     const [isAddingCoupon, setIsAddingCoupon] = useState(false);
     const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
     const [newCoupon, setNewCoupon] = useState({
@@ -58,17 +61,17 @@ export default function PromoPage() {
     });
 
     // --- EFFECTS ---
-    useEffect(() => {
-        refreshData();
-    }, []);
-
-    const refreshData = async () => {
-        setLoading(true);
+    async function refreshData() {
         const [pData, cData] = await Promise.all([getPromos(), getCoupons()]);
         setPromoCards(pData);
         setCoupons(cData);
         setLoading(false);
-    };
+    }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        refreshData();
+    }, []);
 
     // --- PROMO HANDLERS ---
     const handleDeleteCard = async (id: string) => {
@@ -127,7 +130,7 @@ export default function PromoPage() {
         }
     };
 
-    const handleEditPromo = (card: any) => {
+    const handleEditPromo = (card: PromoItem) => {
         setNewCard({
             title: card.title,
             description: card.description || '',
@@ -212,7 +215,7 @@ export default function PromoPage() {
         }
     };
 
-    const handleEditCoupon = (coupon: any) => {
+    const handleEditCoupon = (coupon: CouponItem) => {
         setNewCoupon({
             code: coupon.code,
             discountType: coupon.discountType,

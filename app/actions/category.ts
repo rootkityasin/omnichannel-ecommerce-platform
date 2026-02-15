@@ -17,12 +17,12 @@ export async function getCategories(domain?: string) {
 
         if (!tenantId) {
             const session = await auth();
-            tenantId = (session?.user as any)?.tenantId;
+            tenantId = session?.user?.tenantId ?? undefined;
         }
 
         if (!tenantId) return [];
 
-        const categories = await (prisma.category.findMany({
+        const categories = await prisma.category.findMany({
             where: {
                 tenantId: tenantId
             },
@@ -31,7 +31,7 @@ export async function getCategories(domain?: string) {
                     select: { products: true }
                 }
             }
-        }) as any);
+        });
 
         return categories;
     } catch (error) {
@@ -43,7 +43,7 @@ export async function getCategories(domain?: string) {
 export async function createCategory(name: string, animationType: string = "AUTO", icon: string = "Package") {
     try {
         const session = await auth();
-        const tenantId = (session?.user as any)?.tenantId;
+        const tenantId = session?.user?.tenantId;
         if (!tenantId) return { success: false, error: "Unauthorized" };
 
         if (!name || !name.trim()) return { success: false, error: "Category name is required" };

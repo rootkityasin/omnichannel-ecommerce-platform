@@ -11,7 +11,7 @@ export const config = {
          * 3. /_static (inside /public)
          * 4. all root files inside /public (e.g. /favicon.ico)
          */
-        "/((?!api/|_next/|_static/|images/|_vercel|[\\w-]+\\.\\w+|sitemap.xml|robots.txt).*)",
+        String.raw`/((?!api/|_next/|_static/|images/|_vercel|[\w-]+\.\w+|sitemap.xml|robots.txt).*)`,
     ],
 };
 
@@ -25,8 +25,7 @@ export default async function middleware(req: NextRequest) {
 
     const searchParams = req.nextUrl.searchParams.toString();
     // Get the pathname of the request (e.g. /, /about, /blog/first-post)
-    const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""
-        }`;
+    const path = searchParams.length > 0 ? `${url.pathname}?${searchParams}` : url.pathname;
 
     // Prepare request headers with x-pathname
     const requestHeaders = new Headers(req.headers);
@@ -54,8 +53,6 @@ export default async function middleware(req: NextRequest) {
     }
 
     // 3. Handle Tenant Domains
-    // requestHeaders is already defined at the top
-    requestHeaders.set('x-pathname', url.pathname); // Re-set just in case, or redundant? It was set at top.
 
     // Enforce Trusted Device Check for Admin Routes
     const isAdminRoute = url.pathname.startsWith('/admin');

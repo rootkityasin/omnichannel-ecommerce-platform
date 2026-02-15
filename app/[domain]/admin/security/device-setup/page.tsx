@@ -63,7 +63,7 @@ export default function DeviceSetupPage() {
                     </button>
 
                     <p className="text-xs text-slate-400">
-                        If you don't have a token, contact your Super Admin.
+                        If you don&apos;t have a token, contact your Super Admin.
                     </p>
                 </form>
             </div>

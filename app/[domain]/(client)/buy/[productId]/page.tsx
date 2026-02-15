@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -12,8 +12,29 @@ import { ProductReviews } from '@/components/client/ProductReviews';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react';
 
+type Review = {
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: Date;
+    user: {
+        name: string;
+        image: string | null;
+    };
+};
 
-function ProductImageCarousel({ images, name }: { images: string[], name: string }) {
+type ProductDetail = {
+    id: string;
+    name: string;
+    price: number;
+    description?: string | null;
+    image?: string | null;
+    images?: string[] | null;
+    pieces?: number | null;
+    sku?: string | null;
+};
+
+function ProductImageCarousel({ images, name }: Readonly<{ images: string[]; name: string }>) {
     // Revert to default settings for standard responsive swipe
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -26,8 +47,15 @@ function ProductImageCarousel({ images, name }: { images: string[], name: string
         }
     }, [emblaApi]);
 
-    const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
-    const scrollNext = () => emblaApi && emblaApi.scrollNext();
+    const imageCounts = new Map<string, number>();
+    const keyedImages = images.map((src) => {
+        const nextCount = (imageCounts.get(src) ?? 0) + 1;
+        imageCounts.set(src, nextCount);
+        return { src, key: `${src}-${nextCount}` };
+    });
+
+    const scrollPrev = () => emblaApi?.scrollPrev();
+    const scrollNext = () => emblaApi?.scrollNext();
 
     return (
         <div
@@ -35,11 +63,11 @@ function ProductImageCarousel({ images, name }: { images: string[], name: string
             ref={emblaRef}
         >
             <div className="flex h-full touch-pan-y">
-                {images.map((src, index) => (
-                    <div key={index} className="flex-[0_0_100%] min-w-0 h-full relative">
+                {keyedImages.map((imageItem, index) => (
+                    <div key={imageItem.key} className="flex-[0_0_100%] min-w-0 h-full relative">
                         <img
-                            src={src}
-                            alt={`${name} - Image ${index + 1}`}
+                            src={imageItem.src}
+                            alt={`${name} view ${index + 1}`}
                             className="w-full h-full object-cover select-none"
                             onDragStart={(e) => e.preventDefault()}
                         />
@@ -68,9 +96,9 @@ function ProductImageCarousel({ images, name }: { images: string[], name: string
             {/* Dots Navigation */}
             {images.length > 1 && (
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-                    {images.map((_, index) => (
+                    {keyedImages.map((imageItem, index) => (
                         <button
-                            key={index}
+                            key={`dot-${imageItem.key}`}
                             className={cn(
                                 "w-2 h-2 rounded-full transition-all shadow-sm",
                                 index === selectedIndex
@@ -89,9 +117,10 @@ function ProductImageCarousel({ images, name }: { images: string[], name: string
 
 export default function SmartLinkPage() {
     const params = useParams();
-    const [product, setProduct] = useState<any>(null);
-    const [reviews, setReviews] = useState<any[]>([]);
+    const [product, setProduct] = useState<ProductDetail | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
+    const [viewerCount] = useState(() => Math.floor(Math.random() * 15) + 5);
 
     useEffect(() => {
         const loadProduct = async () => {
@@ -134,7 +163,7 @@ export default function SmartLinkPage() {
                 <Card className="w-full max-w-md p-8 text-center">
                     <h2 className="text-xl font-bold text-gray-800">Product Not Found</h2>
                     <p className="text-gray-500 mt-2">The product you are looking for does not exist or has been removed.</p>
-                    <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/'}>Go Home</Button>
+                    <Button variant="outline" className="mt-4" onClick={() => { globalThis.location.href = '/'; }}>Go Home</Button>
                 </Card>
             </div>
         );
@@ -142,8 +171,11 @@ export default function SmartLinkPage() {
 
     const handleWhatsAppOrder = () => {
         const text = `Hi, I want to order *${product.name}* (Price: ৳${product.price}). Please confirm.`;
-        window.open(`https://wa.me/8801804221161?text=${encodeURIComponent(text)}`, '_blank');
+        globalThis.open(`https://wa.me/8801804221161?text=${encodeURIComponent(text)}`, '_blank');
     };
+
+    const pieces = product.pieces ?? 0;
+    const imageList = product.images && product.images.length > 0 ? product.images : [product.image || '/placeholder.png'];
 
     return (
         <div className="min-h-screen bg-[#FDFCF8]">
@@ -162,17 +194,17 @@ export default function SmartLinkPage() {
                         <Card className="border-0 shadow-none bg-transparent md:bg-white md:shadow-2xl md:rounded-[2rem] overflow-hidden md:border-4 md:border-white">
                             <div className="aspect-square relative bg-gray-100 group overflow-hidden">
                                 {/* Glass Pieces Tag */}
-                                {(product as any).pieces && (product as any).pieces > 0 && (
+                                {pieces > 0 && (
                                     <div className="absolute top-4 right-4 z-20">
                                         <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2 group-hover:scale-105 transition-transform">
                                             <span className="w-2 h-2 rounded-full bg-crab-red animate-pulse" />
-                                            <span className="text-sm font-bold text-slate-900">{(product as any).pieces} Pieces</span>
+                                            <span className="text-sm font-bold text-slate-900">{pieces} Pieces</span>
                                         </div>
                                     </div>
                                 )}
 
                                 <ProductImageCarousel
-                                    images={(product as any).images?.length > 0 ? (product as any).images : [product.image || '/placeholder.png']}
+                                    images={imageList}
                                     name={product.name}
                                 />
                             </div>
@@ -198,8 +230,8 @@ export default function SmartLinkPage() {
                                 <Badge variant="outline" className="rounded-full px-4 py-1 text-xs uppercase tracking-widest border-slate-300 text-slate-500">
                                     Premium Selection
                                 </Badge>
-                                {(product as any).sku && (
-                                    <span className="text-xs text-slate-400 font-mono">SKU: {(product as any).sku}</span>
+                                {product.sku && (
+                                    <span className="text-xs text-slate-400 font-mono">SKU: {product.sku}</span>
                                 )}
                             </div>
 
@@ -213,7 +245,7 @@ export default function SmartLinkPage() {
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                                     </span>
-                                    <span className="text-xs sm:text-sm">🔥 {Math.floor(Math.random() * 15) + 5} people are looking at this!</span>
+                                    <span className="text-xs sm:text-sm">🔥 {viewerCount} people are looking at this!</span>
                                 </div>
                                 <div className="flex items-baseline gap-4 mt-2">
                                     <span className="text-4xl font-bold text-crab-red">৳{product.price}</span>
@@ -256,7 +288,7 @@ export default function SmartLinkPage() {
                                     <Button
                                         variant="outline"
                                         className="w-full h-14 border-2 border-slate-200 text-slate-700 font-bold text-lg rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
-                                        onClick={() => window.location.href = '/'}
+                                        onClick={() => { globalThis.location.href = '/'; }}
                                     >
                                         <ArrowRight className="w-5 h-5 mr-2" />
                                         Continue Shopping
