@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import { Prisma, ShopType } from '@prisma/client';
 import { auth } from '@/auth';
 
@@ -28,7 +28,7 @@ const getPublicSiteConfig = unstable_cache(
             primaryColor: "#F40000",
             secondaryColor: "#ffffff",
             commissionRate: 0,
-            taxPercentage: 0.0,
+            taxPercentage: 0,
             shopType: 'RESTAURANT',
             weightUnitValue: 200,
             volumeUnitValue: 1000,
@@ -173,7 +173,7 @@ export async function getAdminSiteConfig() {
         certificates: [] as unknown[],
         primaryColor: "#F40000",
         secondaryColor: "#ffffff",
-        taxPercentage: 0.0,
+        taxPercentage: 0,
         shopType: 'RESTAURANT',
         weightUnitValue: 200,
         volumeUnitValue: 1000,
@@ -310,33 +310,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
         const isStandardOrHigher = ['STANDARD', 'PLATINUM', 'ENTERPRISE'].includes(plan);
 
         // 2. Validate SEO Access
-        // Identify if SEO fields are present in the update payload
-        const seoFields = [
-            'seoTitle', 'seoDescription', 'seoKeywords',
-            'ogTitle', 'ogDescription', 'ogImage',
-            'twitterCard', 'twitterTitle', 'twitterDescription', 'twitterImage',
-            'jsonLdType', 'robots', 'canonicalUrl', 'sitelinks',
-            'socialFacebook', 'socialInstagram', 'socialTwitter', 'socialLinkedIn', 'socialYoutube',
-            'metaPixelId', 'metaAccessToken'
-        ];
-
-        // Construct safe SEO payload based on plan
-        const seoPayload: Record<string, unknown> = {};
-
-        for (const field of seoFields) {
-            const fieldValue = input[field];
-            if (fieldValue !== undefined) {
-                if (isStandardOrHigher) {
-                    // Premium users get everything
-                    seoPayload[field] = fieldValue;
-                } else {
-                    // Free/Basic users ONLY get Basic SEO + Social Image
-                    if (['seoTitle', 'seoDescription', 'seoKeywords', 'ogImage'].includes(field)) {
-                        seoPayload[field] = fieldValue;
-                    }
-                }
-            }
-        }
+        const seoPayload = getSeoPayload(input, isStandardOrHigher);
 
 
         const existing = await prisma.siteConfig.findFirst({
@@ -388,36 +362,8 @@ export async function updateSiteConfig<T extends object>(data: T) {
                 data: commonData
             });
 
-            // Update Tenant Domain if changed
-            if (customDomain !== undefined) {
-                if (customDomain !== existing.tenant?.customDomain) {
-                    await prisma.tenant.update({
-                        where: { id: existing.tenantId! },
-                        data: {
-                            customDomain: customDomain || null
-                        }
-                    });
-                }
-            }
-
-            // Update Tenant Slug if changed
-            if (slug !== undefined && slug !== existing.tenant?.slug) {
-                // Check if slug is taken
-                const slugTaken = await prisma.tenant.findUnique({
-                    where: { slug }
-                });
-
-                if (slugTaken) {
-                    return { success: false, error: "This shop name is already taken." };
-                }
-
-                await prisma.tenant.update({
-                    where: { id: existing.tenantId! },
-                    data: {
-                        slug
-                    }
-                });
-            }
+            const updateResult = await updateTenantInfo(existing.tenantId!, existing.tenant, slug, customDomain);
+            if (!updateResult.success) return updateResult;
 
         } else {
             // Create Logic
@@ -565,21 +511,29 @@ export async function updateDeliveryConfig<T extends object>(data: T) {
         delete updateData.tenantId;
         delete updateData.tenant;
 
+        const payload = {
+            defaultCharge: getNumber(input.defaultCharge, 60),
+            defaultCodEnabled: input.defaultCodEnabled === undefined ? undefined : Boolean(input.defaultCodEnabled),
+            nonRefundable: input.nonRefundable === undefined ? undefined : Boolean(input.nonRefundable),
+            weightBasedCharges: input.weightBasedCharges as Prisma.InputJsonValue,
+            deliveryZones: input.deliveryZones as Prisma.InputJsonValue,
+            courierPathaoEnabled: input.courierPathaoEnabled === undefined ? undefined : Boolean(input.courierPathaoEnabled),
+            courierPathaoCredentials: input.courierPathaoCredentials as Prisma.InputJsonValue,
+            pointsReward: getNumber(input.pointsReward, 0),
+            freeDeliveryOver: getNumber(input.freeDeliveryOver, 0),
+        };
+
+        // Remove undefined keys
+        Object.keys(payload).forEach(key => (payload as any)[key] === undefined && delete (payload as any)[key]);
+
         await prisma.deliveryConfig.upsert({
             where: { tenantId },
-            update: {
-                ...(updateData as Prisma.DeliveryConfigUpdateInput),
-                defaultCharge: getNumber(input.defaultCharge, 0),
-                pointsReward: getNumber(input.pointsReward, 0),
-                freeDeliveryOver: getNumber(input.freeDeliveryOver, 0),
-            },
+            update: payload as any,
             create: {
-                ...(updateData as Prisma.DeliveryConfigUncheckedCreateInput),
                 tenantId,
-                defaultCharge: getNumber(input.defaultCharge, 0),
-                pointsReward: getNumber(input.pointsReward, 0),
-                freeDeliveryOver: getNumber(input.freeDeliveryOver, 0),
-            }
+                ...payload,
+                defaultCharge: getNumber(input.defaultCharge, 60), // Ensure default
+            } as any
         });
 
         revalidatePath('/admin/shop', 'page');
@@ -588,4 +542,63 @@ export async function updateDeliveryConfig<T extends object>(data: T) {
         console.error("Failed to update delivery config:", error);
         return { success: false, error: "Failed to save delivery config" };
     }
+}
+
+function getSeoPayload(input: Record<string, unknown>, isStandardOrHigher: boolean) {
+    const seoFields = [
+        'seoTitle', 'seoDescription', 'seoKeywords',
+        'ogTitle', 'ogDescription', 'ogImage',
+        'twitterCard', 'twitterTitle', 'twitterDescription', 'twitterImage',
+        'jsonLdType', 'robots', 'canonicalUrl', 'sitelinks',
+        'socialFacebook', 'socialInstagram', 'socialTwitter', 'socialLinkedIn', 'socialYoutube',
+        'metaPixelId', 'metaAccessToken'
+    ];
+
+    const seoPayload: Record<string, unknown> = {};
+
+    for (const field of seoFields) {
+        const fieldValue = input[field];
+        if (fieldValue !== undefined) {
+            if (isStandardOrHigher || ['seoTitle', 'seoDescription', 'seoKeywords', 'ogImage'].includes(field)) {
+                seoPayload[field] = fieldValue;
+            }
+        }
+    }
+    return seoPayload;
+}
+
+async function updateTenantInfo(
+    tenantId: string,
+    existingTenant: { slug: string; customDomain: string | null } | null | undefined,
+    slug: string | undefined,
+    customDomain: string | undefined
+) {
+    if (!existingTenant) return { success: true };
+
+    // Update Tenant Domain if changed
+    if (customDomain !== undefined && customDomain !== existingTenant.customDomain) {
+        await prisma.tenant.update({
+            where: { id: tenantId },
+            data: { customDomain: customDomain || null }
+        });
+    }
+
+    // Update Tenant Slug if changed
+    if (slug !== undefined && slug !== existingTenant.slug) {
+        // Check if slug is taken
+        const slugTaken = await prisma.tenant.findUnique({
+            where: { slug }
+        });
+
+        if (slugTaken) {
+            return { success: false, error: "This shop name is already taken." };
+        }
+
+        await prisma.tenant.update({
+            where: { id: tenantId },
+            data: { slug }
+        });
+    }
+
+    return { success: true };
 }
