@@ -66,7 +66,7 @@ export default async function AdminLayout({
                             where: { deviceId },
                             data: { lastUsed: new Date() }
                         });
-                    } catch (e) {
+                    } catch {
                         // Ignore update errors
                     }
                 }
@@ -98,6 +98,6 @@ export default async function AdminLayout({
     };
 
     // Return Client Layout
-    return <AdminLayoutClient initialUser={session.user} session={session} initialData={initialData}>{children}</AdminLayoutClient>;
+    return <AdminLayoutClient initialUser={session?.user as any} session={session} initialData={initialData}>{children}</AdminLayoutClient>;
 }
 

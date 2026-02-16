@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Globe, Shield, Truck, ChevronRight, Store, Mail, Phone, MapPin, AlertTriangle, BadgeCheck, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, FolderOpen, Folder, X, Bold, Italic, Heading, Palette, Search } from 'lucide-react';
+import { Settings, Globe, Shield, Truck, ChevronRight, AlertTriangle, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, FolderOpen, Folder, X, Bold, Italic, Heading, Search } from 'lucide-react';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { DeliverySettings } from '@/components/admin/DeliverySettings';
 import { Card } from '@/components/ui/card';
@@ -20,10 +20,15 @@ interface SiteConfig {
     contactEmail: string;
     contactAddress: string;
     allergensText: string;
-    certificates: any[];
+    certificates: Certificate[];
     privacyPolicy?: string;
     refundPolicy?: string;
     termsPolicy?: string;
+}
+
+interface Certificate {
+    image: string;
+    link: string;
 }
 
 
@@ -107,10 +112,10 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
                 </div>
 
                 <div className="space-y-3 pt-2">
-                    <label className="text-sm font-medium">Trust Certifications</label>
+                    <div className="text-sm font-medium">Trust Certifications</div>
                     <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
                         <div className="space-y-3">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add New Certificate</label>
+                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add New Certificate</div>
                             <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-start">
                                 <div className="space-y-1">
                                     <span className="text-xs text-slate-400">Certificate Logo</span>
@@ -141,10 +146,10 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
                         </div>
 
                         <div className="space-y-2 pt-2 border-t border-slate-200">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Certificates</label>
+                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Certificates</div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {(Array.isArray(config.certificates) ? config.certificates : []).map((cert: any, i: number) => (
-                                    <div key={i} className="group relative aspect-square bg-white rounded-lg border-2 border-slate-100 flex flex-col items-center justify-center p-2 hover:border-orange-200 transition-colors">
+                                    <div key={cert.link || cert.image || i} className="group relative aspect-square bg-white rounded-lg border-2 border-slate-100 flex flex-col items-center justify-center p-2 hover:border-orange-200 transition-colors">
                                         <div className="flex-1 w-full flex items-center justify-center p-2">
                                             <img src={cert.image} alt="" className="max-w-full max-h-full object-contain" />
                                         </div>
@@ -176,7 +181,7 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
 
 function RichTextEditor({ value, onChange, placeholder, limit = 5000 }: { value: string, onChange: (val: string) => void, placeholder: string, limit?: number }) {
     const insert = (syntax: string, close = '') => {
-        const textarea = document.getElementById('editor-' + placeholder.replace(/\s+/g, '-')) as HTMLTextAreaElement;
+        const textarea = document.getElementById('editor-' + placeholder.replaceAll(/\s+/g, '-')) as HTMLTextAreaElement;
         if (!textarea) return;
 
         const start = textarea.selectionStart;
@@ -220,7 +225,7 @@ function RichTextEditor({ value, onChange, placeholder, limit = 5000 }: { value:
                 </div>
             </div>
             <Textarea
-                id={'editor-' + placeholder.replace(/\s+/g, '-')}
+                id={'editor-' + placeholder.replaceAll(/\s+/g, '-')}
                 value={value}
                 onChange={(e) => {
                     if (e.target.value.length <= limit) onChange(e.target.value);
@@ -304,7 +309,7 @@ For valid claims, we process refunds directly to your original payment method (o
                 privacyPolicy: res.privacyPolicy ?? undefined,
                 refundPolicy: res.refundPolicy ?? undefined,
                 termsPolicy: res.termsPolicy ?? undefined,
-                certificates: Array.isArray(res.certificates) ? res.certificates : []
+                certificates: Array.isArray(res.certificates) ? (res.certificates as unknown as Certificate[]) : []
             };
             setConfig(safeConfig);
             setOriginalConfig(safeConfig);
@@ -717,7 +722,13 @@ function BackupSettings() {
     );
 }
 
-export function ShopClient({ initialConfig }: { initialConfig: any }) {
+const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {children}
+    </Card>
+);
+
+export function ShopClient({ initialConfig }: { readonly initialConfig: any }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const activeModule = searchParams.get('tab');
@@ -741,70 +752,9 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
         { id: 'shipping', label: 'Delivery Settings', icon: Truck, desc: 'Shipping zones & fees' },
     ];
 
-    return (
-        <div className="space-y-6 max-w-5xl mx-auto">
-            <div className="flex items-center gap-4">
-                {activeModule && (
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleBack}
-                        className="group h-10 w-10 shrink-0 rounded-full border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-white transition-all duration-500 animate-in fade-in slide-in-from-right-8 zoom-in-90"
-                        title="Back to Menu"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-slate-700 group-hover:text-orange-600 group-hover:-translate-x-1 transition-transform duration-300" />
-                    </Button>
-                )}
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Manage Shop</h1>
-                    <p className="text-sm text-slate-500">Configure your store identity and operations.</p>
-                </div>
-            </div>
-
-            {activeModule === 'general' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <ShopGeneralSettings initialConfig={initialConfig} />
-                </Card>
-            ) : activeModule === 'seo' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <SeoSettings initialConfig={initialConfig} />
-                </Card>
-            ) : activeModule === 'footer' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <FooterSettings initialConfig={initialConfig} />
-                </Card>
-            ) : activeModule === 'payment' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <PaymentSettings />
-                </Card>
-            ) : activeModule === 'backup' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <BackupSettings />
-                </Card>
-            ) : activeModule === 'policy' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <PolicySettings />
-                </Card>
-            ) : activeModule === 'shipping' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <DeliverySettings />
-                </Card>
-            ) : activeModule === 'shipping' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <DeliverySettings />
-                </Card>
-            ) : activeModule === 'domain' ? (
-                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <DomainSettings />
-                </Card>
-            ) : activeModule ? (
-                <Card className="p-12 text-center animate-in fade-in zoom-in-95">
-                    <div className="text-4xl mb-4">🚧</div>
-                    <h2 className="text-xl font-bold text-slate-800">Work in Progress</h2>
-                    <p className="text-slate-500 mb-6">This module is coming soon.</p>
-                    <Button onClick={handleBack}>Go Back</Button>
-                </Card>
-            ) : (
+    const renderModuleContent = () => {
+        if (!activeModule) {
+            return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {modules.map((item) => (
                         <Card
@@ -831,7 +781,52 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
                         </Card>
                     ))}
                 </div>
-            )}
+            );
+        }
+
+        switch (activeModule) {
+            case 'general': return <Wrapper><ShopGeneralSettings initialConfig={initialConfig} /></Wrapper>;
+            case 'seo': return <Wrapper><SeoSettings initialConfig={initialConfig} /></Wrapper>;
+            case 'footer': return <Wrapper><FooterSettings initialConfig={initialConfig} /></Wrapper>;
+            case 'payment': return <Wrapper><PaymentSettings /></Wrapper>;
+            case 'backup': return <Wrapper><BackupSettings /></Wrapper>;
+            case 'domain': return <Wrapper><DomainSettings /></Wrapper>;
+            case 'policy': return <Wrapper><PolicySettings /></Wrapper>;
+            case 'shipping': return <Wrapper><DeliverySettings /></Wrapper>;
+            default:
+                return (
+                    <Card className="p-12 text-center animate-in fade-in zoom-in-95">
+                        <div className="text-4xl mb-4">🚧</div>
+                        <h2 className="text-xl font-bold text-slate-800">Work in Progress</h2>
+                        <p className="text-slate-500 mb-6">This module is coming soon.</p>
+                        <Button onClick={handleBack}>Go Back</Button>
+                    </Card>
+                );
+        }
+    };
+
+
+    return (
+        <div className="space-y-6 max-w-5xl mx-auto">
+            <div className="flex items-center gap-4">
+                {activeModule && (
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleBack}
+                        className="group h-10 w-10 shrink-0 rounded-full border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-white transition-all duration-500 animate-in fade-in slide-in-from-right-8 zoom-in-90"
+                        title="Back to Menu"
+                    >
+                        <ArrowLeft className="w-5 h-5 text-slate-700 group-hover:text-orange-600 group-hover:-translate-x-1 transition-transform duration-300" />
+                    </Button>
+                )}
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Manage Shop</h1>
+                    <p className="text-sm text-slate-500">Configure your store identity and operations.</p>
+                </div>
+            </div>
+
+            {renderModuleContent()}
         </div>
     );
 }

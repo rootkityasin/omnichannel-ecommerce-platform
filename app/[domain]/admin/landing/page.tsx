@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, GripVertical, X, Loader2, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/admin/ImageUpload';
+
 import { StoryEditor } from '@/components/admin/StoryEditor';
 import { CartEditor } from '@/components/admin/CartEditor';
 import { getHeroSlides, createHeroSlide, updateHeroSlide, deleteHeroSlide, updateHeroSlideOrder } from '@/app/actions/hero';
@@ -74,6 +75,7 @@ function SortableItem({ slide, onEdit, onDelete }: { slide: HeroSlide, onEdit: (
 
                 <div className="relative h-48 bg-slate-100">
                     {slide.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
@@ -166,7 +168,7 @@ export default function LandingPage() {
             }
             setIsEditing(false);
             loadSlides();
-        } catch (error) {
+        } catch {
             toast.error('Failed to save slide');
         } finally {
             setSaving(false);
@@ -179,7 +181,7 @@ export default function LandingPage() {
             await deleteHeroSlide(id);
             toast.success('Slide deleted');
             loadSlides();
-        } catch (error) {
+        } catch {
             toast.error('Failed to delete slide');
         }
     };

@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Filter, Plus, Edit, ExternalLink, MessageCircle, LayoutGrid, List, Check, X, Clock, Truck, ChefHat, ChevronDown, Package, CheckCircle, AlertOctagon, RotateCcw, CreditCard, Ban, Calendar as CalendarIcon, Printer } from 'lucide-react';
+import { Search, Filter, Plus, Edit, MessageCircle, LayoutGrid, List, Check, X, ChevronDown, AlertOctagon, RotateCcw, Ban, Calendar as CalendarIcon, Printer } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +52,7 @@ type ProductOption = Awaited<ReturnType<typeof getProducts>>[number];
 
 export default function OrdersPage() {
     // Global State
-    const { orders, addOrder, updateOrder, deleteOrder, setOrders } = useAdmin();
+    const { orders, updateOrder, deleteOrder, setOrders } = useAdmin();
     const { data: session } = useSession();
     const userRole = session?.user?.role;
     const userPermissions = session?.user?.permissions || [];

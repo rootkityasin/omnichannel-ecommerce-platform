@@ -15,9 +15,24 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Save, Printer, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+interface InvoiceConfig {
+    invoiceTheme: string;
+    invoiceDetails: {
+        showSeller: boolean;
+        showBuyer: boolean;
+        showSignature: boolean;
+        watermarkOpacity: number;
+        fontSize: number;
+        showQr: boolean;
+        showLogo: boolean;
+        [key: string]: any; // Allow extensibility
+    };
+    [key: string]: any;
+}
+
 export default function InvoiceSettingsPage() {
     const { settings, updateSettings } = useAdmin();
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<InvoiceConfig>({
         invoiceTheme: 'modern',
         invoiceDetails: {
             showSeller: true,
@@ -64,7 +79,7 @@ export default function InvoiceSettingsPage() {
     };
 
     const updateDetail = (key: string, value: any) => {
-        setConfig((prev: any) => ({
+        setConfig((prev: InvoiceConfig) => ({
             ...prev,
             invoiceDetails: {
                 ...prev.invoiceDetails,

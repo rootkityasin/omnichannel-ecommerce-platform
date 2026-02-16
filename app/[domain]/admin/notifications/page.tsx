@@ -1,9 +1,9 @@
 
 import { getNotifications, clearNotifications } from '@/app/actions/notification';
 import { format } from 'date-fns';
-import { Check, Trash2, Bell, Clock } from 'lucide-react';
+import { Trash2, Bell, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default async function NotificationsPage() {
     const notifications = await getNotifications(50);
@@ -41,7 +41,7 @@ export default async function NotificationsPage() {
                         </CardContent>
                     </Card>
                 ) : (
-                    notifications.map((n: any) => (
+                    notifications.map((n: { id: string; title: string; message: string; type: string; createdAt: Date; read: boolean }) => (
                         <Card key={n.id} className={`transition-colors ${!n.read ? 'bg-blue-50/30 border-blue-100' : 'hover:bg-slate-50'}`}>
                             <CardContent className="p-5 flex items-start gap-4">
                                 <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${!n.read ? 'bg-blue-500' : 'bg-slate-300'}`} />
@@ -50,10 +50,7 @@ export default async function NotificationsPage() {
                                         <h4 className={`text-base font-medium ${!n.read ? 'text-slate-900' : 'text-slate-700'}`}>
                                             {n.title}
                                         </h4>
-                                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {format(new Date(n.createdAt), 'MMM d, yyyy h:mm a')}
-                                        </span>
+                                        <span className="text-xs text-slate-400 whitespace-nowrap ml-4">{format(n.createdAt, 'MMM d, h:mm a')}</span>
                                     </div>
                                     <p className="text-slate-600 leading-relaxed text-sm">
                                         {n.message}

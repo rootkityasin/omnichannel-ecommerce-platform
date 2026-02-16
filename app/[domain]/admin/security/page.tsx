@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { SecurityLog, TrustedDevice } from '@prisma/client';
 import { format } from 'date-fns';
 import { DangerZone } from '@/components/admin/DangerZone';
 import { Shield, AlertTriangle, UserCheck, Smartphone, Key, Users } from 'lucide-react';
@@ -71,7 +72,7 @@ export default async function SecurityDashboard() {
                                 Trusted Devices (2-Hour Access)
                             </h2>
                             <div className="space-y-4">
-                                {devices.map((device: any) => (
+                                {devices.map((device: TrustedDevice) => (
                                     <div key={device.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100">
                                         <div>
                                             <p className="font-bold text-slate-800">{device.name}</p>
@@ -99,7 +100,7 @@ export default async function SecurityDashboard() {
                                 Security Audit Log
                             </h2>
                             <div className="space-y-0 divide-y divide-slate-100 h-[300px] overflow-y-auto">
-                                {logs.map((log: any) => (
+                                {logs.map((log: SecurityLog) => (
                                     <div key={log.id} className="py-3 flex items-start justify-between">
                                         <div>
                                             <p className="text-sm font-bold text-slate-800">{log.action}</p>

@@ -181,7 +181,15 @@ export default function AdminDashboard() {
     );
 }
 
-function MetricCard({ title, value, icon: Icon, trend, trendColor }: any) {
+interface MetricCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ElementType;
+    trend: string;
+    trendColor: string;
+}
+
+function MetricCard({ title, value, icon: Icon, trend, trendColor }: MetricCardProps) {
     return (
         <Card className="border-gray-100 shadow-sm">
             <CardContent className="p-6 flex items-start justify-between">
