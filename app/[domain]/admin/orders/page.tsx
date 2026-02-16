@@ -37,7 +37,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
-import { useAdmin } from '@/components/providers/AdminProvider';
+import { useAdmin, type AdminOrder } from '@/components/providers/AdminProvider';
 import { format } from "date-fns"
 import { getSiteConfig } from '@/app/actions/settings';
 import { getAdminOrders, createOrder as createOrderAction, printOrderInvoice } from '@/app/actions/order';
@@ -47,7 +47,7 @@ import { toast } from 'sonner';
 
 import { useSession } from 'next-auth/react';
 
-type AdminOrder = Awaited<ReturnType<typeof getAdminOrders>>[number];
+// AdminOrder is imported from AdminProvider now
 type ProductOption = Awaited<ReturnType<typeof getProducts>>[number];
 
 export default function OrdersPage() {

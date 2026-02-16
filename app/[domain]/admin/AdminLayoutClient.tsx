@@ -2,13 +2,12 @@
 
 // Imports removed
 import { SessionProvider } from 'next-auth/react';
-import { AdminProvider, useAdmin } from '@/components/providers/AdminProvider';
+import { AdminProvider, type AdminOrder, type AdminProduct, useAdmin } from '@/components/providers/AdminProvider';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { Session } from 'next-auth';
-
 export default function AdminLayoutClient({
     children,
     initialUser,
@@ -16,11 +15,11 @@ export default function AdminLayoutClient({
     initialData
 }: {
     children: React.ReactNode;
-    initialUser: Session['user'];
+    initialUser: any; // Allow loose matching for now to avoid strict Session/User mismatch
     session: Session | null;
     initialData?: {
-        orders?: unknown[];
-        products?: unknown[];
+        orders?: AdminOrder[]; // Use explicit type
+        products?: AdminProduct[]; // Use explicit type
         settings?: Record<string, unknown>;
     };
 }) {

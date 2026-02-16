@@ -91,7 +91,10 @@ export default async function AdminLayout({
     const initialData = {
         orders: initialOrders || [],
         settings: initialConfig || {},
-        products: initialProducts || []
+        products: (initialProducts || []).map(p => ({
+            ...p,
+            stock: p.isAvailable ?? true
+        }))
     };
 
     // Return Client Layout
