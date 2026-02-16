@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Save, Globe, Check, Link as LinkIcon, AlertTriangle, Copy, RefreshCw, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Globe, Link as LinkIcon, AlertTriangle, Copy, RefreshCw, Trash2, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +29,16 @@ export function DomainSettings() {
     // State to track original values
     const [originalConfig, setOriginalConfig] = useState<any>(null);
     const [hasChanges, setHasChanges] = useState(false);
+
+
+    const checkStatus = async (domain: string) => {
+        setVerifying(true);
+        const res = await checkDomainStatus(domain);
+        setVerifying(false);
+        if (res.success) {
+            setDomainStatus(res.status);
+        }
+    };
 
     const loadConfig = async () => {
         const data = await getSiteConfig();
@@ -51,15 +61,6 @@ export function DomainSettings() {
     useEffect(() => {
         loadConfig();
     }, []);
-
-    const checkStatus = async (domain: string) => {
-        setVerifying(true);
-        const res = await checkDomainStatus(domain);
-        setVerifying(false);
-        if (res.success) {
-            setDomainStatus(res.status);
-        }
-    };
 
     // Check for changes
     useEffect(() => {

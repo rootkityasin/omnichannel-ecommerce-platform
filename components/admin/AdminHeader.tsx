@@ -43,7 +43,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
         try {
             const data = await getNotifications();
             setNotifications(data);
-            setUnreadCount(data.filter((n: any) => !n.read).length);
+            setUnreadCount(data.filter((n: Notification) => !n.read).length);
         } catch (error) {
             console.error(error);
         }

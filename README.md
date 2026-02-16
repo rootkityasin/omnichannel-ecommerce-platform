@@ -91,8 +91,8 @@ Benchmarks performed on standard local hardware. Cloud deployment (Vercel) expec
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/rootkityasin/CrabKhai.git
-   cd CrabKhai
+   git clone https://github.com/rootkityasin/omnichannel-ecommerce-platform.git
+   cd omnichannel-ecommerce-platform
    ```
 
 2. **Install dependencies**
@@ -122,7 +122,7 @@ Benchmarks performed on standard local hardware. Cloud deployment (Vercel) expec
 ## Project Structure
 
 ```
-crab-khai/
+omnichannel-ecommerce-platform/
 ├── app/                  # Application Routes (Next.js App Router)
 │   ├── (client)/         # Public Storefront
 │   ├── admin/            # Administrative Dashboard

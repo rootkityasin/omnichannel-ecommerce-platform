@@ -31,8 +31,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Crab & Khai - Authentic Seafood",
-  description: "Best Crab and Seafood Restaurant in Dhaka",
+  title: "Omnichannel Ecommerce Platform",
+  description: "Enterprise-grade multi-tenant e-commerce suite for scalability and security.",
 };
 
 // remove imports

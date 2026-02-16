@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Save, ShoppingCart, CheckCircle, ArrowRight, Minus, Plus, Trash2, GripVertical, X } from 'lucide-react';
+import { Loader2, Save, ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { getStorySections, updateStorySection } from '@/app/actions/story';
 import { getPaymentConfig } from '@/app/actions/settings';
-import { motion } from 'framer-motion';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import {
     Select,
@@ -91,6 +90,22 @@ export function CartEditor() {
     const [originalConfig, setOriginalConfig] = useState<CartConfig | null>(null);
     const [hasChanges, setHasChanges] = useState(false);
 
+    const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [trxId, setTrxId] = useState('');
+
+    // Payment Config 
+    const [paymentConfig, setPaymentConfig] = useState<any>({
+        codEnabled: true,
+        bkashEnabled: true,
+        selfMfsEnabled: true,
+        selfMfsPhone: "01700000000",
+        selfMfsType: "Personal",
+        selfMfsInstruction: "Use 'Send Money' option.",
+        advancePaymentType: "FIXED",
+        advancePaymentValue: 100,
+        bkashImage: ""
+    });
+
     const loadData = async () => {
         setLoading(true);
         const [sections, paymentConf] = await Promise.all([
@@ -128,22 +143,6 @@ export function CartEditor() {
         }
         setSaving(false);
     };
-
-    const [paymentMethod, setPaymentMethod] = useState('COD');
-    const [trxId, setTrxId] = useState('');
-
-    // Payment Config 
-    const [paymentConfig, setPaymentConfig] = useState<any>({
-        codEnabled: true,
-        bkashEnabled: true,
-        selfMfsEnabled: true,
-        selfMfsPhone: "01700000000",
-        selfMfsType: "Personal",
-        selfMfsInstruction: "Use 'Send Money' option.",
-        advancePaymentType: "FIXED",
-        advancePaymentValue: 100,
-        bkashImage: ""
-    });
 
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-slate-400" /></div>;
 
