@@ -68,6 +68,16 @@ export interface AdminProduct {
     stock: boolean;
     hubId?: string;
     sections?: { id: string }[];
+    // For Kanban Board & Stock List
+    pieces?: number;
+    stage?: string;
+    type?: 'SIMPLE' | 'COMBO';
+    comboItems?: {
+        quantity: number;
+        child?: {
+            pieces: number;
+        };
+    }[];
     [key: string]: unknown;
 }
 

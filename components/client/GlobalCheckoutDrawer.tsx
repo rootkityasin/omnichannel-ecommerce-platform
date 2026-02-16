@@ -9,8 +9,8 @@ import { User } from 'next-auth';
 type TranslationsType = typeof translations.en;
 
 // Helper for Extended User (until next-auth.d.ts is fully set up)
-interface ExtendedUser extends User {
-    role?: any; // Override strict typing for now or match global type if possible
+interface ExtendedUser extends Omit<User, 'role'> {
+    role?: string;
     phone?: string;
 }
 import { useState, useEffect } from 'react';
@@ -54,12 +54,12 @@ function CheckoutForm({
     setFormData,
     handlePlaceOrder,
     errors = {}
-}: {
+}: Readonly<{
     formData: CheckoutFormData,
     setFormData: (data: CheckoutFormData) => void,
     handlePlaceOrder: (e: React.FormEvent) => void,
     errors?: Partial<Record<keyof CheckoutFormData, string>>
-}) {
+}>) {
     return (
         <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-4">
             <div className="space-y-4">
@@ -132,7 +132,7 @@ interface OrderSummaryProps {
     totalAmount: number;
 }
 
-function OrderSummary({ items, subTotalAmount, deliveryFee, discountAmount, totalAmount }: OrderSummaryProps) {
+function OrderSummary({ items, subTotalAmount, deliveryFee, discountAmount, totalAmount }: Readonly<OrderSummaryProps>) {
     return (
         <div className="space-y-4 h-full">
             <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 space-y-4 shadow-sm">
@@ -173,7 +173,7 @@ interface SuccessViewProps {
     formData: CheckoutFormData;
 }
 
-function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData }: SuccessViewProps) {
+function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData }: Readonly<SuccessViewProps>) {
     return (
         <div className="flex flex-col items-center justify-center text-center p-8 space-y-6 animate-in fade-in zoom-in duration-300 min-h-[50vh]">
             <div className="w-48 h-48 md:w-64 md:h-64 mb-2 flex items-center justify-center overflow-hidden">
@@ -214,7 +214,7 @@ function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData 
     );
 }
 
-function CheckoutButton({ isAnimating, totalAmount }: { isAnimating: boolean, totalAmount: number }) {
+function CheckoutButton({ isAnimating, totalAmount }: Readonly<{ isAnimating: boolean, totalAmount: number }>) {
     return (
         <Button
             form="checkout-form"
@@ -242,7 +242,7 @@ export function GlobalCheckoutDrawer() {
     useEffect(() => {
         const loadTexts = async () => {
             const sections = await getStorySections();
-            const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
+            const cartSection = sections.find((s: { type: string; content: unknown }) => s.type === 'CART_TEXTS');
             if (cartSection?.content) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setCartTexts(cartSection.content as CartTexts);
@@ -270,12 +270,13 @@ export function GlobalCheckoutDrawer() {
     }, []);
 
     useEffect(() => {
-        if (session?.user && (session.user as any).role === 'USER') { // Only auto-fill for customers
+        const user = session?.user as ExtendedUser;
+        if (user && user.role === 'USER') { // Only auto-fill for customers
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData((prev: CheckoutFormData) => ({
                 ...prev,
-                name: prev.name || session?.user?.name || '',
-                phone: prev.phone || (session?.user as ExtendedUser)?.phone || session?.user?.email || '',
+                name: prev.name || user?.name || '',
+                phone: prev.phone || user?.phone || user?.email || '',
             }));
         }
     }, [session]);

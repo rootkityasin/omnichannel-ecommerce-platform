@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCartStore } from '@/lib/store';
 import { Minus, Plus, Trash2, ArrowRight, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
@@ -50,12 +51,10 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
     }, [searchParams]);
 
     // Payment State - Initialize from props
-    const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(initialPaymentConfig);
-    const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(initialSiteConfig);
-    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bkash' | 'nagad'>('cod');
-    const [trxId, setTrxId] = useState('');
-    const [cartTexts, setCartTexts] = useState<CartTexts | null>(initialCartTexts);
-    const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
+    const siteConfig = initialSiteConfig;
+    const cartTexts = initialCartTexts;
+
+    // Form State (Default structure + dynamic)
 
     // Form State (Default structure + dynamic)
     const [formData, setFormData] = useState<CheckoutFormData>({
@@ -65,24 +64,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
         address: ''
     });
 
-    useEffect(() => {
-        // Initialize payment method based on config
-        if (initialPaymentConfig) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            if (initialPaymentConfig.codEnabled) setPaymentMethod('cod');
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            else if (initialPaymentConfig.bkashEnabled) setPaymentMethod('bkash');
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            else if (initialPaymentConfig.nagadEnabled) setPaymentMethod('nagad');
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            else if (initialPaymentConfig.selfMfsEnabled) setPaymentMethod('cod'); // Manual maps to cod or something else? 'MANUAL' is not in type.
-            // Type is 'cod' | 'bkash' | 'nagad'. 'MANUAL' is invalid.
-            // If selfMfsEnabled, maybe use 'cod' or add 'manual' to type?
-            // For now, I'll map to 'cod' or removing the line if 'MANUAL' is not supported.
-            // But let's assume 'cod' for now as fallback or just comment it out if typed strict.
-            // actually line 55 says: useState<'cod' | 'bkash' | 'nagad'>('cod');
-        }
-    }, [initialPaymentConfig]);
+
 
     // Tax Calculation
     const subTotalAmount = total();
@@ -124,7 +106,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
             orderNotes: Object.keys(formData)
                 .filter(k => !['name', 'phone', 'area', 'address'].includes(k))
                 .map(k => {
-                    const field = cartTexts?.fields?.find((f: any) => f.id === k);
+                    const field = cartTexts?.fields?.find((f) => f.id === k);
                     return field ? `${field.label}: ${formData[k]}` : `${k}: ${formData[k]}`;
                 })
                 .join('\n'),
@@ -180,11 +162,12 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
     if (isOrderPlaced) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-                <div className="w-64 h-64 mb-6 flex items-center justify-center overflow-hidden">
-                    <img
+                <div className="w-64 h-64 mb-6 flex items-center justify-center overflow-hidden relative">
+                    <Image
                         src={cartTexts?.successImage || "/congrates_animation.gif"}
                         alt="Order Confirmed"
-                        className="w-full h-full object-contain scale-105"
+                        fill
+                        className="object-contain scale-105"
                     />
                 </div>
                 <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${headingClass}`}>{cartTexts?.successTitle || t.cartPage.successTitle}</h2>
@@ -215,10 +198,11 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
                 )}
 
                 <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
-                    <img
+                    <Image
                         src={cartTexts?.emptyImage || "/empty_cart_animation.gif"}
                         alt="Empty Cart"
-                        className="w-full h-full object-contain"
+                        fill
+                        className="object-contain"
                     />
                 </div>
 
@@ -282,7 +266,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
                                     {/* Image */}
                                     <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 relative border border-gray-100">
                                         {item.image ? (
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-300">No Image</div>
                                         )}

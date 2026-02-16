@@ -7,14 +7,14 @@ import { adjustStock, updateStock } from "@/app/actions/inventory";
 import { getSiteConfig } from "@/app/actions/settings";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { Search, Save, Plus, Minus, RefreshCw } from "lucide-react";
+import { Search, Plus, Minus } from "lucide-react";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogHeader,
-    DialogTitle,
+    DialogTitle, // Keeping DialogTitle as it's likely used
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { AdminProduct, SiteConfig } from "@/types/common";
@@ -23,8 +23,8 @@ import Image from "next/image";
 // Extended interface for StockList usage
 interface StockListProduct extends AdminProduct {
     category: { name: string };
-    type: string;
-    comboItems?: any[];
+    type: 'SIMPLE' | 'COMBO';
+    // comboItems inherited with correct type
     pieces: number;
     weight: number;
     image?: string;
@@ -146,7 +146,7 @@ export function StockList({ products }: { products: StockListProduct[] }) {
                                                 {(() => {
                                                     // Calculate Virtual Stock
                                                     if (!p.comboItems || p.comboItems.length === 0) return '0 Sets';
-                                                    const limits = p.comboItems.map((item: any) =>
+                                                    const limits = p.comboItems.map((item) =>
                                                         item.child ? Math.floor(item.child.pieces / item.quantity) : 0
                                                     );
                                                     return `${Math.min(...limits)} Sets`;

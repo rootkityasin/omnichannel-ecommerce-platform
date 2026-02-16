@@ -29,13 +29,13 @@ export function StoryEditor() {
     const [productsSection, setProductsSection] = useState<ProductsSectionContent>({ title: 'Our Signatures', productIds: [] });
 
     // Change detection
-    const [originalState, setOriginalState] = useState<any>({});
-    const checkChanges = (key: string, current: any) => {
+    const [originalState, setOriginalState] = useState<Record<string, unknown>>({});
+    const checkChanges = (key: string, current: unknown) => {
         if (!originalState[key]) return false;
         return JSON.stringify(current) !== JSON.stringify(originalState[key]);
     };
 
-    const [availableProducts, setAvailableProducts] = useState<any[]>([]);
+    const [availableProducts, setAvailableProducts] = useState<{ id: string; name: string; image?: string | null }[]>([]);
     const [saving, setSaving] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('hero');
 
@@ -48,15 +48,15 @@ export function StoryEditor() {
 
         setAvailableProducts(products);
 
-        const loadedState: any = {};
-        sections.forEach((section: any) => {
-            if (section.type === 'HERO') { setHero(section.content); loadedState['HERO'] = section.content; }
-            if (section.type === 'VALUES') { setValues(section.content); loadedState['VALUES'] = section.content; }
-            if (section.type === 'GALLERY') { setGallery(section.content); loadedState['GALLERY'] = section.content; }
-            if (section.type === 'TEAM') { setTeam(section.content); loadedState['TEAM'] = section.content; }
-            if (section.type === 'WHOLESALE') { setWholesale(section.content); loadedState['WHOLESALE'] = section.content; }
-            if (section.type === 'REVIEWS') { setReviews(section.content); loadedState['REVIEWS'] = section.content; }
-            if (section.type === 'PRODUCTS') { setProductsSection(section.content); loadedState['PRODUCTS'] = section.content; }
+        const loadedState: Record<string, unknown> = {};
+        sections.forEach((section: { type: string; content: unknown }) => {
+            if (section.type === 'HERO') { setHero(section.content as HeroContent); loadedState['HERO'] = section.content; }
+            if (section.type === 'VALUES') { setValues(section.content as ValuesContent); loadedState['VALUES'] = section.content; }
+            if (section.type === 'GALLERY') { setGallery(section.content as GalleryItem[]); loadedState['GALLERY'] = section.content; }
+            if (section.type === 'TEAM') { setTeam(section.content as TeamMember[]); loadedState['TEAM'] = section.content; }
+            if (section.type === 'WHOLESALE') { setWholesale(section.content as WholesaleContent); loadedState['WHOLESALE'] = section.content; }
+            if (section.type === 'REVIEWS') { setReviews(section.content as ReviewsContent); loadedState['REVIEWS'] = section.content; }
+            if (section.type === 'PRODUCTS') { setProductsSection(section.content as ProductsSectionContent); loadedState['PRODUCTS'] = section.content; }
         });
         setOriginalState(loadedState);
         setLoading(false);
@@ -88,9 +88,9 @@ export function StoryEditor() {
         }
     }, [activeTab]);
 
-    const handleSave = async (type: string, content: any) => {
+    const handleSave = async (type: string, content: unknown) => {
         setSaving(type);
-        const res = await updateStorySection(type, content);
+        const res = await updateStorySection(type, content as any);
         if (res.success) {
             toast.success(`${type} section updated`);
             setOriginalState({ ...originalState, [type]: content });
@@ -358,7 +358,7 @@ export function StoryEditor() {
                                 <div>
                                     <h4 className="font-semibold mb-2">Grid Images (Top 3)</h4>
                                     <div className="grid grid-cols-3 gap-4">
-                                        {reviews.gridImages?.map((img: any, idx: number) => (
+                                        {reviews.gridImages?.map((img, idx) => (
                                             <div key={idx} className="space-y-2">
                                                 <ImageUpload value={img.src} onChange={url => {
                                                     const newG = [...reviews.gridImages];
@@ -465,7 +465,7 @@ export function StoryEditor() {
                                 wholesale,
                                 reviews
                             }}
-                            products={availableProducts.filter((p: any) => productsSection.productIds?.includes(p.id))}
+                            products={availableProducts.filter((p) => productsSection.productIds?.includes(p.id))}
                         />
                     </div>
                 </div>

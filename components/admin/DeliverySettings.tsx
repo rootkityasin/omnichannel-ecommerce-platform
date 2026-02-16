@@ -3,13 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getDeliveryConfig, updateDeliveryConfig } from '@/app/actions/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,10 +19,9 @@ import {
     Eye,
     EyeOff,
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const DISTRICTS = [
     "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogura", "Brahmanbaria", "Chandpur", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar",
@@ -532,8 +525,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="/images/pathao.png" alt="Pathao" className="w-full h-full object-contain" />
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden relative">
+                                <Image src="/images/pathao.png" alt="Pathao" fill className="object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Pathao</CardTitle>
@@ -549,7 +542,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Pathao Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="/images/pathao.png" alt="Pathao" className="h-6 object-contain" />
+                                <Image src="/images/pathao.png" alt="Pathao" width={24} height={24} className="h-6 w-auto object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Pathao</span>
                             </div>
@@ -615,8 +608,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="/images/steadfast.png" alt="Steadfast" className="w-full h-full object-contain" />
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden relative">
+                                <Image src="/images/steadfast.png" alt="Steadfast" fill className="object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Steadfast</CardTitle>
@@ -632,7 +625,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Steadfast Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="/images/steadfast.png" alt="Steadfast" className="h-6 object-contain" />
+                                <Image src="/images/steadfast.png" alt="Steadfast" width={24} height={24} className="h-6 w-auto object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Steadfast</span>
                             </div>
@@ -685,8 +678,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="/images/redx_logo.png" alt="Redx" className="w-full h-full object-contain" />
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden relative">
+                                <Image src="/images/redx_logo.png" alt="Redx" fill className="object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Redx</CardTitle>
@@ -702,7 +695,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Redx Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="/images/redx_logo.png" alt="Redx" className="h-6 object-contain" />
+                                <Image src="/images/redx_logo.png" alt="Redx" width={24} height={24} className="h-6 w-auto object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Redx</span>
                             </div>
@@ -737,8 +730,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="/images/paperfly.png" alt="Paperfly" className="w-full h-full object-contain" />
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden relative">
+                                <Image src="/images/paperfly.png" alt="Paperfly" fill className="object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Paperfly</CardTitle>
@@ -754,7 +747,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Paperfly Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="/images/paperfly.png" alt="Paperfly" className="h-6 object-contain" />
+                                <Image src="/images/paperfly.png" alt="Paperfly" width={24} height={24} className="h-6 w-auto object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Paperfly</span>
                             </div>

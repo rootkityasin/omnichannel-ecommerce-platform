@@ -14,7 +14,7 @@ export default function AdminLayoutClient({
     initialUser,
     session,
     initialData
-}: {
+}: Readonly<{
     children: React.ReactNode;
     initialUser?: User;
     session: Session | null;
@@ -23,7 +23,7 @@ export default function AdminLayoutClient({
         products?: AdminProduct[];
         settings?: SiteConfig;
     };
-}) {
+}>) {
     return (
         <SessionProvider session={session}>
             <AdminProvider initialUser={initialUser} initialData={initialData}>
@@ -38,7 +38,7 @@ export default function AdminLayoutClient({
     );
 }
 
-function MainContentWrapper({ children }: { children: React.ReactNode }) {
+function MainContentWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
     const { isSidebarCollapsed } = useAdmin();
     return (
         <main className={cn("transition-all duration-300 ease-in-out w-auto", isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>

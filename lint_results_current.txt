@@ -1,0 +1,631 @@
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\orders\print\[id]\page.tsx[24m[0m
+[0m   [2m61:25[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m217:41[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\products\page.tsx[24m[0m
+[0m     [2m7:67[22m  [33mwarning[39m  'Upload' is defined but never used                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m     [2m7:81[22m  [33mwarning[39m  'Eye' is defined but never used                                                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m31:10[22m  [33mwarning[39m  'Switch' is defined but never used                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m32:10[22m  [33mwarning[39m  'getProducts' is defined but never used                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m46:16[22m  [33mwarning[39m  'TabsList' is defined but never used                                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m46:26[22m  [33mwarning[39m  'TabsTrigger' is defined but never used                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m50:8[22m   [33mwarning[39m  'Link' is defined but never used                                                                              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m117:12[22m  [33mwarning[39m  'fetchLoading' is assigned a value but never used                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m122:11[22m  [33mwarning[39m  'debouncedSearch' is assigned a value but never used                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m193:8[22m   [33mwarning[39m  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m   [2m231:18[22m  [33mwarning[39m  'error' is defined but never used                                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m241:8[22m   [33mwarning[39m  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m   [2m253:11[22m  [33mwarning[39m  'formatStock' is assigned a value but never used                                                              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m312:18[22m  [33mwarning[39m  'error' is defined but never used                                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m333:18[22m  [33mwarning[39m  'error' is defined but never used                                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m349:18[22m  [33mwarning[39m  'error' is defined but never used                                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m800:58[22m  [33mwarning[39m  'e' is defined but never used                                                                                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m1228:46[22m  [33mwarning[39m  'e' is defined but never used                                                                                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\promos\page.tsx[24m[0m
+[0m   [2m17:60[22m  [33mwarning[39m  'ImageIcon' is defined but never used                                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:71[22m  [33mwarning[39m  'Check' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m305:45[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\reviews\page.tsx[24m[0m
+[0m  [2m111:49[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\security\device-setup\page.tsx[24m[0m
+[0m  [2m27:18[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\security\page.tsx[24m[0m
+[0m  [2m5:33[22m  [33mwarning[39m  'UserCheck' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m5:61[22m  [33mwarning[39m  'Users' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\settings\invoice\page.tsx[24m[0m
+[0m  [2m232:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m248:49[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m346:53[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\settings\page.tsx[24m[0m
+[0m   [2m16:7[22m   [33mwarning[39m  'initialConfig' is assigned a value but never used                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m229:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\theme\page.tsx[24m[0m
+[0m   [2m8:14[22m  [33mwarning[39m  'Layout' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m8:22[22m  [33mwarning[39m  'Check' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:13[22m  [33mwarning[39m  'MenuIcon' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:23[22m  [33mwarning[39m  'Search' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:31[22m  [33mwarning[39m  'MapPin' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:39[22m  [33mwarning[39m  'ShoppingCart' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:53[22m  [33mwarning[39m  'User' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:59[22m  [33mwarning[39m  'Home' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:65[22m  [33mwarning[39m  'Grid' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:71[22m  [33mwarning[39m  'BookOpen' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:5[22m   [33mwarning[39m  'Fish' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:11[22m  [33mwarning[39m  'Utensils' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:21[22m  [33mwarning[39m  'Award' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:28[22m  [33mwarning[39m  'Flame' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:35[22m  [33mwarning[39m  'Star' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:41[22m  [33mwarning[39m  'Package' is defined but never used           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:50[22m  [33mwarning[39m  'CreditCard' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:5[22m   [33mwarning[39m  'HelpCircle' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:17[22m  [33mwarning[39m  'LogOut' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:25[22m  [33mwarning[39m  'ChevronRight' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:39[22m  [33mwarning[39m  'Phone' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:46[22m  [33mwarning[39m  'Mail' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:52[22m  [33mwarning[39m  'ShieldCheck' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:5[22m   [33mwarning[39m  'AlertTriangle' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:20[22m  [33mwarning[39m  'Camera' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:28[22m  [33mwarning[39m  'ArrowRight' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:40[22m  [33mwarning[39m  'Minus' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:47[22m  [33mwarning[39m  'Trash2' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:55[22m  [33mwarning[39m  'Plus' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:61[22m  [33mwarning[39m  'Info' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:67[22m  [33mwarning[39m  'X' is defined but never used                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m13:5[22m   [33mwarning[39m  'Laptop' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m13:13[22m  [33mwarning[39m  'Tablet' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m17:10[22m  [33mwarning[39m  'getHeroSlides' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m18:10[22m  [33mwarning[39m  'getProducts' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m19:10[22m  [33mwarning[39m  'getStorySections' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m20:10[22m  [33mwarning[39m  'StoryLayout' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m21:18[22m  [33mwarning[39m  'AnimatePresence' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m29:12[22m  [33mwarning[39m  'config' is assigned a value but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m72:18[22m  [33mwarning[39m  'error' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\admin-helper.ts[24m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'revalidatePath' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:14[22m  [33mwarning[39m  'error' is defined but never used           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\coupon.ts[24m[0m
+[0m  [2m72:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m82:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\hero.ts[24m[0m
+[0m  [2m4:26[22m  [33mwarning[39m  'unstable_cache' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\inventory.ts[24m[0m
+[0m   [2m24:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m41:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m117:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m130:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\promo.ts[24m[0m
+[0m  [2m158:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\security.ts[24m[0m
+[0m  [2m7:7[22m  [33mwarning[39m  'SETUP_SECRET' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\super-admin.ts[24m[0m
+[0m    [2m6:10[22m  [33mwarning[39m  'redirect' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m114:11[22m  [33mwarning[39m  'session' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\upload.ts[24m[0m
+[0m  [2m44:22[22m  [33mwarning[39m  'e' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\user.ts[24m[0m
+[0m  [2m181:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m217:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m234:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m356:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m435:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\api\csp-report\route.ts[24m[0m
+[0m  [2m11:15[22m  [33mwarning[39m  'originalPolicy' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\CompanyUsersModal.tsx[24m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'Button' is defined but never used                                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m49:8[22m   [33mwarning[39m  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\DashboardClient.tsx[24m[0m
+[0m  [2m20:14[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m27:19[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\EditCompanyModal.tsx[24m[0m
+[0m   [2m4:93[22m  [33mwarning[39m  'DialogTrigger' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:10[22m  [33mwarning[39m  'updateTenantStatus' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m13:25[22m  [33mwarning[39m  'Building2' is defined but never used                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m30:23[22m  [33mwarning[39m  'startTransition' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\TenantCard.tsx[24m[0m
+[0m  [2m36:19[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\page.tsx[24m[0m
+[0m  [2m6:11[22m  [33mwarning[39m  'session' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\plans\page.tsx[24m[0m
+[0m  [2m11:93[22m  [33mwarning[39m  'DialogTrigger' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m45:59[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\layout.tsx[24m[0m
+[0m  [2m39:10[22m  [33mwarning[39m  'getSiteConfig' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m40:10[22m  [33mwarning[39m  'ThemeInjector' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\auth.ts[24m[0m
+[0m  [2m23:34[22m  [33mwarning[39m  'trigger' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m23:43[22m  [33mwarning[39m  'session' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\check_db.js[24m[0m
+[0m  [2m1:26[22m  [31merror[39m  A `require()` style import is forbidden  [2m@typescript-eslint/no-require-imports[22m[0m
+[0m  [2m2:1[22m   [31merror[39m  A `require()` style import is forbidden  [2m@typescript-eslint/no-require-imports[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\AdminHeader.tsx[24m[0m
+[0m   [2m3:31[22m  [33mwarning[39m  'X' is defined but never used                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m39:12[22m  [33mwarning[39m  'isOpen' is assigned a value but never used                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m39:20[22m  [33mwarning[39m  'setIsOpen' is assigned a value but never used                                                      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m40:12[22m  [33mwarning[39m  'isMobileMenuOpen' is assigned a value but never used                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m40:30[22m  [33mwarning[39m  'setIsMobileMenuOpen' is assigned a value but never used                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m57:11[22m  [33mwarning[39m  'scheduleNextPoll' is assigned a value but never used                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m74:9[22m   [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\AdminSidebar.tsx[24m[0m
+[0m   [2m34:48[22m  [33mwarning[39m  'setOrders' is assigned a value but never used                                                                                                                                                                                                                                           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m57:8[22m   [33mwarning[39m  React Hook useEffect has missing dependencies: 'isSidebarCollapsed' and 'toggleSidebar'. Either include them or remove the dependency array                                                                                                                                              [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m102:15[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m181:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\BlockedListTab.tsx[24m[0m
+[0m  [2m17:50[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m19:55[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\CartEditor.tsx[24m[0m
+[0m   [2m97:12[22m  [33mwarning[39m  '_trxId' is assigned a value but never used                                                                                                                                                                                                                                              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m97:20[22m  [33mwarning[39m  '_setTrxId' is assigned a value but never used                                                                                                                                                                                                                                           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m166:81[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m440:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m552:57[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m562:57[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m581:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\DeliverySettings.tsx[24m[0m
+[0m    [2m7:5[22m   [33mwarning[39m  'Select' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m8:5[22m   [33mwarning[39m  'SelectContent' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m9:5[22m   [33mwarning[39m  'SelectItem' is defined but never used                                                                                                                                                                                                                                                   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m10:5[22m   [33mwarning[39m  'SelectTrigger' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m11:5[22m   [33mwarning[39m  'SelectValue' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m28:16[22m  [33mwarning[39m  'TabsContent' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m29:10[22m  [33mwarning[39m  'Badge' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m30:10[22m  [33mwarning[39m  'Popover' is defined but never used                                                                                                                                                                                                                                                      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m30:19[22m  [33mwarning[39m  'PopoverContent' is defined but never used                                                                                                                                                                                                                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m30:35[22m  [33mwarning[39m  'PopoverTrigger' is defined but never used                                                                                                                                                                                                                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m536:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m552:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m619:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m635:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m689:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m705:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m741:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m757:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\DomainSettings.tsx[24m[0m
+[0m   [2m21:42[22m  [31merror[39m    Unexpected any. Specify a different type                                                                       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m27:54[22m  [31merror[39m    Unexpected any. Specify a different type                                                                       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m30:58[22m  [31merror[39m    Unexpected any. Specify a different type                                                                       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m64:8[22m   [33mwarning[39m  React Hook useEffect has a missing dependency: 'loadConfig'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m   [2m67:11[22m  [33mwarning[39m  'hasChanges' is assigned a value but never used                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m140:11[22m  [33mwarning[39m  'isDomainPending' is assigned a value but never used                                                           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m141:11[22m  [33mwarning[39m  'isDomainError' is assigned a value but never used                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\DynamicInventoryTabs.tsx[24m[0m
+[0m  [2m10:45[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\EventExportButton.tsx[24m[0m
+[0m  [2m34:45[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m47:33[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ExpenseExport.tsx[24m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'Download' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m13:57[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ExpenseList.tsx[24m[0m
+[0m  [2m10:55[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\FulfillmentBoard.tsx[24m[0m
+[0m   [2m8:11[22m  [33mwarning[39m  'Order' is defined but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m18:13[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ImageUpload.tsx[24m[0m
+[0m    [2m5:35[22m  [33mwarning[39m  'ImageIcon' is defined but never used                                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m117:18[22m  [33mwarning[39m  'err' is defined but never used                                                                                                                                                                                                                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m122:8[22m   [33mwarning[39m  React Hook useCallback has a missing dependency: 'uploadFile'. Either include it or remove the dependency array                                                                                                                                                                          [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m148:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\InventoryTabs.tsx[24m[0m
+[0m   [2m5:57[22m  [33mwarning[39m  'ClipboardList' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m18:15[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m19:15[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\PaymentSettings.tsx[24m[0m
+[0m   [2m17:10[22m  [33mwarning[39m  'Select' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:18[22m  [33mwarning[39m  'SelectContent' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:33[22m  [33mwarning[39m  'SelectItem' is defined but never used                                                                                                                                                                                                                                                   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:45[22m  [33mwarning[39m  'SelectTrigger' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:60[22m  [33mwarning[39m  'SelectValue' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m21:21[22m  [33mwarning[39m  'setLoading' is assigned a value but never used                                                                                                                                                                                                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m25:42[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m26:58[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m33:30[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m49:11[22m  [33mwarning[39m  'hasChanges' is assigned a value but never used                                                                                                                                                                                                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m159:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m210:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m280:53[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m286:53[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m393:28[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ProductBoard.tsx[24m[0m
+[0m    [2m4:10[22m  [33mwarning[39m  'Badge' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m6:52[22m  [33mwarning[39m  'X' is defined but never used                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m91:12[22m  [33mwarning[39m  'activeId' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m139:29[22m  [33mwarning[39m  'event' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m159:43[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m160:42[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m297:91[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m311:44[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m313:45[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m314:45[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m347:57[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m357:67[22m  [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\SectionsManager.tsx[24m[0m
+[0m   [2m41:77[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m41:161[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m125:46[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m176:54[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\SeoSettings.tsx[24m[0m
+[0m   [2m12:63[22m   [33mwarning[39m  'AlertCircle' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:20[22m   [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m188:113[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m216:110[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m409:55[22m   [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m430:66[22m   [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m451:37[22m   [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ShopGeneralSettings.tsx[24m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'getSiteConfig' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:40[22m  [33mwarning[39m  'Mail' is defined but never used           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:46[22m  [33mwarning[39m  'FileWarning' is defined but never used    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:87[22m  [33mwarning[39m  'ImageIcon' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m15:74[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m20:58[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m22:42[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m33:56[22m  [31merror[39m    Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\SignalDataCell.tsx[24m[0m
+[0m  [2m17:11[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m40:44[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\StockList.tsx[24m[0m
+[0m    [2m6:23[22m  [33mwarning[39m  'updateStock' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m10:18[22m  [33mwarning[39m  'Save' is defined but never used                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m10:37[22m  [33mwarning[39m  'RefreshCw' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m18:5[22m   [33mwarning[39m  'DialogTrigger' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m27:18[22m  [31merror[39m    Unexpected any. Specify a different type         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m35:12[22m  [33mwarning[39m  'loading' is assigned a value but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m117:35[22m  [33mwarning[39m  'isLowStock' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m149:92[22m  [31merror[39m    Unexpected any. Specify a different type         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m168:55[22m  [33mwarning[39m  'unitValue' is assigned a value but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\StoryEditor.tsx[24m[0m
+[0m   [2m32:56[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m33:49[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m38:64[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m51:28[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m52:36[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m91:54[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m361:72[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m413:57[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m468:68[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\TrustedDeviceRevoke.tsx[24m[0m
+[0m   [2m5:10[22m  [33mwarning[39m  'Trash2' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m26:18[22m  [33mwarning[39m  'error' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\UsersTab.tsx[24m[0m
+[0m    [2m7:10[22m   [33mwarning[39m  'Search' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m7:35[22m   [33mwarning[39m  'Filter' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m7:43[22m   [33mwarning[39m  'RefreshCw' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m7:81[22m   [33mwarning[39m  'Square' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m7:89[22m   [33mwarning[39m  'ChevronLeft' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m7:102[22m  [33mwarning[39m  'ChevronRight' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m9:55[22m   [33mwarning[39m  'getUserProfile' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m23:5[22m    [33mwarning[39m  'DropdownMenuLabel' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m31:40[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m32:12[22m   [33mwarning[39m  'loading' is assigned a value but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m37:70[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m43:52[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m81:18[22m   [33mwarning[39m  'e' is defined but never used                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m104:45[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m111:40[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m129:40[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m159:31[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m183:39[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m194:39[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m212:46[22m   [31merror[39m    Unexpected any. Specify a different type       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\AnimatedSearchBar.tsx[24m[0m
+[0m  [2m165:57[22m  [33mwarning[39m  'index' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m171:41[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\AuthForm.tsx[24m[0m
+[0m    [2m9:19[22m  [33mwarning[39m  'ChevronDown' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m13:10[22m  [33mwarning[39m  'PolicyModal' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m225:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CartDrawer.tsx[24m[0m
+[0m    [2m6:8[22m   [33mwarning[39m  'Link' is defined but never used                                                                                                                                                                                                                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m23:48[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m39:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m   [2m54:51[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m62:8[22m   [33mwarning[39m  React Hook useEffect has a missing dependency: 'y'. Either include it or remove the dependency array                                                                                                                                                                                     [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m102:32[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m109:35[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m216:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m248:41[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CartRecommendations.tsx[24m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'getRecommendedProducts' is defined but never used                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:60[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                      [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m32:8[22m   [33mwarning[39m  React Hook useEffect has missing dependencies: 'allProducts' and 'items'. Either include them or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CategoryNav.tsx[24m[0m
+[0m    [2m3:10[22m  [33mwarning[39m  'useState' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m3:20[22m  [33mwarning[39m  'useEffect' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m3:31[22m  [33mwarning[39m  'useRef' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m62:32[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m70:11[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m249:21[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CouponSection.tsx[24m[0m
+[0m  [2m24:43[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m51:18[22m  [33mwarning[39m  'error' is defined but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\DesktopNavbar.tsx[24m[0m
+[0m    [2m5:10[22m  [33mwarning[39m  'Search' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m5:46[22m  [33mwarning[39m  'X' is defined but never used                                                                                                                                                                                                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m10:31[22m  [33mwarning[39m  'useRef' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m12:10[22m  [33mwarning[39m  'getSiteConfig' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m14:10[22m  [33mwarning[39m  'menuItems' is defined but never used                                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m17:10[22m  [33mwarning[39m  'LocationPermissionDialog' is defined but never used                                                                                                                                                                                                                                     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m18:10[22m  [33mwarning[39m  'toast' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m22:10[22m  [33mwarning[39m  'MobileHeader' is defined but never used                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m28:11[22m  [33mwarning[39m  'router' is assigned a value but never used                                                                                                                                                                                                                                              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m57:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m  [2m136:33[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\FlyOverlay.tsx[24m[0m
+[0m   [2m5:10[22m  [33mwarning[39m  'useEffect' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m26:60[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m26:77[22m  [31merror[39m    Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\GlobalCheckoutDrawer.tsx[24m[0m
+[0m   [2m13:12[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m180:17[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m245:51[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m247:17[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m  [2m268:9[22m   [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m  [2m273:47[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m308:8[22m   [33mwarning[39m  React Hook useEffect has missing dependencies: 'items' and 'totalAmount'. Either include them or remove the dependency array                                                                                                                                                             [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\LocationPermissionDialog.tsx[24m[0m
+[0m  [2m7:5[22m  [33mwarning[39m  'DialogFooter' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m8:5[22m  [33mwarning[39m  'DialogHeader' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Mascot.tsx[24m[0m
+[0m  [2m26:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\MenuClient.tsx[24m[0m
+[0m    [2m3:10[22m  [33mwarning[39m  'Suspense' is defined but never used                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m3:50[22m  [33mwarning[39m  'useRef' is defined but never used                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m6:18[22m  [33mwarning[39m  'Sparkles' is defined but never used                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m6:67[22m  [33mwarning[39m  'Filter' is defined but never used                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m25:22[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m26:24[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m30:11[22m  [33mwarning[39m  'router' is assigned a value but never used                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m57:38[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m76:58[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m105:21[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m  [2m147:39[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m148:55[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\MobileHeader.tsx[24m[0m
+[0m    [2m3:10[22m  [33mwarning[39m  'Menu' is defined but never used                                                                                                                                                                                                                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m3:16[22m  [33mwarning[39m  'Search' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m3:46[22m  [33mwarning[39m  'User' is defined but never used                                                                                                                                                                                                                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m3:52[22m  [33mwarning[39m  'X' is defined but never used                                                                                                                                                                                                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m11:10[22m  [33mwarning[39m  'toast' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m18:10[22m  [33mwarning[39m  'LocationPermissionDialog' is defined but never used                                                                                                                                                                                                                                     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m28:11[22m  [33mwarning[39m  't' is assigned a value but never used                                                                                                                                                                                                                                                   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m61:11[22m  [33mwarning[39m  'handleSearch' is assigned a value but never used                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m76:11[22m  [33mwarning[39m  'handleSearchInput' is assigned a value but never used                                                                                                                                                                                                                                   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m148:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductCard.tsx[24m[0m
+[0m    [2m5:18[22m  [33mwarning[39m  'useMotionValue' is defined but never used                                                                                                                                                                                                                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m5:34[22m  [33mwarning[39m  'useSpring' is defined but never used                                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m5:45[22m  [33mwarning[39m  'useTransform' is defined but never used                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m28:31[22m  [33mwarning[39m  'stage' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m48:12[22m  [33mwarning[39m  'isHovering' is assigned a value but never used                                                                                                                                                                                                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m81:23[22m  [33mwarning[39m  't' is defined but never used                                                                                                                                                                                                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m84:21[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m168:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductInfo.tsx[24m[0m
+[0m   [2m3:10[22m  [33mwarning[39m  'motion' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'Leaf' is defined but never used                                                                                                                                                                                                                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m30:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m60:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductModal.tsx[24m[0m
+[0m    [2m3:33[22m   [33mwarning[39m  'DialogHeader' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m6:60[22m   [33mwarning[39m  'ShoppingBag' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m6:100[22m  [33mwarning[39m  'Info' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m181:58[22m   [33mwarning[39m  'velocity' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductReviews.tsx[24m[0m
+[0m  [2m70:41[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\PromoModal.tsx[24m[0m
+[0m  [2m66:21[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\PromoPopup.tsx[24m[0m
+[0m   [2m11:40[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m69:41[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m101:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ResourcePrefetcher.tsx[24m[0m
+[0m  [2m36:24[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ReviewMoodModal.tsx[24m[0m
+[0m    [2m5:30[22m  [33mwarning[39m  'Trash2' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m26:46[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m33:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m  [2m343:53[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\SectionList.tsx[24m[0m
+[0m  [2m12:15[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\GallerySection.tsx[24m[0m
+[0m  [2m67:25[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\ReviewSection.tsx[24m[0m
+[0m   [2m4:10[22m  [33mwarning[39m  'Star' is defined but never used                                                                                                                                                                                                                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m4:16[22m  [33mwarning[39m  'User' is defined but never used                                                                                                                                                                                                                                                         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m44:25[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m64:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\ScrollyCrab.tsx[24m[0m
+[0m  [2m5:10[22m  [33mwarning[39m  'useRef' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\StickyFooterWrapper.tsx[24m[0m
+[0m  [2m3:10[22m  [33mwarning[39m  'motion' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:18[22m  [33mwarning[39m  'useScroll' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:29[22m  [33mwarning[39m  'useTransform' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m4:10[22m  [33mwarning[39m  'useRef' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m7:49[22m  [33mwarning[39m  'footer' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\StoryLayout.tsx[24m[0m
+[0m  [2m14:15[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m15:17[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m16:26[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m17:18[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m18:15[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m19:20[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m20:18[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m22:15[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\StoryProducts.tsx[24m[0m
+[0m  [2m56:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\TeamSection.tsx[24m[0m
+[0m  [2m76:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\ValuesSection.tsx[24m[0m
+[0m  [2m3:18[22m  [33mwarning[39m  'useScroll' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:29[22m  [33mwarning[39m  'useTransform' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m4:10[22m  [33mwarning[39m  'useRef' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\WholesaleCTA.tsx[24m[0m
+[0m  [2m75:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\TrustFooter.tsx[24m[0m
+[0m    [2m5:8[22m   [33mwarning[39m  'ReactMarkdown' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m6:8[22m   [33mwarning[39m  'rehypeRaw' is defined but never used                                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m8:5[22m   [33mwarning[39m  'Dialog' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m    [2m9:5[22m   [33mwarning[39m  'DialogContent' is defined but never used                                                                                                                                                                                                                                                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m10:5[22m   [33mwarning[39m  'DialogHeader' is defined but never used                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m11:5[22m   [33mwarning[39m  'DialogTitle' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m22:50[22m  [33mwarning[39m  'props' is defined but never used                                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m34:11[22m  [33mwarning[39m  'logoUrl' is assigned a value but never used                                                                                                                                                                                                                                             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m139:54[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m144:37[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\cart\CartClient.tsx[24m[0m
+[0m   [2m53:12[22m  [33mwarning[39m  'paymentConfig' is assigned a value but never used                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m53:27[22m  [33mwarning[39m  'setPaymentConfig' is assigned a value but never used                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m54:24[22m  [33mwarning[39m  'setSiteConfig' is assigned a value but never used                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m55:12[22m  [33mwarning[39m  'paymentMethod' is assigned a value but never used                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m56:12[22m  [33mwarning[39m  'trxId' is assigned a value but never used                                                                                                                                                                                                                                               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m56:19[22m  [33mwarning[39m  'setTrxId' is assigned a value but never used                                                                                                                                                                                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m57:23[22m  [33mwarning[39m  'setCartTexts' is assigned a value but never used                                                                                                                                                                                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m58:12[22m  [33mwarning[39m  'errors' is assigned a value but never used                                                                                                                                                                                                                                              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m58:20[22m  [33mwarning[39m  'setErrors' is assigned a value but never used                                                                                                                                                                                                                                           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m73:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m   [2m75:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m   [2m77:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m  [2m127:63[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m176:41[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m184:21[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m218:21[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m285:45[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m  [2m613:10[22m  [33mwarning[39m  'RemoveIcon' is defined but never used                                                                                                                                                                                                                                                   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\cart\MobileCartItem.tsx[24m[0m
+[0m   [2m3:23[22m  [33mwarning[39m  'Trash2' is defined but never used                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m10:20[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m20:58[22m  [33mwarning[39m  'onRemove' is defined but never used                                                                                                                                                                                                                                                     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m32:21[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\cart\StickyCartFooter.tsx[24m[0m
+[0m   [2m3:31[22m  [33mwarning[39m  'ShoppingBag' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m6:5[22m   [33mwarning[39m  'DrawerClose' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:5[22m   [33mwarning[39m  'DrawerFooter' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m15:10[22m  [33mwarning[39m  'useState' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m28:49[22m  [33mwarning[39m  'itemCount' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\providers\AdminProvider.tsx[24m[0m
+[0m    [2m6:74[22m  [33mwarning[39m  'useRef' is defined but never used                                                                                     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m146:61[22m  [31merror[39m    Unexpected any. Specify a different type                                                                               [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m154:44[22m  [31merror[39m    Unexpected any. Specify a different type                                                                               [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m172:8[22m   [33mwarning[39m  React Hook useEffect has a missing dependency: 'initialData.orders'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\providers\SettingsProvider.tsx[24m[0m
+[0m  [2m91:8[22m  [33mwarning[39m  React Hook useEffect has a missing dependency: 'refreshSettings'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\ui\sonner.tsx[24m[0m
+[0m  [2m3:10[22m  [33mwarning[39m  'toast' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\lib\hooks\use-media-query.ts[24m[0m
+[0m  [2m9:13[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\lib\hooks\useDebounce.ts[24m[0m
+[0m  [2m31:58[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m31:68[22m  [31merror[39m    Unexpected any. Specify a different type                                                            [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m65:17[22m  [33mwarning[39m  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\lib\store.ts[24m[0m
+[0m  [2m35:18[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m36:32[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\parse_lint.js[24m[0m
+[0m  [2m1:12[22m  [31merror[39m  A `require()` style import is forbidden  [2m@typescript-eslint/no-require-imports[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\postcss.config.mjs[24m[0m
+[0m  [2m1:1[22m  [33mwarning[39m  Assign object to a variable before exporting as module default  [2mimport/no-anonymous-default-export[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\scripts\migrate-tenants.ts[24m[0m
+[0m  [2m79:11[22m  [33mwarning[39m  'config' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\scripts\restore-db.ts[24m[0m
+[0m  [2m82:66[22m  [33mwarning[39m  'rIndex' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m84:44[22m  [33mwarning[39m  'kIndex' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[31m[1m✖ 435 problems (110 errors, 325 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[31m[1m  0 errors and 13 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

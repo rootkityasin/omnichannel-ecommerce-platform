@@ -1,9 +1,8 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Share2, Edit, Copy, Trash2, X } from 'lucide-react';
+import { MoreVertical, Share2, Edit, Copy, Trash2 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor, DragStartEvent, DragOverEvent, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -58,7 +57,7 @@ interface DroppableColumnProps {
     readOnly?: boolean;
 }
 
-function DroppableColumn({ col, products, renderCard, readOnly }: DroppableColumnProps) {
+function DroppableColumn({ col, products, renderCard, readOnly }: Readonly<DroppableColumnProps>) {
     const { setNodeRef } = useDroppable({
         id: col.stage,
         disabled: readOnly
@@ -87,7 +86,7 @@ function DroppableColumn({ col, products, renderCard, readOnly }: DroppableColum
     );
 }
 
-export function ProductBoard({ products, onMove, config, onEdit, onClone, onDelete, readOnly }: ProductBoardProps) {
+export function ProductBoard({ products, onMove, config, onEdit, onClone, onDelete, readOnly }: Readonly<ProductBoardProps>) {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeProduct, setActiveProduct] = useState<AdminProduct | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -155,9 +154,9 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
 
         if (!currentProduct) return;
 
-        // Need to be careful with type assertions for optional properties
-        const pieces = (currentProduct as any).pieces || 0;
-        const stage = (currentProduct as any).stage;
+        // No more explicit any needed
+        const pieces = currentProduct.pieces || 0;
+        const stage = currentProduct.stage;
 
         if (isStage && overId !== stage) {
             if (isRestaurant) {
@@ -232,7 +231,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => {
-                                    navigator.clipboard.writeText(`${window.location.origin}/buy/${p.id}`);
+                                    navigator.clipboard.writeText(`${globalThis.location.origin}/buy/${p.id}`);
                                     toast.success('Link Copied!', {
                                         className: 'bg-green-600 text-white border-green-700',
                                         description: 'Product link copied to clipboard'
@@ -294,7 +293,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
-                            {col.title.split('/')[0].trim()} ({products.filter(p => (p as any).stage === col.stage).length})
+                            {col.title.split('/')[0].trim()} ({products.filter(p => p.stage === col.stage).length})
                         </button>
                     ))}
                 </div>
@@ -308,17 +307,16 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                 {columns.map((col) => {
                     // For Ready Stock, sort by name. For processing stages, sort by time (newest first)
                     const stageProducts = products
-                        .filter(p => (p as any).stage === col.stage)
+                        .filter(p => p.stage === col.stage)
                         .sort((a, b) => {
-                            const pA = a as any;
-                            const pB = b as any;
                             if (col.stage === 'Draft') {
                                 // Ready Stock: Sort by name
-                                return pA.name.localeCompare(pB.name);
+                                return a.name.localeCompare(b.name);
                             }
                             // Processing stages: Sort by updatedAt (oldest first)
-                            const dateB = new Date(pB.updatedAt || pB.createdAt || 0).getTime();
-                            const dateA = new Date(pA.updatedAt || pA.createdAt || 0).getTime();
+                            // Use Type Assertion only if actual type doesn't have updatedAt yet, but AdminProduct supports [key: string]: unknown
+                            const dateB = new Date((b as any).updatedAt || (b as any).createdAt || 0).getTime();
+                            const dateA = new Date((a as any).updatedAt || (a as any).createdAt || 0).getTime();
                             return dateA - dateB;
                         });
 
@@ -344,20 +342,21 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                             How many items do you want to move?
                             <br />
                             Max available: <strong>{moveRequest?.product.stock ? (
-                                (moveRequest.product as any).pieces || 0
+                                moveRequest.product.pieces || 0
                             ) : 0}</strong>
                         </p>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 block">Quantity</label>
+                                <label htmlFor="move-qty-input" className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 block">Quantity</label>
                                 <input
                                     type="number"
                                     min="1"
-                                    max={(moveRequest?.product as any).pieces || 1}
+                                    max={moveRequest?.product.pieces || 1}
                                     value={moveQty}
-                                    onChange={(e) => setMoveQty(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                    onChange={(e) => setMoveQty(e.target.value === '' ? '' : Number.parseInt(e.target.value))}
                                     className="w-full p-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg"
+                                    id="move-qty-input"
                                     autoFocus
                                 />
                             </div>
