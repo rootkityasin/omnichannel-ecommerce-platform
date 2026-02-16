@@ -154,16 +154,31 @@ export default function LandingPage() {
         e.preventDefault();
         setSaving(true);
         try {
-            // @ts-expect-error safe to ignore for now
+            if (!currentSlide?.title || !currentSlide?.imageUrl) {
+                toast.error("Title and Image are required");
+                setSaving(false);
+                return;
+            }
+
+            const slideData = {
+                title: currentSlide.title,
+                imageUrl: currentSlide.imageUrl,
+                subtitle: currentSlide.subtitle || null,
+                title_bn: currentSlide.title_bn || null,
+                subtitle_bn: currentSlide.subtitle_bn || null,
+                buttonText: currentSlide.buttonText || null,
+                buttonLink: currentSlide.buttonLink || null,
+                isActive: currentSlide.isActive ?? true,
+                order: currentSlide.order ?? 0
+            };
+
             if (currentSlide.id) {
-                // @ts-expect-error safe to ignore for now
-                await updateHeroSlide(currentSlide.id, currentSlide);
+                await updateHeroSlide(currentSlide.id, slideData);
                 toast.success('Slide updated');
             } else {
                 // Calculate new order (last + 1)
                 const maxOrder = slides.length > 0 ? Math.max(...slides.map(s => s.order)) : -1;
-                // @ts-expect-error safe to ignore for now
-                await createHeroSlide({ ...currentSlide, order: maxOrder + 1 });
+                await createHeroSlide({ ...slideData, order: maxOrder + 1 });
                 toast.success('Slide created');
             }
             setIsEditing(false);

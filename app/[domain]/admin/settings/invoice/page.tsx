@@ -4,15 +4,13 @@ import { useState, useEffect } from 'react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
-import { Save, Printer, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface InvoiceConfig {
@@ -25,9 +23,7 @@ interface InvoiceConfig {
         fontSize: number;
         showQr: boolean;
         showLogo: boolean;
-        [key: string]: any; // Allow extensibility
     };
-    [key: string]: any;
 }
 
 export default function InvoiceSettingsPage() {
@@ -49,18 +45,20 @@ export default function InvoiceSettingsPage() {
 
     useEffect(() => {
         if (settings) {
-            const invoiceSettings = settings as any;
+            // Safe casting as settings might have extra properties not in InvoiceConfig yet
+            const currentSettings = settings as unknown as Record<string, unknown>;
+            const incomingDetails = (currentSettings.invoiceDetails as Partial<InvoiceConfig['invoiceDetails']>) || {};
+
             setConfig({
-                invoiceTheme: invoiceSettings.invoiceTheme || 'modern',
+                invoiceTheme: (currentSettings.invoiceTheme as string) || 'modern',
                 invoiceDetails: {
-                    showSeller: true,
-                    showBuyer: true,
-                    showSignature: true,
-                    watermarkOpacity: 0.1,
-                    fontSize: 14,
-                    showQr: true,
-                    showLogo: true,
-                    ...(invoiceSettings.invoiceDetails || {})
+                    showSeller: incomingDetails.showSeller ?? true,
+                    showBuyer: incomingDetails.showBuyer ?? true,
+                    showSignature: incomingDetails.showSignature ?? true,
+                    watermarkOpacity: incomingDetails.watermarkOpacity ?? 0.1,
+                    fontSize: incomingDetails.fontSize ?? 14,
+                    showQr: incomingDetails.showQr ?? true,
+                    showLogo: incomingDetails.showLogo ?? true,
                 }
             });
         }
@@ -71,15 +69,15 @@ export default function InvoiceSettingsPage() {
         try {
             await updateSettings(config);
             toast.success("Invoice settings updated!");
-        } catch (error) {
+        } catch {
             toast.error("Failed to save settings");
         } finally {
             setIsSaving(false);
         }
     };
 
-    const updateDetail = (key: string, value: any) => {
-        setConfig((prev: InvoiceConfig) => ({
+    const updateDetail = <K extends keyof InvoiceConfig['invoiceDetails']>(key: K, value: InvoiceConfig['invoiceDetails'][K]) => {
+        setConfig((prev) => ({
             ...prev,
             invoiceDetails: {
                 ...prev.invoiceDetails,
@@ -87,6 +85,9 @@ export default function InvoiceSettingsPage() {
             }
         }));
     };
+
+    // ... rest of component
+
 
     // Dummy Order for Preview
     const dummyOrder = {
@@ -96,8 +97,8 @@ export default function InvoiceSettingsPage() {
         customerPhone: '01712345678',
         customerAddress: 'House 12, Road 5, Dhanmondi, Dhaka',
         items: [
-            { name: 'Spicy Crab Masala', quantity: 2, price: 1200, total: 2400 },
-            { name: 'Steamed Rice', quantity: 2, price: 100, total: 200 }
+            { id: '1', name: 'Spicy Crab Masala', quantity: 2, price: 1200, total: 2400 },
+            { id: '2', name: 'Steamed Rice', quantity: 2, price: 100, total: 200 }
         ],
         subtotal: 2600,
         delivery: 60,
@@ -293,9 +294,9 @@ export default function InvoiceSettingsPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {dummyOrder.items.map((item, i) => (
-                                                    <tr key={i} className="border-b border-slate-200">
-                                                        <td className="border-r border-slate-300 p-2 text-center">{i + 1}</td>
+                                                {dummyOrder.items.map((item) => (
+                                                    <tr key={item.id} className="border-b border-slate-200">
+                                                        <td className="border-r border-slate-300 p-2 text-center">{item.id}</td>
                                                         <td className="border-r border-slate-300 p-2">{item.name}</td>
                                                         <td className="border-r border-slate-300 p-2 text-center">{item.quantity}</td>
                                                         <td className="border-r border-slate-300 p-2 text-right">{item.price}</td>
@@ -384,8 +385,8 @@ export default function InvoiceSettingsPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
-                                                {dummyOrder.items.map((item, i) => (
-                                                    <tr key={i}>
+                                                {dummyOrder.items.map((item) => (
+                                                    <tr key={item.id}>
                                                         <td className="py-3 font-medium text-slate-800">{item.name}</td>
                                                         <td className="py-3 text-center text-slate-500">x{item.quantity}</td>
                                                         <td className="py-3 text-right text-slate-500">{item.price}</td>

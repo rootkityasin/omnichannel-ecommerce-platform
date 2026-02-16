@@ -1,7 +1,7 @@
 
 import { getNotifications, clearNotifications } from '@/app/actions/notification';
 import { format } from 'date-fns';
-import { Trash2, Bell, Clock } from 'lucide-react';
+import { Trash2, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 

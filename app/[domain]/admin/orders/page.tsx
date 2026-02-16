@@ -79,12 +79,14 @@ export default function OrdersPage() {
         getStorySections().then(sections => {
             const blockedSection = sections.find((s) => s.type === 'BLOCKED_CUSTOMERS');
             if (blockedSection?.content) {
-                const content = blockedSection.content;
-                if (content && typeof content === 'object' && !Array.isArray(content)) {
-                    const maybePhones = (content as Record<string, unknown>).phones;
-                    const maybeEmails = (content as Record<string, unknown>).emails;
-                    if (Array.isArray(maybePhones)) setBlockedPhones(maybePhones.filter((value): value is string => typeof value === 'string'));
-                    if (Array.isArray(maybeEmails)) setBlockedEmails(maybeEmails.filter((value): value is string => typeof value === 'string'));
+                const content = blockedSection.content as { phones?: unknown, emails?: unknown };
+                if (content && typeof content === 'object') {
+                    if (Array.isArray(content.phones)) {
+                        setBlockedPhones(content.phones.filter((p): p is string => typeof p === 'string'));
+                    }
+                    if (Array.isArray(content.emails)) {
+                        setBlockedEmails(content.emails.filter((e): e is string => typeof e === 'string'));
+                    }
                 }
             }
         });
@@ -245,8 +247,10 @@ export default function OrdersPage() {
             return;
         }
 
-        updateOrder(editingId!, editForm);
-        setEditingId(null);
+        if (editingId) {
+            updateOrder(editingId, editForm);
+            setEditingId(null);
+        }
     };
 
     const handleDelete = (id: string) => {
@@ -321,7 +325,7 @@ export default function OrdersPage() {
     }
 
     return (
-        <div className="space-y-6 relative" onClick={() => isFilterOpen && setIsFilterOpen(false)}>
+        <div role="button" tabIndex={0} onKeyDown={() => { }} className="space-y-6 relative" onClick={() => isFilterOpen && setIsFilterOpen(false)}>
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -527,17 +531,17 @@ export default function OrdersPage() {
                             </div>
                             <form onSubmit={handleCreateOrder} className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium">Customer Name</label>
-                                    <Input value={newOrder.customer} onChange={e => setNewOrder({ ...newOrder, customer: e.target.value })} required />
+                                    <label htmlFor="new-customer" className="text-sm font-medium">Customer Name</label>
+                                    <Input id="new-customer" value={newOrder.customer} onChange={e => setNewOrder({ ...newOrder, customer: e.target.value })} required />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium">Phone</label>
-                                    <Input value={newOrder.phone} onChange={e => setNewOrder({ ...newOrder, phone: e.target.value })} required />
+                                    <label htmlFor="new-phone" className="text-sm font-medium">Phone</label>
+                                    <Input id="new-phone" value={newOrder.phone} onChange={e => setNewOrder({ ...newOrder, phone: e.target.value })} required />
                                 </div>
 
                                 {/* Product Selection */}
                                 <div className="border rounded-md p-3 bg-slate-50">
-                                    <label className="text-sm font-medium block mb-2">Select Products</label>
+                                    <div className="text-sm font-medium block mb-2">Select Products</div>
                                     <div className="max-h-[150px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                                         {availableProducts.map(product => (
                                             <div key={product.id} className="flex items-center space-x-2">
@@ -559,12 +563,12 @@ export default function OrdersPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" min="0" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: Math.max(0, parseInt(e.target.value) || 0) })} required />
+                                        <label htmlFor="new-price" className="text-sm font-medium">Price (৳)</label>
+                                        <Input id="new-price" type="number" min="0" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: Math.max(0, Number.parseInt(e.target.value) || 0) })} required />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">Items Qty</label>
-                                        <Input type="number" min="1" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: Math.max(1, parseInt(e.target.value) || 0) })} required />
+                                        <label htmlFor="new-items" className="text-sm font-medium">Items Qty</label>
+                                        <Input id="new-items" type="number" min="1" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: Math.max(1, Number.parseInt(e.target.value) || 0) })} required />
                                     </div>
                                 </div>
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">Place Order</Button>
@@ -585,25 +589,25 @@ export default function OrdersPage() {
                             </div>
                             <form onSubmit={handleUpdateOrder} className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium">Customer Name</label>
-                                    <Input value={editForm.customer} onChange={e => setEditForm({ ...editForm, customer: e.target.value })} required />
+                                    <label htmlFor="edit-customer" className="text-sm font-medium">Customer Name</label>
+                                    <Input id="edit-customer" value={editForm.customer} onChange={e => setEditForm({ ...editForm, customer: e.target.value })} required />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium">Phone</label>
-                                    <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} required />
+                                    <label htmlFor="edit-phone" className="text-sm font-medium">Phone</label>
+                                    <Input id="edit-phone" value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} required />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" min="0" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: Math.max(0, parseInt(e.target.value) || 0) })} required />
+                                        <label htmlFor="edit-price" className="text-sm font-medium">Price (৳)</label>
+                                        <Input id="edit-price" type="number" min="0" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: Math.max(0, Number.parseInt(e.target.value) || 0) })} required />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">Items Qty</label>
-                                        <Input type="number" min="1" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: Math.max(1, parseInt(e.target.value) || 0) })} required />
+                                        <label htmlFor="edit-items" className="text-sm font-medium">Items Qty</label>
+                                        <Input id="edit-items" type="number" min="1" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: Math.max(1, Number.parseInt(e.target.value) || 0) })} required />
                                     </div>
                                 </div>
                                 <div className="flex gap-2 justify-end pt-2">
-                                    <Button type="button" variant="destructive" onClick={() => { handleDelete(editingId!); setEditingId(null); }}>Delete Order</Button>
+                                    <Button type="button" variant="destructive" onClick={() => { handleDelete(editingId); setEditingId(null); }}>Delete Order</Button>
                                     <Button
                                         type="submit"
                                         className={hasChanges

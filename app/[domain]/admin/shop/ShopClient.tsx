@@ -1,13 +1,13 @@
 'use client';
 
-import { Settings, Globe, Shield, Truck, ChevronRight, AlertTriangle, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, FolderOpen, Folder, X, Bold, Italic, Heading, Search } from 'lucide-react';
+import { Settings, Globe, Shield, Truck, ChevronRight, AlertTriangle, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, Search, Bold, Italic, Heading, Folder, FolderOpen, X } from 'lucide-react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { DeliverySettings } from '@/components/admin/DeliverySettings';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { updateSiteConfig } from '@/app/actions/settings';
 import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
@@ -32,18 +32,17 @@ interface Certificate {
 }
 
 
-function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
+function FooterSettings({ initialConfig }: { readonly initialConfig: SiteConfig }) {
     const [config, setConfig] = useState(initialConfig);
     const [originalConfig, setOriginalConfig] = useState(initialConfig);
-    const [hasChanges, setHasChanges] = useState(false);
-
     const [newCert, setNewCert] = useState({ image: '', link: '' });
     const [isSaving, setIsSaving] = useState(false);
 
-    useEffect(() => {
-        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
-        setHasChanges(isDifferent);
+    // Use useMemo to derived state instead of useEffect to avoid "setState in effect" warning
+    const hasChanges = useMemo(() => {
+        return JSON.stringify(originalConfig) !== JSON.stringify(config);
     }, [config, originalConfig]);
+
 
     const addCert = () => {
         if (!newCert.image) return;
@@ -60,7 +59,7 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
         const currentCerts = Array.isArray(config.certificates) ? config.certificates : [];
         setConfig({
             ...config,
-            certificates: currentCerts.filter((_: any, i: number) => i !== index)
+            certificates: currentCerts.filter((_: Certificate, i: number) => i !== index)
         });
     };
 
@@ -71,7 +70,6 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
         if (result.success) {
             toast.success("Footer settings saved!");
             setOriginalConfig(config);
-            setHasChanges(false);
         }
         else toast.error("Failed to save settings.");
     };
@@ -148,10 +146,10 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
                         <div className="space-y-2 pt-2 border-t border-slate-200">
                             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Certificates</div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {(Array.isArray(config.certificates) ? config.certificates : []).map((cert: any, i: number) => (
+                                {(Array.isArray(config.certificates) ? config.certificates : []).map((cert: Certificate, i: number) => (
                                     <div key={cert.link || cert.image || i} className="group relative aspect-square bg-white rounded-lg border-2 border-slate-100 flex flex-col items-center justify-center p-2 hover:border-orange-200 transition-colors">
-                                        <div className="flex-1 w-full flex items-center justify-center p-2">
-                                            <img src={cert.image} alt="" className="max-w-full max-h-full object-contain" />
+                                        <div className="flex-1 w-full relative flex items-center justify-center p-2">
+                                            <Image src={cert.image} alt="Certificate" fill className="object-contain" />
                                         </div>
                                         {cert.link && (
                                             <div className="w-full text-center border-t border-slate-100 pt-1 mt-1">
@@ -179,7 +177,7 @@ function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
     );
 }
 
-function RichTextEditor({ value, onChange, placeholder, limit = 5000 }: { value: string, onChange: (val: string) => void, placeholder: string, limit?: number }) {
+function RichTextEditor({ value, onChange, placeholder, limit = 5000 }: { readonly value: string, readonly onChange: (val: string) => void, readonly placeholder: string, readonly limit?: number }) {
     const insert = (syntax: string, close = '') => {
         const textarea = document.getElementById('editor-' + placeholder.replaceAll(/\s+/g, '-')) as HTMLTextAreaElement;
         if (!textarea) return;
@@ -359,9 +357,9 @@ For valid claims, we process refunds directly to your original payment method (o
 
             <div className="grid gap-6">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
+                    <div className="text-sm font-medium flex items-center gap-2">
                         Privacy Policy
-                    </label>
+                    </div>
                     <RichTextEditor
                         value={config.privacyPolicy || ''}
                         onChange={(val) => setConfig({ ...config, privacyPolicy: val })}
@@ -371,9 +369,9 @@ For valid claims, we process refunds directly to your original payment method (o
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
+                    <div className="text-sm font-medium flex items-center gap-2">
                         Refund Policy
-                    </label>
+                    </div>
                     <RichTextEditor
                         value={config.refundPolicy || ''}
                         onChange={(val) => setConfig({ ...config, refundPolicy: val })}
@@ -383,9 +381,9 @@ For valid claims, we process refunds directly to your original payment method (o
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
+                    <div className="text-sm font-medium flex items-center gap-2">
                         Terms & Conditions
-                    </label>
+                    </div>
                     <RichTextEditor
                         value={config.termsPolicy || ''}
                         onChange={(val) => setConfig({ ...config, termsPolicy: val })}
@@ -400,6 +398,7 @@ For valid claims, we process refunds directly to your original payment method (o
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 
 
 function FolderPicker({
@@ -413,7 +412,7 @@ function FolderPicker({
 }) {
     const [currentPath, setCurrentPath] = useState('');
     const [items, setItems] = useState<{ name: string, path: string, type: string, details?: string }[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
 
     const [mounted, setMounted] = useState(false);
@@ -430,7 +429,7 @@ function FolderPicker({
     }, [isOpen]);
 
     const loadPath = async (path: string) => {
-        setLoading(true);
+        setUploading(true);
         try {
             const { listDirectories } = await import('@/app/actions/explorer');
             const res = await listDirectories(path);
@@ -439,9 +438,10 @@ function FolderPicker({
                 setCurrentPath(path);
             }
         } catch (error) {
+            console.error(error);
             toast.error("Failed to load directory");
         } finally {
-            setLoading(false);
+            setUploading(false);
         }
     };
 
@@ -452,8 +452,9 @@ function FolderPicker({
 
     const handleBack = () => {
         if (history.length === 0) return;
-        const prev = history[history.length - 1];
-        setHistory(prev => prev.slice(0, -1));
+        const prev = history.at(-1);
+        if (!prev) return;
+        setHistory(prevHist => prevHist.slice(0, -1));
         loadPath(prev);
     };
 
@@ -479,36 +480,44 @@ function FolderPicker({
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2 bg-white">
-                    {loading ? (
-                        <div className="flex justify-center items-center h-full">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-                        </div>
-                    ) : items.length === 0 ? (
-                        <div className="text-center text-slate-400 mt-20">Folder is empty</div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-1">
-                            {items.map((item) => (
-                                <button
-                                    key={item.path}
-                                    onClick={() => handleNavigate(item.path)}
-                                    className="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-md text-left group transition-colors border border-transparent hover:border-blue-100"
-                                >
-                                    {item.type === 'drive' ? (
-                                        <Database className="w-6 h-6 text-slate-400 group-hover:text-blue-500 shrink-0" />
-                                    ) : (
-                                        <Folder className="w-6 h-6 text-yellow-500 group-hover:text-yellow-600 shrink-0" />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="truncate text-sm font-medium text-slate-700 group-hover:text-blue-700">{item.name}</div>
-                                        {item.details && (
-                                            <div className="text-xs text-slate-400 font-mono mt-0.5">{item.details}</div>
+                    {(() => {
+                        if (uploading) {
+                            return (
+                                <div className="flex justify-center items-center h-full">
+                                    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                </div>
+                            );
+                        }
+                        if (items.length === 0) {
+                            return (
+                                <div className="text-center text-slate-400 mt-20">Folder is empty</div>
+                            );
+                        }
+                        return (
+                            <div className="grid grid-cols-1 gap-1">
+                                {items.map((item) => (
+                                    <button
+                                        key={item.path}
+                                        onClick={() => handleNavigate(item.path)}
+                                        className="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-md text-left group transition-colors border border-transparent hover:border-blue-100"
+                                    >
+                                        {item.type === 'drive' ? (
+                                            <Database className="w-6 h-6 text-slate-400 group-hover:text-blue-500 shrink-0" />
+                                        ) : (
+                                            <Folder className="w-6 h-6 text-yellow-500 group-hover:text-yellow-600 shrink-0" />
                                         )}
-                                    </div>
-                                    <ChevronRight className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100" />
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="truncate text-sm font-medium text-slate-700 group-hover:text-blue-700">{item.name}</div>
+                                            {item.details && (
+                                                <div className="text-xs text-slate-400 font-mono mt-0.5">{item.details}</div>
+                                            )}
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100" />
+                                    </button>
+                                ))}
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 <div className="p-4 border-t bg-slate-50 rounded-b-lg flex justify-end gap-3">
@@ -549,16 +558,7 @@ function BackupSettings() {
         }
     }, []);
 
-    // Load backups when path changes
-    useEffect(() => {
-        if (!backupPath) {
-            setBackups([]); // Clear backups if path is empty
-            return;
-        }
-        loadBackups();
-    }, [backupPath]);
-
-    const loadBackups = async () => {
+    const loadBackups = useCallback(async () => {
         if (!backupPath) return; // Don't try loading from empty path
         const { listBackups } = await import('@/app/actions/backup');
         const res = await listBackups(backupPath);
@@ -567,7 +567,16 @@ function BackupSettings() {
         } else {
             setBackups([]);
         }
-    };
+    }, [backupPath]);
+
+    // Load backups when path changes
+    useEffect(() => {
+        if (!backupPath) {
+            setBackups([]); // Clear backups if path is empty
+            return;
+        }
+        loadBackups();
+    }, [backupPath, loadBackups]);
 
     const handleBackup = async () => {
         if (!backupPath) {
@@ -649,9 +658,10 @@ function BackupSettings() {
                 <Card className="p-6">
                     <h3 className="font-bold mb-4">Create New Backup</h3>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Local Backup Path</label>
+                        <label htmlFor="backup-path-input" className="text-sm font-medium">Local Backup Path</label>
                         <div className="flex gap-2">
                             <Input
+                                id="backup-path-input"
                                 value={backupPath}
                                 onChange={(e) => setBackupPath(e.target.value)}
                                 placeholder="Select a folder..."
@@ -728,7 +738,7 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
     </Card>
 );
 
-export function ShopClient({ initialConfig }: { readonly initialConfig: any }) {
+export function ShopClient({ initialConfig }: { readonly initialConfig: SiteConfig }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const activeModule = searchParams.get('tab');
