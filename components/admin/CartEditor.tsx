@@ -28,12 +28,40 @@ const MOCK_ITEMS = [
     { id: '2', name: 'Fried Rice', price: 350, quantity: 1, image: '' }
 ];
 
+interface Field {
+    id: string;
+    label: string;
+    placeholder?: string;
+    required: boolean;
+    enabled: boolean;
+    isSystem: boolean;
+    type: string;
+}
+
+interface CartConfig {
+    emptyTitle: string;
+    emptyMessage: string;
+    browseMenu: string;
+    title: string;
+    subtotal: string;
+    deliveryFee: string;
+    total: string;
+    deliveryDetails: string;
+    confirmOrder: string;
+    successTitle: string;
+    successMessage: string;
+    backHome: string;
+    emptyImage: string;
+    successImage: string;
+    fields: Field[];
+}
+
 export function CartEditor() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     // Default Config (fallback)
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<CartConfig>({
         emptyTitle: 'Your Cart is Empty!',
         emptyMessage: "Looks like you haven't added any delicious crabs yet.",
         browseMenu: 'Browse Menu',
@@ -60,18 +88,8 @@ export function CartEditor() {
     const [previewMode, setPreviewMode] = useState<'empty' | 'filled' | 'success'>('filled');
 
     // Change detection
-    const [originalConfig, setOriginalConfig] = useState<any>(null);
+    const [originalConfig, setOriginalConfig] = useState<CartConfig | null>(null);
     const [hasChanges, setHasChanges] = useState(false);
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        if (!originalConfig) return;
-        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
-        setHasChanges(isDifferent);
-    }, [config, originalConfig]);
 
     const loadData = async () => {
         setLoading(true);
@@ -94,9 +112,13 @@ export function CartEditor() {
         setLoading(false);
     };
 
+    useEffect(() => {
+        loadData();
+    }, []);
+
     const handleSave = async () => {
         setSaving(true);
-        const res = await updateStorySection('CART_TEXTS', config);
+        const res = await updateStorySection('CART_TEXTS', config as any);
         if (res.success) {
             toast.success('Cart texts updated');
             setOriginalConfig(config);

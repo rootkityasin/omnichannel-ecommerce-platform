@@ -11,10 +11,6 @@ export function BlockedListTab() {
     const [blockedEmails, setBlockedEmails] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
     const loadData = async () => {
         setIsLoading(true);
         const sections = await getStorySections();
@@ -26,6 +22,10 @@ export function BlockedListTab() {
         }
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadData();
+    }, []);
 
     const handleUnblockPhone = async (phone: string) => {
         if (!confirm(`Unblock ${phone}?`)) return;

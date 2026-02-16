@@ -30,17 +30,20 @@ export function CompanyUsersModal({ tenantId, tenantName, open, onOpenChange }: 
     const [loading, setLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
 
+    const fetchUsers = async () => {
+        setLoading(true);
+        const res = await getTenantUsers(tenantId);
+        if (res.success && res.users) {
+            setUsers(res.users);
+        } else {
+            toast.error(res.error || "Failed to load users");
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
         if (open && tenantId) {
-            setLoading(true);
-            getTenantUsers(tenantId).then(res => {
-                if (res.success && res.users) {
-                    setUsers(res.users);
-                } else {
-                    toast.error(res.error || "Failed to load users");
-                }
-                setLoading(false);
-            });
+            fetchUsers();
         }
     }, [open, tenantId]);
 

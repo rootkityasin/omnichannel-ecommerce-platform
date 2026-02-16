@@ -21,7 +21,7 @@ interface Plan {
     description: string;
     price: number;
     originalPrice?: number | null;
-    features: any; // Prisma Json
+    features: string[]; // Enforce string array in frontend
     color: string;
     isActive: boolean;
     isPopular: boolean;
@@ -32,14 +32,21 @@ export default function PlansPage() {
     const [isPending, startTransition] = useTransition();
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentPlan, setCurrentPlan] = useState<Partial<Plan>>({});
+    // currentPlan features will be managed as string (for textarea) or array (for object) - handled by separate state or casting
+    // easier to separate form state or use a FormPlan interface
+    const [currentPlan, setCurrentPlan] = useState<Partial<Plan> & { featuresText?: string }>({});
     const [openDialog, setOpenDialog] = useState(false);
 
     const fetchPlans = async () => {
         setIsLoading(true);
         const res = await getPlans();
         if (res.success && res.plans) {
-            setPlans(res.plans);
+            // Map raw prisma data to frontend Plan interface
+            const mappedPlans: Plan[] = res.plans.map((p: any) => ({
+                ...p,
+                features: Array.isArray(p.features) ? p.features : []
+            }));
+            setPlans(mappedPlans);
         } else {
             toast.error("Failed to load plans");
         }
@@ -57,9 +64,12 @@ export default function PlansPage() {
         }
 
         startTransition(async () => {
-            const featuresArray = typeof currentPlan.features === 'string'
-                ? currentPlan.features.split('\n').filter((f: string) => f.trim() !== '')
-                : Array.isArray(currentPlan.features) ? currentPlan.features : [];
+            let featuresArray: string[] = [];
+            if (currentPlan.featuresText !== undefined) {
+                featuresArray = currentPlan.featuresText.split('\n').filter((f: string) => f.trim() !== '');
+            } else if (Array.isArray(currentPlan.features)) {
+                featuresArray = currentPlan.features;
+            }
 
             const res = await savePlan({
                 id: currentPlan.id,
@@ -114,8 +124,7 @@ export default function PlansPage() {
         if (plan) {
             setCurrentPlan({
                 ...plan,
-                // Convert JSON features to string for textarea
-                features: Array.isArray(plan.features) ? plan.features.join('\n') : ''
+                featuresText: Array.isArray(plan.features) ? plan.features.join('\n') : ''
             });
             setIsEditing(true);
         } else {
@@ -123,7 +132,8 @@ export default function PlansPage() {
                 price: 0,
                 isActive: true,
                 color: 'bg-slate-500',
-                features: ''
+                features: [],
+                featuresText: ''
             });
             setIsEditing(false);
         }
@@ -234,8 +244,8 @@ export default function PlansPage() {
                         <div className="space-y-2">
                             <Label>Features (One per line)</Label>
                             <Textarea
-                                value={currentPlan.features as string || ''}
-                                onChange={e => setCurrentPlan({ ...currentPlan, features: e.target.value })}
+                                value={currentPlan.featuresText || ''}
+                                onChange={e => setCurrentPlan({ ...currentPlan, featuresText: e.target.value })}
                                 className="h-32"
                                 placeholder="Up to 100 orders&#10;Analytics&#10;Support"
                             />

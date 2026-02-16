@@ -18,14 +18,26 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: Date;
+    type?: string;
+    link?: string;
+}
+
 interface AdminHeaderProps {
     title?: string;
 }
 
 export function AdminHeader({ title }: AdminHeaderProps) {
     const { currentUser, logout, toggleSidebar } = useAdmin();
-    const [notifications, setNotifications] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const fetchNotifications = async () => {
         try {

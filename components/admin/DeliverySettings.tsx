@@ -102,10 +102,6 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [showPaperflyUsername, setShowPaperflyUsername] = useState(false);
     const [showPaperflyPassword, setShowPaperflyPassword] = useState(false);
 
-    useEffect(() => {
-        loadConfig();
-    }, []);
-
     const loadConfig = async () => {
         setLoading(true);
         const data = await getDeliveryConfig();
@@ -114,6 +110,10 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        loadConfig();
+    }, []);
 
     const handleSave = async () => {
         setSaving(true);

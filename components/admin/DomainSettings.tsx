@@ -30,10 +30,6 @@ export function DomainSettings() {
     const [originalConfig, setOriginalConfig] = useState<any>(null);
     const [hasChanges, setHasChanges] = useState(false);
 
-    useEffect(() => {
-        loadConfig();
-    }, []);
-
     const loadConfig = async () => {
         const data = await getSiteConfig();
         if (data) {
@@ -51,6 +47,10 @@ export function DomainSettings() {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        loadConfig();
+    }, []);
 
     const checkStatus = async (domain: string) => {
         setVerifying(true);

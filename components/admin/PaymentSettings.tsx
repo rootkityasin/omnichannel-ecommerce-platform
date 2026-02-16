@@ -29,13 +29,20 @@ export function PaymentSettings() {
 
     // Sync from context when it loads (in case hard reload)
     useEffect(() => {
-        // Only update if we don't have changes or if it's the first load
-        if (!hasChanges) {
-            setConfig(paymentConfig);
-            setOriginalConfig(paymentConfig);
+        if (paymentConfig) {
+            setConfig((prev: any) => {
+                // simple equality check to avoid re-render loop if object identity changes but content doesn't
+                if (JSON.stringify(prev) === JSON.stringify(paymentConfig)) return prev;
+                return paymentConfig;
+            });
+            setOriginalConfig(paymentConfig); // Also update original config when context updates
         }
+    }, [paymentConfig]);
+
+    // Sync tax percentage from context
+    useEffect(() => {
         setTaxPercentage(settings.taxPercentage || 0);
-    }, [paymentConfig, settings, hasChanges]);
+    }, [settings.taxPercentage]);
 
     // Comparison effect
     useEffect(() => {
