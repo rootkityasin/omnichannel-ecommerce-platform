@@ -53,7 +53,9 @@ import { generateDescriptionAI, translateToBanglaAI } from '@/app/actions/ai';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 
-type AdminProduct = {
+import { AdminProduct } from '@/types/common';
+
+type LocalProduct = {
     id: string;
     name: string;
     price: number;
@@ -108,7 +110,7 @@ export default function ProductsPage() {
 
     const canManageProducts = userRole === 'SUPER_ADMIN' || userRole === 'TENANT_ADMIN' || userPermissions.includes('MANAGE_PRODUCTS');
 
-    const [products, setProducts] = useState<AdminProduct[]>([]);
+    const [products, setProducts] = useState<LocalProduct[]>([]);
     const [categories, setCategories] = useState<CategoryItem[]>([]);
     const [sectionsList, setSectionsList] = useState<SectionItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -173,7 +175,7 @@ export default function ProductsPage() {
 
             if (!isMounted.current) return;
 
-            setProducts(pData);
+            setProducts(pData as unknown as LocalProduct[]);
             setCategories(cData);
             setSectionsList(sData);
             setConfig(confData || { measurementUnit: 'PCS' });
@@ -429,23 +431,25 @@ export default function ProductsPage() {
         }
     };
 
-    const handleClone = async (product: AdminProduct & { sections?: Array<{ id: string }> }) => {
+    const handleClone = async (product: AdminProduct | LocalProduct) => {
+        const p = product as unknown as LocalProduct;
+        const sections = p.sections || [];
         const res = await createProduct({
-            name: `${product.name} (Copy)`,
-            sku: `${product.sku}-COPY-${Date.now()}`,
-            price: product.price,
-            description: product.description || undefined,
-            image: product.image || undefined,
-            images: product.images || [],
-            categoryId: product.categoryId,
-            pieces: product.pieces,
-            weight: product.weight,
-            stage: product.stage,
-            type: product.type,
-            comboItems: (product.comboItems || [])
+            name: `${p.name} (Copy)`,
+            sku: `${p.sku}-COPY-${Date.now()}`,
+            price: p.price,
+            description: p.description || undefined,
+            image: p.image || undefined,
+            images: p.images || [],
+            categoryId: p.categoryId,
+            pieces: p.pieces,
+            weight: p.weight,
+            stage: p.stage,
+            type: p.type,
+            comboItems: (p.comboItems || [])
                 .filter((item) => Boolean(item.childId))
                 .map((item) => ({ childId: item.childId as string, quantity: item.quantity })),
-            sections: product.sections?.map((s) => s.id) || []
+            sections: sections.map((s) => s.id)
         });
         if (res.success) {
             toast.success("Product cloned");
@@ -453,28 +457,30 @@ export default function ProductsPage() {
         }
     };
 
-    const handleEdit = (product: AdminProduct & { sections?: Array<{ id: string }> }) => {
+    const handleEdit = (product: AdminProduct | LocalProduct) => {
+        const p = product as unknown as LocalProduct;
+        const sections = p.sections || [];
         setNewProduct({
-            name: product.name,
-            price: product.price,
-            sku: product.sku || '',
-            image: product.image || '',
-            images: product.images || [],
-            categoryId: product.categoryId || '',
-            description: product.description || '',
-            nutrition: product.nutrition || '',
-            cookingInstructions: product.cookingInstructions || '',
-            pointsReward: product.pointsReward || 0,
-            weight: product.weight || 0,
-            servingSize: product.servingSize || 1,
-            pieces: product.pieces || 0,
-            stage: product.stage || 'Draft',
-            type: product.type || 'SINGLE',
-            descriptionSwap: product.descriptionSwap || false,
-            comboItems: product.comboItems || [],
-            sections: product.sections?.map((s) => s.id) || []
+            name: p.name,
+            price: p.price,
+            sku: p.sku || '',
+            image: p.image || '',
+            images: p.images || [],
+            categoryId: p.categoryId || '',
+            description: p.description || '',
+            nutrition: p.nutrition || '',
+            cookingInstructions: p.cookingInstructions || '',
+            pointsReward: p.pointsReward || 0,
+            weight: p.weight || 0,
+            servingSize: p.servingSize || 1,
+            pieces: p.pieces || 0,
+            stage: p.stage || 'Draft',
+            type: p.type || 'SINGLE',
+            descriptionSwap: p.descriptionSwap || false,
+            comboItems: p.comboItems || [],
+            sections: sections.map((s) => s.id)
         });
-        setEditingId(product.id);
+        setEditingId(p.id);
         setIsAdding(true);
     };
 

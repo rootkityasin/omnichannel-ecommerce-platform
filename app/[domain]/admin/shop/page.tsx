@@ -8,7 +8,9 @@ export default async function ShopSettingsPage({ params }: { readonly params: Pr
     // Cast rigid types to compatible interface
     const config = {
         ...rawConfig,
-        certificates: (rawConfig.certificates || []) as SiteConfig['certificates']
+        certificates: (rawConfig.certificates || []).map((c: string | { image: string; link?: string }) =>
+            typeof c === 'string' ? { image: c, link: '' } : c
+        ) as SiteConfig['certificates']
     } as unknown as SiteConfig;
 
     return (

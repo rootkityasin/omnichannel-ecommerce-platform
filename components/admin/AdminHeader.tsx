@@ -264,7 +264,8 @@ export function AdminHeader({ title }: AdminHeaderProps) {
                                     'SUPER_ADMIN': 'Super Admin',
                                     'TENANT_ADMIN': 'Shop Admin',
                                     'HUB_ADMIN': 'Hub Manager',
-                                    'STAFF': 'Staff'
+                                    'STAFF': 'Staff',
+                                    'USER': 'Customer'
                                 }[currentUser?.role || ''] || 'User'}
                             </p>
                         </div>

@@ -1,8 +1,8 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import type { SiteConfig } from '@/types/common';
-import { AdminProvider, type AdminOrder, type AdminProduct, useAdmin, type User } from '@/components/providers/AdminProvider';
+import type { SiteConfig, AdminOrder, AdminProduct, User } from '@/types/common';
+import { AdminProvider, useAdmin } from '@/components/providers/AdminProvider';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { cn } from '@/lib/utils';

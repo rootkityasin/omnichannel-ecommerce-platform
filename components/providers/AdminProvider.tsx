@@ -7,50 +7,9 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useRef 
 import { getAdminOrders, updateAdminOrder, deleteAdminOrder } from '@/app/actions/order';
 import { toast } from 'sonner';
 
-import { SiteConfig, PaymentConfig } from '@/types/common';
+import { SiteConfig, PaymentConfig, AdminOrder, AdminProduct, User, Hub } from '@/types/common';
 
-// --- Types ---
-export type Role = 'SUPER_ADMIN' | 'HUB_ADMIN';
-
-export interface AdminOrder {
-    id: string; // OrderID (e.g. ORD-...)
-    dbId: string;
-    date: string;
-    customer: string;
-    phone: string;
-    items: number;
-    source: string;
-    price: number;
-    status: string;
-    hubId?: string | null;
-    isRepeat: boolean;
-    orderCount: number;
-    stockDeducted: boolean;
-    [key: string]: any; // Allow extensibility for now
-}
-
-export interface AdminProduct {
-    id: string;
-    name: string;
-    price: number;
-    stock: boolean;
-    hubId?: string;
-    [key: string]: any;
-}
-
-export interface Hub {
-    id: string;
-    name: string;
-    location: string;
-}
-
-export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: Role;
-    hubId?: string; // If null/undefined, effectively Super Admin access to all
-}
+// --- Constants ---
 
 // --- Constants ---
 const HUBS: Hub[] = [

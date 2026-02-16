@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_cache } from 'next/cache';
 import { Prisma, ShopType } from '@prisma/client';
 import { auth } from '@/auth';
+import type { SiteConfig } from '@/types/common';
 
 type JsonObject = Record<string, unknown>;
 const getSessionUser = async () => (await auth())?.user;
@@ -24,7 +25,7 @@ const getPublicSiteConfig = unstable_cache(
             logoUrl: "",
             measurementUnit: "PCS",
             allergensText: "",
-            certificates: [] as unknown[],
+            certificates: [] as string[],
             primaryColor: "#F40000",
             secondaryColor: "#ffffff",
             commissionRate: 0,
@@ -59,7 +60,8 @@ const getPublicSiteConfig = unstable_cache(
             // Tenant fields
             tenantId: "",
             customDomain: "",
-            slug: ""
+            slug: "",
+            invoiceDetails: { showSeller: true, showBuyer: true, showSignature: true, watermarkOpacity: 0.1, fontSize: 14 } as Record<string, unknown>
         };
 
         try {
@@ -119,6 +121,7 @@ const getPublicSiteConfig = unstable_cache(
                     socialTwitter: true,
                     socialLinkedIn: true,
                     socialYoutube: true,
+                    invoiceDetails: true,
                     tenant: {
                         select: {
                             slug: true,
@@ -138,7 +141,8 @@ const getPublicSiteConfig = unstable_cache(
                 shopType: config.shopType || defaults.shopType,
                 tenantId: config.tenantId || "",
                 customDomain: config.tenant?.customDomain || "",
-                slug: config.tenant?.slug || ""
+                slug: config.tenant?.slug || "",
+                invoiceDetails: (config.invoiceDetails || defaults.invoiceDetails) as SiteConfig['invoiceDetails']
             };
         } catch (error) {
             console.error("Failed to fetch site config:", error);
@@ -170,7 +174,7 @@ export async function getAdminSiteConfig() {
         logoUrl: "",
         measurementUnit: "PCS",
         allergensText: "",
-        certificates: [] as unknown[],
+        certificates: [] as string[],
         primaryColor: "#F40000",
         secondaryColor: "#ffffff",
         taxPercentage: 0,
@@ -281,7 +285,8 @@ export async function getAdminSiteConfig() {
             tenantId: config.tenantId || "",
             customDomain: config.tenant?.customDomain || "",
             slug: config.tenant?.slug || "",
-            plan: config.tenant?.plan || "FREE"
+            plan: config.tenant?.plan || "FREE",
+            invoiceDetails: (config.invoiceDetails || defaults.invoiceDetails) as SiteConfig['invoiceDetails']
         };
     } catch (error) {
         console.error("Failed to fetch admin site config:", error);

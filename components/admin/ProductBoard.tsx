@@ -10,30 +10,27 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
-
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    stage: string;
-    image: string;
-    stock: boolean;
-    pieces: number;
-    createdAt?: string | Date;
-    updatedAt?: string | Date;
-}
+import { AdminProduct, SiteConfig } from '@/types/common';
+import Image from 'next/image';
 
 interface ProductBoardProps {
-    products: Product[];
+    products: AdminProduct[];
     onMove: (id: string, newStage: string, quantity?: number) => void;
-    config?: any;
-    onEdit?: (product: any) => void;
-    onClone?: (product: any) => void;
+    config?: SiteConfig;
+    onEdit?: (product: AdminProduct) => void;
+    onClone?: (product: AdminProduct) => void;
     onDelete?: (id: string) => void;
     readOnly?: boolean;
 }
 
-function SortableItem({ product, formatStock, children, disabled }: any) {
+interface SortableItemProps {
+    product: AdminProduct;
+    formatStock: (pieces: number, unitWeight?: number) => string;
+    children: React.ReactNode;
+    disabled?: boolean;
+}
+
+function SortableItem({ product, children, disabled }: SortableItemProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: product.id,
         data: { type: 'Item', product },
@@ -53,7 +50,15 @@ function SortableItem({ product, formatStock, children, disabled }: any) {
     );
 }
 
-function DroppableColumn({ col, products, renderCard, formatStock, readOnly }: any) {
+interface DroppableColumnProps {
+    col: { title: string; stage: string; color: string };
+    products: AdminProduct[];
+    renderCard: (product: AdminProduct) => React.ReactNode;
+    formatStock: (pieces: number, unitWeight?: number) => string;
+    readOnly?: boolean;
+}
+
+function DroppableColumn({ col, products, renderCard, readOnly }: DroppableColumnProps) {
     const { setNodeRef } = useDroppable({
         id: col.stage,
         disabled: readOnly
@@ -67,8 +72,8 @@ function DroppableColumn({ col, products, renderCard, formatStock, readOnly }: a
                 </span>
             </div>
             <div className="p-2 space-y-2 flex-1 overflow-y-auto">
-                {products.map((product: any) => (
-                    <SortableItem key={product.id} product={product} formatStock={formatStock} disabled={readOnly}>
+                {products.map((product) => (
+                    <SortableItem key={product.id} product={product} formatStock={() => ""} disabled={readOnly}>
                         {renderCard(product)}
                     </SortableItem>
                 ))}
@@ -84,9 +89,9 @@ function DroppableColumn({ col, products, renderCard, formatStock, readOnly }: a
 
 export function ProductBoard({ products, onMove, config, onEdit, onClone, onDelete, readOnly }: ProductBoardProps) {
     const [activeId, setActiveId] = useState<string | null>(null);
-    const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+    const [activeProduct, setActiveProduct] = useState<AdminProduct | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [moveRequest, setMoveRequest] = useState<{ id: string, stage: string, product: Product } | null>(null);
+    const [moveRequest, setMoveRequest] = useState<{ id: string, stage: string, product: AdminProduct } | null>(null);
     const [moveQty, setMoveQty] = useState<number | ''>('');
     const [activeColumn, setActiveColumn] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -146,19 +151,23 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
         const overId = over.id as string;
         // Check if overId is a stage name 
         const isStage = columns.some(c => c.stage === overId);
-        const currentProduct = active.data.current?.product;
+        const currentProduct = active.data.current?.product as AdminProduct;
 
         if (!currentProduct) return;
 
-        if (isStage && overId !== currentProduct.stage) {
+        // Need to be careful with type assertions for optional properties
+        const pieces = (currentProduct as any).pieces || 0;
+        const stage = (currentProduct as any).stage;
+
+        if (isStage && overId !== stage) {
             if (isRestaurant) {
                 // Restaurant Split Flow
                 setMoveRequest({ id: active.id as string, stage: overId, product: currentProduct });
-                setMoveQty(currentProduct.pieces || 0); // Default to full amount
+                setMoveQty(pieces || 0); // Default to full amount
                 setDialogOpen(true);
             } else {
                 // Standard Move
-                onMove(active.id as string, overId, currentProduct.pieces);
+                onMove(active.id as string, overId, pieces);
             }
         }
     };
@@ -173,75 +182,86 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
     };
 
     // Helper to render card
-    const renderCard = (product: any) => (
-        <Card key={product.id} className="p-3 cursor-grab hover:scale-[1.02] active:scale-[0.98] transition-all group shadow-sm border-gray-100 mb-2">
-            <div className="flex gap-3 items-center">
-                <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                    <img src={product.image || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{product.name}</h4>
-                    <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                        <span>৳{product.price}</span>
-                        <span>•</span>
-                        <span>{formatStock((product as any).pieces || 0, (product as any).weight || 200)}</span>
-                        {product.stage !== 'Draft' && !readOnly && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    onMove(product.id, 'Draft');
-                                }}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                className="ml-1 w-5 h-5 rounded bg-red-100 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-colors"
-                                title="Return to Ready Stock"
-                            >
-                                <Trash2 className="w-3 h-3" />
-                            </button>
-                        )}
+    const renderCard = (product: AdminProduct) => {
+        // Type assertion helpers or extend AdminProduct if needed
+        const p = product as AdminProduct & { image?: string; stage?: string; pieces?: number; weight?: number };
+
+        return (
+            <Card key={product.id} className="p-3 cursor-grab hover:scale-[1.02] active:scale-[0.98] transition-all group shadow-sm border-gray-100 mb-2">
+                <div className="flex gap-3 items-center">
+                    <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                        <Image
+                            src={p.image || '/placeholder.png'}
+                            alt={p.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                        />
                     </div>
+                    <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{p.name}</h4>
+                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                            <span>৳{p.price}</span>
+                            <span>•</span>
+                            <span>{formatStock(p.pieces || 0, p.weight || 200)}</span>
+                            {p.stage !== 'Draft' && !readOnly && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        if (onMove) onMove(p.id, 'Draft');
+                                    }}
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                    className="ml-1 w-5 h-5 rounded bg-red-100 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-colors"
+                                    title="Return to Ready Stock"
+                                >
+                                    <Trash2 className="w-3 h-3" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    {/* Only show actions for non-Ready Stock items */}
+                    {p.stage !== 'Draft' && (onEdit || onClone || onDelete) && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-5 w-5 text-slate-300 hover:text-slate-600 flex-shrink-0">
+                                    <MoreVertical className="w-3 h-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => {
+                                    navigator.clipboard.writeText(`${window.location.origin}/buy/${p.id}`);
+                                    toast.success('Link Copied!', {
+                                        className: 'bg-green-600 text-white border-green-700',
+                                        description: 'Product link copied to clipboard'
+                                    });
+                                }}>
+                                    <Share2 className="w-4 h-4 mr-2" /> Share Link
+                                </DropdownMenuItem>
+                                {onEdit && (
+                                    <DropdownMenuItem onClick={() => onEdit(p)}>
+                                        <Edit className="w-4 h-4 mr-2" /> Edit
+                                    </DropdownMenuItem>
+                                )}
+                                {onClone && (
+                                    <DropdownMenuItem onClick={() => onClone(p)}>
+                                        <Copy className="w-4 h-4 mr-2" /> Clone
+                                    </DropdownMenuItem>
+                                )}
+                                {onDelete && (
+                                    <DropdownMenuItem className="text-red-600" onClick={() => onDelete(p.id)}>
+                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
-                {/* Only show actions for non-Ready Stock items */}
-                {product.stage !== 'Draft' && (onEdit || onClone || onDelete) && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button size="icon" variant="ghost" className="h-5 w-5 text-slate-300 hover:text-slate-600 flex-shrink-0">
-                                <MoreVertical className="w-3 h-3" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/buy/${product.id}`);
-                                toast.success('Link Copied!', {
-                                    className: 'bg-green-600 text-white border-green-700',
-                                    description: 'Product link copied to clipboard'
-                                });
-                            }}>
-                                <Share2 className="w-4 h-4 mr-2" /> Share Link
-                            </DropdownMenuItem>
-                            {onEdit && (
-                                <DropdownMenuItem onClick={() => onEdit(product)}>
-                                    <Edit className="w-4 h-4 mr-2" /> Edit
-                                </DropdownMenuItem>
-                            )}
-                            {onClone && (
-                                <DropdownMenuItem onClick={() => onClone(product)}>
-                                    <Copy className="w-4 h-4 mr-2" /> Clone
-                                </DropdownMenuItem>
-                            )}
-                            {onDelete && (
-                                <DropdownMenuItem className="text-red-600" onClick={() => onDelete(product.id)}>
-                                    <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
-            </div>
-        </Card>
-    );
+            </Card>
+        )
+    };
 
     // Handle scroll to track active column
     const handleScroll = () => {
@@ -274,7 +294,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
-                            {col.title.split('/')[0].trim()} ({products.filter(p => p.stage === col.stage).length})
+                            {col.title.split('/')[0].trim()} ({products.filter(p => (p as any).stage === col.stage).length})
                         </button>
                     ))}
                 </div>
@@ -288,15 +308,17 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                 {columns.map((col) => {
                     // For Ready Stock, sort by name. For processing stages, sort by time (newest first)
                     const stageProducts = products
-                        .filter(p => p.stage === col.stage)
+                        .filter(p => (p as any).stage === col.stage)
                         .sort((a, b) => {
+                            const pA = a as any;
+                            const pB = b as any;
                             if (col.stage === 'Draft') {
                                 // Ready Stock: Sort by name
-                                return a.name.localeCompare(b.name);
+                                return pA.name.localeCompare(pB.name);
                             }
                             // Processing stages: Sort by updatedAt (oldest first)
-                            const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-                            const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                            const dateB = new Date(pB.updatedAt || pB.createdAt || 0).getTime();
+                            const dateA = new Date(pA.updatedAt || pA.createdAt || 0).getTime();
                             return dateA - dateB;
                         });
 
@@ -322,7 +344,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                             How many items do you want to move?
                             <br />
                             Max available: <strong>{moveRequest?.product.stock ? (
-                                moveRequest.product.pieces || 0
+                                (moveRequest.product as any).pieces || 0
                             ) : 0}</strong>
                         </p>
 
@@ -332,7 +354,7 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                                 <input
                                     type="number"
                                     min="1"
-                                    max={moveRequest?.product.pieces || 1}
+                                    max={(moveRequest?.product as any).pieces || 1}
                                     value={moveQty}
                                     onChange={(e) => setMoveQty(e.target.value === '' ? '' : parseInt(e.target.value))}
                                     className="w-full p-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg"

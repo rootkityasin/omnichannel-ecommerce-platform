@@ -27,6 +27,69 @@ export interface Product {
     stage?: string;
 }
 
+// --- Admin Types ---
+export type Role = 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'HUB_ADMIN' | 'STAFF' | 'USER';
+
+export interface Hub {
+    id: string;
+    name: string;
+    location: string;
+}
+
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: Role;
+    hubId?: string; // If null/undefined, effectively Super Admin access to all
+}
+
+export interface AdminOrder {
+    id: string; // OrderID (e.g. ORD-...)
+    dbId: string;
+    date: string;
+    customer: string;
+    phone: string;
+    items: number;
+    source: string;
+    price: number;
+    status: string;
+    hubId?: string | null;
+    isRepeat: boolean;
+    orderCount: number;
+    stockDeducted: boolean;
+    [key: string]: unknown; // Allow extensibility
+}
+
+export interface AdminProduct {
+    id: string;
+    name: string;
+    price: number;
+    stock: boolean;
+    hubId?: string;
+    sections?: { id: string }[];
+    [key: string]: unknown;
+}
+
+export interface Tenant {
+    id: string;
+    name: string;
+    slug: string;
+    customDomain?: string | null;
+    plan: 'FREE' | 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+    status: 'ACTIVE' | 'SUSPENDED' | 'PENDING';
+    createdAt: Date;
+    users?: User[];
+    siteConfig?: SiteConfig;
+}
+
+export interface CartItem extends Product {
+    uniqueId: string; // For cart management (uuid)
+    quantity: number;
+    selectedWeight?: string;
+    selectedMetrics?: string; // e.g. "500g"
+}
+
 export interface SiteConfig {
     id?: string;
     tenantId?: string;
@@ -40,7 +103,7 @@ export interface SiteConfig {
     taxPercentage: number;
     measurementUnit: string;
     allergensText: string;
-    certificates: any[]; // JSON
+    certificates: (string | { image: string; link?: string })[]; // URLs or Objects
     privacyPolicy?: string | null;
     refundPolicy?: string | null;
     termsPolicy?: string | null;
@@ -48,7 +111,13 @@ export interface SiteConfig {
     weightUnitValue?: number;
     volumeUnitValue?: number;
     invoiceTheme?: string;
-    invoiceDetails?: any;
+    invoiceDetails?: {
+        showSeller?: boolean;
+        showBuyer?: boolean;
+        showSignature?: boolean;
+        watermarkOpacity?: number;
+        fontSize?: number;
+    };
 }
 
 export interface Order {

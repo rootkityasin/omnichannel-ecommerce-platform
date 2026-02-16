@@ -34,7 +34,7 @@ export default function AdminDashboard() {
         // Let's create a map of sales by day.
 
         const daySales = orders.reduce((acc, order) => {
-            const orderDate = new Date(order.date || order.createdAt); // Handle varied date fields
+            const orderDate = new Date((order.date || order.createdAt) as string | number | Date); // Handle varied date fields
             if (isNaN(orderDate.getTime())) return acc;
 
             const orderDay = orderDate.toLocaleDateString('en-US', { weekday: 'short' });

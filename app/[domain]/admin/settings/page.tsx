@@ -226,7 +226,7 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {config.certificates.map((cert, i) => (
                             <div key={i} className="group relative aspect-square bg-slate-50 rounded-lg border flex items-center justify-center p-4">
-                                <img src={cert} alt={`Cert ${i}`} className="w-full h-full object-contain" />
+                                <img src={typeof cert === 'string' ? cert : cert.image} alt={`Cert ${i}`} className="w-full h-full object-contain" />
                                 <button
                                     onClick={() => removeCert(i)}
                                     className="absolute top-2 right-2 p-1.5 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"

@@ -68,13 +68,18 @@ export async function getAdminProducts(domain?: string) {
                 stage: true,
                 sku: true,
                 totalSold: true,
+                isAvailable: true,
                 comboItems: {
                     include: { child: { select: { pieces: true } } }
-                }
+                },
+                sections: { select: { id: true } }
             }
         });
 
-        return products;
+        return products.map(p => ({
+            ...p,
+            stock: p.pieces > 0
+        }));
     } catch (error) {
         console.error("Get Admin Products Error:", error);
         return [];

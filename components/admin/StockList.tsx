@@ -17,17 +17,29 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { AdminProduct, SiteConfig } from "@/types/common";
+import Image from "next/image";
 
-export function StockList({ products }: { products: any[] }) {
+// Extended interface for StockList usage
+interface StockListProduct extends AdminProduct {
+    category: { name: string };
+    type: string;
+    comboItems?: any[];
+    pieces: number;
+    weight: number;
+    image?: string;
+}
+
+export function StockList({ products }: { products: StockListProduct[] }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState<string | null>(null);
 
     // Adjustment State
-    const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<StockListProduct | null>(null);
     const [adjustType, setAdjustType] = useState<'add' | 'remove'>('add');
     const [amount, setAmount] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [siteConfig, setSiteConfig] = useState<any>(null);
+    const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
 
     useEffect(() => {
         getSiteConfig().then(setSiteConfig);
@@ -38,7 +50,7 @@ export function StockList({ products }: { products: any[] }) {
         p.category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const openAdjustModal = (product: any, type: 'add' | 'remove') => {
+    const openAdjustModal = (product: StockListProduct, type: 'add' | 'remove') => {
         setSelectedProduct(product);
         setAdjustType(type);
         setAmount("");
@@ -109,10 +121,12 @@ export function StockList({ products }: { products: any[] }) {
                                         <div className="flex items-center gap-3">
                                             {p.image ? (
                                                 <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-slate-200 shrink-0">
-                                                    <img
+                                                    <Image
                                                         src={p.image}
                                                         alt={p.name}
-                                                        className="object-cover w-full h-full"
+                                                        fill
+                                                        className="object-cover"
+                                                        sizes="40px"
                                                     />
                                                 </div>
                                             ) : (
@@ -171,7 +185,6 @@ export function StockList({ products }: { products: any[] }) {
                                                     );
                                                 }
 
-                                                // Default to WEIGHT - pieces IS grams now (stored directly)
                                                 // Default to WEIGHT - pieces IS grams
                                                 const weightInGrams = p.pieces;
                                                 const weightUnitVal = siteConfig?.weightUnitValue || 200;

@@ -20,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { PaymentConfig } from '@/types/common';
 
 // Mock Data for Preview
 const MOCK_ITEMS = [
@@ -53,7 +54,9 @@ interface CartConfig {
     emptyImage: string;
     successImage: string;
     fields: Field[];
+    [key: string]: unknown; // Allow extensibility
 }
+
 
 export function CartEditor() {
     const [loading, setLoading] = useState(true);
@@ -87,23 +90,23 @@ export function CartEditor() {
     const [previewMode, setPreviewMode] = useState<'empty' | 'filled' | 'success'>('filled');
 
     // Change detection
-    const [originalConfig, setOriginalConfig] = useState<CartConfig | null>(null);
+    const [_originalConfig, setOriginalConfig] = useState<CartConfig | null>(null);
     const [hasChanges, setHasChanges] = useState(false);
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
-    const [trxId, setTrxId] = useState('');
+    const [_trxId, _setTrxId] = useState('');
 
     // Payment Config 
-    const [paymentConfig, setPaymentConfig] = useState<any>({
+    const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({
         codEnabled: true,
         bkashEnabled: true,
+        nagadEnabled: false,
         selfMfsEnabled: true,
         selfMfsPhone: "01700000000",
         selfMfsType: "Personal",
         selfMfsInstruction: "Use 'Send Money' option.",
         advancePaymentType: "FIXED",
         advancePaymentValue: 100,
-        bkashImage: ""
     });
 
     const loadData = async () => {
@@ -113,28 +116,54 @@ export function CartEditor() {
             getPaymentConfig()
         ]);
 
-        const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
+        const cartSection = sections.find((s: { type: string; content: unknown }) => s.type === 'CART_TEXTS');
         if (cartSection?.content) {
-            setConfig({ ...config, ...(cartSection.content as any) });
-            setOriginalConfig({ ...config, ...(cartSection.content as any) });
+            const loadedConfig = cartSection.content as CartConfig;
+            // Merging fields to ensure new fields in code are present
+            const mergedFields = config.fields.map(f => {
+                const loaded = loadedConfig.fields?.find((lf: Field) => lf.id === f.id);
+                return loaded ? { ...f, ...loaded } : f;
+            });
+            // Also include any custom fields that might have been saved
+            if (loadedConfig.fields) {
+                loadedConfig.fields.forEach((lf: Field) => {
+                    if (!mergedFields.find(f => f.id === lf.id)) {
+                        mergedFields.push(lf);
+                    }
+                });
+            }
+
+            const finalConfig = { ...config, ...loadedConfig, fields: mergedFields };
+            setConfig(finalConfig);
+            setOriginalConfig(finalConfig);
         } else {
             setOriginalConfig(config);
         }
 
         if (paymentConf) {
-            setPaymentConfig(paymentConf);
+            setPaymentConfig(paymentConf as PaymentConfig);
         }
         setLoading(false);
     };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Effect to detect changes
+    useEffect(() => {
+        if (_originalConfig) {
+            const isDifferent = JSON.stringify(config) !== JSON.stringify(_originalConfig);
+            setHasChanges(isDifferent);
+        }
+    }, [config, _originalConfig]);
+
 
     const handleSave = async () => {
         setSaving(true);
-        const res = await updateStorySection('CART_TEXTS', config as any);
+        // Cast to any for the action as it expects generic object, but we know it matches structure
+        const res = await updateStorySection('CART_TEXTS', config as unknown as any);
         if (res.success) {
             toast.success('Cart texts updated');
             setOriginalConfig(config);
@@ -214,9 +243,10 @@ export function CartEditor() {
                                 <div className="flex justify-between items-center">
                                     <h4 className="font-medium text-slate-900">Delivery Details Fields</h4>
                                     <Button size="sm" variant="outline" onClick={() => {
-                                        const newField = {
+                                        const newField: Field = {
                                             id: `custom_${Date.now()}`,
                                             label: 'New Field',
+                                            placeholder: 'Enter detail...',
                                             required: false,
                                             enabled: true,
                                             isSystem: false,
@@ -229,7 +259,7 @@ export function CartEditor() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    {(config.fields || []).map((field: any, index: number) => (
+                                    {(config.fields || []).map((field: Field, index: number) => (
                                         <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg bg-gray-50 group">
                                             {/* <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" /> */}
                                             <div className="flex-1 grid grid-cols-2 gap-3">
@@ -309,7 +339,7 @@ export function CartEditor() {
                                                 {!field.isSystem && (
                                                     <button
                                                         onClick={() => {
-                                                            const newFields = config.fields.filter((_: any, i: number) => i !== index);
+                                                            const newFields = config.fields.filter((_: Field, i: number) => i !== index);
                                                             setConfig({ ...config, fields: newFields });
                                                         }}
                                                         className="p-1 hover:bg-red-100 text-red-500 rounded"
@@ -475,7 +505,7 @@ export function CartEditor() {
                                         {config.deliveryDetails}
                                     </h2>
                                     <div className="space-y-4">
-                                        {(config.fields || []).filter((f: any) => f.enabled).map((field: any) => (
+                                        {(config.fields || []).filter((f: Field) => f.enabled).map((field: Field) => (
                                             <div key={field.id}>
                                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                                                     {field.label} {field.required && <span className="text-red-500">*</span>}
@@ -519,7 +549,7 @@ export function CartEditor() {
                                                             {paymentMethod === 'BKASH' && <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />}
                                                         </div>
                                                         <span className="font-bold text-gray-800">Pay with bKash</span>
-                                                        <img src={paymentConfig.bkashLogo || "/images/bkash-logo.png"} alt="bKash" className="h-6 object-contain ml-auto" />
+                                                        <img src={"/images/bkash-logo.png"} alt="bKash" className="h-6 object-contain ml-auto" />
                                                     </div>
                                                 </div>
 
@@ -529,7 +559,7 @@ export function CartEditor() {
                                                             {paymentMethod === 'NAGAD' && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                                                         </div>
                                                         <span className="font-bold text-gray-800">Pay with Nagad</span>
-                                                        <img src={paymentConfig.nagadLogo || "/images/nagad-logo.png"} alt="Nagad" className="h-6 object-contain ml-auto" />
+                                                        <img src={"/images/nagad-logo.png"} alt="Nagad" className="h-6 object-contain ml-auto" />
                                                     </div>
                                                 </div>
 
@@ -570,7 +600,7 @@ export function CartEditor() {
     );
 }
 
-function ShoppingBagIcon(props: any) {
+function ShoppingBagIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
     )

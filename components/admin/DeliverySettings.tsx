@@ -127,10 +127,12 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 const data = await getDeliveryConfig();
                 if (data) {
                     // Handle legacy data where price was used instead of charge
-                    const rawZones = (data.deliveryZones as any[]) || [];
-                    const zones = rawZones.map((z: any) => ({
+                    // Handle legacy data where price was used instead of charge
+                    const rawZones = (data.deliveryZones || []) as unknown as Record<string, unknown>[];
+                    const zones = rawZones.map((z) => ({
                         ...z,
-                        charge: z.charge ?? z.price ?? 0
+                        charge: (z.charge as number) ?? (z.price as number) ?? 0,
+                        type: (z.type as string) || 'ZONE'
                     }));
                     setConfig({ ...data, deliveryZones: zones } as unknown as DeliveryConfig);
                 }
@@ -172,7 +174,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         setNewWeightCharge({ weight: '', charge: '' });
     };
 
-    const updateWeightCharge = (index: number, field: keyof WeightBasedCharge, value: any) => {
+    const updateWeightCharge = (index: number, field: keyof WeightBasedCharge, value: number | string) => {
         const newCharges = [...(config.weightBasedCharges || [])];
         newCharges[index] = { ...newCharges[index], [field]: Number(value) };
         setConfig({ ...config, weightBasedCharges: newCharges });

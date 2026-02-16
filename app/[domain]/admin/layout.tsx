@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminLayoutClient from './AdminLayoutClient';
-import { type User } from '@/components/providers/AdminProvider';
+import { type User } from '@/types/common';
 import { getAdminOrders } from '@/app/actions/order';
 import { getAdminSiteConfig } from '@/app/actions/settings';
-import { getProducts } from '@/app/actions/product';
+import { getAdminProducts } from '@/app/actions/product';
 
 // How often to verify device against DB (30 minutes)
 const DB_VERIFY_INTERVAL = 30 * 60 * 1000;
@@ -55,16 +55,13 @@ export default async function AdminLayout({
     const [initialOrders, initialConfig, initialProducts] = await Promise.all([
         getAdminOrders(),
         getAdminSiteConfig(),
-        getProducts(domain)
+        getAdminProducts(domain)
     ]);
 
     const initialData = {
         orders: initialOrders || [],
-        settings: initialConfig || {},
-        products: (initialProducts || []).map(p => ({
-            ...p,
-            stock: p.isAvailable ?? true
-        }))
+        settings: initialConfig || undefined,
+        products: initialProducts || []
     };
 
     // Return Client Layout
