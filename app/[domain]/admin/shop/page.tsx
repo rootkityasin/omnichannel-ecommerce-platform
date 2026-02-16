@@ -1,9 +1,15 @@
 import { getAdminSiteConfig } from '@/app/actions/settings';
-import { ShopClient } from './ShopClient';
+import { ShopClient, SiteConfig } from './ShopClient';
 
-export default async function ShopSettingsPage({ params }: { params: Promise<{ domain: string }> }) {
+export default async function ShopSettingsPage({ params }: { readonly params: Promise<{ domain: string }> }) {
     await params; // Consume params to avoid unused vars if needed, or remove
-    const config = await getAdminSiteConfig();
+    const rawConfig = await getAdminSiteConfig();
+
+    // Cast rigid types to compatible interface
+    const config = {
+        ...rawConfig,
+        certificates: (rawConfig.certificates || []) as SiteConfig['certificates']
+    } as unknown as SiteConfig;
 
     return (
         <ShopClient initialConfig={config} />

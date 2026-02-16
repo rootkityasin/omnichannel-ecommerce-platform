@@ -14,7 +14,7 @@ import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
 import { DomainSettings } from '@/components/admin/DomainSettings';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { SeoSettings } from '@/components/admin/SeoSettings';
-interface SiteConfig {
+export interface SiteConfig {
     storeName?: string;
     contactPhone: string;
     contactEmail: string;
@@ -26,7 +26,7 @@ interface SiteConfig {
     termsPolicy?: string;
 }
 
-interface Certificate {
+export interface Certificate {
     image: string;
     link: string;
 }
