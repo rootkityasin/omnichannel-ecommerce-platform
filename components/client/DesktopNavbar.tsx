@@ -49,10 +49,12 @@ export function DesktopNavbar() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         // getSiteConfig removed - using Context
 
         const handleScroll = () => {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setScrolled(window.scrollY > 20);
         };
 

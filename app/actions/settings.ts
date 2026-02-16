@@ -524,16 +524,16 @@ export async function updateDeliveryConfig<T extends object>(data: T) {
         };
 
         // Remove undefined keys
-        Object.keys(payload).forEach(key => (payload as any)[key] === undefined && delete (payload as any)[key]);
+        Object.keys(payload).forEach(key => (payload as Record<string, unknown>)[key] === undefined && delete (payload as Record<string, unknown>)[key]);
 
         await prisma.deliveryConfig.upsert({
             where: { tenantId },
-            update: payload as any,
+            update: payload,
             create: {
                 tenantId,
                 ...payload,
                 defaultCharge: getNumber(input.defaultCharge, 60), // Ensure default
-            } as any
+            }
         });
 
         revalidatePath('/admin/shop', 'page');

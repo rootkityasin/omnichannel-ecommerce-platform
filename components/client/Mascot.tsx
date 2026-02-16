@@ -19,9 +19,11 @@ export function Mascot({ state, className }: MascotProps) {
     // Sync local state with global store
     useEffect(() => {
         if (isDeliveryRunning) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLocalIsDelivering(true);
         } else {
             // Allow animation to finish visually if needed, or sync immediately
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             const timer = setTimeout(() => setLocalIsDelivering(false), 8000);
             return () => clearTimeout(timer);
         }

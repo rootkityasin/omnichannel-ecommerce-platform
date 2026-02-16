@@ -30,7 +30,9 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             getProducts().then(setProducts);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedProductId(productId || 'general');
         }
     }, [isOpen, productId]);

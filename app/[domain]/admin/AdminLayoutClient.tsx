@@ -1,13 +1,14 @@
 'use client';
 
-// Imports removed
 import { SessionProvider } from 'next-auth/react';
+import type { SiteConfig } from '@/types/common';
 import { AdminProvider, type AdminOrder, type AdminProduct, useAdmin, type User } from '@/components/providers/AdminProvider';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { Session } from 'next-auth';
+
 export default function AdminLayoutClient({
     children,
     initialUser,
@@ -18,9 +19,9 @@ export default function AdminLayoutClient({
     initialUser?: User;
     session: Session | null;
     initialData?: {
-        orders?: AdminOrder[]; // Use explicit type
-        products?: AdminProduct[]; // Use explicit type
-        settings?: Record<string, unknown>;
+        orders?: AdminOrder[];
+        products?: AdminProduct[];
+        settings?: SiteConfig;
     };
 }) {
     return (

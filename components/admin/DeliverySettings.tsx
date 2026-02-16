@@ -3,12 +3,28 @@
 import { useState, useEffect } from 'react';
 import { getDeliveryConfig, updateDeliveryConfig } from '@/app/actions/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle, Check, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import {
+    Loader2,
+    Plus,
+    Save,
+    Trash2,
+    ArrowLeft,
+    ChevronDown,
+    Eye,
+    EyeOff,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -68,10 +84,12 @@ const UPAZILAS = [
     "Ukhia", "Uttara", "Uzipur", "Ulipur", "Wazirpur", "Zakiganj", "Zanjira", "Zilha Sadar"
 ].sort();
 
+import { DeliveryConfig, WeightBasedCharge } from '@/types/common';
+
 export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<DeliveryConfig>({
         defaultCharge: 60,
         defaultCodEnabled: true,
         nonRefundable: false,
@@ -102,17 +120,28 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [showPaperflyUsername, setShowPaperflyUsername] = useState(false);
     const [showPaperflyPassword, setShowPaperflyPassword] = useState(false);
 
-    const loadConfig = async () => {
-        setLoading(true);
-        const data = await getDeliveryConfig();
-        if (data) {
-            setConfig(data);
-        }
-        setLoading(false);
-    };
-
     useEffect(() => {
-        loadConfig();
+        async function fetchConfig() {
+            try {
+                setLoading(true);
+                const data = await getDeliveryConfig();
+                if (data) {
+                    // Handle legacy data where price was used instead of charge
+                    const rawZones = (data.deliveryZones as any[]) || [];
+                    const zones = rawZones.map((z: any) => ({
+                        ...z,
+                        charge: z.charge ?? z.price ?? 0
+                    }));
+                    setConfig({ ...data, deliveryZones: zones } as unknown as DeliveryConfig);
+                }
+            } catch (error) {
+                console.error("Failed to fetch delivery config:", error);
+                toast.error("Failed to load settings");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchConfig();
     }, []);
 
     const handleSave = async () => {
@@ -143,7 +172,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         setNewWeightCharge({ weight: '', charge: '' });
     };
 
-    const updateWeightCharge = (index: number, field: string, value: any) => {
+    const updateWeightCharge = (index: number, field: keyof WeightBasedCharge, value: any) => {
         const newCharges = [...(config.weightBasedCharges || [])];
         newCharges[index] = { ...newCharges[index], [field]: Number(value) };
         setConfig({ ...config, weightBasedCharges: newCharges });
@@ -156,34 +185,38 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     };
 
     // Zone Handlers
-    const [newZone, setNewZone] = useState({ name: '', price: 0, type: 'DISTRICT' });
+    const [newZone, setNewZone] = useState<{ name: string; charge: number; type: 'ZONE' | 'DISTRICT' | 'UPAZILA' }>({
+        name: '',
+        charge: 60,
+        type: 'ZONE'
+    });
 
     const addZone = () => {
         if (!newZone.name) return toast.error("Name is required");
-        setConfig({
+
+        const updatedConfig = {
             ...config,
-            deliveryZones: [...(config.deliveryZones || []), {
-                id: crypto.randomUUID(),
-                name: newZone.name,
-                price: Number(newZone.price),
-                type: newZone.type,
-                codEnabled: true
-            }]
-        });
-        setNewZone({ ...newZone, name: '', price: 0 });
+            deliveryZones: [
+                ...(config.deliveryZones || []),
+                { ...newZone, id: Date.now().toString(), codEnabled: true }
+            ]
+        };
+
+        setConfig(updatedConfig);
+        setNewZone({ name: '', charge: 60, type: newZone.type });
     };
 
     const removeZone = (id: string) => {
         setConfig({
             ...config,
-            deliveryZones: (config.deliveryZones || []).filter((z: any) => z.id !== id)
+            deliveryZones: (config.deliveryZones || []).filter((z) => z.id !== id)
         });
     };
 
     const toggleZoneCod = (id: string, val: boolean) => {
         setConfig({
             ...config,
-            deliveryZones: (config.deliveryZones || []).map((z: any) =>
+            deliveryZones: (config.deliveryZones || []).map((z) =>
                 z.id === id ? { ...z, codEnabled: val } : z
             )
         });
@@ -192,9 +225,9 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-orange-500" /></div>;
 
-    const zones = (config.deliveryZones || []).filter((z: any) => z.type === 'ZONE');
-    const districts = (config.deliveryZones || []).filter((z: any) => z.type === 'DISTRICT');
-    const upazilas = (config.deliveryZones || []).filter((z: any) => z.type === 'UPAZILA');
+    const zones = (config.deliveryZones || []).filter((z) => z.type === 'ZONE');
+    const districts = (config.deliveryZones || []).filter((z) => z.type === 'DISTRICT');
+    const upazilas = (config.deliveryZones || []).filter((z) => z.type === 'UPAZILA');
 
     const filteredDistricts = DISTRICTS.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()));
     const filteredUpazilas = UPAZILAS.filter(u => u.toLowerCase().includes(upazilaSearch.toLowerCase()));
@@ -234,7 +267,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <Input
                             type="number"
                             value={config.defaultCharge}
-                            onChange={(e) => setConfig({ ...config, defaultCharge: e.target.value })}
+                            onChange={(e) => setConfig({ ...config, defaultCharge: parseFloat(e.target.value) || 0 })}
                         />
                         <p className="text-xs text-slate-400">Default delivery charge will be applied to all areas, except for the specific zones listed below.</p>
                     </div>
@@ -273,7 +306,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                             <p className="text-xs text-slate-400">Add extra delivery charges based on product weight. For example: 5 kg = ৳50, 10 kg = ৳80</p>
                         </div>
 
-                        {config.weightBasedCharges?.map((item: any, i: number) => (
+                        {config.weightBasedCharges?.map((item, i) => (
                             <div key={i} className="flex gap-4 items-center animate-in fade-in slide-in-from-left-2">
                                 <div className="grid grid-cols-2 gap-4 flex-1">
                                     <Input
@@ -325,7 +358,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                     <div className="space-y-4 pt-4 border-t">
                         <div className="flex items-center justify-between">
                             <Label>Delivery option:</Label>
-                            <Tabs value={newZone.type} onValueChange={(v) => setNewZone({ ...newZone, type: v })} className="w-auto">
+                            <Tabs value={newZone.type} onValueChange={(v) => setNewZone({ ...newZone, type: v as 'ZONE' | 'DISTRICT' | 'UPAZILA' })} className="w-auto">
                                 <TabsList>
                                     <TabsTrigger value="ZONE">Zones</TabsTrigger>
                                     <TabsTrigger value="DISTRICT">Districts</TabsTrigger>
@@ -339,11 +372,13 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
                             {/* List of active zones for current selected type */}
                             <div className="space-y-3">
-                                {(newZone.type === 'ZONE' ? zones : newZone.type === 'DISTRICT' ? districts : upazilas).map((z: any) => (
+                                {(newZone.type === 'ZONE' ? zones : newZone.type === 'DISTRICT' ? districts : upazilas).map((z) => (
                                     <div key={z.id} className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-3 animate-in fade-in">
-                                        <div className="flex gap-3">
-                                            <Input value={z.name} readOnly className="flex-1 bg-white" />
-                                            <Input value={z.price} readOnly className="w-24 bg-white" />
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="font-medium text-slate-700">{z.name}</p>
+                                                <p className="text-sm text-slate-500">Charge: {z.charge} BDT</p>
+                                            </div>
                                             <Button variant="destructive" size="icon" onClick={() => removeZone(z.id)}>
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
@@ -361,118 +396,120 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
                             {/* Add New Zone */}
                             <div className="flex gap-3 pt-2">
-                                {newZone.type === 'DISTRICT' ? (
-                                    <div className="flex-1 relative">
-                                        <Input
-                                            placeholder="Search districts..."
-                                            value={districtSearch}
-                                            onChange={(e) => {
-                                                setDistrictSearch(e.target.value);
-                                                setOpenDistrict(true);
-                                            }}
-                                            onFocus={() => setOpenDistrict(true)}
-                                            onBlur={() => {
-                                                // Delay to allow click on dropdown items
-                                                setTimeout(() => setOpenDistrict(false), 150);
-                                            }}
-                                            className="w-full bg-white pr-8"
-                                        />
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                                {
+                                    newZone.type === 'DISTRICT' ? (
+                                        <div className="flex-1 relative">
+                                            <Input
+                                                placeholder="Search districts..."
+                                                value={districtSearch}
+                                                onChange={(e) => {
+                                                    setDistrictSearch(e.target.value);
+                                                    setOpenDistrict(true);
+                                                }}
+                                                onFocus={() => setOpenDistrict(true)}
+                                                onBlur={() => {
+                                                    // Delay to allow click on dropdown items
+                                                    setTimeout(() => setOpenDistrict(false), 150);
+                                                }}
+                                                className="w-full bg-white pr-8"
+                                            />
+                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
 
-                                        {/* Dropdown list */}
-                                        {openDistrict && (
-                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
-                                                {filteredDistricts.length === 0 ? (
-                                                    <div className="px-4 py-3 text-sm text-slate-500 text-center">No district found.</div>
-                                                ) : (
-                                                    filteredDistricts.map((district) => {
-                                                        const isSelected = newZone.name === district;
-                                                        return (
-                                                            <div
-                                                                key={district}
-                                                                className={cn(
-                                                                    "px-4 py-2.5 cursor-pointer text-sm text-slate-700",
-                                                                    isSelected ? "bg-blue-100" : "hover:bg-blue-50"
-                                                                )}
-                                                                onMouseDown={(e) => e.preventDefault()}
-                                                                onClick={() => {
-                                                                    setNewZone({ ...newZone, name: district });
-                                                                    setDistrictSearch(district);
-                                                                    setOpenDistrict(false);
-                                                                }}
-                                                            >
-                                                                {district}
-                                                            </div>
-                                                        );
-                                                    })
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : newZone.type === 'UPAZILA' ? (
-                                    <div className="flex-1 relative">
-                                        <Input
-                                            placeholder="Search upazilas..."
-                                            value={upazilaSearch}
-                                            onChange={(e) => {
-                                                setUpazilaSearch(e.target.value);
-                                                setOpenUpazila(true);
-                                            }}
-                                            onFocus={() => setOpenUpazila(true)}
-                                            onBlur={() => {
-                                                setTimeout(() => setOpenUpazila(false), 150);
-                                            }}
-                                            className="w-full bg-white pr-8"
-                                        />
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                                            {/* Dropdown list */}
+                                            {openDistrict && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                                                    {filteredDistricts.length === 0 ? (
+                                                        <div className="px-4 py-3 text-sm text-slate-500 text-center">No district found.</div>
+                                                    ) : (
+                                                        filteredDistricts.map((district) => {
+                                                            const isSelected = newZone.name === district;
+                                                            return (
+                                                                <div
+                                                                    key={district}
+                                                                    className={cn(
+                                                                        "px-4 py-2.5 cursor-pointer text-sm text-slate-700",
+                                                                        isSelected ? "bg-blue-100" : "hover:bg-blue-50"
+                                                                    )}
+                                                                    onMouseDown={(e) => e.preventDefault()}
+                                                                    onClick={() => {
+                                                                        setNewZone({ ...newZone, name: district });
+                                                                        setDistrictSearch(district);
+                                                                        setOpenDistrict(false);
+                                                                    }}
+                                                                >
+                                                                    {district}
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : newZone.type === 'UPAZILA' ? (
+                                        <div className="flex-1 relative">
+                                            <Input
+                                                placeholder="Search upazilas..."
+                                                value={upazilaSearch}
+                                                onChange={(e) => {
+                                                    setUpazilaSearch(e.target.value);
+                                                    setOpenUpazila(true);
+                                                }}
+                                                onFocus={() => setOpenUpazila(true)}
+                                                onBlur={() => {
+                                                    setTimeout(() => setOpenUpazila(false), 150);
+                                                }}
+                                                className="w-full bg-white pr-8"
+                                            />
+                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
 
-                                        {/* Upazila Dropdown list */}
-                                        {openUpazila && (
-                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
-                                                {filteredUpazilas.length === 0 ? (
-                                                    <div className="px-4 py-3 text-sm text-slate-500 text-center">No upazila found.</div>
-                                                ) : (
-                                                    filteredUpazilas.map((upazila) => {
-                                                        const isSelected = newZone.name === upazila;
-                                                        return (
-                                                            <div
-                                                                key={upazila}
-                                                                className={cn(
-                                                                    "px-4 py-2.5 cursor-pointer text-sm text-slate-700",
-                                                                    isSelected ? "bg-blue-100" : "hover:bg-blue-50"
-                                                                )}
-                                                                onMouseDown={(e) => e.preventDefault()}
-                                                                onClick={() => {
-                                                                    setNewZone({ ...newZone, name: upazila });
-                                                                    setUpazilaSearch(upazila);
-                                                                    setOpenUpazila(false);
-                                                                }}
-                                                            >
-                                                                {upazila}
-                                                            </div>
-                                                        );
-                                                    })
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <Input
-                                        className="flex-1"
-                                        placeholder={`Enter delivery ${newZone.type.toLowerCase()}`}
-                                        value={newZone.name}
-                                        onChange={(e) => setNewZone({ ...newZone, name: e.target.value })}
-                                    />
-                                )}
-                                <Input
+                                            {/* Upazila Dropdown list */}
+                                            {openUpazila && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                                                    {filteredUpazilas.length === 0 ? (
+                                                        <div className="px-4 py-3 text-sm text-slate-500 text-center">No upazila found.</div>
+                                                    ) : (
+                                                        filteredUpazilas.map((upazila) => {
+                                                            const isSelected = newZone.name === upazila;
+                                                            return (
+                                                                <div
+                                                                    key={upazila}
+                                                                    className={cn(
+                                                                        "px-4 py-2.5 cursor-pointer text-sm text-slate-700",
+                                                                        isSelected ? "bg-blue-100" : "hover:bg-blue-50"
+                                                                    )}
+                                                                    onMouseDown={(e) => e.preventDefault()}
+                                                                    onClick={() => {
+                                                                        setNewZone({ ...newZone, name: upazila });
+                                                                        setUpazilaSearch(upazila);
+                                                                        setOpenUpazila(false);
+                                                                    }}
+                                                                >
+                                                                    {upazila}
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <Input
+                                            className="flex-1"
+                                            placeholder={`Enter delivery ${newZone.type.toLowerCase()}`}
+                                            value={newZone.name}
+                                            onChange={(e) => setNewZone({ ...newZone, name: e.target.value })}
+                                        />
+                                    )
+                                }
+                                < Input
                                     className="w-24"
-                                    placeholder="Price"
+                                    placeholder="Charge"
                                     type="number"
-                                    value={newZone.price || ''}
-                                    onChange={(e) => setNewZone({ ...newZone, price: parseInt(e.target.value) || 0 })}
+                                    value={newZone.charge || ''}
+                                    onChange={(e) => setNewZone({ ...newZone, charge: parseInt(e.target.value) || 0 })}
                                 />
-                                <Button variant="secondary" onClick={addZone} className="w-24">
-                                    Add <Plus className="w-4 h-4 ml-1" />
+                                <Button onClick={addZone} size="icon" className="shrink-0 bg-orange-600 hover:bg-orange-700">
+                                    <Plus className="w-4 h-4" />
                                 </Button>
                             </div>
                         </div>
@@ -520,19 +557,19 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                 <Input
                                     placeholder="Store ID"
                                     value={config.courierPathaoCredentials?.store_id || ''}
-                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, store_id: e.target.value } })}
+                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { client_id: '', client_secret: '', password: '', username: '', ...config.courierPathaoCredentials, store_id: e.target.value } })}
                                 />
                                 <Input
                                     placeholder="Client ID"
                                     value={config.courierPathaoCredentials?.client_id || ''}
-                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, client_id: e.target.value } })}
+                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { store_id: '', client_secret: '', password: '', username: '', ...config.courierPathaoCredentials, client_id: e.target.value } })}
                                 />
                                 <div className="relative">
                                     <Input
                                         type={showPathaoSecret ? "text" : "password"}
                                         placeholder="Client Secret"
                                         value={config.courierPathaoCredentials?.client_secret || ''}
-                                        onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, client_secret: e.target.value } })}
+                                        onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { store_id: '', client_id: '', password: '', username: '', ...config.courierPathaoCredentials, client_secret: e.target.value } })}
                                         className="pr-10"
                                     />
                                     <button
@@ -548,7 +585,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                         type={showPathaoPassword ? "text" : "password"}
                                         placeholder="Password"
                                         value={config.courierPathaoCredentials?.password || ''}
-                                        onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, password: e.target.value } })}
+                                        onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { store_id: '', client_id: '', client_secret: '', username: '', ...config.courierPathaoCredentials, password: e.target.value } })}
                                         className="pr-10"
                                     />
                                     <button
@@ -562,7 +599,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                 <Input
                                     placeholder="Username"
                                     value={config.courierPathaoCredentials?.username || ''}
-                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, username: e.target.value } })}
+                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { store_id: '', client_id: '', client_secret: '', password: '', ...config.courierPathaoCredentials, username: e.target.value } })}
                                 />
                                 <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
                                     Add <Plus className="w-4 h-4 ml-1" />
@@ -605,7 +642,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                         type={showSteadfastApiKey ? "text" : "password"}
                                         placeholder="API key"
                                         value={config.courierSteadfastCredentials?.api_key || ''}
-                                        onChange={(e) => setConfig({ ...config, courierSteadfastCredentials: { ...config.courierSteadfastCredentials, api_key: e.target.value } })}
+                                        onChange={(e) => setConfig({ ...config, courierSteadfastCredentials: { app_secret: '', ...config.courierSteadfastCredentials, api_key: e.target.value } })}
                                         className="pr-10"
                                     />
                                     <button
@@ -621,7 +658,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                         type={showSteadfastSecret ? "text" : "password"}
                                         placeholder="App Secret"
                                         value={config.courierSteadfastCredentials?.app_secret || ''}
-                                        onChange={(e) => setConfig({ ...config, courierSteadfastCredentials: { ...config.courierSteadfastCredentials, app_secret: e.target.value } })}
+                                        onChange={(e) => setConfig({ ...config, courierSteadfastCredentials: { api_key: '', ...config.courierSteadfastCredentials, app_secret: e.target.value } })}
                                         className="pr-10"
                                     />
                                     <button
@@ -727,7 +764,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                         type={showPaperflyUsername ? "text" : "password"}
                                         placeholder="Username"
                                         value={config.courierPaperflyCredentials?.username || ''}
-                                        onChange={(e) => setConfig({ ...config, courierPaperflyCredentials: { ...config.courierPaperflyCredentials, username: e.target.value } })}
+                                        onChange={(e) => setConfig({ ...config, courierPaperflyCredentials: { password: '', ...config.courierPaperflyCredentials, username: e.target.value } })}
                                         className="pr-10"
                                     />
                                     <button
@@ -743,7 +780,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                         type={showPaperflyPassword ? "text" : "password"}
                                         placeholder="Password"
                                         value={config.courierPaperflyCredentials?.password || ''}
-                                        onChange={(e) => setConfig({ ...config, courierPaperflyCredentials: { ...config.courierPaperflyCredentials, password: e.target.value } })}
+                                        onChange={(e) => setConfig({ ...config, courierPaperflyCredentials: { username: '', ...config.courierPaperflyCredentials, password: e.target.value } })}
                                         className="pr-10"
                                     />
                                     <button

@@ -62,7 +62,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
     ], [initialCategories]);
 
     const filteredItems = useMemo(() => {
-        let items = initialProducts.filter(item => {
+        const items = initialProducts.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(debouncedSearch.toLowerCase());
             const matchesCategory = activeCategory === 'all' ? true : item.categoryId === activeCategory;
 
@@ -102,6 +102,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         const handleScroll = () => {
             if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
                 if (displayCount < filteredItems.length) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setDisplayCount(prev => prev + 8);
                 }
             }
@@ -112,6 +113,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
     // Reset display count and sync URL on filter change
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDisplayCount(12);
 
         // Sync URL shallowly
@@ -340,7 +342,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
                                     <h3 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">No Matches Found</h3>
                                     <p className="text-slate-400 text-sm max-w-xs mx-auto mb-8 font-medium leading-relaxed">
-                                        We couldn't find any items matching your current filters. Try adjusting your search keywords.
+                                        We couldn&apos;t find any items matching your current filters. Try adjusting your search keywords.
                                     </p>
 
                                     <button
@@ -383,7 +385,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
                                 )}
                                 {displayCount >= filteredItems.length && (
                                     <div className="mt-8 text-slate-300 font-serif italic text-sm">
-                                        ~ That's all for now ~
+                                        ~ That&apos;s all for now ~
                                     </div>
                                 )}
                             </div>

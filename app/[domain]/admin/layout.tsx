@@ -11,6 +11,16 @@ import { getProducts } from '@/app/actions/product';
 // How often to verify device against DB (30 minutes)
 const DB_VERIFY_INTERVAL = 30 * 60 * 1000;
 
+import { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+    const config = await getAdminSiteConfig();
+    return {
+        title: `${config.shopName || 'Shop'} - Admin Panel`,
+        description: `Manage your store: ${config.shopName}`,
+    };
+}
+
 export default async function AdminLayout({
     children,
     params

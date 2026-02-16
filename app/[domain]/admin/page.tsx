@@ -48,7 +48,7 @@ export default function AdminDashboard() {
     });
 
     // 4. Calculate Top Selling Product
-    const productSales: Record<string, number> = {};
+    // 4. Calculate Top Selling Product
     orders.forEach(o => {
         // Parse items string "2x Crab, 1x Coke" (Simple heuristic) or just use logic if we had structured items.
         // Since we only have `o.items` which is string, we can't easily parse perfectly without regex.

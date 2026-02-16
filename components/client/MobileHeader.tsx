@@ -29,8 +29,10 @@ export function MobileHeader() {
 
     const searchRef = useRef<HTMLDivElement>(null);
     const searchTriggerRef = useRef<HTMLButtonElement>(null);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Next.js hydration guard
         setMounted(true);
 
         function handleClickOutside(event: MouseEvent) {
@@ -51,7 +53,6 @@ export function MobileHeader() {
     }, []);
 
     const cartCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const router = useRouter();
     const searchTimeout = useRef<NodeJS.Timeout>(null);

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Filter, Pencil, Trash2, X, AlertTriangle, Image as ImageIcon, Sparkles, MoreHorizontal, MoreVertical, Upload, Copy, Eye, Share2, LayoutGrid, List, Edit } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, X, Sparkles, MoreVertical, Upload, Copy, Eye, Share2, LayoutGrid, List, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { smartParseAI } from '@/app/actions/ai';
 import {
@@ -1027,7 +1027,7 @@ export default function ProductsPage() {
                                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                                             {(() => {
                                                                 if (!product.comboItems || product.comboItems.length === 0) return '0 Sets';
-                                                                 const limits = product.comboItems.map((item) =>
+                                                                const limits = product.comboItems.map((item) =>
                                                                     item.child ? Math.floor(item.child.pieces / item.quantity) : 0
                                                                 );
                                                                 return `${Math.min(...limits)} Sets`;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getSiteConfig, getAdminSiteConfig, updateSiteConfig, getPaymentConfig, updatePaymentConfig } from '@/app/actions/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,6 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
 
     // Maintain a reference to the 'original' state for comparison
     const [originalConfig, setOriginalConfig] = useState<any>(initialConfig);
-    const [hasChanges, setHasChanges] = useState(false);
 
     const [config, setConfig] = useState<any>(initialConfig || {
         contactPhone: '',
@@ -33,12 +32,10 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
     });
     const [paymentConfig, setPaymentConfig] = useState<any>({});
 
-    useEffect(() => {
-        if (!originalConfig || !config) return;
-
-        // Simple deep comparison
-        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
-        setHasChanges(isDifferent);
+    // Derived state: check for changes
+    const hasChanges = useMemo(() => {
+        if (!originalConfig || !config) return false;
+        return JSON.stringify(originalConfig) !== JSON.stringify(config);
     }, [config, originalConfig]);
 
     useEffect(() => {
@@ -70,7 +67,7 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
 
         if (res.success && payRes.success) {
             toast.success("Shop settings saved successfully");
-            setHasChanges(false);
+
             setOriginalConfig(config);
         } else {
             const errorMsg = res.error || payRes.error || "Failed to save settings";

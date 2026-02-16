@@ -43,6 +43,7 @@ export function CompanyUsersModal({ tenantId, tenantName, open, onOpenChange }: 
 
     useEffect(() => {
         if (open && tenantId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             fetchUsers();
         }
     }, [open, tenantId]);

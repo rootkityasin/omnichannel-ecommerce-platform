@@ -12,26 +12,14 @@ import { Plus } from 'lucide-react';
 import { ProductModal } from './ProductModal';
 import { trackEvent } from '@/lib/track';
 
-interface ProductCardProps {
+import { Product } from '@/types/common';
+
+export interface ProductCardProps extends Partial<Product> {
     id: string;
     name: string;
-    name_bn?: string;
     price: string | number;
-    price_bn?: string;
     image: string;
-    images?: string[];
     categoryId?: string;
-    nutritionImage?: string;
-    cookingImage?: string;
-    nutrition?: string;
-    cookingInstructions?: string;
-    pieces?: number;
-    totalSold?: number;
-    weightOptions?: string[];
-    stage?: string;
-    isAvailable?: boolean;
-    servingSize?: number;
-    weight?: number;
 }
 
 export const ProductCard = memo(function ProductCard({

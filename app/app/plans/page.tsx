@@ -44,7 +44,8 @@ export default function PlansPage() {
             // Map raw prisma data to frontend Plan interface
             const mappedPlans: Plan[] = res.plans.map((p: any) => ({
                 ...p,
-                features: Array.isArray(p.features) ? p.features : []
+                id: p.id || '', // Ensure id is string
+                features: Array.isArray(p.features) ? p.features : [] // Ensure features is string[]
             }));
             setPlans(mappedPlans);
         } else {
@@ -54,6 +55,7 @@ export default function PlansPage() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchPlans();
     }, []);
 

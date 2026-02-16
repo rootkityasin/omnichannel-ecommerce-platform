@@ -322,7 +322,6 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                             How many items do you want to move?
                             <br />
                             Max available: <strong>{moveRequest?.product.stock ? (
-                                // @ts-ignore
                                 moveRequest.product.pieces || 0
                             ) : 0}</strong>
                         </p>
@@ -333,7 +332,6 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                                 <input
                                     type="number"
                                     min="1"
-                                    // @ts-ignore
                                     max={moveRequest?.product.pieces || 1}
                                     value={moveQty}
                                     onChange={(e) => setMoveQty(e.target.value === '' ? '' : parseInt(e.target.value))}

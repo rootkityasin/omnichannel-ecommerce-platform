@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { updatePaymentConfig as updatePaymentServerConfig, getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { Percent } from 'lucide-react';
@@ -24,12 +24,12 @@ export function PaymentSettings() {
     // Local state for form editing - init from context
     const [config, setConfig] = useState<any>(paymentConfig);
     const [originalConfig, setOriginalConfig] = useState<any>(paymentConfig);
-    const [hasChanges, setHasChanges] = useState(false);
     const [taxPercentage, setTaxPercentage] = useState<number | string>(settings.taxPercentage || 0);
 
     // Sync from context when it loads (in case hard reload)
     useEffect(() => {
         if (paymentConfig) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate prop sync from context
             setConfig((prev: any) => {
                 // simple equality check to avoid re-render loop if object identity changes but content doesn't
                 if (JSON.stringify(prev) === JSON.stringify(paymentConfig)) return prev;
@@ -41,14 +41,14 @@ export function PaymentSettings() {
 
     // Sync tax percentage from context
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate prop sync from context
         setTaxPercentage(settings.taxPercentage || 0);
     }, [settings.taxPercentage]);
 
-    // Comparison effect
-    useEffect(() => {
-        if (!originalConfig || !config) return;
-        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
-        setHasChanges(isDifferent);
+    // Derived state: check for changes
+    const hasChanges = useMemo(() => {
+        if (!originalConfig || !config) return false;
+        return JSON.stringify(originalConfig) !== JSON.stringify(config);
     }, [config, originalConfig]);
 
     const handleSave = async () => {
@@ -74,7 +74,7 @@ export function PaymentSettings() {
 
             // Update local state helpers
             setOriginalConfig(config);
-            setHasChanges(false);
+
         } else {
             toast.error("Failed to save settings");
         }

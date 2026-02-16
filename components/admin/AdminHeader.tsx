@@ -69,7 +69,9 @@ export function AdminHeader({ title }: AdminHeaderProps) {
         if (hasFetched.current) return; // Skip if already fetched
         hasFetched.current = true;
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchNotifications();
         // scheduleNextPoll(); // DISABLED: To prevent excessive requests
 

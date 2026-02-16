@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,6 @@ export function SeoSettings({ initialConfig }: SeoProps) {
     const [config, setConfig] = useState(initialConfig);
     const [originalConfig, setOriginalConfig] = useState(initialConfig);
     const [isSaving, setIsSaving] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
 
     // Plan Gating Logic
     // Plan Gating Logic
@@ -31,10 +30,11 @@ export function SeoSettings({ initialConfig }: SeoProps) {
     const canEditBasic = true; // Everyone can now edit Basic SEO
     const canEditAdvanced = isStandardOrHigher; // Only Premium can edit Advanced
 
-    useEffect(() => {
-        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
-        setHasChanges(isDifferent);
-    }, [config, originalConfig]);
+    // Derived state: check for changes
+    const hasChanges = useMemo(() =>
+        JSON.stringify(originalConfig) !== JSON.stringify(config),
+        [config, originalConfig]
+    );
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -44,7 +44,7 @@ export function SeoSettings({ initialConfig }: SeoProps) {
         if (result.success) {
             toast.success("SEO settings saved successfully!");
             setOriginalConfig(config);
-            setHasChanges(false);
+
         } else {
             toast.error(result.error || "Failed to save settings.");
         }
@@ -58,7 +58,7 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                     <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                         <Search className="w-6 h-6 text-blue-600" /> SEO Manager
                     </h2>
-                    <p className="text-sm text-slate-500 ml-8">Configure your store's search engine and social media appearance.</p>
+                    <p className="text-sm text-slate-500 ml-8">Configure your store&apos;s search engine and social media appearance.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button

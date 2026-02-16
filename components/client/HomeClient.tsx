@@ -2,15 +2,15 @@
 
 import { HeroCarousel } from '@/components/client/HeroCarousel';
 import { CategoryNav } from '@/components/client/CategoryNav';
-import TrustFooter from '@/components/client/TrustFooter';
 import { ScrollMouse } from '@/components/shared/ScrollMouse';
 import { ResourcePrefetcher } from '@/components/client/ResourcePrefetcher';
-
+import { HeroSlide, SiteConfig, Category } from '@/types/common';
+import TrustFooter from '@/components/client/TrustFooter';
 interface HomeClientProps {
-    heroSlides: any[];
-    config: any;
-    categories: any[];
-    children?: React.ReactNode;
+    readonly heroSlides: HeroSlide[];
+    readonly config: SiteConfig;
+    readonly categories: Category[];
+    readonly children?: React.ReactNode;
 }
 
 export function HomeClient({ heroSlides, config, categories, children }: HomeClientProps) {

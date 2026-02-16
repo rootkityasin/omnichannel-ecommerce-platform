@@ -1,0 +1,333 @@
+
+=== prefer-const (5) ===
+  components/client/MenuClient.tsx:65:13 - 'items' is never reassigned. Use 'const' instead.
+  components/client/ThemeInjector.tsx:13:17 - 'result' is never reassigned. Use 'const' instead.
+  components/client/ThemeInjector.tsx:19:17 - 'max' is never reassigned. Use 'const' instead.
+  components/client/ThemeInjector.tsx:19:42 - 'min' is never reassigned. Use 'const' instead.
+  components/client/ThemeInjector.tsx:23:21 - 'd' is never reassigned. Use 'const' instead.
+
+=== react/no-unescaped-entities (8) ===
+  components/admin/BlockedListTab.tsx:74:82 - `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+  components/admin/BlockedListTab.tsx:74:87 - `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+  components/admin/SectionsManager.tsx:305:46 - `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+  components/admin/SectionsManager.tsx:305:63 - `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+  components/admin/SeoSettings.tsx:61:84 - `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  components/client/MenuClient.tsx:343:50 - `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  components/client/MenuClient.tsx:386:47 - `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  components/client/Story/TeamSection.tsx:57:77 - `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+
+=== @typescript-eslint/no-require-imports (8) ===
+  parse_lint.js:1:22 - A `require()` style import is forbidden.
+  parse_lint.js:2:12 - A `require()` style import is forbidden.
+  scripts/check-auth-env.js:1:26 - A `require()` style import is forbidden.
+  scripts/check-settings.js:1:26 - A `require()` style import is forbidden.
+  scripts/clean-orders.js:1:26 - A `require()` style import is forbidden.
+  scripts/create-admin.js:2:26 - A `require()` style import is forbidden.
+  scripts/create-admin.js:3:16 - A `require()` style import is forbidden.
+  tailwind.config.ts:95:12 - A `require()` style import is forbidden.
+
+=== @typescript-eslint/ban-ts-comment (3) ===
+  components/admin/ProductBoard.tsx:325:33 - Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following lin
+  components/admin/ProductBoard.tsx:336:37 - Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following lin
+  components/client/HeroCarousel.tsx:131:25 - Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following lin
+
+=== @typescript-eslint/no-empty-object-type (2) ===
+  components/ui/input.tsx:4:18 - An interface declaring no members is equivalent to its supertype.
+  components/ui/textarea.tsx:4:18 - An interface declaring no members is equivalent to its supertype.
+
+=== react-hooks/set-state-in-effect (24) ===
+  app/app/CompanyUsersModal.tsx:46:13 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  app/app/plans/page.tsx:58:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/AdminHeader.tsx:72:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/BlockedListTab.tsx:27:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/CartEditor.tsx:131:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/DeliverySettings.tsx:115:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/DomainSettings.tsx:62:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/DomainSettings.tsx:71:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/PaymentSettings.tsx:33:13 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/PaymentSettings.tsx:44:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/PaymentSettings.tsx:51:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/SectionsManager.tsx:156:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/SeoSettings.tsx:36:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/admin/ShopGeneralSettings.tsx:41:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/BottomNav.tsx:20:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/CartDrawer.tsx:36:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/DesktopNavbar.tsx:52:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/GlobalCheckoutDrawer.tsx:246:13 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/Mascot.tsx:22:13 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/MenuClient.tsx:115:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/ReviewMoodModal.tsx:34:13 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/cart/CartClient.tsx:44:13 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  components/client/cart/CartClient.tsx:60:50 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+  lib/hooks/use-media-query.ts:14:9 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are in
+
+=== react-hooks/immutability (3) ===
+  components/admin/StoryEditor.tsx:39:9 - Error: Cannot access variable before it is declared
+
+`loadData` is accessed before it is declared, w
+  components/client/MobileHeader.tsx:43:17 - Error: Cannot access variable before it is declared
+
+`setIsSearchOpen` is accessed before it is decl
+  components/client/PromoPopup.tsx:14:9 - Error: Cannot access variable before it is declared
+
+`loadPromo` is accessed before it is declared, 
+
+=== react-hooks/purity (1) ===
+  lib/hooks/useDebounce.ts:54:40 - Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impur
+
+=== react-hooks/rules-of-hooks (8) ===
+  components/client/HeroCarousel.tsx:32:21 - React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same ord
+  components/client/HeroCarousel.tsx:37:34 - React Hook "useEmblaCarousel" is called conditionally. React Hooks must be called in the exact same 
+  components/client/HeroCarousel.tsx:38:26 - React Hook "useLanguageStore" is called conditionally. React Hooks must be called in the exact same 
+  components/client/HeroCarousel.tsx:40:47 - React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same or
+  components/client/HeroCarousel.tsx:42:22 - React Hook "React.useCallback" is called conditionally. React Hooks must be called in the exact same
+  components/client/HeroCarousel.tsx:47:37 - React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same or
+  components/client/HeroCarousel.tsx:49:5 - React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same o
+  components/client/HeroCarousel.tsx:56:5 - React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same o
+
+=== @typescript-eslint/no-explicit-any (195) ===
+  app/app/DashboardClient.tsx:20:14 - Unexpected any. Specify a different type.
+  app/app/DashboardClient.tsx:27:19 - Unexpected any. Specify a different type.
+  app/app/TenantCard.tsx:36:19 - Unexpected any. Specify a different type.
+  app/app/plans/page.tsx:45:59 - Unexpected any. Specify a different type.
+  components/admin/AdminSidebar.tsx:102:15 - Unexpected any. Specify a different type.
+  components/admin/BlockedListTab.tsx:17:50 - Unexpected any. Specify a different type.
+  components/admin/BlockedListTab.tsx:19:55 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:97:56 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:116:47 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:118:63 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:119:71 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:136:70 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:231:72 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:311:104 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:477:75 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:477:106 - Unexpected any. Specify a different type.
+  components/admin/CartEditor.tsx:572:33 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:74:42 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:146:70 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:179:68 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:186:65 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:195:59 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:196:63 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:197:62 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:276:64 - Unexpected any. Specify a different type.
+  components/admin/DeliverySettings.tsx:342:129 - Unexpected any. Specify a different type.
+  components/admin/DomainSettings.tsx:21:42 - Unexpected any. Specify a different type.
+  components/admin/DomainSettings.tsx:27:54 - Unexpected any. Specify a different type.
+  components/admin/DomainSettings.tsx:30:58 - Unexpected any. Specify a different type.
+  components/admin/DynamicInventoryTabs.tsx:10:45 - Unexpected any. Specify a different type.
+  components/admin/EventExportButton.tsx:34:45 - Unexpected any. Specify a different type.
+  components/admin/EventExportButton.tsx:47:33 - Unexpected any. Specify a different type.
+  components/admin/ExpenseExport.tsx:13:57 - Unexpected any. Specify a different type.
+  components/admin/ExpenseList.tsx:10:55 - Unexpected any. Specify a different type.
+  components/admin/FulfillmentBoard.tsx:18:13 - Unexpected any. Specify a different type.
+  components/admin/InventoryTabs.tsx:18:15 - Unexpected any. Specify a different type.
+  components/admin/InventoryTabs.tsx:19:15 - Unexpected any. Specify a different type.
+  components/admin/PaymentSettings.tsx:25:42 - Unexpected any. Specify a different type.
+  components/admin/PaymentSettings.tsx:26:58 - Unexpected any. Specify a different type.
+  components/admin/PaymentSettings.tsx:33:30 - Unexpected any. Specify a different type.
+  components/admin/PaymentSettings.tsx:393:28 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:29:14 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:30:24 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:31:25 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:36:69 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:56:80 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:70:41 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:176:34 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:187:56 - Unexpected any. Specify a different type.
+  components/admin/ProductBoard.tsx:187:86 - Unexpected any. Specify a different type.
+  components/admin/SectionsManager.tsx:41:77 - Unexpected any. Specify a different type.
+  components/admin/SectionsManager.tsx:41:161 - Unexpected any. Specify a different type.
+  components/admin/SectionsManager.tsx:125:46 - Unexpected any. Specify a different type.
+  components/admin/SectionsManager.tsx:175:54 - Unexpected any. Specify a different type.
+  components/admin/SeoSettings.tsx:17:20 - Unexpected any. Specify a different type.
+  components/admin/SeoSettings.tsx:188:113 - Unexpected any. Specify a different type.
+  components/admin/SeoSettings.tsx:216:110 - Unexpected any. Specify a different type.
+  components/admin/SeoSettings.tsx:430:66 - Unexpected any. Specify a different type.
+  components/admin/ShopGeneralSettings.tsx:15:74 - Unexpected any. Specify a different type.
+  components/admin/ShopGeneralSettings.tsx:20:58 - Unexpected any. Specify a different type.
+  components/admin/ShopGeneralSettings.tsx:23:42 - Unexpected any. Specify a different type.
+  components/admin/ShopGeneralSettings.tsx:34:56 - Unexpected any. Specify a different type.
+  components/admin/SignalDataCell.tsx:17:11 - Unexpected any. Specify a different type.
+  components/admin/SignalDataCell.tsx:40:44 - Unexpected any. Specify a different type.
+  components/admin/StockList.tsx:21:53 - Unexpected any. Specify a different type.
+  components/admin/StockList.tsx:26:60 - Unexpected any. Specify a different type.
+  components/admin/StockList.tsx:30:50 - Unexpected any. Specify a different type.
+  components/admin/StockList.tsx:41:39 - Unexpected any. Specify a different type.
+  components/admin/StockList.tsx:135:92 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:19:38 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:20:42 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:21:44 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:22:38 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:23:48 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:24:44 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:25:60 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:28:56 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:29:49 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:34:64 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:72:28 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:73:36 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:86:54 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:356:72 - Unexpected any. Specify a different type.
+  components/admin/StoryEditor.tsx:463:68 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:31:40 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:37:70 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:43:52 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:104:45 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:111:40 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:129:40 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:159:31 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:183:39 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:194:39 - Unexpected any. Specify a different type.
+  components/admin/UsersTab.tsx:212:46 - Unexpected any. Specify a different type.
+  components/client/CartDrawer.tsx:23:48 - Unexpected any. Specify a different type.
+  components/client/CartDrawer.tsx:52:51 - Unexpected any. Specify a different type.
+  components/client/CartDrawer.tsx:100:32 - Unexpected any. Specify a different type.
+  components/client/CartDrawer.tsx:107:35 - Unexpected any. Specify a different type.
+  components/client/CartRecommendations.tsx:11:60 - Unexpected any. Specify a different type.
+  components/client/CategoryNav.tsx:62:32 - Unexpected any. Specify a different type.
+  components/client/CategoryNav.tsx:70:11 - Unexpected any. Specify a different type.
+  components/client/CategoryNav.tsx:249:21 - Unexpected any. Specify a different type.
+  components/client/CategoryNav.tsx:270:79 - Unexpected any. Specify a different type.
+  components/client/CouponSection.tsx:24:43 - Unexpected any. Specify a different type.
+  components/client/FlyOverlay.tsx:26:60 - Unexpected any. Specify a different type.
+  components/client/FlyOverlay.tsx:26:77 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:48:15 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:49:18 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:51:14 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:117:92 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:150:84 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:210:50 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:213:70 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:215:48 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:219:51 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:230:46 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:236:42 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:245:47 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:246:32 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:249:56 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:263:54 - Unexpected any. Specify a different type.
+  components/client/GlobalCheckoutDrawer.tsx:287:26 - Unexpected any. Specify a different type.
+  components/client/HomeClient.tsx:10:17 - Unexpected any. Specify a different type.
+  components/client/HomeClient.tsx:11:13 - Unexpected any. Specify a different type.
+  components/client/HomeClient.tsx:12:17 - Unexpected any. Specify a different type.
+  components/client/MenuClient.tsx:25:22 - Unexpected any. Specify a different type.
+  components/client/MenuClient.tsx:26:24 - Unexpected any. Specify a different type.
+  components/client/MenuClient.tsx:57:38 - Unexpected any. Specify a different type.
+  components/client/MenuClient.tsx:76:58 - Unexpected any. Specify a different type.
+  components/client/MenuClient.tsx:145:39 - Unexpected any. Specify a different type.
+  components/client/MenuClient.tsx:146:55 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:96:58 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:97:59 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:98:65 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:99:63 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:100:60 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:101:70 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:102:57 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:103:60 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:104:64 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:105:57 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:106:62 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:107:62 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:108:57 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:109:56 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:138:54 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:139:55 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:140:61 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:141:59 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:142:56 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:143:66 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:144:53 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:145:56 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:146:60 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:147:53 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:148:52 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:149:58 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:150:58 - Unexpected any. Specify a different type.
+  components/client/ProductRail.tsx:151:53 - Unexpected any. Specify a different type.
+  components/client/PromoPopup.tsx:11:40 - Unexpected any. Specify a different type.
+  components/client/ResourcePrefetcher.tsx:36:24 - Unexpected any. Specify a different type.
+  components/client/ReviewMoodModal.tsx:26:46 - Unexpected any. Specify a different type.
+  components/client/SectionList.tsx:12:15 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:14:15 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:15:17 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:16:26 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:17:18 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:18:15 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:19:20 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:20:18 - Unexpected any. Specify a different type.
+  components/client/Story/StoryLayout.tsx:22:15 - Unexpected any. Specify a different type.
+  components/client/TrustFooter.tsx:148:54 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:29:23 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:30:27 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:31:24 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:49:56 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:50:50 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:55:48 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:79:46 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:86:41 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:114:63 - Unexpected any. Specify a different type.
+  components/client/cart/CartClient.tsx:163:41 - Unexpected any. Specify a different type.
+  components/client/cart/MobileCartItem.tsx:10:20 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:73:20 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:82:20 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:105:24 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:142:20 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:222:61 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:230:44 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:272:103 - Unexpected any. Specify a different type.
+  components/providers/AdminProvider.tsx:273:105 - Unexpected any. Specify a different type.
+  lib/hooks/useDebounce.ts:31:58 - Unexpected any. Specify a different type.
+  lib/hooks/useDebounce.ts:31:68 - Unexpected any. Specify a different type.
+  lib/store.ts:35:18 - Unexpected any. Specify a different type.
+  lib/store.ts:36:32 - Unexpected any. Specify a different type.

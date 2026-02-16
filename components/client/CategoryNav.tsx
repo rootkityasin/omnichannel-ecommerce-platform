@@ -267,7 +267,9 @@ const cardVariants: any = {
     }
 };
 
-export function CategoryNav({ initialCategories = [] }: { initialCategories?: any[] }) {
+import { Category } from '@/types/common';
+
+export function CategoryNav({ initialCategories = [] }: { initialCategories?: Category[] }) {
     const categories = initialCategories;
 
     return (

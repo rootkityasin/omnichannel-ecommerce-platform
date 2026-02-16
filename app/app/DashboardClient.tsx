@@ -17,8 +17,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface DashboardClientProps {
-    tenants: any[];
-    plans: any[];
+    tenants: any[]; // specific type should be imported if available, or defined
+    plans: {
+        id: string;
+        slug: string;
+        name: string;
+        price: number;
+        period: string;
+        features: any;
+    }[];
 }
 
 export function DashboardClient({ tenants, plans }: DashboardClientProps) {

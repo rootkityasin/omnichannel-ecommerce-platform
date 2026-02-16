@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getSiteConfig } from '@/app/actions/settings'; // Still use this for fetching initial config
 import { updateDomainSettings, verifyDomain, checkDomainStatus } from '@/app/actions/domain'; // New actions
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +28,7 @@ export function DomainSettings() {
 
     // State to track original values
     const [originalConfig, setOriginalConfig] = useState<any>(null);
-    const [hasChanges, setHasChanges] = useState(false);
+
 
 
     const checkStatus = async (domain: string) => {
@@ -59,16 +59,15 @@ export function DomainSettings() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate data fetching on mount
         loadConfig();
     }, []);
 
-    // Check for changes
-    useEffect(() => {
-        if (!originalConfig) return;
-        const isDifferent =
-            config.slug !== originalConfig.slug ||
+    // Derived state: check for changes
+    const hasChanges = useMemo(() => {
+        if (!originalConfig) return false;
+        return config.slug !== originalConfig.slug ||
             config.customDomain !== originalConfig.customDomain;
-        setHasChanges(isDifferent);
     }, [config, originalConfig]);
 
     const handleSave = async () => {
@@ -90,7 +89,7 @@ export function DomainSettings() {
         if (result.success) {
             toast.success("Domain settings saved successfully");
             setOriginalConfig({ ...config });
-            setHasChanges(false);
+
 
             // If slug changed, we might need to redirect or reload, but for now just update state
             if (config.slug !== originalConfig.slug) {
@@ -281,7 +280,6 @@ export function DomainSettings() {
                                                 setConfig({ ...config, customDomain: '' });
                                                 setOriginalConfig({ ...originalConfig, customDomain: '' });
                                                 setDomainStatus(null);
-                                                setHasChanges(false);
                                             } else {
                                                 toast.error(res.error || "Failed to remove domain");
                                             }

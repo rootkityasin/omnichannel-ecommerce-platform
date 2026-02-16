@@ -81,7 +81,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             {/* Header */}
                             <div className="flex justify-between items-end border-b-4 border-slate-800 pb-2 mb-4">
                                 {invoicePrefs.showLogo && config?.logoUrl ? (
-                                    <img src={config.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
+                                    <div className="relative h-12 w-48">
+                                        <Image
+                                            src={config.logoUrl}
+                                            alt="Logo"
+                                            fill
+                                            className="object-contain object-left"
+                                        />
+                                    </div>
                                 ) : (
                                     <h1 className="text-2xl font-bold">{config?.shopName}</h1>
                                 )}

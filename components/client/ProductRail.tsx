@@ -4,12 +4,7 @@ import { ProductCard } from './ProductCard';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-interface Product {
-    id: string;
-    name: string;
-    price: string | number;
-    image: string;
-}
+import { Product } from '@/types/common';
 
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useRef } from 'react';
@@ -92,21 +87,21 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                     id={product.id}
                                     name={product.name}
                                     price={String(product.price)}
-                                    image={product.image}
-                                    name_bn={(product as any).name_bn}
-                                    price_bn={(product as any).price_bn}
-                                    nutritionImage={(product as any).nutritionImage}
-                                    cookingImage={(product as any).cookingImage}
-                                    nutrition={(product as any).nutrition}
-                                    cookingInstructions={(product as any).cookingInstructions}
-                                    pieces={(product as any).pieces}
-                                    totalSold={(product as any).totalSold}
-                                    weightOptions={(product as any).weightOptions}
-                                    images={(product as any).images}
-                                    isAvailable={(product as any).isAvailable}
-                                    servingSize={(product as any).servingSize}
-                                    weight={(product as any).weight}
-                                    stage={(product as any).stage}
+                                    image={product.image || "/logo.svg"}
+                                    name_bn={product.name_bn}
+                                    price_bn={product.price_bn}
+                                    nutritionImage={product.nutritionImage}
+                                    cookingImage={product.cookingImage}
+                                    nutrition={product.nutrition}
+                                    cookingInstructions={product.cookingInstructions}
+                                    pieces={product.pieces}
+                                    totalSold={product.totalSold}
+                                    weightOptions={product.weightOptions}
+                                    images={product.images}
+                                    isAvailable={product.isAvailable}
+                                    servingSize={product.servingSize}
+                                    weight={product.weight}
+                                    stage={product.stage}
                                 />
                             </motion.div>
                         ))}
@@ -134,21 +129,21 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                 id={product.id}
                                 name={product.name}
                                 price={String(product.price)}
-                                image={product.image}
-                                name_bn={(product as any).name_bn}
-                                price_bn={(product as any).price_bn}
-                                nutritionImage={(product as any).nutritionImage}
-                                cookingImage={(product as any).cookingImage}
-                                nutrition={(product as any).nutrition}
-                                cookingInstructions={(product as any).cookingInstructions}
-                                pieces={(product as any).pieces}
-                                totalSold={(product as any).totalSold}
-                                weightOptions={(product as any).weightOptions}
-                                images={(product as any).images}
-                                stage={(product as any).stage}
-                                isAvailable={(product as any).isAvailable}
-                                servingSize={(product as any).servingSize}
-                                weight={(product as any).weight}
+                                image={product.image || "/logo.svg"}
+                                name_bn={product.name_bn}
+                                price_bn={product.price_bn}
+                                nutritionImage={product.nutritionImage}
+                                cookingImage={product.cookingImage}
+                                nutrition={product.nutrition}
+                                cookingInstructions={product.cookingInstructions}
+                                pieces={product.pieces}
+                                totalSold={product.totalSold}
+                                weightOptions={product.weightOptions}
+                                images={product.images}
+                                stage={product.stage}
+                                isAvailable={product.isAvailable}
+                                servingSize={product.servingSize}
+                                weight={product.weight}
                             />
                         </ScrollRevealItem>
                     ))}

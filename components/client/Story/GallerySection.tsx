@@ -3,8 +3,10 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
+import { GalleryItem } from '@/types/common';
+
 interface GalleryProps {
-    data: Array<{ src: string; alt: string; rotate: number }> | null;
+    data: GalleryItem[] | null;
 }
 
 export function GallerySection({ data }: GalleryProps) {

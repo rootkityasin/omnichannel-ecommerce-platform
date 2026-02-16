@@ -1,12 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge'; // Keeping existing import, but check usage
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ShieldAlert, Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRound, Ban, CheckCircle, Clock, Square, CheckSquare, ShoppingBag, Package } from 'lucide-react';
-import { useState, useTransition, useEffect } from 'react';
+import { Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRound, Ban, CheckCircle, Clock, Square, CheckSquare, ShoppingBag, Package } from 'lucide-react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { deleteTenant, updateTenantStatus, updateTenantPlan, getImpersonationLink } from '@/app/actions/super-admin';
 import { cn } from '@/lib/utils';
@@ -28,7 +27,14 @@ interface TenantProps {
             products: number;
         };
     };
-    plans: any[];
+    plans: {
+        id: string;
+        name: string;
+        slug: string;
+        price: number;
+        period: string;
+        features: any; // Kept as any or structured if known, but main issue was plans: any[]
+    }[];
 }
 
 export function TenantCard({ tenant, plans }: TenantProps) {

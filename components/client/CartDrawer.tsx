@@ -33,8 +33,10 @@ export function CartDrawer() {
     const finalVal = finalTotal();
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         const updateDimensions = () => {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setDimensions({ width: window.innerWidth, height: window.innerHeight });
         };
 

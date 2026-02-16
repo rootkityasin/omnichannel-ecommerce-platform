@@ -13,16 +13,20 @@ import { toast } from 'sonner';
 import { getStorySections, updateStorySection, getAllProductsSimple } from '@/app/actions/story';
 import { StoryLayout } from '@/components/client/Story/StoryLayout';
 import { Eye } from 'lucide-react';
+import {
+    HeroContent, ValuesContent, GalleryItem, TeamMember,
+    WholesaleContent, ReviewsContent, ProductsSectionContent
+} from '@/types/common';
 
 export function StoryEditor() {
     const [loading, setLoading] = useState(true);
-    const [hero, setHero] = useState<any>({ title: '', subtitle: '', estYear: '', mascotImage: '' });
-    const [values, setValues] = useState<any>({ manifestoTitle: '', manifestoText: '', brandValues: [] });
-    const [gallery, setGallery] = useState<any[]>([]);
-    const [team, setTeam] = useState<any[]>([]);
-    const [wholesale, setWholesale] = useState<any>({ title: '', description: '', whatsappNumber: '', image: '' });
-    const [reviews, setReviews] = useState<any>({ featuredImage: '', gridImages: [], reviews: [] });
-    const [productsSection, setProductsSection] = useState<any>({ title: 'Our Signatures', productIds: [] });
+    const [hero, setHero] = useState<HeroContent>({ title: '', subtitle: '', estYear: '', mascotImage: '' });
+    const [values, setValues] = useState<ValuesContent>({ manifestoTitle: '', manifestoText: '', brandValues: [] });
+    const [gallery, setGallery] = useState<GalleryItem[]>([]);
+    const [team, setTeam] = useState<TeamMember[]>([]);
+    const [wholesale, setWholesale] = useState<WholesaleContent>({ title: '', description: '', whatsappNumber: '', image: '' });
+    const [reviews, setReviews] = useState<ReviewsContent>({ featuredImage: '', gridImages: [], reviews: [] });
+    const [productsSection, setProductsSection] = useState<ProductsSectionContent>({ title: 'Our Signatures', productIds: [] });
 
     // Change detection
     const [originalState, setOriginalState] = useState<any>({});
@@ -34,31 +38,6 @@ export function StoryEditor() {
     const [availableProducts, setAvailableProducts] = useState<any[]>([]);
     const [saving, setSaving] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('hero');
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        // Scroll to section in preview when tab changes
-        const sectionMap: Record<string, string> = {
-            hero: 'story-section-hero',
-            values: 'story-section-values',
-            products: 'story-section-products',
-            gallery: 'story-section-gallery',
-            team: 'story-section-team',
-            wholesale: 'story-section-wholesale',
-            reviews: 'story-section-reviews'
-        };
-
-        const elementId = sectionMap[activeTab];
-        if (elementId) {
-            const el = document.getElementById(elementId);
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-    }, [activeTab]);
 
     const loadData = async () => {
         setLoading(true);
@@ -82,6 +61,32 @@ export function StoryEditor() {
         setOriginalState(loadedState);
         setLoading(false);
     };
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate data fetching on mount
+        loadData();
+    }, []);
+
+    useEffect(() => {
+        // Scroll to section in preview when tab changes
+        const sectionMap: Record<string, string> = {
+            hero: 'story-section-hero',
+            values: 'story-section-values',
+            products: 'story-section-products',
+            gallery: 'story-section-gallery',
+            team: 'story-section-team',
+            wholesale: 'story-section-wholesale',
+            reviews: 'story-section-reviews'
+        };
+
+        const elementId = sectionMap[activeTab];
+        if (elementId) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }, [activeTab]);
 
     const handleSave = async (type: string, content: any) => {
         setSaving(type);

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Loader2 } from 'lucide-react';
 import { CartClient } from '@/components/client/cart/CartClient';
 import { getPaymentConfig, getSiteConfig } from '@/app/actions/settings';
+import { CartTexts } from '@/types/common';
 
 
 
@@ -15,7 +16,7 @@ async function getCartData() {
         ]);
 
         const cartSection = sections.find((s) => s.type === 'CART_TEXTS');
-        const cartTexts = cartSection?.content ? (cartSection.content as Record<string, unknown>) : null;
+        const cartTexts = cartSection?.content ? (cartSection.content as unknown as CartTexts) : null;
 
         return {
             cartTexts,

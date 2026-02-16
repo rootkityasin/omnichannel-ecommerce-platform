@@ -2,8 +2,10 @@
 
 import { motion } from 'framer-motion';
 
+import { TeamMember } from '@/types/common';
+
 interface TeamProps {
-    data: Array<{ name: string; role: string; image: string; story: string }> | null;
+    data: TeamMember[] | null;
 }
 
 export function TeamSection({ data }: TeamProps) {
@@ -54,7 +56,7 @@ export function TeamSection({ data }: TeamProps) {
                         Meet the Crew
                     </motion.h2>
                     <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto">
-                        The real humans behind your favorite seafood. We don't bite. (Unlike the crabs).
+                        The real humans behind your favorite seafood. We don&apos;t bite. (Unlike the crabs).
                     </p>
                 </div>
 

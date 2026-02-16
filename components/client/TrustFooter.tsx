@@ -11,19 +11,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 
+import { SiteConfig } from '@/types/common';
+
 interface TrustFooterProps extends React.HTMLAttributes<HTMLDivElement> {
-    config?: {
-        contactPhone: string;
-        contactEmail: string;
-        contactAddress: string;
-        shopName?: string;
-        logoUrl?: string;
-        allergensText: string;
-        certificates: string[];
-        privacyPolicy?: string;
-        refundPolicy?: string;
-        termsPolicy?: string;
-    } | null;
+    config?: SiteConfig | null;
 }
 
 import { useState } from 'react';

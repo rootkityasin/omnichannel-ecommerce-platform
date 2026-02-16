@@ -7,54 +7,10 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useRef 
 import { getAdminOrders, updateAdminOrder, deleteAdminOrder } from '@/app/actions/order';
 import { toast } from 'sonner';
 
+import { SiteConfig, PaymentConfig } from '@/types/common';
+
 // --- Types ---
 export type Role = 'SUPER_ADMIN' | 'HUB_ADMIN';
-
-// Add Payment Config Type Definition (simplified)
-export interface PaymentConfigType {
-    codEnabled?: boolean;
-    bkashEnabled?: boolean;
-    bkashAppKey?: string;
-    bkashSecretKey?: string;
-    bkashUsername?: string;
-    bkashPassword?: string;
-    nagadEnabled?: boolean;
-    nagadMerchantNumber?: string;
-    nagadPublicKey?: string;
-    nagadPrivateKey?: string;
-    selfMfsEnabled?: boolean;
-    selfMfsType?: string;
-    selfMfsPhone?: string;
-    selfMfsInstruction?: string;
-    selfMfsQrCode?: string;
-    advancePaymentType?: string;
-    advancePaymentValue?: number | string;
-}
-
-export interface Hub {
-    id: string;
-    name: string;
-    location: string;
-}
-
-export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: Role;
-    hubId?: string; // If null/undefined, effectively Super Admin access to all
-}
-
-// --- Constants ---
-const HUBS: Hub[] = [
-    { id: 'dhaka-central', name: 'Dhaka Central Hub', location: 'Dhaka' },
-    { id: 'khulna-hub', name: 'Khulna Hub', location: 'Khulna' },
-    { id: 'chattogram-hub', name: 'Chattogram Hub', location: 'Chattogram' },
-];
-
-const MOCK_USERS: User[] = [
-    { id: 'super-admin', name: 'Super Admin', email: 'admin@crabkhai.com', role: 'SUPER_ADMIN' },
-];
 
 export interface AdminOrder {
     id: string; // OrderID (e.g. ORD-...)
@@ -82,29 +38,38 @@ export interface AdminProduct {
     [key: string]: any;
 }
 
+export interface Hub {
+    id: string;
+    name: string;
+    location: string;
+}
+
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: Role;
+    hubId?: string; // If null/undefined, effectively Super Admin access to all
+}
+
+// --- Constants ---
+const HUBS: Hub[] = [
+    { id: 'dhaka-central', name: 'Dhaka Central Hub', location: 'Dhaka' },
+    { id: 'khulna-hub', name: 'Khulna Hub', location: 'Khulna' },
+    { id: 'chattogram-hub', name: 'Chattogram Hub', location: 'Chattogram' },
+];
+
+const MOCK_USERS: User[] = [
+    { id: 'super-admin', name: 'Super Admin', email: 'admin@crabkhai.com', role: 'SUPER_ADMIN' },
+];
+
 interface AdminContextType {
     orders: AdminOrder[];
     products: AdminProduct[];
     allProducts: AdminProduct[];
     allOrders: AdminOrder[];
-    settings: {
-        contactPhone: string;
-        contactEmail: string;
-        contactAddress: string;
-        shopName: string;
-        logoUrl: string;
-        measurementUnit: string;
-        allergensText: string;
-        certificates: string[];
-        taxPercentage?: number;
-        primaryColor?: string;
-        secondaryColor?: string;
-        weightUnitValue?: number;
-        volumeUnitValue?: number;
-        shopType?: string;
-        [key: string]: any;
-    };
-    paymentConfig: PaymentConfigType;
+    settings: SiteConfig;
+    paymentConfig: Partial<PaymentConfig>;
 
     // RBAC & Hubs
     currentUser: User;
@@ -117,8 +82,8 @@ interface AdminContextType {
     // Actions
     setOrders: (orders: AdminOrder[]) => void;
     setProducts: (products: AdminProduct[]) => void;
-    updateSettings: (settings: Partial<AdminContextType['settings']>) => void;
-    updatePaymentConfig: (config: Partial<PaymentConfigType>) => void;
+    updateSettings: (settings: Partial<SiteConfig>) => void;
+    updatePaymentConfig: (config: Partial<PaymentConfig>) => void;
     addOrder: (order: AdminOrder) => void;
     updateOrder: (id: string, updates: Partial<AdminOrder>) => void;
     updateProduct: (id: string, updates: Partial<AdminProduct>) => void;
@@ -139,7 +104,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
     initialData?: {
         orders?: AdminOrder[];
         products?: AdminProduct[];
-        settings?: any;
+        settings?: SiteConfig;
     };
 }) {
     // Auth State
@@ -204,7 +169,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
         ...initialData?.settings // Spread initial settings if available
     });
 
-    const [paymentConfig, setPaymentConfigState] = useState<PaymentConfigType>({});
+    const [paymentConfig, setPaymentConfigState] = useState<Partial<PaymentConfig>>({});
     const hasFetched = React.useRef(false);
 
     // Load from LocalStorage on Mount AND fetch fresh config/orders
@@ -269,8 +234,8 @@ export function AdminProvider({ children, initialUser, initialData }: {
     // --- Actions ---
     const setOrders = (newOrders: AdminOrder[]) => setOrdersState(newOrders);
     const setProducts = (newProducts: AdminProduct[]) => setProductsState(newProducts);
-    const updateSettings = (newSettings: Partial<AdminContextType['settings']>) => setSettings((prev: any) => ({ ...prev, ...newSettings }));
-    const updatePaymentConfig = (newConfig: Partial<PaymentConfigType>) => setPaymentConfigState((prev: any) => ({ ...prev, ...newConfig }));
+    const updateSettings = (newSettings: Partial<SiteConfig>) => setSettings((prev) => ({ ...prev, ...newSettings }));
+    const updatePaymentConfig = (newConfig: Partial<PaymentConfig>) => setPaymentConfigState((prev) => ({ ...prev, ...newConfig }));
 
     const addOrder = (order: AdminOrder) => {
         // Since manual orders are created via OrdersPage form, they should ideally call createOrder action

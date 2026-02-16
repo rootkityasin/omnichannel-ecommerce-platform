@@ -51,16 +51,18 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
  */
 export function useThrottle<T>(value: T, interval: number = 500): T {
     const [throttledValue, setThrottledValue] = useState<T>(value);
-    const lastUpdated = useRef<number>(Date.now());
+    const lastUpdated = useRef<number>(0);
 
     useEffect(() => {
         const now = Date.now();
         if (now - lastUpdated.current >= interval) {
             lastUpdated.current = now;
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setThrottledValue(value);
         } else {
             const handler = setTimeout(() => {
                 lastUpdated.current = Date.now();
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setThrottledValue(value);
             }, interval - (now - lastUpdated.current));
 

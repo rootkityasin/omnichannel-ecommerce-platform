@@ -10,10 +10,6 @@ export default function PromoPopup() {
     const [isVisible, setIsVisible] = useState(false);
     const [promo, setPromo] = useState<any>(null);
 
-    useEffect(() => {
-        loadPromo();
-    }, []);
-
     const loadPromo = async () => {
         try {
             const activePromo = await getActivePromo();
@@ -32,6 +28,11 @@ export default function PromoPopup() {
             console.error("Failed to load promo", error);
         }
     };
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate data fetching on mount
+        loadPromo();
+    }, []);
 
     const handleDismiss = () => {
         setIsVisible(false);

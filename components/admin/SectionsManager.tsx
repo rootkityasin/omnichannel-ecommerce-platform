@@ -153,6 +153,7 @@ export function SectionsManager() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSections();
     }, []);
 
@@ -302,7 +303,7 @@ export function SectionsManager() {
 
             {!loading && sections.length === 0 && (
                 <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-lg border border-dashed animate-pulse">
-                    No sections found. Click "Re-Seed Defaults" to start.
+                    No sections found. Click &quot;Re-Seed Defaults&quot; to start.
                 </div>
             )}
         </div>

@@ -24,6 +24,7 @@ export function BlockedListTab() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
     }, []);
 
@@ -71,7 +72,7 @@ export function BlockedListTab() {
                                 <AlertOctagon className="w-5 h-5 text-green-600" />
                             </div>
                             <p className="text-sm font-medium text-slate-600">No blocked numbers</p>
-                            <p className="text-xs text-slate-400">Mark orders as "Fake" to add numbers here.</p>
+                            <p className="text-xs text-slate-400">Mark orders as &quot;Fake&quot; to add numbers here.</p>
                         </div>
                     )}
                 </div>

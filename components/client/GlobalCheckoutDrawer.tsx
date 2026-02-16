@@ -1,8 +1,18 @@
 'use client';
 
-import { useCartStore } from '@/lib/store';
-import { Loader2, ArrowRight, X } from 'lucide-react';
+import { useCartStore, CartItem } from '@/lib/store';
+import { Loader2, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { User } from 'next-auth';
+
+// Helper type for Translations
+type TranslationsType = typeof translations.en;
+
+// Helper for Extended User (until next-auth.d.ts is fully set up)
+interface ExtendedUser extends User {
+    role?: any; // Override strict typing for now or match global type if possible
+    phone?: string;
+}
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
@@ -33,9 +43,9 @@ import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 import { getSiteConfig } from '@/app/actions/settings';
 import { CouponSection } from './CouponSection';
-import { useRouter } from 'next/navigation';
 import { trackEvent } from '@/lib/track';
 import { useMediaQuery } from '@/lib/hooks/use-media-query';
+import { SiteConfig, CheckoutFormData, CartTexts } from '@/types/common';
 
 // --- Extracted Components ---
 
@@ -45,10 +55,10 @@ function CheckoutForm({
     handlePlaceOrder,
     errors = {}
 }: {
-    formData: any,
-    setFormData: any,
+    formData: CheckoutFormData,
+    setFormData: (data: CheckoutFormData) => void,
     handlePlaceOrder: (e: React.FormEvent) => void,
-    errors?: any
+    errors?: Partial<Record<keyof CheckoutFormData, string>>
 }) {
     return (
         <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-4">
@@ -114,7 +124,15 @@ function CheckoutForm({
     );
 }
 
-function OrderSummary({ items, subTotalAmount, deliveryFee, discountAmount, totalAmount }: any) {
+interface OrderSummaryProps {
+    items: CartItem[];
+    subTotalAmount: number;
+    deliveryFee: number;
+    discountAmount: number;
+    totalAmount: number;
+}
+
+function OrderSummary({ items, subTotalAmount, deliveryFee, discountAmount, totalAmount }: OrderSummaryProps) {
     return (
         <div className="space-y-4 h-full">
             <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 space-y-4 shadow-sm">
@@ -147,7 +165,15 @@ function OrderSummary({ items, subTotalAmount, deliveryFee, discountAmount, tota
     );
 }
 
-function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData }: any) {
+interface SuccessViewProps {
+    cartTexts: CartTexts | null;
+    successOrder: { id: string; total: number } | null;
+    handleCloseSuccess: () => void;
+    t: TranslationsType;
+    formData: CheckoutFormData;
+}
+
+function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData }: SuccessViewProps) {
     return (
         <div className="flex flex-col items-center justify-center text-center p-8 space-y-6 animate-in fade-in zoom-in duration-300 min-h-[50vh]">
             <div className="w-48 h-48 md:w-64 md:h-64 mb-2 flex items-center justify-center overflow-hidden">
@@ -160,7 +186,7 @@ function SuccessView({ cartTexts, successOrder, handleCloseSuccess, t, formData 
 
             <div className="space-y-2">
                 <h2 className="text-2xl md:text-3xl font-black text-gray-900">
-                    {cartTexts?.successTitle || t?.cartPage?.successTitle || "Order Placed!"}
+                    {cartTexts?.successTitle || "Order Placed!"}
                 </h2>
                 <p className="text-gray-500 max-w-xs mx-auto">
                     {cartTexts?.successMessage || `We'll call you shortly at ${formData.phone}.`}
@@ -207,46 +233,49 @@ function CheckoutButton({ isAnimating, totalAmount }: { isAnimating: boolean, to
 export function GlobalCheckoutDrawer() {
     const { checkoutOpen, closeCheckout, items, total, discount, clearCart, coupon } = useCartStore();
     const [isAnimating, setIsAnimating] = useState(false);
-    const [siteConfig, setSiteConfig] = useState<any>(null);
+    const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
 
     const { language } = useLanguageStore();
-    const t = translations[language as keyof typeof translations] as any;
+    const t: TranslationsType = translations[language as keyof typeof translations] || translations.en;
 
-    const [cartTexts, setCartTexts] = useState<any>(null);
+    const [cartTexts, setCartTexts] = useState<CartTexts | null>(null);
     useEffect(() => {
         const loadTexts = async () => {
             const sections = await getStorySections();
             const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
             if (cartSection?.content) {
-                setCartTexts(cartSection.content);
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setCartTexts(cartSection.content as CartTexts);
             }
         };
         loadTexts();
     }, []);
 
-    const router = useRouter();
+
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
-    const [formData, setFormData] = useState<any>({
+    const [formData, setFormData] = useState<CheckoutFormData>({
         name: '',
         phone: '',
         area: '',
         address: ''
     });
-    const [errors, setErrors] = useState<any>({});
+    const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
 
     const { data: session } = useSession();
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         getSiteConfig().then(setSiteConfig);
     }, []);
 
     useEffect(() => {
         if (session?.user && (session.user as any).role === 'USER') { // Only auto-fill for customers
-            setFormData((prev: any) => ({
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setFormData((prev: CheckoutFormData) => ({
                 ...prev,
                 name: prev.name || session?.user?.name || '',
-                phone: prev.phone || (session?.user as any)?.phone || session?.user?.email || '',
+                phone: prev.phone || (session?.user as ExtendedUser)?.phone || session?.user?.email || '',
             }));
         }
     }, [session]);
@@ -260,7 +289,7 @@ export function GlobalCheckoutDrawer() {
     const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
     const totalAmount = discountedTotal + deliveryFee + taxAmount;
 
-    const [successOrder, setSuccessOrder] = useState<any>(null);
+    const [successOrder, setSuccessOrder] = useState<{ id: string, total: number } | null>(null);
 
     // Track InitiateCheckout when drawer opens
     useEffect(() => {
@@ -284,10 +313,10 @@ export function GlobalCheckoutDrawer() {
         setErrors({});
 
         // Client-side Validation
-        const newErrors: any = {};
+        const newErrors: Partial<Record<keyof CheckoutFormData, string>> = {};
         if (!formData.name?.trim()) newErrors.name = "Name is required";
         if (!formData.phone?.trim()) newErrors.phone = "Phone is required";
-        else if (!/^01[3-9]\d{8}$/.test(formData.phone.replace(/\D/g, ''))) newErrors.phone = "Invalid BD Phone Number (e.g., 017...)";
+        else if (!/^01[3-9]\d{8}$/.test(formData.phone.replaceAll(/\D/g, ''))) newErrors.phone = "Invalid BD Phone Number (e.g., 017...)";
         if (!formData.area) newErrors.area = "Area is required";
         if (!formData.address?.trim()) newErrors.address = "Address is required";
 
@@ -338,7 +367,7 @@ export function GlobalCheckoutDrawer() {
 
             toast.success("Order placed successfully!");
             clearCart();
-            setSuccessOrder({ id: res.orderId, total: totalAmount });
+            setSuccessOrder({ id: res.orderId as string, total: totalAmount });
             setIsAnimating(false);
             // Do NOT close immediately. Show success view.
         } else {

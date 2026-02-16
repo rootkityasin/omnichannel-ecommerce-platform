@@ -9,25 +9,15 @@ import {
     Layers,
     Users,
     Settings,
-    Smartphone,
     Palette,
-    FileText,
     Ticket,
-    Shield,
     BarChart3,
-    CreditCard,
-    Repeat,
     Zap,
     ChevronLeft,
-    ChevronRight,
-    Search,
-    LogOut,
     Menu,
-    Store,
     ShieldCheck,
     ClipboardList,
     Megaphone, // Added
-    Paintbrush, // Added
     LayoutTemplate, // Added
     FlaskConical, // Added
     Printer // Added
@@ -82,8 +72,12 @@ export function AdminSidebar() {
 
 
     const { data: session } = useSession();
-    const userRole = (session?.user as any)?.role;
-    const userPermissions = (session?.user as any)?.permissions || [];
+    interface ExtendedUser {
+        role?: string;
+        permissions?: string[];
+    }
+    const userRole = (session?.user as ExtendedUser)?.role;
+    const userPermissions = (session?.user as ExtendedUser)?.permissions || [];
 
     // Debug Permissions
     /*

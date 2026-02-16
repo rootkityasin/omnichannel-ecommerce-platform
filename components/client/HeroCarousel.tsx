@@ -9,25 +9,10 @@ import { motion } from 'framer-motion';
 
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
+import { HeroSlide } from '@/types/common';
 
-
-interface HeroSlide {
-    id: string;
-    imageUrl: string;
-    title: string;
-    title_bn?: string | null;
-    subtitle?: string | null;
-    subtitle_bn?: string | null;
-    buttonText?: string;
-    buttonLink?: string;
-}
 
 export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
-    // Return null if no slides are present (sync with admin)
-    if (!slides || slides.length === 0) {
-        return null;
-    }
-
     // Memoize plugins to prevent re-initialization on every render
     const plugins = React.useMemo(() => [Autoplay({ delay: 5000, stopOnInteraction: false })], []);
 
@@ -61,6 +46,11 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
             emblaApi.off('select', onSelect);
         };
     }, [emblaApi, onSelect]);
+
+    // Return null if no slides are present (moved after hooks to satisfy rules-of-hooks)
+    if (!slides || slides.length === 0) {
+        return null;
+    }
 
     return (
         <div className="relative overflow-hidden bg-gray-100 aspect-[4/3] md:aspect-[21/9]" ref={emblaRef}>
@@ -128,7 +118,6 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
                         key={index}
                         onClick={() => emblaApi?.scrollTo(index)}
                         className={`transition-all duration-300 rounded-full ${index === selectedIndex ? 'w-4 h-1.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
-                        // @ts-ignore
                         aria-label={`Go to slide ${index + 1}`}
                     />
                 ))}
