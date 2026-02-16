@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -65,10 +66,11 @@ function ProductImageCarousel({ images, name }: Readonly<{ images: string[]; nam
             <div className="flex h-full touch-pan-y">
                 {keyedImages.map((imageItem, index) => (
                     <div key={imageItem.key} className="flex-[0_0_100%] min-w-0 h-full relative">
-                        <img
+                        <Image
                             src={imageItem.src}
                             alt={`${name} view ${index + 1}`}
-                            className="w-full h-full object-cover select-none"
+                            fill
+                            className="object-cover select-none"
                             onDragStart={(e) => e.preventDefault()}
                         />
                     </div>

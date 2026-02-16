@@ -14,7 +14,7 @@ export interface SettingsContextType {
         logoUrl: string;
         measurementUnit: string;
         allergensText: string;
-        certificates: any[];
+        certificates: string[];
         taxPercentage?: number;
         primaryColor: string;
         secondaryColor: string;
@@ -38,7 +38,7 @@ const defaultSettings = {
     logoUrl: "/logo.svg",
     measurementUnit: "PCS",
     allergensText: "",
-    certificates: [] as any[],
+    certificates: [] as string[],
     primaryColor: "#F40000",
     secondaryColor: "#0f172a",
     taxPercentage: 0,

@@ -56,11 +56,37 @@ const MOCK_USERS: User[] = [
     { id: 'super-admin', name: 'Super Admin', email: 'admin@crabkhai.com', role: 'SUPER_ADMIN' },
 ];
 
+export interface AdminOrder {
+    id: string; // OrderID (e.g. ORD-...)
+    dbId: string;
+    date: string;
+    customer: string;
+    phone: string;
+    items: number;
+    source: string;
+    price: number;
+    status: string;
+    hubId?: string | null;
+    isRepeat: boolean;
+    orderCount: number;
+    stockDeducted: boolean;
+    [key: string]: any; // Allow extensibility for now
+}
+
+export interface AdminProduct {
+    id: string;
+    name: string;
+    price: number;
+    stock: boolean;
+    hubId?: string;
+    [key: string]: any;
+}
+
 interface AdminContextType {
-    orders: any[];
-    products: any[];
-    allProducts: any[];
-    allOrders: any[];
+    orders: AdminOrder[];
+    products: AdminProduct[];
+    allProducts: AdminProduct[];
+    allOrders: AdminOrder[];
     settings: {
         contactPhone: string;
         contactEmail: string;
@@ -76,6 +102,7 @@ interface AdminContextType {
         weightUnitValue?: number;
         volumeUnitValue?: number;
         shopType?: string;
+        [key: string]: any;
     };
     paymentConfig: PaymentConfigType;
 
@@ -88,14 +115,14 @@ interface AdminContextType {
     loginAs: (userId: string) => void;
 
     // Actions
-    setOrders: (orders: any[]) => void;
-    setProducts: (products: any[]) => void;
-    updateSettings: (settings: any) => void;
-    updatePaymentConfig: (config: PaymentConfigType) => void;
-    addOrder: (order: any) => void;
-    updateOrder: (id: string, updates: any) => void;
-    updateProduct: (id: string, updates: any) => void;
-    addProduct: (product: any) => void;
+    setOrders: (orders: AdminOrder[]) => void;
+    setProducts: (products: AdminProduct[]) => void;
+    updateSettings: (settings: Partial<AdminContextType['settings']>) => void;
+    updatePaymentConfig: (config: Partial<PaymentConfigType>) => void;
+    addOrder: (order: AdminOrder) => void;
+    updateOrder: (id: string, updates: Partial<AdminOrder>) => void;
+    updateProduct: (id: string, updates: Partial<AdminProduct>) => void;
+    addProduct: (product: AdminProduct) => void;
     deleteOrder: (id: string) => void;
     deleteProduct: (id: string) => void;
     toggleStock: (id: string) => void;
@@ -108,10 +135,10 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children, initialUser, initialData }: {
     children: React.ReactNode;
-    initialUser?: any;
+    initialUser?: User;
     initialData?: {
-        orders?: any[];
-        products?: any[];
+        orders?: AdminOrder[];
+        products?: AdminProduct[];
         settings?: any;
     };
 }) {
@@ -119,8 +146,8 @@ export function AdminProvider({ children, initialUser, initialData }: {
     const [currentUser, setCurrentUser] = useState<User>(initialUser || MOCK_USERS[0]); // Fallback for dev only
     const [activeHubId, setActiveHubId] = useState<string | 'ALL'>('ALL');
 
-    const [orders, setOrdersState] = useState<any[]>(initialData?.orders || []);
-    const [products, setProductsState] = useState<any[]>(initialData?.products || []);
+    const [orders, setOrdersState] = useState<AdminOrder[]>(initialData?.orders || []);
+    const [products, setProductsState] = useState<AdminProduct[]>(initialData?.products || []);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(true); // Default collapsed (mobile friendly start)
 
     // --- RBAC Logic ---
@@ -240,18 +267,18 @@ export function AdminProvider({ children, initialUser, initialData }: {
 
 
     // --- Actions ---
-    const setOrders = (newOrders: any[]) => setOrdersState(newOrders);
-    const setProducts = (newProducts: any[]) => setProductsState(newProducts);
-    const updateSettings = (newSettings: any) => setSettings((prev: any) => ({ ...prev, ...newSettings }));
-    const updatePaymentConfig = (newConfig: any) => setPaymentConfigState((prev: any) => ({ ...prev, ...newConfig }));
+    const setOrders = (newOrders: AdminOrder[]) => setOrdersState(newOrders);
+    const setProducts = (newProducts: AdminProduct[]) => setProductsState(newProducts);
+    const updateSettings = (newSettings: Partial<AdminContextType['settings']>) => setSettings((prev: any) => ({ ...prev, ...newSettings }));
+    const updatePaymentConfig = (newConfig: Partial<PaymentConfigType>) => setPaymentConfigState((prev: any) => ({ ...prev, ...newConfig }));
 
-    const addOrder = (order: any) => {
+    const addOrder = (order: AdminOrder) => {
         // Since manual orders are created via OrdersPage form, they should ideally call createOrder action
         // For now we keep this local-first if needed, but the true fix is fetching after creation.
         setOrdersState([order, ...orders]);
     };
 
-    const updateOrder = async (id: string, updates: any) => {
+    const updateOrder = async (id: string, updates: Partial<AdminOrder>) => {
         // 1. Update UI immediately
         setOrdersState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
 
@@ -273,8 +300,8 @@ export function AdminProvider({ children, initialUser, initialData }: {
         }
     };
 
-    const addProduct = (product: any) => setProductsState([{ ...product, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...products]);
-    const updateProduct = (id: string, updates: any) => {
+    const addProduct = (product: AdminProduct) => setProductsState([{ ...product, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...products]);
+    const updateProduct = (id: string, updates: Partial<AdminProduct>) => {
         setProductsState(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     };
     const toggleStock = (id: string) => {

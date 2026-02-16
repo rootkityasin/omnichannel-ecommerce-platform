@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import Image from 'next/image';
 
 export default function PaymentPage() {
     return (
@@ -8,8 +9,8 @@ export default function PaymentPage() {
             <div className="space-y-4">
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center">
-                            <img src="/images/bkash-logo.png" alt="bKash" className="w-6 h-6 object-contain" />
+                        <div className="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center relative overflow-hidden">
+                            <Image src="/images/bkash-logo.png" alt="bKash" width={24} height={24} className="object-contain" />
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900">bKash</h3>
@@ -21,8 +22,8 @@ export default function PaymentPage() {
 
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
-                            <img src="/images/nagad-logo.png" alt="Nagad" className="w-8 h-8 object-contain" />
+                        <div className="w-12 h-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center relative overflow-hidden">
+                            <Image src="/images/nagad-logo.png" alt="Nagad" width={32} height={32} className="object-contain" />
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900">Nagad</h3>

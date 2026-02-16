@@ -2,12 +2,19 @@
 
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { CartItem } from '@/lib/store';
+
+interface CartSettings {
+    measurementUnit?: string;
+    weightUnitValue?: number;
+    [key: string]: any; // Allow other settings properties
+}
 
 interface MobileCartItemProps {
-    item: any;
-    onQuantityChange: (item: any, change: number) => void;
+    item: CartItem;
+    onQuantityChange: (item: CartItem, change: number) => void;
     onRemove: (id: string) => void;
-    settings: any;
+    settings: CartSettings;
 }
 
 export function MobileCartItem({ item, onQuantityChange, onRemove, settings }: MobileCartItemProps) {

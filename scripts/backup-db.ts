@@ -57,8 +57,9 @@ async function backup() {
         console.log(`\n✅ Backup completed successfully!`);
         console.log(`📂 Location: ${backupDir}`);
 
-    } catch (err: any) {
-        console.error('❌ Backup failed:', err.message);
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error('❌ Backup failed:', message);
     } finally {
         client.release();
         await pool.end();

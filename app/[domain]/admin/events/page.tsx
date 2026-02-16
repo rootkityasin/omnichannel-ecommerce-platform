@@ -52,7 +52,7 @@ export default async function EventMatrixPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {events.length > 0 ? (
-                                events.map((event: any) => (
+                                events.map((event) => (
                                     <tr key={event.id} className="hover:bg-slate-50/30 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="text-[11px] font-bold text-slate-400 font-mono">

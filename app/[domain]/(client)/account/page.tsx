@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Package, MapPin, CreditCard, LogOut, ChevronRight, HelpCircle, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -247,11 +248,11 @@ function AccountProfileView({
 
                     <div className="relative z-10 flex flex-col items-center">
                         <div className="relative group mb-3">
-                            <div className="w-28 h-28 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white/20 overflow-hidden shadow-2xl ring-4 ring-white/10 hover:scale-105 transition-transform duration-300">
+                            <div className="w-28 h-28 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white/20 overflow-hidden shadow-2xl ring-4 ring-white/10 hover:scale-105 transition-transform duration-300 relative">
                                 {user.image ? (
-                                    <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                                    <Image src={user.image} alt={user.name} fill className="object-cover" />
                                 ) : (
-                                    <img src="/mascot-avatar.png" alt="Profile" className="w-full h-full object-cover p-1" />
+                                    <Image src="/mascot-avatar.png" alt="Profile" fill className="object-cover p-1" />
                                 )}
                             </div>
                             <label className="absolute bottom-0 right-0 bg-white text-crab-red p-2 rounded-full cursor-pointer shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">

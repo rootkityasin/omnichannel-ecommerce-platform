@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 
 interface AuditLogParams {
@@ -8,7 +9,7 @@ interface AuditLogParams {
     entity: 'Product' | 'Order' | 'Settings' | 'User' | 'Category';
     entityId?: string;
     details: string;
-    metadata?: any;
+    metadata?: Prisma.InputJsonValue;
 }
 
 /**
@@ -31,7 +32,7 @@ export async function logAudit(params: AuditLogParams) {
                 entity: params.entity,
                 entityId: params.entityId,
                 details: params.details,
-                metadata: params.metadata || {},
+                metadata: (params.metadata || {}) as Prisma.InputJsonValue,
                 ipAddress: ip,
                 userAgent: userAgent,
             },

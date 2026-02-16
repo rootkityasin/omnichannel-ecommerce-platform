@@ -76,10 +76,10 @@ async function restore() {
                 for (let i = 0; i < rows.length; i += chunkSize) {
                     const chunk = rows.slice(i, i + chunkSize);
 
-                    const values: any[] = [];
+                    const values: unknown[] = [];
                     const placeholders: string[] = [];
 
-                    chunk.forEach((row: any, rIndex: number) => {
+                    chunk.forEach((row: Record<string, unknown>, rIndex: number) => {
                         const rowPlaceholders: string[] = [];
                         keys.forEach((key, kIndex) => {
                             values.push(row[key]); // Parameter
@@ -108,9 +108,10 @@ async function restore() {
         await client.query('COMMIT');
         console.log(`\n✅ Restore completed successfully!`);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         await client.query('ROLLBACK');
-        console.error('❌ Restore failed:', err.message);
+        const message = err instanceof Error ? err.message : String(err);
+        console.error('❌ Restore failed:', message);
         process.exit(1);
     } finally {
         client.release();

@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 /**
  * Server-side tracking utility for Meta Conversions API (CAPI) and Internal Logging
@@ -26,7 +27,7 @@ interface CustomData {
     contents?: Array<{ id: string; quantity: number }>;
     num_items?: number;
     order_id?: string;
-    [key: string]: any; // Allow for extra raw data
+    [key: string]: unknown; // Allow for extra raw data
 }
 
 interface MetaEvent {
@@ -72,8 +73,8 @@ export async function trackMetaEvent(
                 ipAddress: userData.clientIpAddress,
                 userAgent: userData.userAgent,
                 sourceUrl: sourceUrl,
-                eventData: customData as any,
-                rawPayload: { userData, customData } as any,
+                eventData: (customData || {}) as unknown as Prisma.InputJsonValue,
+                rawPayload: { userData, customData } as unknown as Prisma.InputJsonValue,
             }
         });
     } catch (dbError) {

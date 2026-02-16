@@ -4,7 +4,7 @@
 
 interface TrackEventParams {
     eventName: string;
-    eventData?: Record<string, any>;
+    eventData?: Record<string, unknown>;
     userData?: {
         email?: string;
         phone?: string;

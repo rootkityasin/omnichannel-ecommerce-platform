@@ -141,6 +141,8 @@ const ICON_OPTIONS = [
 type CategoryItem = {
     id: string;
     name: string;
+    animationType?: string;
+    icon?: string;
     _count?: {
         products?: number;
     };
@@ -237,7 +239,7 @@ export default function CategoriesPage() {
         }
     };
 
-    const handleEdit = (cat: any) => {
+    const handleEdit = (cat: CategoryItem) => {
         setEditingId(cat.id);
         setNewItemName(cat.name);
         setAnimationType(cat.animationType || 'AUTO');
