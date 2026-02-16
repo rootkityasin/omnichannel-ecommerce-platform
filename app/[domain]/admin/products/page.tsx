@@ -71,7 +71,7 @@ type LocalProduct = {
     servingSize?: number;
     pieces: number;
     stage: string;
-    type: string;
+    type: 'SINGLE' | 'COMBO';
     descriptionSwap?: boolean;
     comboItems: Array<{ child?: { pieces: number }; quantity: number; childId?: string }>;
     sections?: Array<{ id: string }>;
@@ -95,7 +95,7 @@ type ProductFormState = {
     servingSize: number | string;
     pieces: number | string;
     stage: string;
-    type: string;
+    type: 'SINGLE' | 'COMBO';
     descriptionSwap: boolean;
     comboItems: { childId?: string; quantity: number }[];
     sections: string[];
@@ -669,7 +669,7 @@ export default function ProductsPage() {
                                         <label className="text-sm font-medium">Type</label>
                                         <Select
                                             value={newProduct.type || 'SINGLE'}
-                                            onValueChange={(val) => setNewProduct({ ...newProduct, type: val })}
+                                            onValueChange={(val) => setNewProduct({ ...newProduct, type: val as 'SINGLE' | 'COMBO' })}
                                         >
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>

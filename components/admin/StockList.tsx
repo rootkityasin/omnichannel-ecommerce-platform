@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { adjustStock, updateStock } from "@/app/actions/inventory";
+import { adjustStock } from "@/app/actions/inventory";
 import { getSiteConfig } from "@/app/actions/settings";
 import { toast } from "sonner";
-import { useEffect } from "react";
 import { Search, Plus, Minus } from "lucide-react";
 import {
     Dialog,
@@ -14,8 +13,7 @@ import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
-    DialogTitle, // Keeping DialogTitle as it's likely used
-    DialogTrigger,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { AdminProduct, SiteConfig } from "@/types/common";
 import Image from "next/image";
@@ -23,16 +21,16 @@ import Image from "next/image";
 // Extended interface for StockList usage
 interface StockListProduct extends AdminProduct {
     category: { name: string };
-    type: 'SIMPLE' | 'COMBO';
+    type: 'SINGLE' | 'COMBO';
     // comboItems inherited with correct type
     pieces: number;
     weight: number;
     image?: string;
 }
 
-export function StockList({ products }: { products: StockListProduct[] }) {
+export function StockList({ products }: Readonly<{ products: StockListProduct[] }>) {
     const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState<string | null>(null);
+
 
     // Adjustment State
     const [selectedProduct, setSelectedProduct] = useState<StockListProduct | null>(null);
@@ -60,7 +58,7 @@ export function StockList({ products }: { products: StockListProduct[] }) {
     const handleAdjustment = async () => {
         if (!selectedProduct || !amount) return;
 
-        const inputVal = parseFloat(amount || '0');
+        const inputVal = Number.parseFloat(amount || '0');
         if (inputVal <= 0) {
             toast.error("Invalid amount");
             return;
@@ -76,19 +74,19 @@ export function StockList({ products }: { products: StockListProduct[] }) {
             return;
         }
 
-        setLoading(selectedProduct.id); // Keep loading state for UI feedback
+
         const res = await adjustStock(selectedProduct.id, delta);
         if (res.success) {
             const unit = siteConfig?.measurementUnit || 'PCS';
+            const action = adjustType === 'add' ? 'added' : 'removed';
             const msg = unit === 'WEIGHT'
-                ? `${inputVal}g ${adjustType === 'add' ? 'added' : 'removed'}`
-                : `${inputVal} ${adjustType === 'add' ? 'added' : 'removed'}`;
+                ? `${inputVal}g ${action}`
+                : `${inputVal} ${action}`;
             toast.success(msg);
             setIsDialogOpen(false);
         } else {
             toast.error("Failed to adjust stock");
         }
-        setLoading(null);
     };
 
     return (
@@ -114,7 +112,7 @@ export function StockList({ products }: { products: StockListProduct[] }) {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {filtered.map((p) => {
-                            const isLowStock = p.pieces < 10;
+                            // Removed unused isLowStock
                             return (
                                 <tr key={p.id} className="hover:bg-gray-50/50">
                                     <td className="p-3 font-medium text-slate-800">
@@ -165,9 +163,7 @@ export function StockList({ products }: { products: StockListProduct[] }) {
                                                 }
 
                                                 // Use global settings for unit value
-                                                const unitValue = siteConfig?.measurementUnit === 'WEIGHT'
-                                                    ? (siteConfig?.weightUnitValue || 200)
-                                                    : (siteConfig?.volumeUnitValue || 1000);
+                                                // const unitValue removed as it was unused/shadowed
 
                                                 if (unit === 'VOLUME') {
                                                     // p.pieces is Total ml
@@ -253,28 +249,26 @@ export function StockList({ products }: { products: StockListProduct[] }) {
                     <div className="py-4">
                         <div className="space-y-4">
                             {siteConfig?.measurementUnit !== 'PCS' && (selectedProduct?.weight || siteConfig?.weightUnitValue) ? (
-                                <>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 mb-2 block">
-                                            {adjustType === 'add' ? 'Add' : 'Remove'} {siteConfig?.measurementUnit === 'WEIGHT' ? 'Weight (grams)' : 'Volume (ml)'}
-                                            <span className="font-normal ml-1">(Input raw {siteConfig?.measurementUnit === 'WEIGHT' ? 'g' : 'ml'})</span>
-                                        </label>
-                                        <div className="flex gap-2">
-                                            <Input
-                                                type="number"
-                                                placeholder="0"
-                                                value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
-                                                autoFocus
-                                                min={0}
-                                                onWheel={(e) => e.currentTarget.blur()}
-                                            />
-                                            <div className="flex items-center text-xs text-slate-500 bg-slate-100 px-3 rounded border whitespace-nowrap">
-                                                ≈ {(Number(amount || 0) / (selectedProduct?.weight || siteConfig?.weightUnitValue || 1)).toFixed(1)} Units
-                                            </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 mb-2 block">
+                                        {adjustType === 'add' ? 'Add' : 'Remove'} {siteConfig?.measurementUnit === 'WEIGHT' ? 'Weight (grams)' : 'Volume (ml)'}
+                                        <span className="font-normal ml-1">(Input raw {siteConfig?.measurementUnit === 'WEIGHT' ? 'g' : 'ml'})</span>
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            value={amount}
+                                            onChange={(e) => setAmount(e.target.value)}
+                                            autoFocus
+                                            min={0}
+                                            onWheel={(e) => e.currentTarget.blur()}
+                                        />
+                                        <div className="flex items-center text-xs text-slate-500 bg-slate-100 px-3 rounded border whitespace-nowrap">
+                                            ≈ {(Number(amount || 0) / (selectedProduct?.weight || siteConfig?.weightUnitValue || 1)).toFixed(1)} Units
                                         </div>
                                     </div>
-                                </>
+                                </div>
                             ) : (
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 mb-2 block">

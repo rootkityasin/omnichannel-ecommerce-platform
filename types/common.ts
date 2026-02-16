@@ -71,7 +71,7 @@ export interface AdminProduct {
     // For Kanban Board & Stock List
     pieces?: number;
     stage?: string;
-    type?: 'SIMPLE' | 'COMBO';
+    type?: 'SINGLE' | 'COMBO';
     comboItems?: {
         quantity: number;
         child?: {
