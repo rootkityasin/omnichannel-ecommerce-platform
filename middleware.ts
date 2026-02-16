@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -11,7 +10,7 @@ export const config = {
          * 3. /_static (inside /public)
          * 4. all root files inside /public (e.g. /favicon.ico)
          */
-        String.raw`/((?!api/|_next/|_static/|images/|_vercel|[\w-]+\.\w+|sitemap.xml|robots.txt).*)`,
+        '/((?!api/|_next/|_static/|images/|_vercel|[\\w-]+\\.\\w+|sitemap.xml|robots.txt).*)',
     ],
 };
 
