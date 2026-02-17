@@ -21,7 +21,7 @@ export async function addExpense(data: { title: string; amount: number; category
         });
         revalidatePath('/admin/inventory');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to add expense" };
     }
 }
@@ -39,7 +39,7 @@ export async function deleteExpense(id: string) {
         await prisma.expense.delete({ where: { id } });
         revalidatePath('/admin/inventory');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to delete" };
     }
 }
@@ -126,7 +126,7 @@ export async function updateStock(productId: string, quantity: number) {
         });
         revalidatePath('/admin/inventory');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to update stock" };
     }
 }
@@ -139,7 +139,7 @@ export async function adjustStock(productId: string, delta: number) {
         });
         revalidatePath('/admin/inventory');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to adjust stock" };
     }
 }

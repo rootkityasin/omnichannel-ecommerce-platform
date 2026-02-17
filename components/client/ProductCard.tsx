@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, memo } from 'react';
 
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAnimationStore } from '@/lib/animationStore';
 import { useCartStore } from '@/lib/store';
 import Image from 'next/image';

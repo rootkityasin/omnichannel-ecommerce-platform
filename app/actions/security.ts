@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies, headers } from 'next/headers';
 import { UAParser } from 'ua-parser-js';
 
-const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET;
+
 
 // Generate a random device ID
 function generateDeviceId() {

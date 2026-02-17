@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+
 
 export async function getPendingOrderCount() {
     try {
@@ -9,7 +9,7 @@ export async function getPendingOrderCount() {
             where: { status: 'PENDING' }
         });
         return count;
-    } catch (error) {
+    } catch {
         return 0;
     }
 }

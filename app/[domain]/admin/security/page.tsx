@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { SecurityLog, TrustedDevice } from '@prisma/client';
 import { format } from 'date-fns';
 import { DangerZone } from '@/components/admin/DangerZone';
-import { Shield, AlertTriangle, UserCheck, Smartphone, Key, Users } from 'lucide-react';
+import { Shield, AlertTriangle, Smartphone, Key } from 'lucide-react';
 import { TokenEditor } from '@/components/admin/TokenEditor';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { UsersTab } from '@/components/admin/UsersTab';

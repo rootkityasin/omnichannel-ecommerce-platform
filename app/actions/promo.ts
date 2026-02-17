@@ -155,7 +155,7 @@ export async function togglePromoStatus(id: string, isActive: boolean) {
         revalidatePath('/admin/promos');
         revalidatePath('/');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to toggle status" };
     }
 }

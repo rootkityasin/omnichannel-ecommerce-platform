@@ -75,7 +75,7 @@ function SortableItem({ slide, onEdit, onDelete }: { slide: HeroSlide, onEdit: (
 
                 <div className="relative h-48 bg-slate-100">
                     {slide.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
+
                         <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">

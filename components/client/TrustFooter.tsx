@@ -2,14 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, ShieldCheck, AlertTriangle } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+
 
 import { SiteConfig } from '@/types/common';
 
@@ -143,7 +136,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
 
                                 const Content = (
                                     <>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+
                                         <img
                                             src={imageSrc}
                                             alt="Certificate"

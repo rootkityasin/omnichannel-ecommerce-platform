@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star, User } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 

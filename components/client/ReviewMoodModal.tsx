@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, Camera, Trash2, Check, ChevronsUpDown, Search } from 'lucide-react';
+import { X, Loader2, Camera, Check, ChevronsUpDown, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { createReview } from '@/app/actions/review';
 import { getProducts } from '@/app/actions/product';
@@ -31,7 +31,7 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
 
     useEffect(() => {
         if (isOpen) {
-             
+
             getProducts().then(setProducts);
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedProductId(productId || 'general');

@@ -1,18 +1,15 @@
 'use client';
 
-import { ArrowRight, Loader2, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import {
     Drawer,
-    DrawerClose,
     DrawerContent,
     DrawerDescription,
-    DrawerFooter,
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { useState } from 'react';
 
 interface StickyCartFooterProps {
     totalAmount: number;

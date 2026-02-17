@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
+
 import { hash } from 'bcryptjs';
 
 // --- Security Middleware ---

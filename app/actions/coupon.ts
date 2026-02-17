@@ -69,7 +69,7 @@ export async function getCoupons() {
             where: { tenantId },
             orderBy: { createdAt: 'desc' },
         });
-    } catch (error) {
+    } catch {
         return [];
     }
 }
@@ -79,7 +79,7 @@ export async function deleteCoupon(id: string) {
         await prisma.coupon.delete({ where: { id } });
         revalidatePath('/admin/promos');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to delete" };
     }
 }

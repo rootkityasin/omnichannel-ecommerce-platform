@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import Image from 'next/image';
-import { useRef } from 'react';
+
 
 export default function ScrollyCrab() {
     const { scrollYProgress } = useScroll();

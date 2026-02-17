@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { getTenantByDomain } from './tenant';
 import type { Prisma } from '@prisma/client';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CartItem } from '@/lib/store';
 
@@ -18,7 +18,7 @@ interface MobileCartItemProps {
     settings: CartSettings;
 }
 
-export function MobileCartItem({ item, onQuantityChange, onRemove, settings }: MobileCartItemProps) {
+export function MobileCartItem({ item, onQuantityChange, settings }: MobileCartItemProps) {
     return (
         <motion.div
             layout

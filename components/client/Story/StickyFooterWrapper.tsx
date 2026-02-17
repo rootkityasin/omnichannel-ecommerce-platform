@@ -1,10 +1,7 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
-
 // Wraps the main page content to lift it up, revealing the footer underneath
-export function StickyFooterWrapper({ children, footer }: { children: React.ReactNode, footer: React.ReactNode }) {
+export function StickyFooterWrapper({ children }: { children: React.ReactNode, footer: React.ReactNode }) {
 
     // In a real implementation with Next.js App Router layouts, this structure might need adjustment.
     // However, for the Story page specifically, we can use this to wrap the page content.

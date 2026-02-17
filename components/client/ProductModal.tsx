@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, Flame, Activity, Timer, Utensils, X, ShoppingBag, ChevronLeft, ChevronRight, Info, ZoomIn } from 'lucide-react';
+import { Plus, Minus, Flame, Activity, Timer, X, ChevronLeft, ChevronRight, ZoomIn, Utensils } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';

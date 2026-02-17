@@ -1,7 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Leaf, Flame, Activity } from 'lucide-react';
+import { Flame, Activity } from 'lucide-react';
 
 export function ProductInfo() {
     return (

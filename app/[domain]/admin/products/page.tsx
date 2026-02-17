@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
 import { Label } from "@/components/ui/label";
-import { useDebounce } from '@/lib/hooks/useDebounce';
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
@@ -176,7 +176,7 @@ export default function ProductsPage() {
             setCategories(cData);
             setSectionsList(sData);
             setConfig(confData || { measurementUnit: 'PCS' });
-        } catch (error) {
+        } catch {
             if (!isMounted.current) return;
             console.error(error);
             toast.error("Failed to load data");
@@ -185,6 +185,7 @@ export default function ProductsPage() {
         }
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         fetchData();
     }, []);
@@ -224,12 +225,13 @@ export default function ProductsPage() {
                 toast.error("Failed to load product details");
                 setEditingId(null);
             }
-        } catch (error) {
+        } catch {
             toast.error("Error loading product");
             setEditingId(null);
         }
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         fetchData();
     }, []);
@@ -281,7 +283,7 @@ export default function ProductsPage() {
                 toast.error(res.error || "Failed to delete");
                 setDeleteId(null);
             }
-        } catch (error) {
+        } catch {
             toast.error("An error occurred");
             setDeleteId(null);
         } finally {
