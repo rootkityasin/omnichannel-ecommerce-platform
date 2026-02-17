@@ -5,20 +5,11 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-    Palette, Layout, Check, Monitor, Smartphone, RotateCcw, Save, Loader2,
-    Menu as MenuIcon, Search, MapPin, ShoppingCart, User, Home, Grid, BookOpen,
-    Fish, Utensils, Award, Flame, Star, Package, CreditCard,
-    HelpCircle, LogOut, ChevronRight, Phone, Mail, ShieldCheck,
-    AlertTriangle, Camera, ArrowRight, Minus, Trash2, Plus, Info, X,
-    Laptop, Tablet
+    Palette, Monitor, Smartphone, RotateCcw, Save, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
-import { getHeroSlides } from '@/app/actions/hero';
-import { getProducts } from '@/app/actions/product';
-import { getStorySections } from '@/app/actions/story';
-import { StoryLayout } from '@/components/client/Story/StoryLayout';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function ThemeSettingsPage() {
     const [loading, setLoading] = useState(true);

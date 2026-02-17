@@ -31,7 +31,7 @@ import { useSession } from 'next-auth/react';
 
 export function AdminSidebar() {
     const pathname = usePathname();
-    const { isSidebarCollapsed, toggleSidebar, setOrders } = useAdmin(); // Access setOrders if needed, or just specific context
+    const { isSidebarCollapsed, toggleSidebar } = useAdmin(); // Access setOrders if needed, or just specific context
 
     // Auto-collapse on mobile
     useEffect(() => {
@@ -54,7 +54,7 @@ export function AdminSidebar() {
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [isSidebarCollapsed, toggleSidebar]);
 
     // Better approach:
     // On mount, check width. If small & not collapsed, collapse.

@@ -1,21 +1,15 @@
 'use client';
 
-import { Menu, Search, MapPin, ShoppingCart, User, X } from 'lucide-react';
+import { MapPin, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useCartStore } from '@/lib/store';
-import { menuItems } from '@/lib/data';
-import { toast } from 'sonner';
 import { useSettings } from '@/components/providers/SettingsProvider';
 
-import { translations } from '@/lib/translations';
-import { Mascot } from './Mascot';
 import { AnimatedSearchBar } from './AnimatedSearchBar';
 import { cn } from "@/lib/utils";
-import { LocationPermissionDialog } from './LocationPermissionDialog';
 import { useGeolocation } from '@/lib/hooks/useGeolocation';
 
 export function MobileHeader() {
@@ -25,73 +19,16 @@ export function MobileHeader() {
     const cartItems = useCartStore((state) => state.items);
     const openCheckout = useCartStore((state) => state.openCheckout);
     const { language, toggleLanguage } = useLanguageStore();
-    const t = translations[language];
-
-    const searchRef = useRef<HTMLDivElement>(null);
-    const searchTriggerRef = useRef<HTMLButtonElement>(null);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- Next.js hydration guard
         setMounted(true);
-
-        function handleClickOutside(event: MouseEvent) {
-            if (
-                searchRef.current &&
-                !searchRef.current.contains(event.target as Node) &&
-                searchTriggerRef.current &&
-                !searchTriggerRef.current.contains(event.target as Node)
-            ) {
-                setIsSearchOpen(false);
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
     }, []);
 
     const cartCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
-    const [searchTerm, setSearchTerm] = useState('');
-    const router = useRouter();
-    const searchTimeout = useRef<NodeJS.Timeout>(null);
-    const [mascotState, setMascotState] = useState<'idle' | 'searching' | 'found' | 'empty' | 'delivery'>('idle');
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchTerm.trim()) {
-            setMascotState('searching');
-            router.push(`/menu?search=${encodeURIComponent(searchTerm)}`);
-            setIsSearchOpen(false);
 
-            // Check results (simple heuristic for demo)
-            const hasResults = menuItems.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            setTimeout(() => {
-                setMascotState(hasResults ? 'found' : 'empty');
-            }, 500);
-        }
-    };
 
-    const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
-        setMascotState('searching');
-
-        if (searchTimeout.current) clearTimeout(searchTimeout.current);
-        searchTimeout.current = setTimeout(() => {
-            // Peek result state while typing
-            const hasResults = menuItems.some(item => item.name.toLowerCase().includes(e.target.value.toLowerCase()));
-            setMascotState(hasResults ? 'found' : 'empty');
-        }, 800);
-    };
-
-    useEffect(() => {
-        // Reset mascot to idle after a delay if no interaction
-        if (mascotState !== 'idle' && !isSearchOpen) {
-            const timer = setTimeout(() => setMascotState('idle'), 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [mascotState, isSearchOpen]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -249,8 +186,7 @@ export function MobileHeader() {
                 )}
             </AnimatePresence >
 
-            {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />
-            }
+
 
         </>
     );

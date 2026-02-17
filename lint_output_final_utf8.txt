@@ -1,0 +1,366 @@
+﻿
+> omnichannel-ecommerce-platform@0.1.0 lint
+> eslint
+
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\orders\print\[id]\page.tsx
+   61:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  217:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\products\page.tsx
+    31:10  warning  'Switch' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+   117:12  warning  'fetchLoading' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   122:11  warning  'debouncedSearch' is assigned a value but never used                                                          @typescript-eslint/no-unused-vars
+   193:8   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   231:18  warning  'error' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   241:8   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   253:11  warning  'formatStock' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+   312:18  warning  'error' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   333:18  warning  'error' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   349:18  warning  'error' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   800:58  warning  'e' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+  1228:46  warning  'e' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\promos\page.tsx
+   17:60  warning  'ImageIcon' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   17:71  warning  'Check' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  305:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\reviews\page.tsx
+  111:49  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\security\device-setup\page.tsx
+  27:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\security\page.tsx
+  5:33  warning  'UserCheck' is defined but never used  @typescript-eslint/no-unused-vars
+  5:61  warning  'Users' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\settings\invoice\page.tsx
+  232:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  248:49  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  346:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\settings\page.tsx
+   16:7   warning  'initialConfig' is assigned a value but never used                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  229:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\[domain]\admin\theme\page.tsx
+  20:12  warning  'config' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  63:18  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\admin-helper.ts
+   4:10  warning  'revalidatePath' is defined but never used  @typescript-eslint/no-unused-vars
+  12:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\coupon.ts
+  72:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  82:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\hero.ts
+  4:26  warning  'unstable_cache' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\inventory.ts
+   24:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   42:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  129:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  142:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\promo.ts
+  158:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\security.ts
+  7:7  warning  'SETUP_SECRET' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\super-admin.ts
+    6:10  warning  'redirect' is defined but never used          @typescript-eslint/no-unused-vars
+  114:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\upload.ts
+  44:22  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\actions\user.ts
+  181:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  217:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  234:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  356:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  435:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\api\csp-report\route.ts
+  11:15  warning  'originalPolicy' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\CompanyUsersModal.tsx
+   4:10  warning  'Button' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+  49:8   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\EditCompanyModal.tsx
+   4:93  warning  'DialogTrigger' is defined but never used             @typescript-eslint/no-unused-vars
+  12:10  warning  'updateTenantStatus' is defined but never used        @typescript-eslint/no-unused-vars
+  13:25  warning  'Building2' is defined but never used                 @typescript-eslint/no-unused-vars
+  30:23  warning  'startTransition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\page.tsx
+  6:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\app\plans\page.tsx
+  11:93  warning  'DialogTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\app\layout.tsx
+  39:10  warning  'getSiteConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  40:10  warning  'ThemeInjector' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\auth.ts
+  23:34  warning  'trigger' is defined but never used  @typescript-eslint/no-unused-vars
+  23:43  warning  'session' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\AdminHeader.tsx
+   3:31  warning  'X' is defined but never used                             @typescript-eslint/no-unused-vars
+  39:12  warning  'isOpen' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  39:20  warning  'setIsOpen' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  40:12  warning  'isMobileMenuOpen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  40:30  warning  'setIsMobileMenuOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  57:11  warning  'scheduleNextPoll' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\AdminSidebar.tsx
+  174:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\CartEditor.tsx
+   97:12  warning  '_trxId' is assigned a value but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   97:20  warning  '_setTrxId' is assigned a value but never used                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  440:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  552:57  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  562:57  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  581:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\DomainSettings.tsx
+   64:8   warning  React Hook useEffect has a missing dependency: 'loadConfig'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   67:11  warning  'hasChanges' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+  140:11  warning  'isDomainPending' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+  141:11  warning  'isDomainError' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ExpenseExport.tsx
+  4:10  warning  'Download' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ImageUpload.tsx
+  118:18  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  123:8   warning  React Hook useCallback has a missing dependency: 'uploadFile'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\InventoryTabs.tsx
+   5:57  warning  'ClipboardList' is defined but never used  @typescript-eslint/no-unused-vars
+  11:10  warning  'AdminProduct' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\PaymentSettings.tsx
+   22:21  warning  'setLoading' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   49:8   warning  React Hook useEffect has a missing dependency: 'defaultConfig'. Either include it or remove the dependency array                                                                                                                                                                         react-hooks/exhaustive-deps
+   58:11  warning  'hasChanges' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  168:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  219:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  289:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  295:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ProductBoard.tsx
+   90:12  warning  'activeId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  138:29  warning  'event' is defined but never used              @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\SeoSettings.tsx
+  427:55  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  470:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\ShopGeneralSettings.tsx
+   4:10  warning  'getSiteConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  12:40  warning  'Mail' is defined but never used           @typescript-eslint/no-unused-vars
+  12:46  warning  'FileWarning' is defined but never used    @typescript-eslint/no-unused-vars
+  12:87  warning  'ImageIcon' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\StockList.tsx
+  18:10  warning  'AdminProduct' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\StoryEditor.tsx
+  414:57  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\TrustedDeviceRevoke.tsx
+   5:10  warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+  26:18  warning  'error' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\admin\UsersTab.tsx
+   7:10   warning  'Search' is defined but never used             @typescript-eslint/no-unused-vars
+   7:35   warning  'Filter' is defined but never used             @typescript-eslint/no-unused-vars
+   7:43   warning  'RefreshCw' is defined but never used          @typescript-eslint/no-unused-vars
+   7:81   warning  'Square' is defined but never used             @typescript-eslint/no-unused-vars
+   7:89   warning  'ChevronLeft' is defined but never used        @typescript-eslint/no-unused-vars
+   7:102  warning  'ChevronRight' is defined but never used       @typescript-eslint/no-unused-vars
+   9:55   warning  'getUserProfile' is defined but never used     @typescript-eslint/no-unused-vars
+  23:5    warning  'DropdownMenuLabel' is defined but never used  @typescript-eslint/no-unused-vars
+  42:12   warning  'loading' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  91:18   warning  'e' is defined but never used                  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\AnimatedSearchBar.tsx
+  165:57  warning  'index' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  171:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\AuthForm.tsx
+   9:19  warning  'ChevronDown' is defined but never used  @typescript-eslint/no-unused-vars
+  13:10  warning  'PolicyModal' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CartDrawer.tsx
+    6:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   64:8   warning  React Hook useEffect has a missing dependency: 'y'. Either include it or remove the dependency array                                                                                                                                                                                     react-hooks/exhaustive-deps
+  220:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  252:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CartRecommendations.tsx
+   4:10  warning  'getRecommendedProducts' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+  33:8   warning  React Hook useEffect has missing dependencies: 'allProducts' and 'items'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CategoryNav.tsx
+  3:10  warning  'useState' is defined but never used   @typescript-eslint/no-unused-vars
+  3:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+  3:31  warning  'useRef' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\CouponSection.tsx
+  52:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\DesktopNavbar.tsx
+  126:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\FlyOverlay.tsx
+  5:10  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\GlobalCheckoutDrawer.tsx
+  180:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  309:8   warning  React Hook useEffect has missing dependencies: 'items' and 'totalAmount'. Either include them or remove the dependency array                                                                                                                                                             react-hooks/exhaustive-deps
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\LocationPermissionDialog.tsx
+  7:5  warning  'DialogFooter' is defined but never used  @typescript-eslint/no-unused-vars
+  8:5  warning  'DialogHeader' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\MenuClient.tsx
+   3:10  warning  'Suspense' is defined but never used         @typescript-eslint/no-unused-vars
+   3:50  warning  'useRef' is defined but never used           @typescript-eslint/no-unused-vars
+   6:18  warning  'Sparkles' is defined but never used         @typescript-eslint/no-unused-vars
+   6:67  warning  'Filter' is defined but never used           @typescript-eslint/no-unused-vars
+  32:11  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\MobileHeader.tsx
+  85:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductCard.tsx
+    5:18  warning  'useMotionValue' is defined but never used                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+    5:34  warning  'useSpring' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+    5:45  warning  'useTransform' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   28:31  warning  'stage' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   48:12  warning  'isHovering' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   81:23  warning  't' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   84:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  168:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductInfo.tsx
+   3:10  warning  'motion' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   4:10  warning  'Leaf' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  30:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  60:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductModal.tsx
+    3:33   warning  'DialogHeader' is defined but never used  @typescript-eslint/no-unused-vars
+    6:60   warning  'ShoppingBag' is defined but never used   @typescript-eslint/no-unused-vars
+    6:100  warning  'Info' is defined but never used          @typescript-eslint/no-unused-vars
+  181:58   warning  'velocity' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ProductReviews.tsx
+  70:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\PromoModal.tsx
+  66:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\PromoPopup.tsx
+   70:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  102:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\ReviewMoodModal.tsx
+    5:30  warning  'Trash2' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  344:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\GallerySection.tsx
+  67:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\ReviewSection.tsx
+   4:10  warning  'Star' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   4:16  warning  'User' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  44:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  64:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\ScrollyCrab.tsx
+  5:10  warning  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\StickyFooterWrapper.tsx
+  3:10  warning  'motion' is defined but never used        @typescript-eslint/no-unused-vars
+  3:18  warning  'useScroll' is defined but never used     @typescript-eslint/no-unused-vars
+  3:29  warning  'useTransform' is defined but never used  @typescript-eslint/no-unused-vars
+  4:10  warning  'useRef' is defined but never used        @typescript-eslint/no-unused-vars
+  7:49  warning  'footer' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\StoryProducts.tsx
+  56:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\TeamSection.tsx
+  76:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\ValuesSection.tsx
+  3:18  warning  'useScroll' is defined but never used     @typescript-eslint/no-unused-vars
+  3:29  warning  'useTransform' is defined but never used  @typescript-eslint/no-unused-vars
+  4:10  warning  'useRef' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\Story\WholesaleCTA.tsx
+  75:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\TrustFooter.tsx
+   5:8   warning  'ReactMarkdown' is defined but never used     @typescript-eslint/no-unused-vars
+   6:8   warning  'rehypeRaw' is defined but never used         @typescript-eslint/no-unused-vars
+   8:5   warning  'Dialog' is defined but never used            @typescript-eslint/no-unused-vars
+   9:5   warning  'DialogContent' is defined but never used     @typescript-eslint/no-unused-vars
+  10:5   warning  'DialogHeader' is defined but never used      @typescript-eslint/no-unused-vars
+  11:5   warning  'DialogTitle' is defined but never used       @typescript-eslint/no-unused-vars
+  22:50  warning  'props' is defined but never used             @typescript-eslint/no-unused-vars
+  34:11  warning  'logoUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\cart\CartClient.tsx
+   38:48  warning  'initialPaymentConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  598:10  warning  'RemoveIcon' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\cart\MobileCartItem.tsx
+   3:23  warning  'Trash2' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  21:58  warning  'onRemove' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  33:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\client\cart\StickyCartFooter.tsx
+   3:31  warning  'ShoppingBag' is defined but never used   @typescript-eslint/no-unused-vars
+   6:5   warning  'DrawerClose' is defined but never used   @typescript-eslint/no-unused-vars
+   9:5   warning  'DrawerFooter' is defined but never used  @typescript-eslint/no-unused-vars
+  15:10  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  28:49  warning  'itemCount' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\providers\AdminProvider.tsx
+    6:74  warning  'useRef' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  174:8   warning  React Hook useEffect has a missing dependency: 'initialData.orders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\providers\SettingsProvider.tsx
+  91:8  warning  React Hook useEffect has a missing dependency: 'refreshSettings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\components\ui\sonner.tsx
+  3:10  warning  'toast' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\postcss.config.mjs
+  1:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\scripts\check-auth-env.js
+  3:7  warning  'fs' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\scripts\migrate-tenants.ts
+  79:11  warning  'config' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\scripts\restore-db.ts
+  82:66  warning  'rIndex' is defined but never used  @typescript-eslint/no-unused-vars
+  84:44  warning  'kIndex' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 203 problems (0 errors, 203 warnings)
+

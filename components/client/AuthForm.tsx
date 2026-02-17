@@ -222,6 +222,7 @@ export function AuthForm() {
                             }}
                         >
                             <div className="w-28 h-28 rounded-full bg-white flex items-center justify-center overflow-hidden border-4 border-white shadow-xl shadow-gray-200 group-hover:scale-105 transition-transform duration-300">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src="/mascot-avatar.png" alt="Allow" className="w-full h-full object-cover p-2" />
                             </div>
                         </motion.div>

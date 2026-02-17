@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Filter, Trash2, X, Sparkles, MoreVertical, Upload, Copy, Eye, Share2, LayoutGrid, List, Edit } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, X, Sparkles, MoreVertical, Copy, Share2, LayoutGrid, List, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { smartParseAI } from '@/app/actions/ai';
 import {
@@ -28,8 +28,7 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from "@/components/ui/switch";
-import { getProducts, getAdminProducts, getProductById, createProduct, updateProduct, deleteProduct, archiveProduct, unarchiveProduct, generateUniqueSku } from '@/app/actions/product';
+import { getAdminProducts, getProductById, createProduct, updateProduct, deleteProduct, archiveProduct, unarchiveProduct, generateUniqueSku } from '@/app/actions/product';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -43,11 +42,11 @@ import {
 import { getCategories } from '@/app/actions/category';
 import { getAdminSiteConfig } from '@/app/actions/settings';
 import { getHomeSections } from '@/app/actions/section';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ProductBoard } from '@/components/admin/ProductBoard';
 import { cn } from '@/lib/utils';
 // import { smartParse, generateMagicDescription, getBanglaSuggestion } from '@/lib/ai-utils';
-import Link from 'next/link';
+// import Link from 'next/link';
 import Image from 'next/image';
 import { generateDescriptionAI, translateToBanglaAI } from '@/app/actions/ai';
 import { useSession } from 'next-auth/react';
@@ -114,12 +113,10 @@ export default function ProductsPage() {
     const [categories, setCategories] = useState<CategoryItem[]>([]);
     const [sectionsList, setSectionsList] = useState<SectionItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [fetchLoading, setFetchLoading] = useState(false); // For on-demand details
     const [config, setConfig] = useState<SiteConfig>({ measurementUnit: 'PCS', shopType: 'RESTAURANT' } as SiteConfig);
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [search, setSearch] = useState("");
-    const debouncedSearch = useDebounce(search, 300);
 
     const [filterStock, setFilterStock] = useState("all");
     const [filterStage, setFilterStage] = useState("all");
@@ -194,7 +191,6 @@ export default function ProductsPage() {
 
     // Helper for Edit Click
     const handleEditClick = async (product: { id: string }) => {
-        setFetchLoading(true);
         // Reset state first to avoid stale data
         setEditingId(product.id);
 
@@ -231,8 +227,6 @@ export default function ProductsPage() {
         } catch (error) {
             toast.error("Error loading product");
             setEditingId(null);
-        } finally {
-            setFetchLoading(false);
         }
     };
 
@@ -249,29 +243,7 @@ export default function ProductsPage() {
         }
     }, [config.shopType]);
 
-    // Format Stock Helper
-    const formatStock = (pieces: number) => {
-        const unit = config.measurementUnit || 'PCS';
-        const unitValue = unit === 'WEIGHT'
-            ? (config.weightUnitValue || 200)
-            : (config.volumeUnitValue || 1000);
 
-        if (unit === 'VOLUME') {
-            // pieces is Total ml
-            const units = Math.floor(pieces / unitValue);
-            const display = pieces >= 1000 ? `${(pieces / 1000).toFixed(1)} Ltr` : `${pieces} ml`;
-            return `${display} (${units})`;
-        }
-        if (unit === 'WEIGHT') {
-            // pieces is Total Grams
-            const weight = pieces;
-            const units = Math.floor(weight / unitValue);
-            return weight >= 1000
-                ? `${(weight / 1000).toFixed(1)} kg (${units})`
-                : `${weight} g (${units})`;
-        }
-        return `${pieces} Units`;
-    };
 
 
     // Filter Logic - for RESTAURANT, table view only shows Draft (Ready Stock) items

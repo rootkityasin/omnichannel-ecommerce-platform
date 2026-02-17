@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Check, Trash2, X, Mail, LogOut, Menu } from 'lucide-react';
+import { Bell, Check, Trash2, Mail, LogOut, Menu } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,8 +36,6 @@ export function AdminHeader({ title }: AdminHeaderProps) {
     const { currentUser, logout, toggleSidebar } = useAdmin();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [isOpen, setIsOpen] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const fetchNotifications = async () => {
         try {
@@ -54,16 +52,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
     const hasFetched = useRef(false); // Prevent duplicate fetches (React Strict Mode)
 
     // Polling Loop
-    const scheduleNextPoll = () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(async () => {
-            // Only poll if tab is visible
-            if (!document.hidden) {
-                await fetchNotifications();
-            }
-            scheduleNextPoll();
-        }, 30000); // 30s Poll
-    };
+
 
     useEffect(() => {
         if (hasFetched.current) return; // Skip if already fetched
@@ -71,7 +60,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
-         
+
         fetchNotifications();
         // scheduleNextPoll(); // DISABLED: To prevent excessive requests
 

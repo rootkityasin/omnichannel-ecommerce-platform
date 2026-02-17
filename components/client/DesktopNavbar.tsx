@@ -1,31 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Search, ShoppingCart, User, MapPin, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ShoppingCart, MapPin, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/lib/store';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '@/components/providers/SettingsProvider';
-import { getSiteConfig } from '@/app/actions/settings'; // Kept types
 import { cn } from '@/lib/utils';
-import { menuItems } from '@/lib/data';
 
 import { AnimatedSearchBar } from './AnimatedSearchBar';
-import { LocationPermissionDialog } from './LocationPermissionDialog';
-import { toast } from 'sonner';
 import { useGeolocation } from '@/lib/hooks/useGeolocation';
-
-// Reusing the Mobile Sidebar logic but adapted for Desktop if needed overlap
-import { MobileHeader } from './MobileHeader'; // We might not want to import the whole header just for sidebar... 
-// actually, let's just duplicate the sidebar overlay for now or create a shared one later.
-// For speed: simple overlay sidebar.
 
 export function DesktopNavbar() {
     const pathname = usePathname();
-    const router = useRouter();
     const [scrolled, setScrolled] = useState(false);
     const { settings } = useSettings();
     const config = settings;
@@ -54,7 +44,7 @@ export function DesktopNavbar() {
         // getSiteConfig removed - using Context
 
         const handleScroll = () => {
-             
+
             setScrolled(window.scrollY > 20);
         };
 

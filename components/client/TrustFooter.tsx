@@ -142,11 +142,14 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                                 const linkUrl = typeof cert === 'string' ? null : (cert.link || cert.url);
 
                                 const Content = (
-                                    <img
-                                        src={imageSrc}
-                                        alt="Certificate"
-                                        className="w-full h-full object-contain"
-                                    />
+                                    <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={imageSrc}
+                                            alt="Certificate"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </>
                                 );
 
                                 if (linkUrl) {
