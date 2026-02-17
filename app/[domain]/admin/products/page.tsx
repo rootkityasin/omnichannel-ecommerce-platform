@@ -176,9 +176,9 @@ export default function ProductsPage() {
             setCategories(cData);
             setSectionsList(sData);
             setConfig(confData || { measurementUnit: 'PCS' });
-        } catch {
+        } catch (err) {
             if (!isMounted.current) return;
-            console.error(error);
+            console.error(err);
             toast.error("Failed to load data");
         } finally {
             if (isMounted.current) setLoading(false);
