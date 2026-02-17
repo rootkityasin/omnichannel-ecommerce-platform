@@ -42,6 +42,7 @@ export default function PlansPage() {
         const res = await getPlans();
         if (res.success && res.plans) {
             // Map raw prisma data to frontend Plan interface
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mappedPlans: Plan[] = res.plans.map((p: any) => ({
                 ...p,
                 id: p.id || '', // Ensure id is string

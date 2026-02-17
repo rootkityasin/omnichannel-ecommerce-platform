@@ -8,6 +8,7 @@ import { getActivePromo } from '@/app/actions/promo';
 
 export default function PromoPopup() {
     const [isVisible, setIsVisible] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [promo, setPromo] = useState<any>(null);
 
     const loadPromo = async () => {

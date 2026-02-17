@@ -14,22 +14,12 @@ import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
 import { DomainSettings } from '@/components/admin/DomainSettings';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { SeoSettings } from '@/components/admin/SeoSettings';
-export interface SiteConfig {
-    storeName?: string;
-    contactPhone: string;
-    contactEmail: string;
-    contactAddress: string;
-    allergensText: string;
-    certificates: Certificate[];
-    privacyPolicy?: string;
-    refundPolicy?: string;
-    termsPolicy?: string;
-}
+import { SiteConfig } from '@/types/common';
 
-export interface Certificate {
+type Certificate = {
     image: string;
-    link: string;
-}
+    link?: string;
+};
 
 
 function FooterSettings({ initialConfig }: { readonly initialConfig: SiteConfig }) {
@@ -47,7 +37,7 @@ function FooterSettings({ initialConfig }: { readonly initialConfig: SiteConfig 
     const addCert = () => {
         if (!newCert.image) return;
         // Ensure certificates is treated as array of objects
-        const currentCerts = Array.isArray(config.certificates) ? config.certificates : [];
+        const currentCerts = (Array.isArray(config.certificates) ? config.certificates : []) as Certificate[];
         setConfig({
             ...config,
             certificates: [...currentCerts, { ...newCert }]
@@ -56,7 +46,7 @@ function FooterSettings({ initialConfig }: { readonly initialConfig: SiteConfig 
     };
 
     const removeCert = (index: number) => {
-        const currentCerts = Array.isArray(config.certificates) ? config.certificates : [];
+        const currentCerts = (Array.isArray(config.certificates) ? config.certificates : []) as Certificate[];
         setConfig({
             ...config,
             certificates: currentCerts.filter((_: Certificate, i: number) => i !== index)
@@ -146,7 +136,7 @@ function FooterSettings({ initialConfig }: { readonly initialConfig: SiteConfig 
                         <div className="space-y-2 pt-2 border-t border-slate-200">
                             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Certificates</div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {(Array.isArray(config.certificates) ? config.certificates : []).map((cert: Certificate, i: number) => (
+                                {(Array.isArray(config.certificates) ? config.certificates as Certificate[] : []).map((cert: Certificate, i: number) => (
                                     <div key={cert.link || cert.image || i} className="group relative aspect-square bg-white rounded-lg border-2 border-slate-100 flex flex-col items-center justify-center p-2 hover:border-orange-200 transition-colors">
                                         <div className="flex-1 w-full relative flex items-center justify-center p-2">
                                             <Image src={cert.image} alt="Certificate" fill className="object-contain" />
@@ -242,19 +232,19 @@ function RichTextEditor({ value, onChange, placeholder, limit = 5000 }: { readon
 }
 
 function PolicySettings() {
-    const [config, setConfig] = useState<SiteConfig>({
+    const [config, setConfig] = useState<Partial<SiteConfig>>({
         contactPhone: '',
         contactEmail: '',
         contactAddress: '',
         allergensText: '',
-        certificates: []
+        certificates: [] as Certificate[]
     });
-    const [originalConfig, setOriginalConfig] = useState<SiteConfig>({
+    const [originalConfig, setOriginalConfig] = useState<Partial<SiteConfig>>({
         contactPhone: '',
         contactEmail: '',
         contactAddress: '',
         allergensText: '',
-        certificates: []
+        certificates: [] as Certificate[]
     });
     const [hasChanges, setHasChanges] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -318,7 +308,7 @@ For valid claims, we process refunds directly to your original payment method (o
     const handleSave = async () => {
         setIsSaving(true);
         const { updateSiteConfig } = await import('@/app/actions/settings');
-        const result = await updateSiteConfig(config);
+        const result = await updateSiteConfig(config as SiteConfig);
         setIsSaving(false);
         if (result.success) {
             toast.success("Policies saved successfully!");

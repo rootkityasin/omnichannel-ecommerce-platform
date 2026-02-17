@@ -20,6 +20,7 @@ export function CartDrawer() {
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [cartTexts, setCartTexts] = useState<any>(null);
 
     const controls = useDragControls();
@@ -36,7 +37,7 @@ export function CartDrawer() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         const updateDimensions = () => {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             setDimensions({ width: window.innerWidth, height: window.innerHeight });
         };
 
@@ -51,6 +52,7 @@ export function CartDrawer() {
         // Load cart texts for empty state
         const loadTexts = async () => {
             const sections = await getStorySections();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
             if (cartSection?.content) {
                 setCartTexts(cartSection.content);
@@ -99,6 +101,7 @@ export function CartDrawer() {
     }, [isOpen, drawerControls, dimensions.width, mounted]);
 
     // Update Y on drag
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleDrag = (event: any, info: PanInfo) => {
         // info.point.y is absolute page coordinate.
         // We clamp it slightly to avoid edge weirdness if needed, but raw is usually fine.
@@ -106,6 +109,7 @@ export function CartDrawer() {
     };
 
     // Handle drag end
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleDragEnd = (event: any, info: PanInfo) => {
         const closeThreshold = 50;
         const openThreshold = 50;

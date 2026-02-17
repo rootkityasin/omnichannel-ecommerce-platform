@@ -136,6 +136,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                         </div>
 
                         <div className="flex flex-wrap justify-center gap-4">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {certificates.map((cert: any, index: number) => {
                                 const imageSrc = typeof cert === 'string' ? cert : (cert.image || cert.src);
                                 const linkUrl = typeof cert === 'string' ? null : (cert.link || cert.url);

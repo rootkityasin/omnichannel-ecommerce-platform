@@ -12,13 +12,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Save, MapPin, Phone, Mail, FileWarning, SlidersHorizontal, Image as ImageIcon, Settings } from 'lucide-react';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) {
     const [loading, setLoading] = useState(!initialConfig);
     const [saving, setSaving] = useState(false);
 
     // Maintain a reference to the 'original' state for comparison
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [originalConfig, setOriginalConfig] = useState<any>(initialConfig);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [config, setConfig] = useState<any>(initialConfig || {
         contactPhone: '',
         contactEmail: '',
@@ -30,6 +33,7 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
         shopType: 'RESTAURANT',
         certificates: [] // Future use
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [paymentConfig, setPaymentConfig] = useState<any>({});
 
     // Derived state: check for changes

@@ -21,5 +21,6 @@ export default async function SuperAdminDashboard() {
         })
     ]);
 
-    return <DashboardClient tenants={tenants} plans={plans} />;
+    type DashboardProps = React.ComponentProps<typeof DashboardClient>;
+    return <DashboardClient tenants={tenants as DashboardProps['tenants']} plans={plans as DashboardProps['plans']} />;
 }

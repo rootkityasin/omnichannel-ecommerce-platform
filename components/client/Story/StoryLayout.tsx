@@ -9,16 +9,25 @@ import { TeamSection } from '@/components/client/Story/TeamSection';
 import { StickyFooterWrapper } from '@/components/client/Story/StickyFooterWrapper';
 import { StoryProducts } from '@/components/client/Story/StoryProducts';
 
+ 
 interface StoryLayoutProps {
     data: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         hero: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         values: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productsContent: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         gallery: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         team: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         wholesale: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reviews: any;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     products: any[];
 }
 

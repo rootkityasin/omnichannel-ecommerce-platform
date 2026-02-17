@@ -54,7 +54,7 @@ export function DesktopNavbar() {
         // getSiteConfig removed - using Context
 
         const handleScroll = () => {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             setScrolled(window.scrollY > 20);
         };
 

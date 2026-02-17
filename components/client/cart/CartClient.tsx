@@ -155,6 +155,7 @@ export function CartClient({ initialCartTexts, initialPaymentConfig, initialSite
     // Translation Hook
     const { language } = useLanguageStore();
     // Use type assertion to avoid transient typescript error while keys propagate
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const t = translations[language] as any;
     const fontClass = language !== 'en' ? 'font-bangla' : 'font-body';
     const headingClass = language !== 'en' ? 'font-bangla' : 'font-heading';

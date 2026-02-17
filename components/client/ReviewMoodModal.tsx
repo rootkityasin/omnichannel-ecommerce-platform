@@ -23,6 +23,7 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Product Selector State
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [products, setProducts] = useState<any[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string | 'general'>('general');
     const [isComboboxOpen, setIsComboboxOpen] = useState(false);
@@ -30,7 +31,7 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
 
     useEffect(() => {
         if (isOpen) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             getProducts().then(setProducts);
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedProductId(productId || 'general');

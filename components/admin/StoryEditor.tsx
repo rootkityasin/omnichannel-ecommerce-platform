@@ -90,6 +90,7 @@ export function StoryEditor() {
 
     const handleSave = async (type: string, content: unknown) => {
         setSaving(type);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = await updateStorySection(type, content as any);
         if (res.success) {
             toast.success(`${type} section updated`);

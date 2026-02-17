@@ -7,6 +7,7 @@ import { CartItem } from '@/lib/store';
 interface CartSettings {
     measurementUnit?: string;
     weightUnitValue?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any; // Allow other settings properties
 }
 

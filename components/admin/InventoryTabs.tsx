@@ -8,6 +8,8 @@ import { ExpenseList } from "./ExpenseList";
 import { AddExpenseForm } from "./AddExpenseForm";
 import { ExpenseExport } from "./ExpenseExport";
 
+import { AdminProduct, Expense, StockProduct } from "@/types/common";
+
 interface InventoryTabsProps {
     stats: {
         stockValue: number;
@@ -15,11 +17,11 @@ interface InventoryTabsProps {
         totalExpenses: number;
         netProfit: number;
     };
-    expenses: any[];
-    products: any[];
+    expenses: Expense[];
+    products: StockProduct[];
 }
 
-export function InventoryTabs({ stats, expenses, products }: InventoryTabsProps) {
+export function InventoryTabs({ stats, expenses, products }: Readonly<InventoryTabsProps>) {
     return (
         <div className="space-y-6">
             {/* Stats Overview - Always Visible */}

@@ -22,7 +22,9 @@ const getCategoryIcon = (name: string) => {
 };
 
 interface MenuClientProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialProducts: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialCategories: any[];
 }
 
@@ -54,6 +56,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
     const categoriesList = useMemo(() => [
         { id: 'all', name: 'All Items', icon: Utensils },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...initialCategories.map((c: any) => ({
             id: c.id,
             name: c.name,
@@ -73,6 +76,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
 
             let matchesSection = true;
             if (activeSection) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 matchesSection = item.sections?.some((s: any) => s.slug === activeSection);
             }
 
@@ -102,7 +106,7 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
         const handleScroll = () => {
             if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
                 if (displayCount < filteredItems.length) {
-                    // eslint-disable-next-line react-hooks/set-state-in-effect
+                     
                     setDisplayCount(prev => prev + 8);
                 }
             }
@@ -144,7 +148,9 @@ export function MenuClient({ initialProducts, initialCategories }: MenuClientPro
     // Calculate counts for sidebar
     const categoryCounts = useMemo(() => {
         const counts: Record<string, number> = { all: initialProducts.length };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         initialCategories.forEach((c: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             counts[c.id] = initialProducts.filter((p: any) => p.categoryId === c.id).length;
         });
         return counts;

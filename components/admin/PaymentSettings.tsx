@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { updatePaymentConfig as updatePaymentServerConfig, getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
 import { useAdmin } from '@/components/providers/AdminProvider';
-import { Percent } from 'lucide-react';
+import { Percent, Loader2, Save, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -12,9 +12,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
-import { ImageUpload } from '@/components/admin/ImageUpload';
-import { Loader2, Save, CreditCard } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Unused
+
+import { PaymentConfig } from "@/types/common";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 export function PaymentSettings() {
     const { settings, paymentConfig, updateSettings, updatePaymentConfig: updateContextPayment } = useAdmin();
@@ -22,20 +23,28 @@ export function PaymentSettings() {
     const [saving, setSaving] = useState(false);
 
     // Local state for form editing - init from context
-    const [config, setConfig] = useState<any>(paymentConfig);
-    const [originalConfig, setOriginalConfig] = useState<any>(paymentConfig);
+    const defaultConfig: PaymentConfig = {
+        codEnabled: false,
+        bkashEnabled: false,
+        nagadEnabled: false,
+        selfMfsEnabled: false
+    };
+
+    const [config, setConfig] = useState<PaymentConfig>({ ...defaultConfig, ...paymentConfig });
+    const [originalConfig, setOriginalConfig] = useState<PaymentConfig>({ ...defaultConfig, ...paymentConfig });
     const [taxPercentage, setTaxPercentage] = useState<number | string>(settings.taxPercentage || 0);
 
     // Sync from context when it loads (in case hard reload)
     useEffect(() => {
         if (paymentConfig) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate prop sync from context
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect
             setConfig((prev: any) => {
                 // simple equality check to avoid re-render loop if object identity changes but content doesn't
                 if (JSON.stringify(prev) === JSON.stringify(paymentConfig)) return prev;
-                return paymentConfig;
+                return { ...defaultConfig, ...paymentConfig } as PaymentConfig;
             });
-            setOriginalConfig(paymentConfig); // Also update original config when context updates
+            setOriginalConfig({ ...defaultConfig, ...paymentConfig } as PaymentConfig); // Also update original config when context updates
         }
     }, [paymentConfig]);
 
@@ -192,7 +201,7 @@ export function PaymentSettings() {
                                     <Label className="text-xs font-bold text-slate-500 uppercase">Custom bKash Logo</Label>
                                     <ImageUpload
                                         value={config.bkashLogo || ''}
-                                        onChange={(url) => setConfig({ ...config, bkashLogo: url })}
+                                        onChange={(url: string | string[]) => setConfig({ ...config, bkashLogo: Array.isArray(url) ? url[0] : url })}
                                         onRemove={() => setConfig({ ...config, bkashLogo: '' })}
                                     />
                                 </div>
@@ -239,7 +248,7 @@ export function PaymentSettings() {
                                     <Label className="text-xs font-bold text-slate-500 uppercase">Custom Nagad Logo</Label>
                                     <ImageUpload
                                         value={config.nagadLogo || ''}
-                                        onChange={(url) => setConfig({ ...config, nagadLogo: url })}
+                                        onChange={(url: string | string[]) => setConfig({ ...config, nagadLogo: Array.isArray(url) ? url[0] : url })}
                                         onRemove={() => setConfig({ ...config, nagadLogo: '' })}
                                     />
                                 </div>
@@ -320,7 +329,7 @@ export function PaymentSettings() {
                                     <div className="border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50">
                                         <ImageUpload
                                             value={config.selfMfsQrCode || ''}
-                                            onChange={(url) => setConfig({ ...config, selfMfsQrCode: url as string })}
+                                            onChange={(url: string | string[]) => setConfig({ ...config, selfMfsQrCode: Array.isArray(url) ? url[0] : url })}
                                             onRemove={() => setConfig({ ...config, selfMfsQrCode: '' })}
                                         />
                                         <p className="text-xs text-slate-400 mt-2 text-center">
@@ -364,7 +373,7 @@ export function PaymentSettings() {
                                     type="number"
                                     className="w-24 h-8 ml-2"
                                     placeholder="%"
-                                    value={config.advancePaymentValue}
+                                    value={config.advancePaymentValue ?? ''}
                                     onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
                                 />
                             )}
@@ -377,7 +386,7 @@ export function PaymentSettings() {
                                     type="number"
                                     className="w-32 h-8 ml-2"
                                     placeholder="Amount"
-                                    value={config.advancePaymentValue}
+                                    value={config.advancePaymentValue ?? ''}
                                     onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
                                 />
                             )}
@@ -390,7 +399,7 @@ export function PaymentSettings() {
 }
 
 // Icon helper
-function Smartphone(props: any) {
+function Smartphone(props: Readonly<React.SVGProps<SVGSVGElement>>) {
     return (
         <svg
             {...props}

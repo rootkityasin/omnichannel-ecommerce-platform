@@ -9,6 +9,7 @@ interface Section {
     id: string;
     slug: string;
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     products: any[];
 }
 

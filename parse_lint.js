@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+ 
 const fs = require('fs');
 const raw = fs.readFileSync(process.env.TEMP + '/eslint_output2.json', 'utf8');
 const clean = raw.replace(/^\uFEFF/, '').trim();

@@ -7,7 +7,9 @@ import { deleteExpense } from "@/app/actions/inventory";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-export function ExpenseList({ expenses }: { expenses: any[] }) {
+import { Expense } from "@/types/common";
+
+export function ExpenseList({ expenses }: { expenses: Expense[] }) {
     const router = useRouter();
 
     const handleDelete = async (id: string) => {

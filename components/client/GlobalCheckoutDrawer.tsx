@@ -244,7 +244,7 @@ export function GlobalCheckoutDrawer() {
             const sections = await getStorySections();
             const cartSection = sections.find((s: { type: string; content: unknown }) => s.type === 'CART_TEXTS');
             if (cartSection?.content) {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
+                 
                 setCartTexts(cartSection.content as CartTexts);
             }
         };
@@ -265,7 +265,7 @@ export function GlobalCheckoutDrawer() {
     const { data: session } = useSession();
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         getSiteConfig().then(setSiteConfig);
     }, []);
 

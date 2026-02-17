@@ -28,6 +28,7 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
  * Debounced callback function
  * Useful for search inputs, form validation, API calls, etc.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
     callback: T,
     delay: number = 300
@@ -62,7 +63,7 @@ export function useThrottle<T>(value: T, interval: number = 500): T {
         } else {
             const handler = setTimeout(() => {
                 lastUpdated.current = Date.now();
-                // eslint-disable-next-line react-hooks/set-state-in-effect
+                 
                 setThrottledValue(value);
             }, interval - (now - lastUpdated.current));
 

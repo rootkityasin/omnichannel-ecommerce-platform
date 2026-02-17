@@ -31,19 +31,20 @@ export function EventExportButton() {
 
             // CSV Creation
             const headers = ['Time', 'Event Name', 'Customer Name', 'Phone', 'City/Area', 'IP Address', 'Source URL', 'Signal Data'];
-            const rows = events.map((event: any) => [
-                new Date(event.createdAt).toLocaleString(),
+            const rows = events.map((event: Record<string, unknown>) => [
+                new Date(event.createdAt as string).toLocaleString(),
                 event.eventName,
-                `"${event.customerName || 'Anonymous'}"`,
-                event.customerPhone || '',
-                `"${(event.customerCity || '')} ${(event.customerArea ? '(' + event.customerArea + ')' : '')}"`.trim(),
-                event.ipAddress || '',
-                `"${event.sourceUrl || ''}"`,
+                `"${(event.customerName as string) || 'Anonymous'}"`,
+                (event.customerPhone as string) || '',
+                `"${((event.customerCity as string) || '')} ${(event.customerArea ? '(' + (event.customerArea as string) + ')' : '')}"`.trim(),
+                (event.ipAddress as string) || '',
+                `"${(event.sourceUrl as string) || ''}"`,
                 `"${JSON.stringify(event.eventData).replace(/"/g, '""')}"` // Escape quotes for CSV
             ]);
 
             const csvContent = [
                 headers.join(','),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ...rows.map((r: any) => r.join(','))
             ].join('\n');
 

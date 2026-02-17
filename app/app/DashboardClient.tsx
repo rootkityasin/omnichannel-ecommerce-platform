@@ -15,16 +15,22 @@ import {
     DropdownMenuTrigger,
     DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"
+import { Tenant } from '@/types/common';
+
+// Extend Tenant to enforce _count presence as provided by the server query
+interface DashboardTenant extends Tenant {
+    _count: NonNullable<Tenant['_count']>;
+}
 
 interface DashboardClientProps {
-    tenants: any[]; // specific type should be imported if available, or defined
+    tenants: DashboardTenant[];
     plans: {
         id: string;
         slug: string;
         name: string;
         price: number;
         period: string;
-        features: any;
+        features: Record<string, unknown>;
     }[];
 }
 

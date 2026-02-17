@@ -27,10 +27,11 @@ export async function addExpense(data: { title: string; amount: number; category
 }
 
 export async function getExpenses() {
-    return await prisma.expense.findMany({
+    const expenses = await prisma.expense.findMany({
         orderBy: { date: 'desc' },
         include: { hub: true }
     });
+    return expenses.map(e => ({ ...e, hub: e.hub || undefined }));
 }
 
 export async function deleteExpense(id: string) {
@@ -87,7 +88,7 @@ export async function getProductsForStock() {
 
     if (!tenantId) return [];
 
-    return await prisma.product.findMany({
+    const products = await prisma.product.findMany({
         where: { tenantId },
         select: {
             id: true,
@@ -97,13 +98,24 @@ export async function getProductsForStock() {
             pieces: true,
             price: true,
             type: true,
+            weight: true,
             comboItems: {
                 include: { child: { select: { pieces: true } } }
             },
-            category: { select: { name: true } }
+            category: { select: { name: true } },
+            isAvailable: true
         },
         orderBy: { name: 'asc' }
     });
+    return products.map(p => ({
+        ...p,
+        stock: p.isAvailable,
+        image: p.image || undefined,
+        // Ensure strictly typed fields for StockProduct are present
+        pieces: p.pieces ?? 0,
+        weight: p.weight ?? 0,
+        type: (p.type as 'SINGLE' | 'COMBO') || 'SINGLE'
+    }));
 }
 
 export async function updateStock(productId: string, quantity: number) {

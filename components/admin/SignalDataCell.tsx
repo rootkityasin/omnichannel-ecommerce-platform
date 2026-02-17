@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface SignalDataCellProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any;
     eventName: string;
 }
@@ -37,6 +38,7 @@ export function SignalDataCell({ data, eventName }: SignalDataCellProps) {
                 {isNoData ? (
                     <span className="text-slate-400 italic">No extra data</span>
                 ) : (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     Object.entries(data as any)
                         .map(([k, v]) => `${k}: ${v}`)
                         .join(', ')

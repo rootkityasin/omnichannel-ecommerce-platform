@@ -32,7 +32,9 @@ interface CartState {
     finalTotal: () => number; // Payable amount
 
     // Cached Products for Recommendations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allProducts: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setAllProducts: (products: any[]) => void;
 }
 

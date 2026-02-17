@@ -59,6 +59,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ICON_MAP: Record<string, any> = {
     Fish, Flame, Utensils, Drumstick, Soup, Shell, Snowflake, Package, Gift, Waves, Pizza, Beef, Microwave, Coffee,
     Apple, Candy, Cookie, Egg, IceCream, Milk, Cherry, Croissant, Beer, Wine, Sandwich, Salad,
@@ -67,6 +68,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export interface CategoryStyle {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: any;
     color: string;
     hoverText: string;
@@ -246,6 +248,7 @@ const containerVariants = {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cardVariants: any = {
     hidden: {
         opacity: 0,

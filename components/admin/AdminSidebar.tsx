@@ -79,14 +79,7 @@ export function AdminSidebar() {
     const userRole = (session?.user as ExtendedUser)?.role;
     const userPermissions = (session?.user as ExtendedUser)?.permissions || [];
 
-    // Debug Permissions
-    /*
-    useEffect(() => {
-        if (session?.user) {
-            toast.info(`Role: ${(session.user as any).role}, Perms: ${JSON.stringify((session.user as any).permissions)}`);
-        }
-    }, [session]);
-    */
+    // Debug Permissions removed to clean up lint warnings
 
     // Helper to check permission
     // If no permission key is set, the item is visible to all admins (or base role checks)
@@ -99,7 +92,7 @@ export function AdminSidebar() {
     interface MenuItem {
         label: string;
         href: string;
-        icon: any; // Lucide icon type is complex, using any for simplicity or LucideIcon if imported
+        icon: React.ElementType;
         badge?: string;
         badgeColor?: string;
         permission?: string;

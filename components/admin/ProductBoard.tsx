@@ -314,9 +314,9 @@ export function ProductBoard({ products, onMove, config, onEdit, onClone, onDele
                                 return a.name.localeCompare(b.name);
                             }
                             // Processing stages: Sort by updatedAt (oldest first)
-                            // Use Type Assertion only if actual type doesn't have updatedAt yet, but AdminProduct supports [key: string]: unknown
-                            const dateB = new Date((b as any).updatedAt || (b as any).createdAt || 0).getTime();
-                            const dateA = new Date((a as any).updatedAt || (a as any).createdAt || 0).getTime();
+                            // Processing stages: Sort by updatedAt (oldest first)
+                            const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                            const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
                             return dateA - dateB;
                         });
 

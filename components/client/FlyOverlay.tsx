@@ -23,6 +23,7 @@ export function FlyOverlay() {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FlyItem({ item, targetRect, onComplete }: { item: any, targetRect: any, onComplete: () => void }) {
     if (!targetRect) return null;
 

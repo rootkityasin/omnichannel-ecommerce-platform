@@ -9,22 +9,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { updateSiteConfig } from '@/app/actions/settings';
 import { toast } from 'sonner';
-import { Loader2, Save, Search, Lock, Globe, Twitter, Share2, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Save, Search, Lock, Globe, Share2, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 
+import { SiteConfig } from "@/types/common";
+
 interface SeoProps {
-    initialConfig: any;
+    readonly initialConfig: SiteConfig;
 }
 
 export function SeoSettings({ initialConfig }: SeoProps) {
-    const [config, setConfig] = useState(initialConfig);
-    const [originalConfig, setOriginalConfig] = useState(initialConfig);
+    const [config, setConfig] = useState<SiteConfig>(initialConfig);
+    const [originalConfig, setOriginalConfig] = useState<SiteConfig>(initialConfig);
     const [isSaving, setIsSaving] = useState(false);
 
     // Plan Gating Logic
     // Plan Gating Logic
-    const plan = initialConfig.plan || 'FREE';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const plan = (initialConfig as any).plan || 'FREE'; // Plan might be on Tenant, not SiteConfig directly, but passed in initialConfig
     const isStandardOrHigher = ['STANDARD', 'PLATINUM', 'ENTERPRISE'].includes(plan);
 
     const canEditBasic = true; // Everyone can now edit Basic SEO
@@ -105,8 +108,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
 
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Shop Name</label>
+                                            <label htmlFor="shop-name" className="text-sm font-medium">Shop Name</label>
                                             <Input
+                                                id="shop-name"
                                                 value={config.shopName || ''}
                                                 onChange={e => setConfig({ ...config, shopName: e.target.value })}
                                                 placeholder="My Awesome Shop"
@@ -116,8 +120,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Meta Title</label>
+                                            <label htmlFor="meta-title" className="text-sm font-medium">Meta Title</label>
                                             <Input
+                                                id="meta-title"
                                                 value={config.seoTitle || ''}
                                                 onChange={e => setConfig({ ...config, seoTitle: e.target.value })}
                                                 placeholder={config.shopName ? `${config.shopName} - Premium Seafood` : "My Shop Title"}
@@ -126,8 +131,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                             <p className="text-xs text-slate-400 text-right">Recommended: 50-60 chars</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Meta Description</label>
+                                            <label htmlFor="meta-desc" className="text-sm font-medium">Meta Description</label>
                                             <Textarea
+                                                id="meta-desc"
                                                 value={config.seoDescription || ''}
                                                 onChange={e => setConfig({ ...config, seoDescription: e.target.value })}
                                                 placeholder="Best fresh seafood delivered to your door in Dhaka..."
@@ -137,8 +143,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                             <p className="text-xs text-slate-400 text-right">Recommended: 150-160 chars</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Keywords</label>
+                                            <label htmlFor="keywords" className="text-sm font-medium">Keywords</label>
                                             <Input
+                                                id="keywords"
                                                 value={config.seoKeywords || ''}
                                                 onChange={e => setConfig({ ...config, seoKeywords: e.target.value })}
                                                 placeholder="seafood, crab, delivery, shrimp, lobster"
@@ -185,49 +192,53 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                             </div>
 
                                             <div className="space-y-3">
-                                                {Array.isArray(config.sitelinks) && config.sitelinks.map((link: any, i: number) => (
-                                                    <div key={i} className="flex gap-2 items-start p-3 bg-slate-50 rounded border">
-                                                        <div className="grid gap-2 flex-1">
-                                                            <Input
-                                                                placeholder="Link Title (e.g. All Products)"
-                                                                value={link.title || ''}
-                                                                onChange={e => {
-                                                                    const newLinks = [...config.sitelinks];
-                                                                    newLinks[i] = { ...newLinks[i], title: e.target.value };
+                                                <div className="space-y-3">
+                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                    {(config.sitelinks || []).map((link: any, i: number) => (
+                                                        <div key={`edit-${i}-${link.title || 'new'}`} className="flex gap-2 items-start p-3 bg-slate-50 rounded border">
+                                                            <div className="grid gap-2 flex-1">
+                                                                <Input
+                                                                    placeholder="Link Title (e.g. All Products)"
+                                                                    value={link.title || ''}
+                                                                    onChange={e => {
+                                                                        const newLinks = [...(config.sitelinks || [])];
+                                                                        newLinks[i] = { ...newLinks[i], title: e.target.value };
+                                                                        setConfig({ ...config, sitelinks: newLinks });
+                                                                    }}
+                                                                    className="h-8 text-sm"
+                                                                />
+                                                                <Input
+                                                                    placeholder="Description (optional)"
+                                                                    value={link.description || ''}
+                                                                    onChange={e => {
+                                                                        const newLinks = [...(config.sitelinks || [])];
+                                                                        newLinks[i] = { ...newLinks[i], description: e.target.value };
+                                                                        setConfig({ ...config, sitelinks: newLinks });
+                                                                    }}
+                                                                    className="h-8 text-xs text-slate-500"
+                                                                />
+                                                            </div>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => {
+                                                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                                    const newLinks = (config.sitelinks || []).filter((_: any, idx: number) => idx !== i);
                                                                     setConfig({ ...config, sitelinks: newLinks });
                                                                 }}
-                                                                className="h-8 text-sm"
-                                                            />
-                                                            <Input
-                                                                placeholder="Description (optional)"
-                                                                value={link.description || ''}
-                                                                onChange={e => {
-                                                                    const newLinks = [...config.sitelinks];
-                                                                    newLinks[i] = { ...newLinks[i], description: e.target.value };
-                                                                    setConfig({ ...config, sitelinks: newLinks });
-                                                                }}
-                                                                className="h-8 text-xs text-slate-500"
-                                                            />
+                                                                className="h-8 w-8 text-slate-400 hover:text-red-500"
+                                                                type="button"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
                                                         </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => {
-                                                                const newLinks = config.sitelinks.filter((_: any, idx: number) => idx !== i);
-                                                                setConfig({ ...config, sitelinks: newLinks });
-                                                            }}
-                                                            className="h-8 w-8 text-slate-400 hover:text-red-500"
-                                                            type="button"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                ))}
-                                                {(!config.sitelinks || config.sitelinks.length === 0) && (
-                                                    <div className="text-xs text-center p-4 text-slate-400 italic bg-slate-50 rounded border border-dashed">
-                                                        No sitelinks added. Your result will look standard.
-                                                    </div>
-                                                )}
+                                                    ))}
+                                                    {(!config.sitelinks || config.sitelinks.length === 0) && (
+                                                        <div className="text-xs text-center p-4 text-slate-400 italic bg-slate-50 rounded border border-dashed">
+                                                            No sitelinks added. Your result will look standard.
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -247,16 +258,18 @@ export function SeoSettings({ initialConfig }: SeoProps) {
 
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">OG Title</label>
+                                            <label htmlFor="og-title" className="text-sm font-medium">OG Title</label>
                                             <Input
+                                                id="og-title"
                                                 value={config.ogTitle || ''}
                                                 onChange={e => setConfig({ ...config, ogTitle: e.target.value })}
                                                 placeholder="Same as Meta Title"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">OG Description</label>
+                                            <label htmlFor="og-desc" className="text-sm font-medium">OG Description</label>
                                             <Textarea
+                                                id="og-desc"
                                                 value={config.ogDescription || ''}
                                                 onChange={e => setConfig({ ...config, ogDescription: e.target.value })}
                                                 placeholder="Same as Meta Description"
@@ -269,7 +282,7 @@ export function SeoSettings({ initialConfig }: SeoProps) {
 
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2"><Twitter className="w-5 h-5 text-sky-500" /> Twitter Card</CardTitle>
+                                    <CardTitle className="flex items-center gap-2"><Share2 className="w-5 h-5 text-sky-500" /> Twitter Card</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
@@ -299,9 +312,10 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Custom Domain</label>
+                                        <label htmlFor="custom-domain" className="text-sm font-medium">Custom Domain</label>
                                         <div className="flex gap-2">
                                             <Input
+                                                id="custom-domain"
                                                 value={config.customDomain || ''}
                                                 onChange={e => setConfig({ ...config, customDomain: e.target.value })}
                                                 placeholder="myshop.com"
@@ -311,8 +325,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                         <p className="text-xs text-slate-400">Enter your custom domain (e.g. example.com). Ensure DNS is configured.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Canonical URL</label>
+                                        <label htmlFor="canonical-url" className="text-sm font-medium">Canonical URL</label>
                                         <Input
+                                            id="canonical-url"
                                             value={config.canonicalUrl || ''}
                                             onChange={e => setConfig({ ...config, canonicalUrl: e.target.value })}
                                             placeholder="https://myshop.com"
@@ -320,8 +335,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                         <p className="text-xs text-slate-400">Leave empty to use automatic URL.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Robots Meta</label>
+                                        <label htmlFor="robots-meta" className="text-sm font-medium">Robots Meta</label>
                                         <Input
+                                            id="robots-meta"
                                             value={config.robots || 'index, follow'}
                                             onChange={e => setConfig({ ...config, robots: e.target.value })}
                                             placeholder="index, follow"
@@ -354,10 +370,10 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="grid grid-cols-1 gap-3">
-                                        <Input value={config.socialFacebook || ''} onChange={e => setConfig({ ...config, socialFacebook: e.target.value })} placeholder="Facebook URL" />
-                                        <Input value={config.socialInstagram || ''} onChange={e => setConfig({ ...config, socialInstagram: e.target.value })} placeholder="Instagram URL" />
-                                        <Input value={config.socialTwitter || ''} onChange={e => setConfig({ ...config, socialTwitter: e.target.value })} placeholder="Twitter URL" />
-                                        <Input value={config.socialYoutube || ''} onChange={e => setConfig({ ...config, socialYoutube: e.target.value })} placeholder="YouTube URL" />
+                                        <Input value={config.socialFacebook || ''} onChange={e => setConfig({ ...config, socialFacebook: e.target.value })} placeholder="Facebook URL" aria-label="Facebook URL" />
+                                        <Input value={config.socialInstagram || ''} onChange={e => setConfig({ ...config, socialInstagram: e.target.value })} placeholder="Instagram URL" aria-label="Instagram URL" />
+                                        <Input value={config.socialTwitter || ''} onChange={e => setConfig({ ...config, socialTwitter: e.target.value })} placeholder="Twitter URL" aria-label="Twitter URL" />
+                                        <Input value={config.socialYoutube || ''} onChange={e => setConfig({ ...config, socialYoutube: e.target.value })} placeholder="YouTube URL" aria-label="YouTube URL" />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -369,16 +385,18 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Pixel ID</label>
+                                        <label htmlFor="pixel-id" className="text-sm font-medium">Pixel ID</label>
                                         <Input
+                                            id="pixel-id"
                                             value={config.metaPixelId || ''}
                                             onChange={e => setConfig({ ...config, metaPixelId: e.target.value })}
                                             placeholder="1234567890"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Access Token (CAPI)</label>
+                                        <label htmlFor="access-token" className="text-sm font-medium">Access Token (CAPI)</label>
                                         <Input
+                                            id="access-token"
                                             value={config.metaAccessToken || ''}
                                             onChange={e => setConfig({ ...config, metaAccessToken: e.target.value })}
                                             type="password"
@@ -427,8 +445,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                             {/* Sitelinks Simulation */}
                             {(Array.isArray(config.sitelinks) && config.sitelinks.length > 0) && (
                                 <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     {config.sitelinks.map((link: any, i: number) => (
-                                        <div key={i}>
+                                        <div key={`${i}-${link.title}`}>
                                             <div className="text-[#1a0dab] text-sm hover:underline cursor-pointer font-medium truncate">
                                                 {link.title || "Link Title"}
                                             </div>

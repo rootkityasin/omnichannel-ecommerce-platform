@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+ 
+const fs = require('fs');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -22,3 +24,4 @@ async function check() {
 }
 
 check();
+ 

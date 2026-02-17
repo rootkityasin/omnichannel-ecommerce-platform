@@ -61,6 +61,23 @@ export interface AdminOrder {
     [key: string]: unknown; // Allow extensibility
 }
 
+export interface StockProduct extends AdminProduct {
+    category: { name: string };
+    type: 'SINGLE' | 'COMBO';
+    pieces: number;
+    weight: number;
+    image?: string;
+}
+
+export interface Expense {
+    id: string;
+    title: string;
+    amount: number;
+    date: string | Date;
+    category: string;
+    hub?: { name: string };
+}
+
 export interface AdminProduct {
     id: string;
     name: string;
@@ -78,6 +95,8 @@ export interface AdminProduct {
             pieces: number;
         };
     }[];
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
     [key: string]: unknown;
 }
 
@@ -86,11 +105,17 @@ export interface Tenant {
     name: string;
     slug: string;
     customDomain?: string | null;
-    plan: 'FREE' | 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
-    status: 'ACTIVE' | 'SUSPENDED' | 'PENDING';
+    plan: string; // Prisma is String, not enum in some contexts? schema says String @default("FREE"). Enum is not used in schema for plan?
+    isActive: boolean;
+    setupFeePaid?: boolean;
     createdAt: Date;
     users?: User[];
     siteConfig?: SiteConfig;
+    _count?: {
+        users: number;
+        orders: number;
+        products: number;
+    };
 }
 
 export interface CartItem extends Product {
@@ -127,6 +152,36 @@ export interface SiteConfig {
         showSignature?: boolean;
         watermarkOpacity?: number;
         fontSize?: number;
+    };
+    shops?: { id: string; name: string }[];
+
+    // SEO Fields
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    seoKeywords?: string | null;
+    ogImage?: string | null;
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterCard?: string | null;
+    canonicalUrl?: string | null;
+    robots?: string | null;
+    jsonLdType?: string | null;
+    sitelinks?: { title: string; description: string }[];
+
+    // Social Links
+    socialFacebook?: string | null;
+    socialInstagram?: string | null;
+    socialTwitter?: string | null;
+    socialYoutube?: string | null;
+
+    // Meta Pixel
+    metaPixelId?: string | null;
+    metaAccessToken?: string | null;
+
+    // Tenant / Domain
+    customDomain?: string | null;
+    tenant?: {
+        slug: string;
     };
 }
 
@@ -269,6 +324,8 @@ export interface PaymentConfig {
     selfMfsQrCode?: string | null;
     advancePaymentType?: string | null;
     advancePaymentValue?: number | string | null;
+    bkashLogo?: string | null;
+    nagadLogo?: string | null;
 }
 
 export interface WeightBasedCharge {
@@ -281,10 +338,20 @@ export interface DeliveryZone {
     id: string;
     name: string;
     charge: number;
-    type: 'ZONE' | 'DISTRICT' | 'UPAZILA';
-    codEnabled: boolean;
+    type?: string;
+    codEnabled?: boolean;
 }
 
+export interface Section {
+    id: string;
+    title: string;
+    slug: string;
+    order: number;
+    isActive: boolean;
+    _count?: {
+        products: number;
+    };
+}
 export interface DeliveryConfig {
     defaultCharge: number;
     defaultCodEnabled: boolean;

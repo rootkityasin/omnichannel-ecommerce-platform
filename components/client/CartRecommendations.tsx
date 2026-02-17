@@ -8,6 +8,7 @@ import { ProductCard } from './ProductCard';
 
 export function CartRecommendations() {
     const { items, allProducts } = useCartStore();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [recommendations, setRecommendations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [emblaRef] = useEmblaCarousel({ align: 'start', containScroll: 'trimSnaps' });

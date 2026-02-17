@@ -26,21 +26,31 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Edit, LogIn, Key, Ban } from 'lucide-react';
 
+interface UserRecord {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    role: string;
+    status?: string;
+    hubId: string | null;
+    permissions?: string[];
+}
 
 export function UsersTab() {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<UserRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
 
     // Permission Modal State
     const [permissionModalOpen, setPermissionModalOpen] = useState(false);
-    const [selectedUserForPerms, setSelectedUserForPerms] = useState<any>(null);
+    const [selectedUserForPerms, setSelectedUserForPerms] = useState<UserRecord | null>(null);
     const [tempPermissions, setTempPermissions] = useState<string[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
 
     // Password Reset State
     const [resetPassModalOpen, setResetPassModalOpen] = useState(false);
-    const [userToReset, setUserToReset] = useState<any>(null);
+    const [userToReset, setUserToReset] = useState<UserRecord | null>(null);
     const [newPasswordInput, setNewPasswordInput] = useState("");
 
     const AVAILABLE_PERMISSIONS = [
@@ -101,14 +111,14 @@ export function UsersTab() {
         }
     };
 
-    const handleToggleStatus = async (user: any) => {
+    const handleToggleStatus = async (user: UserRecord) => {
         const newStatus = user.status === 'Active' ? 'Disabled' : 'Active';
         await updateUserStatus(user.id, newStatus);
         fetchUsers();
         toast.success(`User ${newStatus === 'Active' ? 'Activated' : 'Disabled'}`);
     };
 
-    const handleResetPassword = (user: any) => {
+    const handleResetPassword = (user: UserRecord) => {
         setUserToReset(user);
         setNewPasswordInput("");
         setResetPassModalOpen(true);
@@ -126,7 +136,7 @@ export function UsersTab() {
         }
     };
 
-    const handleLoginAs = async (user: any) => {
+    const handleLoginAs = async (user: UserRecord) => {
         if (!confirm(`Are you sure you want to login as ${user.name}? This will end your current admin session.`)) return;
 
         const toastId = toast.loading("Switching accounts...");
@@ -156,7 +166,7 @@ export function UsersTab() {
         }
     };
 
-    const handleEdit = (user: any) => {
+    const handleEdit = (user: UserRecord) => {
         setNewUser({
             name: user.name,
             email: user.email,
@@ -180,7 +190,7 @@ export function UsersTab() {
                 name: newUser.name,
                 email: newUser.email,
                 phone: newUser.phone || '01000000000',
-                role: newUser.role as any,
+                role: newUser.role as 'STAFF' | 'HUB_ADMIN' | 'TENANT_ADMIN' | 'SUPER_ADMIN' | 'USER',
                 permissions: newUser.permissions,
                 // Fix: convert empty string to null/undefined to avoid FK error
                 hubId: newUser.hubId || undefined
@@ -191,7 +201,7 @@ export function UsersTab() {
                 name: newUser.name,
                 email: newUser.email,
                 phone: newUser.phone || '01000000000',
-                role: newUser.role as any,
+                role: newUser.role as 'STAFF' | 'HUB_ADMIN' | 'TENANT_ADMIN' | 'SUPER_ADMIN' | 'USER',
                 password: newUser.password,
                 permissions: newUser.permissions,
                 hubId: newUser.hubId || undefined
@@ -209,7 +219,7 @@ export function UsersTab() {
         }
     };
 
-    const handleOpenPermissionModal = (user: any) => {
+    const handleOpenPermissionModal = (user: UserRecord) => {
         setSelectedUserForPerms(user);
         setTempPermissions(user.permissions || []);
         setPermissionModalOpen(true);
@@ -219,7 +229,10 @@ export function UsersTab() {
         if (!selectedUserForPerms) return;
 
         const res = await updateUser(selectedUserForPerms.id, {
-            ...selectedUserForPerms, // Keep other fields same
+            name: selectedUserForPerms.name,
+            email: selectedUserForPerms.email,
+            phone: selectedUserForPerms.phone || '01000000000',
+            role: selectedUserForPerms.role as 'STAFF' | 'HUB_ADMIN' | 'TENANT_ADMIN' | 'SUPER_ADMIN' | 'USER',
             permissions: tempPermissions
         });
 

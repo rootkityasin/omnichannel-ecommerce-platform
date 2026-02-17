@@ -14,9 +14,9 @@ export function BlockedListTab() {
     const loadData = async () => {
         setIsLoading(true);
         const sections = await getStorySections();
-        const blockedSection = sections.find((s: any) => s.type === 'BLOCKED_CUSTOMERS');
+        const blockedSection = sections.find((s: { type: string; content: unknown }) => s.type === 'BLOCKED_CUSTOMERS');
         if (blockedSection?.content) {
-            const content = blockedSection.content as any;
+            const content = blockedSection.content as { phones?: string[]; emails?: string[] };
             setBlockedPhones(content.phones || []);
             setBlockedEmails(content.emails || []);
         }

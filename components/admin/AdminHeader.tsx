@@ -71,7 +71,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         fetchNotifications();
         // scheduleNextPoll(); // DISABLED: To prevent excessive requests
 

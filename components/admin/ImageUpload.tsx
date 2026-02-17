@@ -2,11 +2,12 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
+import { UploadCloud, X, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { uploadToCloudinary } from '@/app/actions/upload';
+import Image from 'next/image';
 
 interface ImageUploadProps {
     value?: string | string[];
@@ -30,7 +31,7 @@ export function ImageUpload({
     recommendedText = "1000x1000 (1:1 Aspect Ratio)",
     className,
     disabled = false
-}: ImageUploadProps) {
+}: Readonly<ImageUploadProps>) {
     const [isUploading, setIsUploading] = useState(false);
 
     // Normalize value to array for consistent rendering
@@ -39,7 +40,7 @@ export function ImageUpload({
     // --- WEBP CONVERSION ---
     const convertToWebP = (file: File): Promise<File> => {
         return new Promise((resolve, reject) => {
-            const img = new Image();
+            const img = new window.Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
@@ -145,8 +146,14 @@ export function ImageUpload({
                 <div className={cn("grid gap-4", multiple ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1")}>
                     {valuesArray.map((url, index) => (
                         <div key={index} className={cn("relative overflow-hidden rounded-lg border border-slate-200 group bg-slate-100", multiple ? "aspect-square" : "aspect-video")}>
-                            <img src={url} alt="Uploaded" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div className="absolute top-2 right-2">
+                            <Image
+                                src={url}
+                                alt="Uploaded"
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                sizes={multiple ? "(max-width: 768px) 50vw, 33vw" : "(max-width: 768px) 100vw, 50vw"}
+                            />
+                            <div className="absolute top-2 right-2 z-10">
                                 <Button
                                     onClick={(e) => {
                                         e.preventDefault();

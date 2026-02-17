@@ -38,7 +38,9 @@ const getSectionStyle = (index: number, isDragging: boolean) => {
     return "bg-slate-50/40 border-l-slate-300 hover:border-l-slate-400"; // Cleaner look
 };
 
-function SortableSection({ section, index, onDelete, onUpdate }: { section: any, index: number, onDelete: (id: string) => void, onUpdate: (id: string, updates: any) => void }) {
+import { Section } from '@/types/common';
+
+function SortableSection({ section, index, onDelete, onUpdate }: { readonly section: Section, readonly index: number, readonly onDelete: (id: string) => void, readonly onUpdate: (id: string, updates: Partial<Section>) => void }) {
     const {
         attributes,
         listeners,
@@ -122,7 +124,7 @@ function SortableSection({ section, index, onDelete, onUpdate }: { section: any,
 }
 
 export function SectionsManager() {
-    const [sections, setSections] = useState<any[]>([]);
+    const [sections, setSections] = useState<Section[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
     const [newSection, setNewSection] = useState({ title: '', slug: '' });
@@ -173,6 +175,7 @@ export function SectionsManager() {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleUpdate = async (id: string, updates: any) => {
         setSections(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
         const res = await updateSection(id, updates);
@@ -253,8 +256,9 @@ export function SectionsManager() {
                 <Card className="p-4 border-orange-100 bg-orange-50/50 mb-4 animate-in slide-in-from-top-2">
                     <div className="flex gap-4 items-end">
                         <div className="flex-1 space-y-2">
-                            <label className="text-xs font-bold text-slate-500">Title</label>
+                            <label htmlFor="section-title" className="text-xs font-bold text-slate-500">Title</label>
                             <Input
+                                id="section-title"
                                 value={newSection.title}
                                 onChange={handleTitleChange}
                                 placeholder="e.g. Flash Sales"
@@ -262,8 +266,9 @@ export function SectionsManager() {
                             />
                         </div>
                         <div className="flex-1 space-y-2">
-                            <label className="text-xs font-bold text-slate-500">URL Identifier</label>
+                            <label htmlFor="section-slug" className="text-xs font-bold text-slate-500">URL Identifier</label>
                             <Input
+                                id="section-slug"
                                 value={newSection.slug}
                                 onChange={e => setNewSection({ ...newSection, slug: e.target.value })}
                                 placeholder="e.g. flash-sales"

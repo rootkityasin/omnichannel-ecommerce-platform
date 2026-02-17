@@ -12,28 +12,17 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EditCompanyModal } from './EditCompanyModal';
 import { CompanyUsersModal } from './CompanyUsersModal';
+import { Tenant } from '@/types/common';
 
 interface TenantProps {
-    tenant: {
-        id: string;
-        name: string;
-        slug: string;
-        plan: string;
-        isActive: boolean;
-        createdAt: Date;
-        _count: {
-            users: number;
-            orders: number;
-            products: number;
-        };
-    };
+    tenant: Tenant;
     plans: {
         id: string;
         name: string;
         slug: string;
         price: number;
         period: string;
-        features: any; // Kept as any or structured if known, but main issue was plans: any[]
+        features: Record<string, unknown>; // Kept as any or structured if known, but main issue was plans: any[]
     }[];
 }
 
@@ -216,21 +205,21 @@ export function TenantCard({ tenant, plans }: TenantProps) {
                         <div className="bg-rose-100 p-1 rounded text-rose-500 group-hover:scale-110 transition-transform">
                             <Users className="w-3 h-3" />
                         </div>
-                        <span className="text-xs font-semibold text-slate-600">{tenant._count.users}</span>
+                        <span className="text-xs font-semibold text-slate-600">{tenant._count?.users ?? 0}</span>
                     </button>
 
                     <div className="flex items-center justify-center gap-1.5 py-3" title="Total Orders">
                         <div className="bg-orange-100 p-1 rounded text-orange-500">
                             <ShoppingBag className="w-3 h-3" />
                         </div>
-                        <span className="text-xs font-semibold text-slate-600">{tenant._count.orders}</span>
+                        <span className="text-xs font-semibold text-slate-600">{tenant._count?.orders ?? 0}</span>
                     </div>
 
                     <div className="flex items-center justify-center gap-1.5 py-3" title="Total Products">
                         <div className="bg-cyan-100 p-1 rounded text-cyan-500">
                             <Package className="w-3 h-3" />
                         </div>
-                        <span className="text-xs font-semibold text-slate-600">{tenant._count.products ?? 0}</span>
+                        <span className="text-xs font-semibold text-slate-600">{tenant._count?.products ?? 0}</span>
                     </div>
                 </CardFooter>
             </Card>

@@ -33,6 +33,7 @@ export function ResourcePrefetcher() {
 
         // Use requestIdleCallback for assets to not block main thread
         if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window as any).requestIdleCallback(preloadAssets);
         } else {
             setTimeout(preloadAssets, 4000);

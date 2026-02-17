@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
-export function ExpenseExport({ expenses }: { expenses: any[] }) {
+export function ExpenseExport({ expenses }: { expenses: { date: string | Date; title: string; amount: number; category: string; hub?: { name: string } }[] }) {
 
     const downloadCSV = (days: number) => {
         const now = new Date();

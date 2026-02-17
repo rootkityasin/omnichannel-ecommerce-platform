@@ -5,17 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, CheckCircle, Package, Truck, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface Order {
-    id: string;
-    item: string; // We might need to map 'items' count to a string description or just show 'X items'
-    status: string;
-    time: string;
-    items: number;
-    customer: string;
-}
+import { AdminOrder } from '@/types/common';
 
 interface FulfillmentBoardProps {
-    orders: any[]; // Using any[] to match the flexible order structure for now, ideally strictly typed
+    orders: AdminOrder[];
     onStatusChange: (id: string, newStatus: string) => void;
     readOnly?: boolean;
 }
@@ -65,7 +58,7 @@ export function FulfillmentBoard({ orders, onStatusChange, readOnly }: Fulfillme
                                 <Card key={order.id} className={`p-3 cursor-pointer hover:shadow-md transition-shadow group ${order.status === 'Confirmed' && col.status === 'Placed' ? 'border-l-4 border-l-green-500' : ''}`}>
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="font-bold text-slate-800">{order.id}</span>
-                                        <span className="text-xs text-slate-400">{order.time || 'Now'}</span>
+                                        <span className="text-xs text-slate-400">{order.date || 'Now'}</span>
                                     </div>
                                     <p className="text-sm font-medium text-slate-600 mb-2">{order.items} items • {order.customer}</p>
 

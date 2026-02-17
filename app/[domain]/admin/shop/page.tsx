@@ -1,5 +1,6 @@
 import { getAdminSiteConfig } from '@/app/actions/settings';
-import { ShopClient, SiteConfig } from './ShopClient';
+import { ShopClient } from './ShopClient';
+import { SiteConfig } from '@/types/common';
 
 export default async function ShopSettingsPage({ params }: { readonly params: Promise<{ domain: string }> }) {
     await params; // Consume params to avoid unused vars if needed, or remove

@@ -18,16 +18,16 @@ export function DomainSettings() {
     const [verifying, setVerifying] = useState(false);
 
     // Config state
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<{ slug: string; customDomain: string }>({
         slug: '',
         customDomain: ''
     });
 
     // Domain Verification State
-    const [domainStatus, setDomainStatus] = useState<any>(null);
+    const [domainStatus, setDomainStatus] = useState<{ verified?: boolean; error?: { code: string }; verification?: unknown } | null>(null);
 
     // State to track original values
-    const [originalConfig, setOriginalConfig] = useState<any>(null);
+    const [originalConfig, setOriginalConfig] = useState<{ slug: string; customDomain: string } | null>(null);
 
 
 
@@ -92,7 +92,7 @@ export function DomainSettings() {
 
 
             // If slug changed, we might need to redirect or reload, but for now just update state
-            if (config.slug !== originalConfig.slug) {
+            if (config.slug !== originalConfig?.slug) {
                 toast.message("Shop URL updated", {
                     description: "Your shop is now accessible at the new address."
                 });
@@ -179,10 +179,10 @@ export function DomainSettings() {
                                 </div>
                                 <Button
                                     onClick={handleSave}
-                                    disabled={saving || config.slug === originalConfig.slug}
+                                    disabled={saving || config.slug === originalConfig?.slug}
                                     className="bg-purple-600 hover:bg-purple-700 text-white min-w-[100px]"
                                 >
-                                    {saving && config.slug !== originalConfig.slug ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update"}
+                                    {saving && config.slug !== originalConfig?.slug ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update"}
                                 </Button>
                             </div>
                             <p className="text-xs text-slate-500">
@@ -220,7 +220,7 @@ export function DomainSettings() {
                                     placeholder="www.your-brand.com"
                                     className="font-medium bg-white"
                                 />
-                                {config.customDomain && config.customDomain !== originalConfig.customDomain && (
+                                {config.customDomain && config.customDomain !== originalConfig?.customDomain && (
                                     <Button
                                         onClick={handleSave}
                                         disabled={saving}
@@ -229,7 +229,7 @@ export function DomainSettings() {
                                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connect"}
                                     </Button>
                                 )}
-                                {config.customDomain && config.customDomain === originalConfig.customDomain && (
+                                {config.customDomain && config.customDomain === originalConfig?.customDomain && (
                                     <Button
                                         variant="outline"
                                         onClick={() => window.open(`http://${config.customDomain}`, '_blank')}
@@ -243,7 +243,7 @@ export function DomainSettings() {
                     </div>
 
                     {/* Verification / Instructions */}
-                    {config.customDomain && config.customDomain === originalConfig.customDomain ? (
+                    {config.customDomain && config.customDomain === originalConfig?.customDomain ? (
                         <div className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
                             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
                                 <div className="flex items-center gap-3">
@@ -278,7 +278,8 @@ export function DomainSettings() {
                                             if (res.success) {
                                                 toast.success("Domain removed");
                                                 setConfig({ ...config, customDomain: '' });
-                                                setOriginalConfig({ ...originalConfig, customDomain: '' });
+                                                 
+                                                setOriginalConfig({ ...originalConfig!, customDomain: '' });
                                                 setDomainStatus(null);
                                             } else {
                                                 toast.error(res.error || "Failed to remove domain");
@@ -324,7 +325,7 @@ export function DomainSettings() {
                                         <span>DNS propagation may take up to 24 hours.</span>
                                     </div>
 
-                                    {domainStatus?.verification && (
+                                    {!!domainStatus?.verification && (
                                         <div className="mt-4 p-3 bg-red-50 text-red-600 text-xs rounded border border-red-100 overflow-x-auto">
                                             <pre>{JSON.stringify(domainStatus.verification, null, 2)}</pre>
                                         </div>

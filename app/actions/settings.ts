@@ -114,6 +114,7 @@ const getPublicSiteConfig = unstable_cache(
                     jsonLdType: true,
                     robots: true,
                     canonicalUrl: true,
+                    sitelinks: true,
                     metaPixelId: true,
                     metaAccessToken: true,
                     socialFacebook: true,
@@ -142,7 +143,9 @@ const getPublicSiteConfig = unstable_cache(
                 tenantId: config.tenantId || "",
                 customDomain: config.tenant?.customDomain || "",
                 slug: config.tenant?.slug || "",
-                invoiceDetails: (config.invoiceDetails || defaults.invoiceDetails) as SiteConfig['invoiceDetails']
+                tenant: config.tenant || undefined,
+                invoiceDetails: (config.invoiceDetails || defaults.invoiceDetails) as SiteConfig['invoiceDetails'],
+                sitelinks: (config.sitelinks as SiteConfig['sitelinks']) || []
             };
         } catch (error) {
             console.error("Failed to fetch site config:", error);
@@ -255,6 +258,7 @@ export async function getAdminSiteConfig() {
                 jsonLdType: true,
                 robots: true,
                 canonicalUrl: true,
+                sitelinks: true,
                 metaPixelId: true,
                 metaAccessToken: true,
                 socialFacebook: true,
@@ -285,8 +289,10 @@ export async function getAdminSiteConfig() {
             tenantId: config.tenantId || "",
             customDomain: config.tenant?.customDomain || "",
             slug: config.tenant?.slug || "",
+            tenant: config.tenant || undefined,
             plan: config.tenant?.plan || "FREE",
-            invoiceDetails: (config.invoiceDetails || defaults.invoiceDetails) as SiteConfig['invoiceDetails']
+            invoiceDetails: (config.invoiceDetails || defaults.invoiceDetails) as SiteConfig['invoiceDetails'],
+            sitelinks: (config.sitelinks as SiteConfig['sitelinks']) || []
         };
     } catch (error) {
         console.error("Failed to fetch admin site config:", error);

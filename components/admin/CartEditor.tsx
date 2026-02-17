@@ -162,7 +162,7 @@ export function CartEditor() {
 
     const handleSave = async () => {
         setSaving(true);
-        // Cast to any for the action as it expects generic object, but we know it matches structure
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = await updateStorySection('CART_TEXTS', config as unknown as any);
         if (res.success) {
             toast.success('Cart texts updated');

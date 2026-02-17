@@ -143,6 +143,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
                 try {
                     const parsed = JSON.parse(savedData);
                     if (parsed.products) setProductsState(parsed.products);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if (parsed.settings) setSettings((prev: any) => ({ ...prev, ...parsed.settings }));
                 } catch (e) { console.error(e); }
             }
@@ -151,6 +152,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
             import('@/app/actions/settings').then(mod => {
                 mod.getSiteConfig().then(dbConfig => {
                     if (dbConfig) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setSettings((prev: any) => ({
                             ...prev,
                             ...dbConfig,

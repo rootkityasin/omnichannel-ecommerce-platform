@@ -6,7 +6,7 @@ export function useMediaQuery(query: string) {
 
     useEffect(() => {
         function onChange(event: MediaQueryListEvent) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             setValue(event.matches);
         }
 

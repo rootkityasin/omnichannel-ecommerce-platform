@@ -15,25 +15,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { AdminProduct, SiteConfig } from "@/types/common";
+import { AdminProduct, SiteConfig, StockProduct } from "@/types/common";
 import Image from "next/image";
 
-// Extended interface for StockList usage
-interface StockListProduct extends AdminProduct {
-    category: { name: string };
-    type: 'SINGLE' | 'COMBO';
-    // comboItems inherited with correct type
-    pieces: number;
-    weight: number;
-    image?: string;
-}
-
-export function StockList({ products }: Readonly<{ products: StockListProduct[] }>) {
+export function StockList({ products }: Readonly<{ products: StockProduct[] }>) {
     const [searchTerm, setSearchTerm] = useState("");
 
 
     // Adjustment State
-    const [selectedProduct, setSelectedProduct] = useState<StockListProduct | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<StockProduct | null>(null);
     const [adjustType, setAdjustType] = useState<'add' | 'remove'>('add');
     const [amount, setAmount] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,7 +38,7 @@ export function StockList({ products }: Readonly<{ products: StockListProduct[] 
         p.category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const openAdjustModal = (product: StockListProduct, type: 'add' | 'remove') => {
+    const openAdjustModal = (product: StockProduct, type: 'add' | 'remove') => {
         setSelectedProduct(product);
         setAdjustType(type);
         setAmount("");
