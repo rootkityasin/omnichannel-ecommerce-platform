@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Users, Calendar, LogIn, MoreVertical, Edit, Trash2, KeyRound, Ban, CheckCircle, Clock, Square, CheckSquare, ShoppingBag, Package } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { toast } from 'sonner';
 import { deleteTenant, updateTenantStatus, updateTenantPlan, getImpersonationLink } from '@/app/actions/super-admin';
 import { cn } from '@/lib/utils';
@@ -92,17 +92,21 @@ export function TenantCard({ tenant, plans }: TenantProps) {
         });
     }
 
+    const [now, setNow] = useState<Date | null>(null);
+
     // Expiry Logic
     const createdAt = new Date(tenant.createdAt);
     const expiryDateObj = new Date(createdAt);
     expiryDateObj.setFullYear(createdAt.getFullYear() + 1); // Mock 1 year validity
 
-    const now = new Date();
-    const diffTime = expiryDateObj.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    useEffect(() => {
+        setNow(new Date());
+    }, []);
+
+    const diffDays = now ? Math.ceil((expiryDateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 365;
 
     const isExpired = diffDays <= 0;
-    const daysLeftText = isExpired ? 'Expired' : `${diffDays} Days Left`;
+    const daysLeftText = !now ? 'Calculating...' : (isExpired ? 'Expired' : `${diffDays} Days Left`);
     const daysColor = isExpired ? 'text-red-600' : (diffDays < 30 ? 'text-orange-600' : 'text-slate-600');
     const clockColor = isExpired ? 'text-red-500' : (diffDays < 30 ? 'text-orange-500' : 'text-cyan-500');
 
@@ -155,15 +159,15 @@ export function TenantCard({ tenant, plans }: TenantProps) {
                         </Avatar>
                         <div className="overflow-hidden">
                             <h3 className="font-semibold text-slate-900 truncate text-base leading-tight" title={tenant.name}>{tenant.name}</h3>
-                            <p className="text-xs text-slate-400 truncate mt-0.5">admin@exemple.com</p> {/* Placeholder or fetch actual admin email */}
+                            <p className="text-xs text-slate-600 truncate mt-0.5">{tenant.users?.[0]?.email || 'No admin email set'}</p>
                         </div>
                     </div>
 
                     {/* Date Blocks */}
-                    <div className="flex items-center justify-between text-xs text-slate-500 bg-slate-50/50 p-2 rounded-lg border border-slate-100/50">
+                    <div className="flex items-center justify-between text-xs text-slate-700 bg-slate-50/50 p-2 rounded-lg border border-slate-100/50">
                         <div className="flex items-center gap-1.5" title="Creation Date">
                             <Calendar className="w-3.5 h-3.5 text-rose-500" />
-                            <span className="font-medium text-slate-600">{createdDateDisplay}</span>
+                            <span className="font-medium text-slate-800">{createdDateDisplay}</span>
                         </div>
                         <div className="flex items-center gap-1.5" title="Days until Plan Expiry">
                             <Clock className={cn("w-3.5 h-3.5", clockColor)} />
@@ -174,13 +178,13 @@ export function TenantCard({ tenant, plans }: TenantProps) {
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-2 mt-auto">
                         <Button
-                            className="bg-lime-500 hover:bg-lime-600 text-white font-semibold h-9 text-xs"
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold h-9 text-xs shadow-sm"
                             onClick={() => setShowPlan(true)}
                         >
                             Upgrade Plan
                         </Button>
                         <Button
-                            className="bg-green-50 hover:bg-green-100 text-green-600 border-0 font-semibold h-9 text-xs"
+                            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold h-9 text-xs shadow-sm"
                             onClick={() => handleAction('impersonate')}
                         >
                             Admin Hub
@@ -189,7 +193,7 @@ export function TenantCard({ tenant, plans }: TenantProps) {
 
                     {/* Expiry Text */}
                     <div className="text-center">
-                        <p className="text-[10px] text-slate-400 font-medium">
+                        <p className="text-[10px] text-slate-600 font-medium">
                             Plan Expired : {expiredDateDisplay}
                         </p>
                     </div>
@@ -205,21 +209,21 @@ export function TenantCard({ tenant, plans }: TenantProps) {
                         <div className="bg-rose-100 p-1 rounded text-rose-500 group-hover:scale-110 transition-transform">
                             <Users className="w-3 h-3" />
                         </div>
-                        <span className="text-xs font-semibold text-slate-600">{tenant._count?.users ?? 0}</span>
+                        <span className="text-xs font-semibold text-slate-800">{tenant._count?.users ?? 0}</span>
                     </button>
 
                     <div className="flex items-center justify-center gap-1.5 py-3" title="Total Orders">
                         <div className="bg-orange-100 p-1 rounded text-orange-500">
                             <ShoppingBag className="w-3 h-3" />
                         </div>
-                        <span className="text-xs font-semibold text-slate-600">{tenant._count?.orders ?? 0}</span>
+                        <span className="text-xs font-semibold text-slate-800">{tenant._count?.orders ?? 0}</span>
                     </div>
 
                     <div className="flex items-center justify-center gap-1.5 py-3" title="Total Products">
                         <div className="bg-cyan-100 p-1 rounded text-cyan-500">
                             <Package className="w-3 h-3" />
                         </div>
-                        <span className="text-xs font-semibold text-slate-600">{tenant._count?.products ?? 0}</span>
+                        <span className="text-xs font-semibold text-slate-800">{tenant._count?.products ?? 0}</span>
                     </div>
                 </CardFooter>
             </Card>

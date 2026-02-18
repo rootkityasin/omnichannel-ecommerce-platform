@@ -49,7 +49,7 @@ export default function DeviceSetupPage() {
                     <input
                         type="password"
                         placeholder="Enter Setup Token"
-                        className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-slate-900 outline-none transition-all font-mono text-center tracking-widest"
+                        className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-slate-900 outline-none transition-all font-mono text-center tracking-widest text-slate-900 bg-white placeholder:text-slate-400"
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
                     />

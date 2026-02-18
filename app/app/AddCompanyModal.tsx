@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { createTenant } from '@/app/actions/super-admin';
 import { generateImpersonationToken } from '@/app/actions/user';
 import { Loader2, Plus, Building2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ShopType } from '@prisma/client';
 
 export function AddCompanyModal() {
     const [open, setOpen] = useState(false);
@@ -18,7 +20,8 @@ export function AddCompanyModal() {
         name: '',
         slug: '',
         email: '',
-        password: ''
+        password: '',
+        shopType: 'RESTAURANT' as ShopType
     });
 
     const handleCreate = async () => {
@@ -49,7 +52,7 @@ export function AddCompanyModal() {
                 }
 
                 setOpen(false);
-                setFormData({ name: '', slug: '', email: '', password: '' });
+                setFormData({ name: '', slug: '', email: '', password: '', shopType: 'RESTAURANT' });
             } else {
                 toast.error(res.error || "Failed to create company");
             }
@@ -129,12 +132,26 @@ export function AddCompanyModal() {
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             className="col-span-3"
-                            placeholder="(Optional) Default: password123"
                         />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label className="text-right">Shop Type</Label>
+                        <Select
+                            value={formData.shopType}
+                            onValueChange={(val) => setFormData({ ...formData, shopType: val as ShopType })}
+                        >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="RESTAURANT">Restaurant</SelectItem>
+                                <SelectItem value="GROCERY">Grocery</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>Cancel</Button>
                     <Button type="submit" onClick={handleCreate} disabled={isPending} className="bg-emerald-600 hover:bg-emerald-700">
                         {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : 'Create Tenant'}
                     </Button>

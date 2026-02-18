@@ -15,11 +15,11 @@ export default function PlatformLanding() {
                 <div className="grid gap-4">
                     <a
                         href="http://app.localhost:3000"
-                        className="group relative flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-6 py-4 transition-colors hover:bg-white/10 hover:border-teal-500/50"
+                        className="group relative flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-6 py-4 transition-colors hover:bg-white/10 hover:border-purple-500/50"
                     >
                         <div className="flex flex-col text-left">
-                            <span className="font-semibold text-teal-400">Super Admin</span>
-                            <span className="text-xs text-slate-500">Manage Companies</span>
+                            <span className="font-semibold text-purple-400">Admin Login</span>
+                            <span className="text-xs text-slate-500">Platform Access</span>
                         </div>
                         <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
                     </a>

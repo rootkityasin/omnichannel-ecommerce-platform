@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
+import { ShopType } from '@prisma/client';
 
 import { hash } from 'bcryptjs';
 
@@ -27,6 +28,7 @@ export async function createTenant(data: {
     password?: string;
     plan?: string;
     setupFeePaid?: boolean;
+    shopType?: ShopType;
 }) {
     await checkSuperAdmin();
 
@@ -42,7 +44,8 @@ export async function createTenant(data: {
                 siteConfig: {
                     create: {
                         shopName: data.name,
-                        contactEmail: data.email
+                        contactEmail: data.email,
+                        shopType: data.shopType || 'RESTAURANT'
                     }
                 }
             }
@@ -166,6 +169,153 @@ export async function updateTenantUserStatus(userId: string, isBlocked: boolean)
         revalidatePath('/app');
         return { success: true };
     } catch (error) {
+        return { success: false, error: String(error) };
+    }
+}
+
+// --- Tenant Details Management (Super Admin) ---
+
+export async function getTenantDetails(tenantId: string) {
+    await checkSuperAdmin();
+    try {
+        const config = await prisma.siteConfig.findUnique({
+            where: { tenantId }
+        });
+
+        // Fetch tenant to get the slug and primary admin user
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            include: {
+                users: {
+                    where: { role: 'HUB_ADMIN' },
+                    take: 1
+                }
+            }
+        });
+
+        if (!config || !tenant) return { success: false, error: "Tenant configuration not found" };
+
+        return {
+            success: true,
+            data: {
+                ...config,
+                slug: tenant.slug, // Include slug for display
+                tenantName: tenant.name, // Include original tenant name
+                adminEmail: tenant.users[0]?.email || '' // Current primary admin email
+            }
+        };
+    } catch (error) {
+        return { success: false, error: String(error) };
+    }
+}
+
+export async function updateTenantDetails(tenantId: string, data: {
+    shopName: string;
+    shopType: ShopType;
+    contactPhone?: string;
+    contactEmail?: string;
+    contactAddress?: string;
+    logoUrl?: string;
+    measurementUnit?: string;
+    weightUnitValue?: number;
+    volumeUnitValue?: number;
+    adminEmail?: string;
+    adminPassword?: string;
+}) {
+    await checkSuperAdmin();
+    try {
+        // Transaction to ensure everything is updated atomically
+        await prisma.$transaction(async (tx) => {
+            // 1. Update SiteConfig
+            await tx.siteConfig.update({
+                where: { tenantId },
+                data: {
+                    shopName: data.shopName,
+                    shopType: data.shopType,
+                    contactPhone: data.contactPhone,
+                    contactEmail: data.contactEmail,
+                    contactAddress: data.contactAddress,
+                    logoUrl: data.logoUrl,
+                    measurementUnit: data.measurementUnit,
+                    weightUnitValue: data.weightUnitValue,
+                    volumeUnitValue: data.volumeUnitValue
+                }
+            });
+
+            // 2. Update Tenant Name
+            await tx.tenant.update({
+                where: { id: tenantId },
+                data: { name: data.shopName }
+            });
+
+            // 3. Update Admin Credentials if provided
+            if (data.adminEmail || data.adminPassword) {
+                // Check if the provided email is already in use by ANYONE
+                let existingUserWithEmail = null;
+                if (data.adminEmail) {
+                    existingUserWithEmail = await tx.user.findUnique({
+                        where: { email: data.adminEmail.toLowerCase() }
+                    });
+                }
+
+                if (existingUserWithEmail && existingUserWithEmail.tenantId !== tenantId) {
+                    throw new Error(`Email ${data.adminEmail} is already in use by another shop or system user.`);
+                }
+
+                // Find existing primary admin (HUB_ADMIN)
+                const primaryAdmin = await tx.user.findFirst({
+                    where: { tenantId, role: 'HUB_ADMIN' }
+                });
+
+                if (primaryAdmin) {
+                    // Update existing HUB_ADMIN
+                    const updateData: any = {};
+                    if (data.adminEmail) updateData.email = data.adminEmail.toLowerCase();
+                    if (data.adminPassword) {
+                        updateData.password = await hash(data.adminPassword, 12);
+                    }
+
+                    // If target email is taken by ANOTHER user in same tenant, we need to handle it
+                    if (existingUserWithEmail && existingUserWithEmail.id !== primaryAdmin.id) {
+                        // Target email belongs to another user in this tenant. 
+                        // Promote that user and demote/delete the old HUB_ADMIN? 
+                        // Simpler: Just error out and tell them.
+                        throw new Error(`A user with email ${data.adminEmail} already exists in this shop but is not the primary admin. Please remove them or use a different email.`);
+                    }
+
+                    await tx.user.update({
+                        where: { id: primaryAdmin.id },
+                        data: updateData
+                    });
+                } else if (existingUserWithEmail) {
+                    // Email exists in this tenant but not as HUB_ADMIN. Promote them.
+                    const updateData: any = { role: 'HUB_ADMIN' };
+                    if (data.adminPassword) {
+                        updateData.password = await hash(data.adminPassword, 12);
+                    }
+                    await tx.user.update({
+                        where: { id: existingUserWithEmail.id },
+                        data: updateData
+                    });
+                } else if (data.adminEmail) {
+                    // Create a new admin user if none exists
+                    await tx.user.create({
+                        data: {
+                            name: `${data.shopName} Admin`,
+                            email: data.adminEmail.toLowerCase(),
+                            password: await hash(data.adminPassword || 'password123', 12),
+                            role: 'HUB_ADMIN',
+                            tenantId: tenantId
+                        }
+                    });
+                }
+            }
+        });
+
+        revalidatePath('/app');
+        return { success: true };
+    } catch (error) {
+        console.error("Update Tenant Details Error:", error);
         return { success: false, error: String(error) };
     }
 }

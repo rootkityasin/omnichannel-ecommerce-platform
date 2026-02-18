@@ -15,12 +15,37 @@ const useSecureCookies = process.env.NODE_ENV === 'production' && !isLocal;
 const cookiePrefix = useSecureCookies ? '__Secure-' : '';
 const hostPrefix = useSecureCookies ? '__Host-' : '';
 
+/**
+ * Helper to fetch user with retry logic for Accelerate stability
+ */
+async function fetchUserWithRetry(userId: string) {
+    let retries = 0;
+    const MAX_RETRIES = 2;
+    while (retries < MAX_RETRIES) {
+        try {
+            return await prisma.user.findUnique({
+                where: { id: userId },
+                select: { id: true, role: true, permissions: true, tenantId: true, phone: true }
+            });
+        } catch (err: any) {
+            retries++;
+            if (err?.message?.includes('Accelerate') && retries < MAX_RETRIES) {
+                console.warn(`⚠️ Prisma Accelerate transient error (attempt ${retries}/${MAX_RETRIES}). Retrying...`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } else {
+                throw err;
+            }
+        }
+    }
+    return null;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
     secret: process.env.AUTH_SECRET,
     callbacks: {
         ...authConfig.callbacks,
-        async jwt({ token, user, trigger, session }) {
+        async jwt({ token, user }) {
             // 1. Initial Sign In - Copy user data to token
             if (user) {
                 token.id = user.id;
@@ -32,19 +57,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
 
             // 2. Subsequent verification - Check User Existence (Throttled)
-            // Checks at most once every 30 seconds to spare resources while ensuring security
             const now = Date.now();
             const lastChecked = (token.lastChecked as number) || 0;
             const CHECK_INTERVAL = 30 * 1000; // 30 seconds
 
             const tokenId = typeof token.id === 'string' ? token.id : undefined;
 
-            if (!user && tokenId && (now - lastChecked > CHECK_INTERVAL)) {
+            if (tokenId && (now - lastChecked > CHECK_INTERVAL)) {
                 try {
-                    const dbUser = await prisma.user.findUnique({
-                        where: { id: tokenId },
-                        select: { id: true, role: true, permissions: true, tenantId: true, phone: true }
-                    });
+                    const dbUser = await fetchUserWithRetry(tokenId);
 
                     if (!dbUser) {
                         console.log(`❌ Session Invalidated: User ${tokenId} not found in DB`);
@@ -58,7 +79,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     token.lastChecked = now;
 
                 } catch (e) {
-                    console.error("Session Validation Error", e);
+                    console.error("Session Validation Error (Accelerate/DB):", e);
+                    // On transient failure, we DON'T invalidate the session. 
+                    token.lastChecked = now - (CHECK_INTERVAL / 2); // Retry sooner
                 }
             }
             return token;

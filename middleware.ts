@@ -31,8 +31,9 @@ export default async function middleware(req: NextRequest) {
     requestHeaders.set('x-pathname', url.pathname);
 
     // 1. Handle "App" Subdomain (Main Platform Admin)
-    // e.g. app.vercel.pub -> /app
-    if (hostname === `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
+    // ONLY available in development (localhost) as per user request.
+    // In production, 'app' subdomain will be treated as standard tenant route (and 404 if not found).
+    if (hostname === `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}` && process.env.NODE_ENV === 'development') {
         return NextResponse.rewrite(
             new URL(`/app${path === "/" ? "" : path}`, req.url),
             { request: { headers: requestHeaders } }
