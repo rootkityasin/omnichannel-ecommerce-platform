@@ -11,7 +11,7 @@ import { Search, Filter, Plus, X, Phone, Mail, Edit, Trash2, Download, Upload, L
 import { Badge } from '@/components/ui/badge';
 import { getCustomers, bulkImportCustomers, createCustomer, updateCustomer, deleteUser, getCurrentUserRole } from '@/app/actions/user';
 import { toast } from 'sonner';
-import * as XLSX from 'xlsx';
+import readXlsxFile from 'read-excel-file';
 import {
     Dialog,
     DialogContent,
@@ -282,16 +282,22 @@ export default function CustomersPage() {
 
         setIsUploading(true);
         try {
-            const arrayBuffer = await file.arrayBuffer();
-            const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
-            const worksheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[worksheetName];
-            const data = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1 });
+            // Check file type
+            if (!file.name.endsWith('.xlsx')) {
+                toast.error("Currently only .xlsx files are supported for secure import.");
+                setIsUploading(false);
+                return;
+            }
 
-            if (data.length === 0) {
+            const rows = await readXlsxFile(file);
+
+            if (rows.length === 0) {
                 toast.error('File appears to be empty');
                 return;
             }
+
+            // read-excel-file returns rows as array of cells, similar to sheet_to_json with header: 1
+            const data = rows as unknown[][];
 
             const headerIndices = getHeaderIndices(data);
             if (!headerIndices) {
@@ -319,7 +325,7 @@ export default function CustomersPage() {
                 toast.error(result.error || 'Import failed');
             }
         } catch (error) {
-            console.error('XLSX Parsing Error:', error);
+            console.error('Excel Parsing Error:', error);
             toast.error('Error parsing file content');
         } finally {
             setIsUploading(false);

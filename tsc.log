@@ -1,6 +1,0 @@
-﻿app/[domain]/(client)/cart/page.tsx(47,17): error TS2322: Type '{ id: string; tenantId: string | null; isActive: boolean; createdAt: Date; updatedAt: Date; codEnabled: boolean; bkashEnabled: boolean; nagadEnabled: boolean; bkashLogo: string | null; ... 14 more ...; advancePaymentValue: number | null; } | { ...; } | null' is not assignable to type 'PaymentConfig | null'.
-  Type '{ id: string; tenantId: string | null; isActive: boolean; createdAt: Date; updatedAt: Date; codEnabled: boolean; bkashEnabled: boolean; nagadEnabled: boolean; bkashLogo: string | null; ... 14 more ...; advancePaymentValue: number | null; }' is not assignable to type 'PaymentConfig'.
-    Types of property 'bkashAppKey' are incompatible.
-      Type 'string | null' is not assignable to type 'string | undefined'.
-        Type 'null' is not assignable to type 'string | undefined'.
-app/[domain]/admin/settings/invoice/page.tsx(70,34): error TS2559: Type 'InvoiceConfig' has no properties in common with type 'Partial<SiteConfig>'.

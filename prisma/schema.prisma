@@ -8,29 +8,29 @@ datasource db {
 }
 
 model Tenant {
-  id            String   @id @default(cuid())
-  name          String
-  slug          String   @unique
-  customDomain  String?  @unique
-  plan          String   @default("FREE") 
-  setupFee      Int      @default(6000)
-  setupFeePaid  Boolean  @default(false)
-  isActive      Boolean  @default(true)
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  customDomain   String?  @unique
+  plan           String   @default("FREE")
+  setupFee       Int      @default(6000)
+  setupFeePaid   Boolean  @default(false)
+  isActive       Boolean  @default(true)
   enabledModules String[] @default([])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  users         User[]
-  products      Product[]
-  orders        Order[]
-  siteConfig    SiteConfig?
-  paymentConfig PaymentConfig?
+  users          User[]
+  products       Product[]
+  orders         Order[]
+  siteConfig     SiteConfig?
+  paymentConfig  PaymentConfig?
   deliveryConfig DeliveryConfig?
-  hubs          Hub[]
-  categories    Category[]
-  coupons       Coupon[]
-  promos        PromoCard[]
-  auditLogs     AuditLog[]
+  hubs           Hub[]
+  categories     Category[]
+  coupons        Coupon[]
+  promos         PromoCard[]
+  auditLogs      AuditLog[]
 }
 
 model Product {
@@ -72,6 +72,10 @@ model Product {
   category        Category         @relation(fields: [categoryId], references: [id])
   reviews         Review[]
   sections        ProductSection[] @relation("ProductToProductSection")
+
+  @@index([tenantId])
+  @@index([categoryId])
+  @@index([isAvailable])
 }
 
 model ComboItem {
@@ -102,6 +106,9 @@ model OrderItem {
   selectedModifiers String?
   order             Order   @relation(fields: [orderId], references: [id])
   product           Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Category {
@@ -112,6 +119,8 @@ model Category {
   animationType String    @default("AUTO")
   icon          String    @default("Package")
   products      Product[]
+
+  @@index([tenantId])
 }
 
 model PromoCard {
@@ -155,23 +164,23 @@ model SiteConfig {
   termsPolicy     String?  @default("By using our service, you agree to our terms of service.")
 
   // SEO & Social
-  seoTitle        String?
-  seoDescription  String?
-  seoKeywords     String?
-  
-  ogTitle         String?
-  ogDescription   String?
-  ogImage         String?
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
 
   twitterCard        String? @default("summary_large_image")
   twitterTitle       String?
   twitterDescription String?
   twitterImage       String?
 
-  jsonLdType      String? @default("Restaurant")
-  robots          String? @default("index, follow")
-  canonicalUrl    String?
-  sitelinks       Json     @default("[]")
+  jsonLdType   String? @default("Restaurant")
+  robots       String? @default("index, follow")
+  canonicalUrl String?
+  sitelinks    Json    @default("[]")
 
   // Meta CAPI
   metaPixelId     String?
@@ -184,14 +193,14 @@ model SiteConfig {
   socialYoutube   String?
 
   // Invoice Maker Configuration
-  invoiceTheme    String   @default("modern")
-  invoiceDetails  Json     @default("{\"showSeller\": true, \"showBuyer\": true, \"showSignature\": true, \"watermarkOpacity\": 0.1, \"fontSize\": 14}")
+  invoiceTheme   String @default("modern")
+  invoiceDetails Json   @default("{\"showSeller\": true, \"showBuyer\": true, \"showSignature\": true, \"watermarkOpacity\": 0.1, \"fontSize\": 14}")
 
   // LabsMail Lead Integration
-  labsmailBaseUrl         String?
-  labsmailLeadKey         String?
-  labsmailActive          Boolean  @default(false)
-  labsmailLastExportedAt  DateTime?
+  labsmailBaseUrl        String?
+  labsmailLeadKey        String?
+  labsmailActive         Boolean   @default(false)
+  labsmailLastExportedAt DateTime?
 }
 
 model Hub {
@@ -205,30 +214,36 @@ model Hub {
   inventory Inventory[]
   orders    Order[]
   users     User[]
+
+  @@index([tenantId])
 }
 
 model User {
-  id        String    @id @default(cuid())
-  tenantId  String?
-  tenant    Tenant?   @relation(fields: [tenantId], references: [id])
-  name      String
-  email     String    @unique
-  phone     String?   @unique
-  role      Role      @default(USER)
-  permissions String[] @default([])
-  isBlocked   Boolean  @default(false)
-  hubId     String?
-  image     String?
-  password  String?
-  address   String?
-  points    Int       @default(0)
-  status    String    @default("Bronze")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  accounts  Account[]
-  reviews   Review[]
-  sessions  Session[]
-  hub       Hub?      @relation(fields: [hubId], references: [id])
+  id          String    @id @default(cuid())
+  tenantId    String?
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+  name        String
+  email       String    @unique
+  phone       String?   @unique
+  role        Role      @default(USER)
+  permissions String[]  @default([])
+  isBlocked   Boolean   @default(false)
+  hubId       String?
+  image       String?
+  password    String?
+  address     String?
+  points      Int       @default(0)
+  status      String    @default("Bronze")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  accounts    Account[]
+  reviews     Review[]
+  sessions    Session[]
+  hub         Hub?      @relation(fields: [hubId], references: [id])
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([phone])
 }
 
 model Account {
@@ -275,6 +290,9 @@ model Inventory {
   freezer   Freezer? @relation(fields: [freezerId], references: [id])
   hub       Hub      @relation(fields: [hubId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([hubId])
+  @@index([productId])
 }
 
 model Freezer {
@@ -313,27 +331,35 @@ model Coupon {
   usedCount      Int          @default(0)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@index([tenantId])
+  @@index([code])
 }
 
 model Order {
-  id              String      @id @default(cuid())
+  id              String   @id @default(cuid())
   tenantId        String?
-  tenant          Tenant?     @relation(fields: [tenantId], references: [id])
-  orderId         String      @unique
-  status          String      @default("PENDING")
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
+  orderId         String   @unique
+  status          String   @default("PENDING")
   customerName    String
   customerPhone   String
   customerAddress String
-  source          String      @default("WEB")
+  source          String   @default("WEB")
   totalAmount     Int
-  createdAt       DateTime    @default(now())
+  createdAt       DateTime @default(now())
   hubId           String?
   couponCode      String?
   discountAmount  Int?
-  hub             Hub?        @relation(fields: [hubId], references: [id])
+  hub             Hub?     @relation(fields: [hubId], references: [id])
 
-  items           OrderItem[]
-  stockDeducted   Boolean     @default(false)
+  items         OrderItem[]
+  stockDeducted Boolean     @default(false)
+
+  @@index([tenantId])
+  @@index([hubId])
+  @@index([status])
+  @@index([customerPhone])
 }
 
 model PaymentConfig {
@@ -375,20 +401,24 @@ model SecurityLog {
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  tenantId    String?
-  actorName   String   // Who did it (User Name)
-  actorEmail  String   // Who did it (User Email)
-  action      String   // CREATE, UPDATE, DELETE, LOGIN
-  entity      String   // PRODUCT, ORDER, SETTINGS
-  entityId    String?
-  details     String?  // Human readable description
-  metadata    Json?    // Technical Diff { old, new }
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  tenantId   String?
+  actorName  String // Who did it (User Name)
+  actorEmail String // Who did it (User Email)
+  action     String // CREATE, UPDATE, DELETE, LOGIN
+  entity     String // PRODUCT, ORDER, SETTINGS
+  entityId   String?
+  details    String? // Human readable description
+  metadata   Json? // Technical Diff { old, new }
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([action])
+  @@index([createdAt])
 }
 
 model TrustedDevice {
@@ -479,9 +509,9 @@ enum DiscountType {
 enum Role {
   SUPER_ADMIN
   TENANT_ADMIN // Shop Admin (Owner of the domain/shop)
-  HUB_ADMIN    // Branch Manager
-  STAFF        // Worker/Employee
-  USER         // Customer
+  HUB_ADMIN // Branch Manager
+  STAFF // Worker/Employee
+  USER // Customer
 }
 
 model DeliveryConfig {
@@ -502,19 +532,19 @@ model DeliveryConfig {
 }
 
 model TrackingEvent {
-  id              String   @id @default(cuid())
-  eventName       String
-  customerName    String?
-  customerPhone   String?
-  customerEmail   String?
-  customerArea    String?
-  customerCity    String?
-  ipAddress       String?
-  userAgent       String?
-  sourceUrl       String?
-  eventData       Json?
-  rawPayload      Json?
-  createdAt       DateTime @default(now())
+  id            String   @id @default(cuid())
+  eventName     String
+  customerName  String?
+  customerPhone String?
+  customerEmail String?
+  customerArea  String?
+  customerCity  String?
+  ipAddress     String?
+  userAgent     String?
+  sourceUrl     String?
+  eventData     Json?
+  rawPayload    Json?
+  createdAt     DateTime @default(now())
 }
 
 model Plan {

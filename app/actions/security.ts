@@ -59,7 +59,8 @@ export async function authorizeDevice(token: string, userAgentString: string) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production' && !isLocal && !process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost'),
             expires: expiresAt,
-            path: '/'
+            path: '/',
+            sameSite: 'lax'
         });
 
         // Set verification timestamp cookie (for throttling DB checks)
@@ -67,7 +68,8 @@ export async function authorizeDevice(token: string, userAgentString: string) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production' && !isLocal && !process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost'),
             maxAge: 60 * 60 * 2, // 2 hours
-            path: '/'
+            path: '/',
+            sameSite: 'lax'
         });
 
         // Log it

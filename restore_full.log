@@ -1,0 +1,37 @@
+🔄 Starting database restore (Prisma Client)...
+📂 Reading backup from: backups/2026-02-18T18-55-20-551Z
+🔓 Disabling foreign key constraints...
+prisma:error 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied to set parameter "session_replication_role"`
+❌ Restore failed: {
+  "code": "P2010",
+  "meta": {
+    "driverAdapterError": {
+      "name": "DriverAdapterError",
+      "cause": {
+        "originalCode": "42501",
+        "originalMessage": "permission denied to set parameter \"session_replication_role\"",
+        "kind": "postgres",
+        "code": "42501",
+        "severity": "ERROR",
+        "message": "permission denied to set parameter \"session_replication_role\""
+      }
+    }
+  },
+  "clientVersion": "7.4.0",
+  "name": "PrismaClientKnownRequestError"
+}
+PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied to set parameter "session_replication_role"`
+    at zr.handleRequestError (C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at zr.handleAndLogRequestError (C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at zr.request (C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:807:24)
+    at async restore (C:\Users\Rootkit\.gemini\antigravity\scratch\crab-khai\scripts\restore-db.ts:36:9)

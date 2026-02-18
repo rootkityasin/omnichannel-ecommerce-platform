@@ -35,10 +35,31 @@ export async function getCurrentUserRole() {
     return sessionUser?.role || null;
 }
 
+import { z } from 'zod';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { headers } from 'next/headers';
+
+const CreateUserSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    phone: z.string().regex(/^(\+88)?01[3-9]\d{8}$/, "Invalid BD Phone Number"),
+    email: z.string().email("Invalid email address").optional().or(z.literal("")),
+    password: z.string().min(6, "Password must be at least 6 characters").optional(),
+    tenantId: z.string().optional()
+});
+
 // Basic simplified create for signup
 export async function createUser(data: { name: string; phone: string; email?: string; address?: string; password?: string, tenantId?: string }) {
-    // Bot check removed
+    // 1. Rate Limiting (IP-based)
+    const ip = (await headers()).get('x-forwarded-for') || '127.0.0.1';
+    if (!await checkRateLimit(`signup:${ip}`, 3, 60 * 1000)) {
+        return { success: false, error: "Too many signup attempts. Please try again later." };
+    }
 
+    // 2. Input Validation
+    const validation = CreateUserSchema.safeParse(data);
+    if (!validation.success) {
+        return { success: false, error: validation.error.issues[0].message };
+    }
 
     try {
         // Note: data.tenantId should ideally be passed for multi-tenant apps so user is associated with a specific tenant
