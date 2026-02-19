@@ -23,6 +23,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "scripts/*.js",
+    "check_db.js",
+    "parse_lint.js"
   ]),
 ]);
 
