@@ -24,6 +24,14 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Add arguments for build time variables
+ARG DATABASE_URL
+ARG NEXT_PUBLIC_ROOT_DOMAIN
+
+# Pass them as environment variables during build
+ENV DATABASE_URL=$DATABASE_URL
+ENV NEXT_PUBLIC_ROOT_DOMAIN=$NEXT_PUBLIC_ROOT_DOMAIN
+
 RUN npm run build
 
 # Production image, copy all the files and run next
