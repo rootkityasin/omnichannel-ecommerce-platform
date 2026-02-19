@@ -5,11 +5,12 @@ const nextConfig: NextConfig = {
   experimental: {
     esmExternals: true,
     serverActions: {
-      bodySizeLimit: '10mb',
+      bodySizeLimit: "10mb",
     },
   },
 
   // Compiler options
+  output: "standalone",
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
@@ -17,12 +18,12 @@ const nextConfig: NextConfig = {
   // Image Optimization - Allow remote images
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: '*.easykoro.com' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'res.cloudinary.com' },
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com' }, // Google avatars
-      { protocol: 'https', hostname: 'www.transparenttextures.com' },
-      { protocol: 'https', hostname: 'api.dicebear.com' },
+      { protocol: "https", hostname: "*.easykoro.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" }, // Google avatars
+      { protocol: "https", hostname: "www.transparenttextures.com" },
+      { protocol: "https", hostname: "api.dicebear.com" },
     ],
     // Reduce image sizes for faster load
     deviceSizes: [640, 750, 828, 1080, 1200],
@@ -43,7 +44,7 @@ const nextConfig: NextConfig = {
   },
 
   // Optimize server actions
-  serverExternalPackages: ['@prisma/client', 'pg'],
+  serverExternalPackages: ["@prisma/client", "pg"],
 
   // Disable X-Powered-By header
   poweredByHeader: false,
@@ -52,10 +53,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.facebook.net https://*.facebook.com https://*.fbcdn.net https://vercel.live https://*.vercel.live",
@@ -69,37 +70,37 @@ const nextConfig: NextConfig = {
               "frame-ancestors 'self'",
               "upgrade-insecure-requests",
               "report-uri /api/csp-report",
-            ].join('; '),
+            ].join("; "),
           },
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(self)',
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self)",
           },
         ],
       },
       // Cache control for static assets
       {
-        source: '/logo.svg',
+        source: "/logo.svg",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
