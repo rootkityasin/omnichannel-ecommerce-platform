@@ -57,7 +57,7 @@ interface TenantProps {
   }[];
 }
 
-export function TenantCard({ tenant, plans }: TenantProps) {
+export function TenantCard({ tenant, plans }: Readonly<TenantProps>) {
   const [isPending, startTransition] = useTransition();
 
   // State
@@ -152,26 +152,29 @@ export function TenantCard({ tenant, plans }: TenantProps) {
     : 365;
 
   const isExpired = diffDays <= 0;
-  const daysLeftText = !now
-    ? "Calculating..."
-    : isExpired
-      ? "Expired"
-      : `${diffDays} Days Left`;
-  const daysColor = isExpired
-    ? "text-red-600"
-    : diffDays < 30
-      ? "text-orange-600"
-      : "text-slate-600";
-  const clockColor = isExpired
-    ? "text-red-500"
-    : diffDays < 30
-      ? "text-orange-500"
-      : "text-cyan-500";
+
+  let daysLeftText = "Calculating...";
+  if (now) {
+    daysLeftText = isExpired ? "Expired" : `${diffDays} Days Left`;
+  }
+
+  let daysColor = "text-slate-600";
+  if (isExpired) {
+    daysColor = "text-red-600";
+  } else if (diffDays < 30) {
+    daysColor = "text-orange-600";
+  }
+
+  let clockColor = "text-cyan-500";
+  if (isExpired) {
+    clockColor = "text-red-500";
+  } else if (diffDays < 30) {
+    clockColor = "text-orange-500";
+  }
 
   // Format dates for display
   const createdDateDisplay = `${String(createdAt.getDate()).padStart(2, "0")}-${String(createdAt.getMonth() + 1).padStart(2, "0")}-${createdAt.getFullYear()}`;
   const expiredDateDisplay = expiryDateObj.toLocaleDateString("en-US", {
-    month: "short",
     day: "numeric",
     year: "numeric",
   });

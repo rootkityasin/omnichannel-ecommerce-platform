@@ -21,11 +21,8 @@ import {
   Loader2,
   Edit,
   Save,
-  Building2,
   Phone,
-  Mail,
   MapPin,
-  ImageIcon,
   SlidersHorizontal,
   KeyRound,
 } from "lucide-react";
@@ -54,7 +51,7 @@ export function EditCompanyModal({
   tenant,
   open,
   onOpenChange,
-}: EditCompanyModalProps) {
+}: Readonly<EditCompanyModalProps>) {
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
 
@@ -287,7 +284,8 @@ export function EditCompanyModal({
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            weightUnitValue: parseInt(e.target.value) || 0,
+                            weightUnitValue:
+                              Number.parseInt(e.target.value) || 0,
                           })
                         }
                       />
@@ -314,7 +312,8 @@ export function EditCompanyModal({
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            volumeUnitValue: parseInt(e.target.value) || 0,
+                            volumeUnitValue:
+                              Number.parseInt(e.target.value) || 0,
                           })
                         }
                       />

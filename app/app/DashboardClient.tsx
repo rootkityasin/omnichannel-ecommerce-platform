@@ -34,7 +34,10 @@ interface DashboardClientProps {
   }[];
 }
 
-export function DashboardClient({ tenants, plans }: DashboardClientProps) {
+export function DashboardClient({
+  tenants,
+  plans,
+}: Readonly<DashboardClientProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -62,13 +65,13 @@ export function DashboardClient({ tenants, plans }: DashboardClientProps) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-transparent">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            Companies
+            Companies{" "}
             <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-slate-200">
               {filteredTenants.length}
             </span>
           </h1>
           <p className="text-slate-700 text-sm mt-1.5 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>{" "}
             Manage and oversee your platform tenants
           </p>
         </div>
