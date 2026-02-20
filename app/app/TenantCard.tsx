@@ -262,7 +262,7 @@ export function TenantCard({ tenant, plans }: Readonly<TenantProps>) {
                 {tenant.name}
               </h3>
               <p className="text-xs text-slate-600 truncate mt-0.5">
-                {tenant.users?.[0]?.email || "No admin email set"}
+                {tenant.primaryDomain || tenant.customDomain || "No domain set"}
               </p>
             </div>
           </div>

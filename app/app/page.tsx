@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { platformPrisma } from "@/lib/platformPrisma";
 import { DashboardClient } from "./DashboardClient";
 
 export default async function SuperAdminDashboard() {
@@ -14,24 +14,23 @@ export default async function SuperAdminDashboard() {
   while (retries < MAX_RETRIES) {
     try {
       const [_tenants, _plans] = await Promise.all([
-        prisma.tenant.findMany({
-          include: {
-            users: {
-              where: { role: "HUB_ADMIN" },
-              take: 1,
-            },
-            _count: {
-              select: { users: true, orders: true, products: true },
-            },
-          },
+        platformPrisma.tenantRegistry.findMany({
           orderBy: { createdAt: "desc" },
         }),
-        prisma.plan.findMany({
+        platformPrisma.planCatalog.findMany({
           where: { isActive: true },
           orderBy: { sortOrder: "asc" },
         }),
       ]);
-      tenants = _tenants as DashboardProps["tenants"];
+      tenants = (_tenants as unknown as DashboardProps["tenants"]).map(
+        (tenant) => ({
+          ...tenant,
+          plan: (tenant as { planSlug?: string }).planSlug ?? "FREE",
+          isActive: (tenant as { status?: string }).status === "ACTIVE",
+          primaryDomain: (tenant as { primaryDomain?: string }).primaryDomain,
+          _count: { users: 0, orders: 0, products: 0 },
+        }),
+      );
       plans = _plans as DashboardProps["plans"];
       break;
     } catch (err: any) {

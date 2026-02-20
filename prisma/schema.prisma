@@ -3,6 +3,7 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
+
 datasource db {
   provider = "postgresql"
 }

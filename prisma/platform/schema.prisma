@@ -1,0 +1,109 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../../node_modules/@prisma/platform-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  phone       String?  @unique
+  name        String
+  password    String
+  role        String   @default("SUPER_ADMIN")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  accounts    Account[]
+  sessions    Session[]
+}
+
+model TenantRegistry {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  primaryDomain    String   @unique
+  planSlug         String
+  setupFee         Int      @default(6000)
+  setupFeePaid     Boolean  @default(false)
+  status           String   @default("DRAFT")
+  provisioningNote String?
+  adminName        String?
+  adminEmail       String?
+  adminPhone       String?
+  adminPasswordHash String?
+  shopType         String   @default("RESTAURANT")
+  contactPhone     String?
+  contactEmail     String?
+  contactAddress   String?
+  logoUrl          String?
+  measurementUnit  String   @default("PCS")
+  weightUnitValue  Int      @default(200)
+  volumeUnitValue  Int      @default(1000)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model PlanCatalog {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  description   String
+  price         Float
+  originalPrice Float?
+  period        String   @default("/month")
+  features      Json     @default("[]")
+  color         String   @default("bg-slate-500")
+  isActive      Boolean  @default(true)
+  isPopular     Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ProvisioningJob {
+  id            String   @id @default(cuid())
+  tenantId      String
+  status        String   @default("PENDING")
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

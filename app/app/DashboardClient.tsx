@@ -31,6 +31,7 @@ interface DashboardClientProps {
     price: number;
     period: string;
     features: Record<string, unknown>;
+    isActive?: boolean;
   }[];
 }
 
@@ -128,19 +129,21 @@ export function DashboardClient({
                 >
                   All Plans
                 </DropdownMenuItem>
-                {plans.map((plan) => (
-                  <DropdownMenuCheckboxItem
-                    key={plan.id}
-                    checked={selectedPlan === plan.slug}
-                    onCheckedChange={() =>
-                      setSelectedPlan(
-                        selectedPlan === plan.slug ? null : plan.slug,
-                      )
-                    }
-                  >
-                    {plan.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                {plans
+                  .filter((plan) => plan.isActive !== false)
+                  .map((plan) => (
+                    <DropdownMenuCheckboxItem
+                      key={plan.id}
+                      checked={selectedPlan === plan.slug}
+                      onCheckedChange={() =>
+                        setSelectedPlan(
+                          selectedPlan === plan.slug ? null : plan.slug,
+                        )
+                      }
+                    >
+                      {plan.name}
+                    </DropdownMenuCheckboxItem>
+                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
