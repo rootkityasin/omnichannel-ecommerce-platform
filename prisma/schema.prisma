@@ -345,6 +345,7 @@ model Order {
   status          String   @default("PENDING")
   customerName    String
   customerPhone   String
+  customerEmail   String?
   customerAddress String
   source          String   @default("WEB")
   totalAmount     Int

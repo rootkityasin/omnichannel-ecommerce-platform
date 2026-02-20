@@ -218,6 +218,7 @@ export interface OrderItem {
 export interface CheckoutFormData {
   name: string;
   phone: string;
+  email: string;
   area: string;
   address: string;
   [key: string]: string;
@@ -240,6 +241,12 @@ export interface GalleryItem {
   src: string;
   alt: string;
   rotate: number;
+}
+
+export interface GallerySectionContent {
+  title: string;
+  subtitle: string;
+  items: GalleryItem[];
 }
 
 export interface TeamMember {
