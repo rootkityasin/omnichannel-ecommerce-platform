@@ -567,11 +567,13 @@ export function CartEditor() {
           </div>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200 h-[calc(100vh-200px)] overflow-y-auto rounded-b-xl relative font-body text-left">
+        <div
+          className={`bg-slate-50 border border-slate-200 h-[calc(100vh-200px)] ${previewMode === "filled" ? "overflow-hidden" : "overflow-y-auto"} rounded-b-xl relative font-body text-left`}
+        >
           {/* Mock Browser UI */}
           <div className="absolute inset-0 pointer-events-none border-[6px] border-slate-900/5 rounded-b-xl z-50"></div>
 
-          <div className="p-0 min-h-full">
+          <div className="p-0 min-h-full h-full relative">
             {previewMode === "empty" && (
               <div className="flex flex-col items-center justify-center h-[calc(100vh-250px)] w-full p-4 text-center animate-in fade-in zoom-in duration-700 relative bg-white overflow-hidden">
                 <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight font-heading">
@@ -600,23 +602,12 @@ export function CartEditor() {
             )}
 
             {previewMode === "filled" && (
-              <div className="p-4 pb-32 max-w-lg mx-auto">
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                    <h1 className="text-xl font-bold font-heading text-slate-900">
-                      {config.title}
-                    </h1>
-                    <span className="text-xs font-medium text-slate-400">
-                      Preview
-                    </span>
-                  </div>
-                  <iframe
-                    title="Cart preview"
-                    src={previewSrc}
-                    className="w-full h-[780px] pointer-events-none"
-                  />
-                </div>
-              </div>
+              <iframe
+                title="Cart preview"
+                src={previewSrc}
+                className="absolute inset-0 w-full h-full border-0 bg-white"
+                sandbox="allow-scripts allow-same-origin"
+              />
             )}
 
             {previewMode === "success" && (

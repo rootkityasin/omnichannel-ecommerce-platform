@@ -63,7 +63,9 @@ export function AnimatedSearchBar({
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [searchTerm, suggestions.length]);
 
   const performSearch = (term: string) => {

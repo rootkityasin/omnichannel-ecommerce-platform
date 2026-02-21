@@ -86,28 +86,6 @@ export function CartClient({
   // Payment State - Initialize from props
   const siteConfig = initialSiteConfig;
   const cartTexts = initialCartTexts;
-  const previewCartTexts = cartTexts
-    ? {
-        ...cartTexts,
-        emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
-        emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
-        browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
-        title: cartTexts.title || t.cartPage.title,
-        subtotal: cartTexts.subtotal || t.cartPage.subtotal,
-        deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
-        total: cartTexts.total || t.cartPage.total,
-        deliveryDetails:
-          cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
-        confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
-        successTitle: cartTexts.successTitle || t.cartPage.successTitle,
-        successMessage: cartTexts.successMessage || t.cartPage.successMessage,
-        backHome: cartTexts.backHome || t.cartPage.backHome,
-        emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
-        successImage: cartTexts.successImage || "/congrates_animation.gif",
-        fields: cartTexts.fields || [],
-      }
-    : null;
-  const activeCartTexts = isPreview ? previewCartTexts : cartTexts;
 
   // Form State (Default structure + dynamic)
 
@@ -233,6 +211,29 @@ export function CartClient({
   const t = translations[language] as any;
   const fontClass = language !== "en" ? "font-bangla" : "font-body";
   const headingClass = language !== "en" ? "font-bangla" : "font-heading";
+
+  const previewCartTexts = cartTexts
+    ? {
+        ...cartTexts,
+        emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
+        emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
+        browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
+        title: cartTexts.title || t.cartPage.title,
+        subtotal: cartTexts.subtotal || t.cartPage.subtotal,
+        deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
+        total: cartTexts.total || t.cartPage.total,
+        deliveryDetails:
+          cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
+        confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
+        successTitle: cartTexts.successTitle || t.cartPage.successTitle,
+        successMessage: cartTexts.successMessage || t.cartPage.successMessage,
+        backHome: cartTexts.backHome || t.cartPage.backHome,
+        emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
+        successImage: cartTexts.successImage || "/congrates_animation.gif",
+        fields: cartTexts.fields || [],
+      }
+    : null;
+  const activeCartTexts = isPreview ? previewCartTexts : cartTexts;
 
   if (isOrderPlaced) {
     return (

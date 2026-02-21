@@ -27,18 +27,18 @@ export async function generateMetadata({
   else if (config.ogImage) twitterImages = [config.ogImage];
 
   return {
-    title: config.seoTitle || config.shopName || "Premium Store",
+    title: config.shopName || "Store",
     description: config.seoDescription,
     keywords: config.seoKeywords,
     openGraph: {
-      title: config.ogTitle || config.seoTitle || config.shopName,
+      title: config.shopName || "Store",
       description: config.ogDescription || config.seoDescription || undefined,
       images: config.ogImage ? [{ url: config.ogImage }] : undefined,
       type: "website",
     },
     twitter: {
       card: getTwitterCardType(config.twitterCard),
-      title: config.twitterTitle || config.seoTitle || undefined,
+      title: config.shopName || undefined,
       description:
         config.twitterDescription || config.seoDescription || undefined,
       images: twitterImages,

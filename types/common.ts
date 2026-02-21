@@ -315,6 +315,12 @@ export interface CartTexts {
   emptyMessage?: string;
   emptyImage?: string;
   browseMenu?: string;
+  title?: string;
+  subtotal?: string;
+  deliveryFee?: string;
+  total?: string;
+  deliveryDetails?: string;
+  confirmOrder?: string;
   fields?: { id: string; label: string }[];
 }
 
