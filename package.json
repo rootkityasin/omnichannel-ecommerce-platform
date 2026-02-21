@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev",
     "dev:turbo": "next dev --turbo",
-    "build": "prisma generate && prisma generate --schema prisma/platform/schema.prisma && set NEXT_DISABLE_TURBOPACK=1&& node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
+    "build": "prisma generate && prisma generate --schema prisma/platform/schema.prisma && set NEXT_DISABLE_TURBOPACK=1&& node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",

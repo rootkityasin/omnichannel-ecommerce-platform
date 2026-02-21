@@ -250,18 +250,33 @@ function SuccessView({
         </p>
       </div>
 
-      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 w-full max-w-xs mx-auto mt-4">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-gray-500 text-xs">Order ID</span>
-          <span className="font-mono font-bold text-gray-900 text-sm">
-            {successOrder?.id}
-          </span>
+      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 w-full max-w-xs mx-auto mt-4 space-y-3">
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            Billing Information
+          </h3>
+          <div className="mt-2 space-y-1 text-sm text-slate-700">
+            <p className="font-semibold text-slate-900">{formData.name}</p>
+            <p>{formData.email}</p>
+            <p>{formData.phone}</p>
+            <p>
+              {formData.address}, {formData.area}
+            </p>
+          </div>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-gray-500 text-xs">Total Amount</span>
-          <span className="font-bold text-crab-red text-sm">
-            ৳{successOrder?.total}
-          </span>
+        <div className="border-t border-slate-200 pt-3 space-y-1">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-500 text-xs">Order ID</span>
+            <span className="font-mono font-bold text-gray-900 text-sm">
+              {successOrder?.id}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-500 text-xs">Total Amount</span>
+            <span className="font-bold text-crab-red text-sm">
+              ৳{successOrder?.total}
+            </span>
+          </div>
         </div>
       </div>
 
