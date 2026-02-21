@@ -55,8 +55,8 @@ export default async function ReceiptPage({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 print:p-0 print:bg-white">
-      <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100 print:shadow-none print:border-none relative">
+    <div className="min-h-screen bg-slate-50 py-12 px-4 print:p-0 print:bg-white text-slate-900">
+      <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100 print:shadow-none print:border-none relative text-slate-900">
         {config?.logoUrl && (
           <div
             className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
@@ -98,7 +98,7 @@ export default async function ReceiptPage({
               <h2 className="text-xl font-bold uppercase tracking-widest text-slate-800">
                 Receipt
               </h2>
-              <p className="text-xs text-slate-500">Doc No: {order.orderId}</p>
+              <p className="text-xs text-slate-700">Doc No: {order.orderId}</p>
             </div>
           </div>
 
@@ -109,8 +109,12 @@ export default async function ReceiptPage({
                   Billing Details:
                 </h3>
                 <p className="font-bold">{order.customerName}</p>
-                <p className="text-sm">{order.customerAddress}</p>
-                <p className="text-sm font-mono mt-1">{order.customerPhone}</p>
+                <p className="text-sm text-slate-800">
+                  {order.customerAddress}
+                </p>
+                <p className="text-sm font-mono mt-1 text-slate-800">
+                  {order.customerPhone}
+                </p>
               </div>
             )}
             {invoicePrefs.showSeller && (
@@ -119,8 +123,12 @@ export default async function ReceiptPage({
                   Seller Details:
                 </h3>
                 <p className="font-bold">{config?.shopName}</p>
-                <p className="text-sm">{config?.contactAddress}</p>
-                <p className="text-sm font-mono mt-1">{config?.contactPhone}</p>
+                <p className="text-sm text-slate-800">
+                  {config?.contactAddress}
+                </p>
+                <p className="text-sm font-mono mt-1 text-slate-800">
+                  {config?.contactPhone}
+                </p>
               </div>
             )}
           </div>
@@ -153,7 +161,7 @@ export default async function ReceiptPage({
                           <p className="font-semibold text-slate-800">
                             {item.product?.name || "Product"}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-700">
                             #{order.orderId}
                           </p>
                         </div>
@@ -174,7 +182,7 @@ export default async function ReceiptPage({
           <div className="flex justify-end mt-6">
             <div className="w-full max-w-xs space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Subtotal</span>
+                <span className="text-slate-700">Subtotal</span>
                 <span className="font-medium">৳{subtotal}</span>
               </div>
               {discount > 0 && (
@@ -184,7 +192,7 @@ export default async function ReceiptPage({
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-slate-500">Delivery</span>
+                <span className="text-slate-700">Delivery</span>
                 <span className="font-medium">৳{delivery}</span>
               </div>
               <div className="border-t pt-2 flex justify-between font-bold text-base">
@@ -197,17 +205,17 @@ export default async function ReceiptPage({
           {invoicePrefs.showQr && (
             <div className="mt-8 flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500 mb-2">
+                <p className="text-sm text-slate-700 mb-2">
                   receipt #{order.orderId} •{" "}
                   {order.createdAt.toLocaleDateString()}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600">
                   Keep this receipt for your records.
                 </p>
               </div>
               <div className="flex flex-col items-center">
                 <QRCodeSVG value={order.orderId} size={80} />
-                <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">
+                <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">
                   Scan to Verify: {order.orderId}
                 </p>
               </div>
