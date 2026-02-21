@@ -190,21 +190,25 @@ function OrderSummary({
 
         <div className="flex justify-between text-base">
           <span className="text-gray-600">Subtotal ({items.length} items)</span>
-          <span className="font-bold">৳{subTotalAmount}</span>
+          <span className="font-black text-gray-900 font-heading">
+            ৳{subTotalAmount}
+          </span>
         </div>
         <div className="flex justify-between text-base">
           <span className="text-gray-600">Delivery Fee</span>
-          <span className="font-bold">৳{deliveryFee}</span>
+          <span className="font-black text-gray-900 font-heading">
+            ৳{deliveryFee}
+          </span>
         </div>
         {discountAmount > 0 && (
           <div className="flex justify-between text-base text-green-600 font-bold">
             <span>Discount</span>
-            <span>-৳{discountAmount}</span>
+            <span className="font-heading">-৳{discountAmount}</span>
           </div>
         )}
         <div className="border-t border-orange-200 pt-3 flex justify-between text-xl font-black text-crab-red">
           <span>Total to Pay</span>
-          <span>৳{totalAmount}</span>
+          <span className="font-heading">৳{totalAmount}</span>
         </div>
       </div>
 
@@ -273,7 +277,7 @@ function SuccessView({
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-500 text-xs">Total Amount</span>
-            <span className="font-bold text-crab-red text-sm">
+            <span className="font-black text-crab-red text-sm font-heading">
               ৳{successOrder?.total}
             </span>
           </div>
@@ -310,7 +314,7 @@ function CheckoutButton({
       form="checkout-form"
       type="submit"
       disabled={isAnimating}
-      className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6"
+      className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6 font-heading"
       style={{ backgroundColor: "#E60000" }}
     >
       {isAnimating ? (

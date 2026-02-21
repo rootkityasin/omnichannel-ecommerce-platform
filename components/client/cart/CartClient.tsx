@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCartStore } from "@/lib/store";
+import { useCartStore, type CartItem } from "@/lib/store";
 import {
   Minus,
   Plus,
@@ -33,6 +33,17 @@ import {
 import { StickyCartFooter } from "@/components/client/cart/StickyCartFooter";
 import { MobileCartItem } from "@/components/client/cart/MobileCartItem";
 
+const PREVIEW_ITEMS: CartItem[] = [
+  {
+    id: "preview-1",
+    name: "Signature Masala Crab",
+    price: 1200,
+    quantity: 2,
+    image: "",
+  },
+  { id: "preview-2", name: "Fried Rice", price: 350, quantity: 1, image: "" },
+];
+
 import {
   CartTexts,
   PaymentConfig,
@@ -59,6 +70,11 @@ export function CartClient({
   const { settings } = useSettings();
   const searchParams = useSearchParams();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const previewMode = searchParams.get("preview");
+  const isPreview = previewMode !== null;
+
+  const cartItems = isPreview ? PREVIEW_ITEMS : items;
+  const showCheckoutDrawer = isPreview ? false : isCheckoutOpen;
 
   useEffect(() => {
     if (searchParams.get("action") === "checkout") {
@@ -70,6 +86,28 @@ export function CartClient({
   // Payment State - Initialize from props
   const siteConfig = initialSiteConfig;
   const cartTexts = initialCartTexts;
+  const previewCartTexts = cartTexts
+    ? {
+        ...cartTexts,
+        emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
+        emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
+        browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
+        title: cartTexts.title || t.cartPage.title,
+        subtotal: cartTexts.subtotal || t.cartPage.subtotal,
+        deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
+        total: cartTexts.total || t.cartPage.total,
+        deliveryDetails:
+          cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
+        confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
+        successTitle: cartTexts.successTitle || t.cartPage.successTitle,
+        successMessage: cartTexts.successMessage || t.cartPage.successMessage,
+        backHome: cartTexts.backHome || t.cartPage.backHome,
+        emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
+        successImage: cartTexts.successImage || "/congrates_animation.gif",
+        fields: cartTexts.fields || [],
+      }
+    : null;
+  const activeCartTexts = isPreview ? previewCartTexts : cartTexts;
 
   // Form State (Default structure + dynamic)
 
@@ -83,8 +121,10 @@ export function CartClient({
   });
 
   // Tax Calculation
-  const subTotalAmount = total();
-  const discountAmount = discount();
+  const subTotalAmount = isPreview
+    ? PREVIEW_ITEMS.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    : total();
+  const discountAmount = isPreview ? 0 : discount();
   const discountedTotal = Math.max(0, subTotalAmount - discountAmount);
 
   const deliveryFee = 60;
@@ -112,6 +152,12 @@ export function CartClient({
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       toast.error("Invalid email");
+      setIsAnimating(false);
+      return;
+    }
+
+    if (isPreview) {
+      toast.info("Preview mode: orders are disabled.");
       setIsAnimating(false);
       return;
     }
@@ -193,48 +239,76 @@ export function CartClient({
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
         <div className="w-64 h-64 mb-6 flex items-center justify-center overflow-hidden relative">
           <Image
-            src={cartTexts?.successImage || "/congrates_animation.gif"}
+            src={activeCartTexts?.successImage || "/congrates_animation.gif"}
             alt="Order Confirmed"
             fill
             className="object-contain scale-105"
           />
         </div>
         <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${headingClass}`}>
-          {cartTexts?.successTitle || t.cartPage.successTitle}
+          {activeCartTexts?.successTitle || t.cartPage.successTitle}
         </h2>
         <p className={`text-gray-500 mb-8 max-w-xs mx-auto ${fontClass}`}>
-          {cartTexts?.successMessage ||
+          {activeCartTexts?.successMessage ||
             `We'll call you shortly at ${formData.phone}.`}
         </p>
         <Link
           href="/"
           className={`px-8 py-3 bg-crab-red text-white font-bold rounded-xl shadow-lg hover:bg-crab-red/90 transition-all ${fontClass}`}
         >
-          {cartTexts?.backHome || t.cartPage.backHome}
+          {activeCartTexts?.backHome || t.cartPage.backHome}
         </Link>
       </div>
     );
   }
 
-  if (items.length === 0) {
+  if (previewMode === "success") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
+        <div className="w-64 h-64 mb-6 flex items-center justify-center overflow-hidden relative">
+          <Image
+            src={activeCartTexts?.successImage || "/congrates_animation.gif"}
+            alt="Order Confirmed"
+            fill
+            className="object-contain scale-105"
+          />
+        </div>
+        <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${headingClass}`}>
+          {activeCartTexts?.successTitle || t.cartPage.successTitle}
+        </h2>
+        <p className={`text-gray-500 mb-8 max-w-xs mx-auto ${fontClass}`}>
+          {activeCartTexts?.successMessage || t.cartPage.successMessage}
+        </p>
+        <Link
+          href="/"
+          className={`px-8 py-3 bg-crab-red text-white font-bold rounded-xl shadow-lg hover:bg-crab-red/90 transition-all ${fontClass}`}
+        >
+          {activeCartTexts?.backHome || t.cartPage.backHome}
+        </Link>
+      </div>
+    );
+  }
+
+  if (previewMode === "empty") {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100dvh-80px)] w-full p-4 text-center animate-in fade-in zoom-in duration-700 relative bg-white overflow-hidden">
         <h2
           className={`text-3xl md:text-4xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight ${headingClass}`}
         >
-          {cartTexts?.emptyTitle || t.cartPage.emptyTitle}
+          {activeCartTexts?.emptyTitle || t.cartPage.emptyTitle}
         </h2>
-        {(!cartTexts || cartTexts.emptyMessage !== cartTexts.emptyTitle) && (
+        {(!activeCartTexts ||
+          activeCartTexts.emptyMessage !== activeCartTexts.emptyTitle) && (
           <p
             className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
           >
-            {cartTexts?.emptyMessage || t.cartPage.emptyMessage}
+            {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
           </p>
         )}
 
         <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
           <Image
-            src={cartTexts?.emptyImage || "/empty_cart_animation.gif"}
+            src={activeCartTexts?.emptyImage || "/empty_cart_animation.gif"}
             alt="Empty Cart"
             fill
             className="object-contain"
@@ -246,7 +320,47 @@ export function CartClient({
           className={`relative group px-10 md:px-12 py-4 md:py-5 mt-4 md:mt-8 bg-gradient-to-r from-crab-red to-orange-600 text-white text-lg md:text-xl font-bold uppercase tracking-wider rounded-2xl shadow-lg shadow-crab-red/30 hover:shadow-crab-red/40 active:scale-95 transition-all overflow-hidden ${fontClass}`}
         >
           <span className="relative z-10 flex items-center gap-2">
-            {cartTexts?.browseMenu || t.cartPage.browseMenu}
+            {activeCartTexts?.browseMenu || t.cartPage.browseMenu}
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </span>
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+        </Link>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100dvh-80px)] w-full p-4 text-center animate-in fade-in zoom-in duration-700 relative bg-white overflow-hidden">
+        <h2
+          className={`text-3xl md:text-4xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight ${headingClass}`}
+        >
+          {activeCartTexts?.emptyTitle || t.cartPage.emptyTitle}
+        </h2>
+        {(!activeCartTexts ||
+          activeCartTexts.emptyMessage !== activeCartTexts.emptyTitle) && (
+          <p
+            className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
+          >
+            {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
+          </p>
+        )}
+
+        <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
+          <Image
+            src={activeCartTexts?.emptyImage || "/empty_cart_animation.gif"}
+            alt="Empty Cart"
+            fill
+            className="object-contain"
+          />
+        </div>
+
+        <Link
+          href="/menu"
+          className={`relative group px-10 md:px-12 py-4 md:py-5 mt-4 md:mt-8 bg-gradient-to-r from-crab-red to-orange-600 text-white text-lg md:text-xl font-bold uppercase tracking-wider rounded-2xl shadow-lg shadow-crab-red/30 hover:shadow-crab-red/40 active:scale-95 transition-all overflow-hidden ${fontClass}`}
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            {activeCartTexts?.browseMenu || t.cartPage.browseMenu}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </span>
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -260,9 +374,9 @@ export function CartClient({
       <h1
         className={`text-2xl md:text-3xl font-black text-gray-900 mb-6 md:mb-8 ${headingClass}`}
       >
-        My Basket{" "}
+        {activeCartTexts?.title || "My Basket"}{" "}
         <span className="text-gray-400 font-medium text-2xl font-body">
-          ({items.length} Items)
+          ({cartItems.length} Items)
         </span>
       </h1>
 
@@ -278,12 +392,14 @@ export function CartClient({
           {/* Mobile Items List */}
           <div className="md:hidden space-y-3">
             <AnimatePresence mode="popLayout">
-              {items.map((item) => (
+              {cartItems.map((item) => (
                 <MobileCartItem
                   key={item.id}
                   item={item}
-                  onQuantityChange={handleQuantityChange}
-                  onRemove={removeItem}
+                  onQuantityChange={
+                    isPreview ? () => undefined : handleQuantityChange
+                  }
+                  onRemove={isPreview ? () => undefined : removeItem}
                   settings={settings}
                 />
               ))}
@@ -293,7 +409,7 @@ export function CartClient({
           {/* Desktop Items List */}
           <div className="hidden md:block divide-y divide-gray-100">
             <AnimatePresence mode="popLayout">
-              {items.map((item) => (
+              {cartItems.map((item) => (
                 <motion.div
                   layout
                   initial={{ opacity: 0, y: 20 }}
@@ -330,11 +446,11 @@ export function CartClient({
                         </p>
                       </div>
                       <div className="text-right md:hidden">
-                        <span className="font-bold text-gray-900 text-lg block">
+                        <span className="font-bold text-gray-900 text-lg block font-heading">
                           ৳{item.price * item.quantity}
                         </span>
                         {item.quantity > 1 && (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-400 font-heading">
                             ৳{item.price} x{" "}
                             {settings.measurementUnit === "WEIGHT"
                               ? (() => {
@@ -349,7 +465,7 @@ export function CartClient({
                           </span>
                         )}
                       </div>
-                      <span className="hidden md:block font-bold text-gray-900 text-xl">
+                      <span className="hidden md:block font-bold text-gray-900 text-xl font-heading">
                         ৳{item.price * item.quantity}
                       </span>
                     </div>
@@ -361,8 +477,12 @@ export function CartClient({
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             whileHover={{ backgroundColor: "#f3f4f6" }}
-                            className="w-8 h-8 flex items-center justify-center rounded text-gray-600 transition-colors"
-                            onClick={() => handleQuantityChange(item, -1)}
+                            className="w-8 h-8 flex items-center justify-center rounded bg-white border border-gray-200 text-gray-900 shadow-sm transition-colors"
+                            onClick={() =>
+                              isPreview
+                                ? undefined
+                                : handleQuantityChange(item, -1)
+                            }
                           >
                             <Minus className="w-4 h-4" />
                           </motion.button>
@@ -386,15 +506,21 @@ export function CartClient({
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             whileHover={{ backgroundColor: "#f3f4f6" }}
-                            className="w-8 h-8 flex items-center justify-center rounded text-gray-600 transition-colors"
-                            onClick={() => handleQuantityChange(item, 1)}
+                            className="w-8 h-8 flex items-center justify-center rounded bg-white border border-gray-200 text-gray-900 shadow-sm transition-colors"
+                            onClick={() =>
+                              isPreview
+                                ? undefined
+                                : handleQuantityChange(item, 1)
+                            }
                           >
                             <Plus className="w-4 h-4" />
                           </motion.button>
                         </div>
 
                         <button
-                          onClick={() => removeItem(item.id)}
+                          onClick={() =>
+                            isPreview ? undefined : removeItem(item.id)
+                          }
                           className="text-sm font-bold text-gray-400 hover:text-red-500 hover:underline decoration-2 underline-offset-4 transition-colors flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" /> Remove
@@ -423,25 +549,29 @@ export function CartClient({
             <div className="space-y-4 mb-6 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 font-heading">
                   ৳{subTotalAmount}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping & Handling</span>
-                <span className="font-bold text-gray-900">৳{deliveryFee}</span>
+                <span className="font-bold text-gray-900 font-heading">
+                  ৳{deliveryFee}
+                </span>
               </div>
               {taxRate > 0 && (
                 <div className="flex justify-between">
                   <span>Estimated Tax ({taxRate}%)</span>
-                  <span className="font-bold text-gray-900">৳{taxAmount}</span>
+                  <span className="font-bold text-gray-900 font-heading">
+                    ৳{taxAmount}
+                  </span>
                 </div>
               )}
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-green-600 font-medium">
                   <span>Discount {coupon?.code && `(${coupon.code})`}</span>
-                  <span>-৳{discountAmount}</span>
+                  <span className="font-heading">-৳{discountAmount}</span>
                 </div>
               )}
             </div>
@@ -589,35 +719,40 @@ export function CartClient({
       {/* Mobile Sticky Footer with Drawer Form */}
       <StickyCartFooter
         totalAmount={totalAmount}
-        itemCount={items.length}
+        itemCount={cartItems.length}
         onCheckout={handlePlaceOrder}
         isAnimating={isAnimating}
-        isOpen={isCheckoutOpen}
-        onOpenChange={setIsCheckoutOpen}
+        isOpen={showCheckoutDrawer}
+        onOpenChange={isPreview ? () => undefined : setIsCheckoutOpen}
         disabled={
           !formData.phone ||
           !/^(?:\+88|88)?(01[3-9]\d{8})$/.test(formData.phone)
         }
+        isPreview={isPreview}
       >
         <div className="space-y-6">
           <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-6">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-600">Subtotal</span>
-              <span className="font-bold">৳{subTotalAmount}</span>
+              <span className="font-black font-heading text-gray-900">
+                ৳{subTotalAmount}
+              </span>
             </div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-600">Delivery</span>
-              <span className="font-bold">৳{deliveryFee}</span>
+              <span className="font-black font-heading text-gray-900">
+                ৳{deliveryFee}
+              </span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-sm text-green-600 font-bold mb-2">
                 <span>Discount</span>
-                <span>-৳{discountAmount}</span>
+                <span className="font-heading">-৳{discountAmount}</span>
               </div>
             )}
             <div className="border-t border-orange-200 mt-2 pt-2 flex justify-between text-base font-black text-crab-red">
               <span>Total</span>
-              <span>৳{totalAmount}</span>
+              <span className="font-heading">৳{totalAmount}</span>
             </div>
           </div>
 
@@ -689,7 +824,7 @@ export function CartClient({
                 onValueChange={(val) => setFormData({ ...formData, area: val })}
                 required
               >
-                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20">
+                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-gray-900">
                   <SelectValue placeholder="Area" />
                 </SelectTrigger>
                 <SelectContent>
