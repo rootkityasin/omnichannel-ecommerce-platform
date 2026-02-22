@@ -26,9 +26,12 @@ export default async function middleware(req: NextRequest) {
   const rootDomain = getRootDomain();
 
   // Get hostname (e.g. vercel.pub, crabkhai.com)
-  const hostname = req.headers
+  const rawHostname = req.headers
     .get("host")!
     .replace(".localhost:3000", `.${rootDomain}`);
+  const hostname = rawHostname.startsWith(`www.${rootDomain}`)
+    ? rootDomain
+    : rawHostname;
 
   const searchParams = req.nextUrl.searchParams.toString();
   const path =
