@@ -7,14 +7,14 @@ import { getTenantByDomain } from "./tenant";
 export async function getSections(domain?: string) {
   try {
     const tenant = domain ? await getTenantByDomain(domain) : null;
+    if (domain && !tenant) return [];
+
+    const tenantFilter = tenant?.id
+      ? { products: { some: { tenantId: tenant.id } } }
+      : undefined;
 
     const sections = await prisma.productSection.findMany({
-      where: domain
-        ? {
-            // For now, ProductSection doesn't have tenantId.
-            // We handle this similarly to HeroSlide stop-gap.
-          }
-        : undefined,
+      where: domain ? tenantFilter : undefined,
       orderBy: { order: "asc" },
       include: {
         _count: {
@@ -22,8 +22,6 @@ export async function getSections(domain?: string) {
         },
       },
     });
-
-    if (domain && !tenant) return [];
     return sections;
   } catch (error) {
     console.error("Failed to fetch sections:", error);
@@ -38,19 +36,23 @@ export async function getHomeSections(domain?: string) {
         const tenant = domain ? await getTenantByDomain(domain) : null;
         if (domain && !tenant) return [];
 
+        const productFilter = domain
+          ? { tenantId: tenant?.id || "__no_tenant__", isAvailable: true }
+          : { isAvailable: true };
+
+        const sectionFilter = domain
+          ? {
+              isActive: true,
+              products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
+            }
+          : { isActive: true };
+
         let sections = await prisma.productSection.findMany({
-          where: {
-            isActive: true,
-          },
+          where: sectionFilter,
           orderBy: { order: "asc" },
           include: {
             products: {
-              where: domain
-                ? {
-                    tenantId: tenant?.id || "none",
-                    isAvailable: true,
-                  }
-                : { isAvailable: true },
+              where: productFilter,
               orderBy: { createdAt: "desc" },
               take: 12, // Limit to recent 12 products per section
               select: {
@@ -81,11 +83,11 @@ export async function getHomeSections(domain?: string) {
 
           // Re-fetch after seeding
           sections = await prisma.productSection.findMany({
-            where: { isActive: true },
+            where: sectionFilter,
             orderBy: { order: "asc" },
             include: {
               products: {
-                where: domain ? { tenantId: tenant?.id || "none" } : undefined,
+                where: productFilter,
                 orderBy: { createdAt: "desc" },
                 take: 12,
                 select: {
