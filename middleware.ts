@@ -6,6 +6,7 @@ import {
   isSuperAdminEnabled,
   isTenantMode,
 } from "@/lib/deployment";
+import { encodeHost, normalizeHost } from "@/lib/domain";
 
 export const config = {
   matcher: [
@@ -26,12 +27,12 @@ export default async function middleware(req: NextRequest) {
   const rootDomain = getRootDomain();
 
   // Get hostname (e.g. vercel.pub, crabkhai.com)
-  const rawHostname = req.headers
-    .get("host")!
-    .replace(".localhost:3000", `.${rootDomain}`);
-  const hostname = rawHostname.startsWith(`www.${rootDomain}`)
-    ? rootDomain
-    : rawHostname;
+  const rawHostHeader = req.headers.get("host") || "";
+  const normalizedHost = normalizeHost(
+    rawHostHeader.replace(".localhost:3000", `.${rootDomain}`),
+  );
+  const hostname = normalizedHost;
+  const safeHost = encodeHost(hostname);
 
   const searchParams = req.nextUrl.searchParams.toString();
   const path =
@@ -61,9 +62,9 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  if (hostname === "localhost:3000" || hostname === rootDomain) {
+  if (hostname === "localhost" || hostname === rootDomain) {
     if (isTenantMode) {
-      return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url), {
+      return NextResponse.rewrite(new URL(`/${safeHost}${path}`, req.url), {
         request: { headers: requestHeaders },
       });
     }
@@ -84,7 +85,7 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url), {
+  return NextResponse.rewrite(new URL(`/${safeHost}${path}`, req.url), {
     request: {
       headers: requestHeaders,
     },

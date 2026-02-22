@@ -5,6 +5,7 @@ import { revalidatePath, unstable_cache } from "next/cache";
 import { Prisma, ShopType } from "@prisma/client";
 import { auth } from "@/auth";
 import { isTenantMode } from "@/lib/deployment";
+import { decodeHost, normalizeHost } from "@/lib/domain";
 import type { SiteConfig } from "@/types/common";
 
 type JsonObject = Record<string, unknown>;
@@ -76,17 +77,18 @@ const getPublicSiteConfig = unstable_cache(
     try {
       console.log(`[getPublicSiteConfig] Fetching for domain: ${domain}`);
 
-      // Normalize domain to handle www. similar to getTenantByDomain
-      const normalized = domain.toLowerCase().replace("www.", "");
+      // Normalize domain to handle encoded host + www
+      const decoded = decodeHost(domain);
+      const normalized = normalizeHost(decoded);
       const subdomain = normalized.split(".")[0];
 
       let tenant = await prisma.tenant.findFirst({
         where: {
           OR: [
             { slug: subdomain },
-            { customDomain: domain },
+            { customDomain: decoded },
             { customDomain: normalized },
-            { slug: domain },
+            { slug: decoded },
           ],
         },
         select: {

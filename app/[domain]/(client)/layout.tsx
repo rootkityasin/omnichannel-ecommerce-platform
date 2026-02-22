@@ -3,6 +3,7 @@ import { BottomNav } from "@/components/client/BottomNav";
 import { ThemeInjector } from "@/components/client/ThemeInjector";
 import PageTransition from "@/components/PageTransition";
 import { getSiteConfig } from "@/app/actions/settings";
+import { decodeHost } from "@/lib/domain";
 import { DesktopNavbar } from "@/components/client/DesktopNavbar";
 import { CartDrawer } from "@/components/client/CartDrawer";
 import { DynamicCheckout } from "@/components/client/DynamicCheckout";
@@ -21,7 +22,8 @@ export async function generateMetadata({
   params: Promise<{ domain: string }>;
 }): Promise<Metadata> {
   const { domain } = await params;
-  const config = await getSiteConfig(domain);
+  const decodedDomain = decodeHost(domain);
+  const config = await getSiteConfig(decodedDomain);
   let twitterImages: string[] = [];
   if (config.twitterImage) twitterImages = [config.twitterImage];
   else if (config.ogImage) twitterImages = [config.ogImage];
@@ -61,7 +63,8 @@ export default async function ClientLayout({
   params: Promise<{ domain: string }>;
 }>) {
   const { domain } = await params;
-  const config = await getSiteConfig(domain);
+  const decodedDomain = decodeHost(domain);
+  const config = await getSiteConfig(decodedDomain);
   const activePromo = await getActivePromo(config.tenantId);
 
   // ... (JSON-LD construction remains same)
@@ -71,7 +74,7 @@ export default async function ClientLayout({
     "@context": "https://schema.org",
     "@type": config.jsonLdType || "Restaurant",
     name: config.shopName,
-    url: config.canonicalUrl || `https://${domain}`,
+    url: config.canonicalUrl || `https://${decodedDomain}`,
     logo: config.logoUrl,
     description: config.seoDescription,
     address: {
