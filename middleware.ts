@@ -27,7 +27,8 @@ export default async function middleware(req: NextRequest) {
   const rootDomain = getRootDomain();
 
   // Get hostname (e.g. vercel.pub, crabkhai.com)
-  const rawHostHeader = req.headers.get("host") || "";
+  const rawHostHeader =
+    req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
   const normalizedHost = normalizeHost(
     rawHostHeader.replace(".localhost:3000", `.${rootDomain}`),
   );
