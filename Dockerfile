@@ -63,4 +63,4 @@ EXPOSE 3003
 ENV PORT 3003
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "node scripts/verify-standalone.js && node server.js"]
