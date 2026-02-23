@@ -3,7 +3,6 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getTenantByDomain } from "./tenant";
-import { decodeHost } from "@/lib/domain";
 import type { Prisma } from "@prisma/client";
 
 type HeroSlideInput = Omit<Prisma.HeroSlideCreateInput, "order"> & {
@@ -12,14 +11,11 @@ type HeroSlideInput = Omit<Prisma.HeroSlideCreateInput, "order"> & {
 
 export async function getHeroSlides(domain?: string) {
   try {
-    const decodedDomain = domain ? decodeHost(domain) : undefined;
-    const tenant = decodedDomain
-      ? await getTenantByDomain(decodedDomain)
-      : null;
+    const tenant = domain ? await getTenantByDomain(domain) : null;
 
     // Note: HeroSlide currently has no tenantId in schema.
     // Using a stop-gap: If domain is provided but tenant not resolved, return nothing.
-    if (decodedDomain && !tenant) return [];
+    if (domain && !tenant) return [];
 
     const slides = await prisma.heroSlide.findMany({
       orderBy: { order: "asc" },

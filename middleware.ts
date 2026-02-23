@@ -69,7 +69,7 @@ export default async function middleware(req: NextRequest) {
 
   if (hostname === "localhost" || hostname === rootDomain) {
     if (isTenantMode) {
-      return NextResponse.rewrite(new URL(`/${safeHost}${path}`, req.url), {
+      return NextResponse.rewrite(new URL(`/[domain]${path}`, req.url), {
         request: { headers: requestHeaders },
       });
     }
@@ -90,7 +90,7 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  return NextResponse.rewrite(new URL(`/${safeHost}${path}`, req.url), {
+  return NextResponse.rewrite(new URL(`/[domain]${path}`, req.url), {
     request: {
       headers: requestHeaders,
     },

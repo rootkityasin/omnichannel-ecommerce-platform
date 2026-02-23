@@ -3,7 +3,6 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getTenantByDomain } from "./tenant";
-import { decodeHost } from "@/lib/domain";
 
 import { auth } from "@/auth";
 
@@ -12,8 +11,7 @@ export async function getCategories(domain?: string) {
     let tenantId: string | undefined;
 
     if (domain) {
-      const decodedDomain = decodeHost(domain);
-      const tenant = await getTenantByDomain(decodedDomain);
+      const tenant = await getTenantByDomain(domain);
       tenantId = tenant?.id;
     }
 

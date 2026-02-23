@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { getHeroSlides } from "@/app/actions/hero";
 import { getSiteConfig } from "@/app/actions/settings";
 import { getCategories } from "@/app/actions/category";
-import { decodeHost } from "@/lib/domain";
 import { HomeClient } from "@/components/client/HomeClient";
 import { HomeSections } from "@/components/server/HomeSections";
 
@@ -12,17 +11,16 @@ export default async function DomainHome({
   params,
 }: Readonly<{ params: Promise<{ domain: string }> }>) {
   const { domain } = await params;
-  const decodedDomain = decodeHost(domain);
   const [heroSlides, config, categories] = await Promise.all([
-    getHeroSlides(decodedDomain),
-    getSiteConfig(decodedDomain),
-    getCategories(decodedDomain),
+    getHeroSlides(domain),
+    getSiteConfig(domain),
+    getCategories(domain),
   ]);
 
   return (
     <HomeClient heroSlides={heroSlides} config={config} categories={categories}>
       <Suspense fallback={<SectionsLoading />}>
-        <HomeSections domain={decodedDomain} />
+        <HomeSections domain={domain} />
       </Suspense>
     </HomeClient>
   );

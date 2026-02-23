@@ -3,22 +3,18 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
 import { getTenantByDomain } from "./tenant";
-import { decodeHost } from "@/lib/domain";
 
 export async function getSections(domain?: string) {
   try {
-    const decodedDomain = domain ? decodeHost(domain) : undefined;
-    const tenant = decodedDomain
-      ? await getTenantByDomain(decodedDomain)
-      : null;
-    if (decodedDomain && !tenant) return [];
+    const tenant = domain ? await getTenantByDomain(domain) : null;
+    if (domain && !tenant) return [];
 
     const tenantFilter = tenant?.id
       ? { products: { some: { tenantId: tenant.id } } }
       : undefined;
 
     const sections = await prisma.productSection.findMany({
-      where: decodedDomain ? tenantFilter : undefined,
+      where: domain ? tenantFilter : undefined,
       orderBy: { order: "asc" },
       include: {
         _count: {
@@ -37,17 +33,14 @@ export async function getHomeSections(domain?: string) {
   return unstable_cache(
     async () => {
       try {
-        const decodedDomain = domain ? decodeHost(domain) : undefined;
-        const tenant = decodedDomain
-          ? await getTenantByDomain(decodedDomain)
-          : null;
-        if (decodedDomain && !tenant) return [];
+        const tenant = domain ? await getTenantByDomain(domain) : null;
+        if (domain && !tenant) return [];
 
-        const productFilter = decodedDomain
+        const productFilter = domain
           ? { tenantId: tenant?.id || "__no_tenant__", isAvailable: true }
           : { isAvailable: true };
 
-        const sectionFilter = decodedDomain
+        const sectionFilter = domain
           ? {
               isActive: true,
               products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
