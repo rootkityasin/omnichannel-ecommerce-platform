@@ -2,9 +2,8 @@ const fs = require("fs");
 
 const requiredPaths = [
   "./server.js",
-  "./.next/BUILD_ID",
   "./.next/required-server-files.json",
-  "./.next/server",
+  "./.next/static",
 ];
 
 const missing = requiredPaths.filter((entry) => !fs.existsSync(entry));
