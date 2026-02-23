@@ -6,7 +6,7 @@ import {
   isSuperAdminEnabled,
   isTenantMode,
 } from "@/lib/deployment";
-import { encodeHost, normalizeHost } from "@/lib/domain";
+import { normalizeHost } from "@/lib/domain";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export async function GET() {
     rawProto,
     rootDomain,
     normalizedHost,
-    safeHost: encodeHost(normalizedHost || rootDomain),
+    slug: (normalizedHost || rootDomain).split(".")[0],
     deploymentMode: isTenantMode ? "tenant" : "platform",
     isPlatformMode,
     isSuperAdminEnabled,

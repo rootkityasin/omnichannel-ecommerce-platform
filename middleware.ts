@@ -6,7 +6,7 @@ import {
   isSuperAdminEnabled,
   isTenantMode,
 } from "@/lib/deployment";
-import { encodeHost, normalizeHost } from "@/lib/domain";
+import { normalizeHost } from "@/lib/domain";
 
 export const config = {
   matcher: [
@@ -21,25 +21,32 @@ export const config = {
   ],
 };
 
+/** Extract the slug (subdomain) from a hostname */
+const getSlug = (hostname: string) => {
+  const parts = hostname.split(".");
+  // For 'crabkhai.com' → 'crabkhai', for 'shop.90slabs.com' → 'shop'
+  return parts.length >= 2 ? parts[0] : hostname;
+};
+
 export default async function middleware(req: NextRequest) {
   const url = req.nextUrl;
 
   const rootDomain = getRootDomain();
 
-  // Get hostname (e.g. vercel.pub, crabkhai.com)
+  // Get hostname (e.g. crabkhai.com)
   const rawHostHeader =
     req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
   const normalizedHost = normalizeHost(
     rawHostHeader.replace(".localhost:3000", `.${rootDomain}`),
   );
   const hostname = normalizedHost;
-  const safeHost = encodeHost(hostname);
+  const slug = getSlug(hostname);
 
   const searchParams = req.nextUrl.searchParams.toString();
   const path =
     searchParams.length > 0 ? `${url.pathname}?${searchParams}` : url.pathname;
 
-  if (safeHost && url.pathname.startsWith(`/${safeHost}`)) {
+  if (slug && url.pathname.startsWith(`/${slug}`)) {
     return NextResponse.next();
   }
 
@@ -69,7 +76,7 @@ export default async function middleware(req: NextRequest) {
 
   if (hostname === "localhost" || hostname === rootDomain) {
     if (isTenantMode) {
-      return NextResponse.rewrite(new URL(`/${safeHost}${path}`, req.url), {
+      return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
         request: { headers: requestHeaders },
       });
     }
@@ -90,7 +97,7 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  return NextResponse.rewrite(new URL(`/${safeHost}${path}`, req.url), {
+  return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
     request: {
       headers: requestHeaders,
     },
