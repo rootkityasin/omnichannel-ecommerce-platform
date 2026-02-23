@@ -22,7 +22,7 @@ COPY . .
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# ENV NEXT_TELEMETRY_DISABLED=1
 
 # Add arguments for build time variables
 ARG DATABASE_URL
@@ -32,40 +32,37 @@ ARG NEXT_PUBLIC_ROOT_DOMAIN
 ENV DATABASE_URL=${DATABASE_URL}
 ENV NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN}
 
-RUN npm run build
-
-# Ensure client reference manifests exist (fails build if missing)
-RUN node scripts/verify-standalone.js
+RUN npm run build:docker
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy public assets
 COPY --from=builder /app/public ./public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Copy build output
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/scripts ./scripts
+# Copy standalone output (includes server.js + pruned node_modules)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# Copy static assets (not included in standalone output)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3003
 
-ENV PORT 3003
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3003
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "node scripts/verify-standalone.js && npm run start -- --port 3003"]
+# Use standalone server.js directly instead of next start
+CMD ["node", "server.js"]

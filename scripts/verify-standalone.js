@@ -1,32 +1,18 @@
 const fs = require("fs");
 
-const requiredPaths = ["./.next/required-server-files.json", "./.next/static"];
-
-const manifestCandidates = [
-  "./.next/server/app/[domain]/page_client-reference-manifest.js",
-  "./.next/server/app/[domain]/(client)/page_client-reference-manifest.js",
-];
+const requiredPaths = ["./.next/standalone/server.js", "./.next/static"];
 
 const missing = requiredPaths.filter((entry) => !fs.existsSync(entry));
 
 if (missing.length) {
   console.error(
-    "[Startup Check] Missing Next.js build artifacts:",
+    "[Build Check] Missing Next.js standalone build artifacts:",
     missing.join(", "),
   );
   console.error(
-    "[Startup Check] Rebuild without cache and ensure .next is copied.",
+    "[Build Check] Ensure output: 'standalone' is set in next.config.ts and rebuild.",
   );
   process.exit(1);
 }
 
-const manifestExists = manifestCandidates.some((entry) => fs.existsSync(entry));
-
-if (!manifestExists) {
-  console.error(
-    "[Build Check] Missing client reference manifest (checked:",
-    manifestCandidates.join(", "),
-    ")",
-  );
-  process.exit(1);
-}
+console.log("[Build Check] Standalone build artifacts verified successfully.");
