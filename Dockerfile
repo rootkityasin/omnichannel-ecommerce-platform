@@ -35,7 +35,7 @@ ENV NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN}
 RUN npm run build
 
 # Ensure client reference manifests exist (fails build if missing)
-RUN node -e "const fs=require('fs');const path=require('path');const base=path.join(process.cwd(),'.next','server','app','[domain]','(client)');const file=path.join(base,'page_client-reference-manifest.js');if(!fs.existsSync(file)){console.error('[Build Check] Missing',file);process.exit(1)}"
+RUN node scripts/verify-standalone.js
 
 # Production image, copy all the files and run next
 FROM base AS runner
