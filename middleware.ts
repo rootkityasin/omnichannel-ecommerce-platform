@@ -39,6 +39,10 @@ export default async function middleware(req: NextRequest) {
   const path =
     searchParams.length > 0 ? `${url.pathname}?${searchParams}` : url.pathname;
 
+  if (safeHost && url.pathname.startsWith(`/${safeHost}`)) {
+    return NextResponse.next();
+  }
+
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-pathname", url.pathname);
 
