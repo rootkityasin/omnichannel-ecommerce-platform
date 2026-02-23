@@ -1,10 +1,6 @@
 const fs = require("fs");
 
-const requiredPaths = [
-  "./server.js",
-  "./.next/required-server-files.json",
-  "./.next/static",
-];
+const requiredPaths = ["./.next/required-server-files.json", "./.next/static"];
 
 const missing = requiredPaths.filter((entry) => !fs.existsSync(entry));
 
@@ -14,7 +10,7 @@ if (missing.length) {
     missing.join(", "),
   );
   console.error(
-    "[Startup Check] Rebuild without cache and ensure .next/standalone is copied.",
+    "[Startup Check] Rebuild without cache and ensure .next is copied.",
   );
   process.exit(1);
 }
