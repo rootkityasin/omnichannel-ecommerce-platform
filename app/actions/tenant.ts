@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
-import { normalizeHost } from "@/lib/domain";
+import { normalizeHost, decodeHost } from "@/lib/domain";
 
 /**
  * Resolves a tenant by its domain (custom domain or subdomain slug).
@@ -13,7 +13,8 @@ export const getTenantByDomain = unstable_cache(
     if (!domain) return null;
 
     try {
-      const normalized = normalizeHost(domain);
+      const decoded = decodeHost(domain);
+      const normalized = normalizeHost(decoded);
       const subdomain = normalized.split(".")[0];
 
       const tenant = await prisma.tenant.findFirst({
