@@ -1,17 +1,16 @@
 import type { Metadata, Viewport } from "next";
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
 };
 import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
-import { Toaster } from '@/components/ui/sonner';
-import PromoPopup from '@/components/client/PromoPopup';
-import SessionProvider from '@/components/providers/SessionProvider';
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "@/components/ui/sonner";
+import PromoPopup from "@/components/client/PromoPopup";
+import SessionProvider from "@/components/providers/SessionProvider";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -20,8 +19,8 @@ const inter = Inter({
 });
 
 const hindSiliguri = Hind_Siliguri({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['bengali'],
+  weight: ["400", "500", "600", "700"],
+  subsets: ["bengali"],
   variable: "--font-hind",
 });
 
@@ -32,13 +31,11 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "Omnichannel Ecommerce Platform",
-  description: "Enterprise-grade multi-tenant e-commerce suite for scalability and security.",
+  description:
+    "Enterprise-grade multi-tenant e-commerce suite for scalability and security.",
 };
 
-// remove imports
-import { getSiteConfig } from '@/app/actions/settings';
-import { ThemeInjector } from '@/components/client/ThemeInjector';
-import { SettingsProvider } from '@/components/providers/SettingsProvider';
+import { SettingsProvider } from "@/components/providers/SettingsProvider";
 
 export default function RootLayout({
   children,
@@ -57,12 +54,6 @@ export default function RootLayout({
               {children}
               <PromoPopup />
               <Toaster richColors position="top-center" />
-              {process.env.NODE_ENV === 'production' && (
-                <>
-                  <SpeedInsights />
-                  <Analytics />
-                </>
-              )}
             </SettingsProvider>
           </SessionProvider>
         </main>
