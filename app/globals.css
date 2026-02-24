@@ -164,13 +164,15 @@
     color: #94a3b8;
   }
 
-  /* Admin dropdowns / popovers */
-  .admin-shell [data-radix-popper-content-wrapper] {
-    color: #0f172a;
+  /* Admin dropdowns / popovers — Radix Portals render at <body> level, OUTSIDE .admin-shell */
+  [data-radix-popper-content-wrapper] {
+    color: #0f172a !important;
+    z-index: 50;
   }
 }
 
 @layer base {
+
   .client-shell h1,
   .client-shell h2,
   .client-shell h3,
@@ -361,13 +363,9 @@
 @keyframes enter {
   from {
     opacity: var(--tw-enter-opacity, 1);
-    transform: translate3d(
-        var(--tw-enter-translate-x, 0),
+    transform: translate3d(var(--tw-enter-translate-x, 0),
         var(--tw-enter-translate-y, 0),
-        0
-      )
-      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), 1)
-      rotate(var(--tw-enter-rotate, 0));
+        0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), 1) rotate(var(--tw-enter-rotate, 0));
   }
 }
 
