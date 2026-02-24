@@ -227,6 +227,13 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
+  // Force table view for GROCERY shops — no kanban allowed
+  useEffect(() => {
+    if (config.shopType === "GROCERY") {
+      setView("table");
+    }
+  }, [config.shopType]);
+
   // Helper for Edit Click
   const handleEditClick = async (product: { id: string }) => {
     // Reset state first to avoid stale data
