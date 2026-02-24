@@ -75,6 +75,22 @@ const getPublicSiteConfig = unstable_cache(
     };
 
     try {
+      // Skip DB lookup for known static-asset paths (not real domains)
+      const STATIC_PATHS = [
+        "robots.txt",
+        "favicon.ico",
+        "sitemap.xml",
+        "sitemap-0.xml",
+        "manifest.json",
+        "sw.js",
+      ];
+      if (
+        STATIC_PATHS.includes(domain) ||
+        STATIC_PATHS.includes(domain.split("/").pop() || "")
+      ) {
+        return defaults;
+      }
+
       console.log(`[getPublicSiteConfig] Fetching for domain: ${domain}`);
 
       // Normalize domain to handle www

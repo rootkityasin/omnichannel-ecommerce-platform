@@ -53,6 +53,17 @@ export default async function middleware(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-pathname", url.pathname);
 
+  // Admin device-setup guard — must run BEFORE any rewrites
+  const isAdminRoute = url.pathname.startsWith("/admin");
+  const isDeviceSetup = url.pathname.includes("/admin/security/device-setup");
+  const isTrusted = req.cookies.get("trusted_device");
+
+  if (isAdminRoute && !isDeviceSetup && !isTrusted) {
+    return NextResponse.redirect(
+      new URL("/admin/security/device-setup", req.url),
+    );
+  }
+
   const isAppHost = hostname === `app.${rootDomain}`;
 
   if (isTenantMode && (isAppHost || url.pathname.startsWith("/app"))) {
@@ -84,16 +95,6 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.rewrite(
       new URL(`/home${path === "/" ? "" : path}`, req.url),
       { request: { headers: requestHeaders } },
-    );
-  }
-
-  const isAdminRoute = url.pathname.startsWith("/admin");
-  const isDeviceSetup = url.pathname.includes("/admin/security/device-setup");
-  const isTrusted = req.cookies.get("trusted_device");
-
-  if (isAdminRoute && !isDeviceSetup && !isTrusted) {
-    return NextResponse.redirect(
-      new URL("/admin/security/device-setup", req.url),
     );
   }
 

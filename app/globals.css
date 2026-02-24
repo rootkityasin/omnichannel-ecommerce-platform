@@ -102,6 +102,74 @@
   }
 }
 
+/* ─── Admin Panel: Force light theme & readable text ─── */
+@layer base {
+  .admin-shell {
+    /* Reset CSS variables to light theme (prevents ThemeInjector bleed) */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 82%;
+    --input: 0 0% 82%;
+    --ring: 0 0% 3.9%;
+
+    /* Force dark text on all elements */
+    color: #0f172a;
+  }
+
+  /* Admin text elements: ensure all text is visible on white/gray backgrounds */
+  .admin-shell h1,
+  .admin-shell h2,
+  .admin-shell h3,
+  .admin-shell h4,
+  .admin-shell h5,
+  .admin-shell h6,
+  .admin-shell p,
+  .admin-shell span,
+  .admin-shell label,
+  .admin-shell td,
+  .admin-shell th,
+  .admin-shell li,
+  .admin-shell dt,
+  .admin-shell dd {
+    color: inherit;
+  }
+
+  /* Admin form elements: force readable dark text & light background */
+  .admin-shell input,
+  .admin-shell textarea,
+  .admin-shell select,
+  .admin-shell [role="combobox"],
+  .admin-shell [role="listbox"] {
+    color: #0f172a;
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+  }
+
+  .admin-shell input::placeholder,
+  .admin-shell textarea::placeholder {
+    color: #94a3b8;
+  }
+
+  /* Admin dropdowns / popovers */
+  .admin-shell [data-radix-popper-content-wrapper] {
+    color: #0f172a;
+  }
+}
+
 @layer base {
   .client-shell h1,
   .client-shell h2,
