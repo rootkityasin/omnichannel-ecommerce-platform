@@ -183,6 +183,7 @@ export default function ProductsPage() {
   });
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [archiveRequired, setArchiveRequired] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -403,6 +404,60 @@ export default function ProductsPage() {
     }
   };
 
+  const toggleSelection = (id: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const toggleSelectAll = (filteredProducts: LocalProduct[]) => {
+    setSelectedProducts((prev) =>
+      prev.length === filteredProducts.length
+        ? []
+        : filteredProducts.map((p) => p.id),
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedProducts.length} products?`,
+      )
+    )
+      return;
+    setIsDeleting(true);
+    try {
+      for (const id of selectedProducts) {
+        await deleteProduct(id);
+      }
+      toast.success("Bulk delete successful");
+      setSelectedProducts([]);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      toast.error("Bulk delete partially failed");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleBulkMove = async (targetStage: string) => {
+    setIsDeleting(true);
+    try {
+      for (const id of selectedProducts) {
+        await updateProduct(id, { stage: targetStage });
+      }
+      toast.success(`Bulk moved to ${targetStage}`);
+      setSelectedProducts([]);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      toast.error("Bulk move partially failed");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleStageMove = async (
     id: string,
     newStage: string,
@@ -616,7 +671,7 @@ export default function ProductsPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          {config.shopType !== "GROCERY" && (
+          {config.shopType === "RESTAURANT" && (
             <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
               <button
                 onClick={() => setView("table")}
@@ -1296,7 +1351,7 @@ export default function ProductsPage() {
       )}
 
       {/* Table view for GROCERY or when view is 'table' */}
-      {view === "table" || config.shopType === "GROCERY" ? (
+      {view === "table" || config.shopType !== "RESTAURANT" ? (
         <Card className="border-none shadow-none bg-transparent">
           <Tabs defaultValue="all" className="w-full">
             <TabsContent value="all" className="mt-4">
@@ -1328,7 +1383,12 @@ export default function ProductsPage() {
                       filteredProducts.map((product) => (
                         <tr key={product.id} className="hover:bg-gray-50/50">
                           <td className="p-4">
-                            <input type="checkbox" />
+                            <input
+                              type="checkbox"
+                              className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                              checked={selectedProducts.includes(product.id)}
+                              onChange={() => toggleSelection(product.id)}
+                            />
                           </td>
                           <td className="p-4">
                             <div className="flex items-center gap-3">
@@ -1694,6 +1754,57 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Action Bar */}
+      {selectedProducts.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <Card className="bg-slate-900 border-slate-800 shadow-2xl px-6 py-4 flex items-center gap-6">
+            <div className="flex items-center gap-3 pr-6 border-r border-slate-700">
+              <div className="bg-orange-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                {selectedProducts.length}
+              </div>
+              <span className="text-sm font-medium text-white">Selected</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-300 hover:text-white hover:bg-slate-800"
+                onClick={() => setSelectedProducts([])}
+              >
+                <X className="w-4 h-4 mr-2" /> Deselect
+              </Button>
+
+              <div className="h-6 w-px bg-slate-700 mx-2" />
+
+              <Select onValueChange={handleBulkMove}>
+                <SelectTrigger className="h-9 w-[160px] bg-slate-800 border-slate-700 text-white text-xs">
+                  <LayoutGrid className="w-4 h-4 mr-2 text-slate-400" />
+                  <SelectValue placeholder="Move to Stage" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                  <SelectItem value="Selling">Move to Selling</SelectItem>
+                  <SelectItem value="Coming Soon">
+                    Move to Coming Soon
+                  </SelectItem>
+                  <SelectItem value="Archived">Move to Archived</SelectItem>
+                  <SelectItem value="Draft">Move to Draft</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-9 bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600 hover:text-white"
+                onClick={handleBulkDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-2" /> Bulk Delete
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

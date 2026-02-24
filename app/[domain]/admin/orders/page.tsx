@@ -187,6 +187,8 @@ export default function OrdersPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+
   // Edit Order State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -384,16 +386,17 @@ export default function OrdersPage() {
     setDeleteId(id);
   };
 
-  const handlePrint = async (order: AdminOrder) => {
+  const handlePrint = async (order: string | AdminOrder) => {
+    const id = typeof order === "string" ? order : order.id;
     // Optimistic UI or wait? Let's wait to ensure stock is deducted.
-    const res = await printOrderInvoice(order.id); // Uses orderId (e.g. ORD-123)
+    const res = await printOrderInvoice(id); // Uses orderId (e.g. ORD-123)
     if (res.success) {
       toast.success("Invoice Printed & Stock Deducted");
       // Refresh local state to show "Invoice Printed" status
       const dbOrders = await getAdminOrders();
       setOrders(dbOrders);
       // Open Print Window
-      window.open(`/admin/orders/print/${order.id}`, "_blank");
+      window.open(`/admin/orders/print/${id}`, "_blank");
     } else {
       toast.error(res.error || "Failed to print invoice");
     }
@@ -426,6 +429,53 @@ export default function OrdersPage() {
       emails: newBlockedEmails,
     });
     toast.success(`Marked ${order.customer} as a suspect/fake source.`);
+  };
+
+  const toggleOrderSelection = (id: string) => {
+    setSelectedOrders((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const toggleSelectAllOrders = (filtered: AdminOrder[]) => {
+    setSelectedOrders((prev) =>
+      prev.length === filtered.length ? [] : filtered.map((o) => o.id),
+    );
+  };
+
+  const handleBulkOrderStatus = async (newStatus: string) => {
+    setIsAdding(true); // Reuse isAdding or add isProcessing
+    try {
+      for (const id of selectedOrders) {
+        await updateOrder(id, { status: newStatus });
+      }
+      toast.success(
+        `Bulk updated ${selectedOrders.length} orders to ${newStatus}`,
+      );
+      setSelectedOrders([]);
+    } catch (err) {
+      console.error(err);
+      toast.error("Bulk status update partially failed");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleBulkOrderDelete = async () => {
+    if (!confirm(`Permanently delete ${selectedOrders.length} orders?`)) return;
+    setIsAdding(true);
+    try {
+      for (const id of selectedOrders) {
+        await deleteOrder(id);
+      }
+      toast.success(`Bulk deleted ${selectedOrders.length} orders`);
+      setSelectedOrders([]);
+    } catch (err) {
+      console.error(err);
+      toast.error("Bulk delete partially failed");
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const isSuspect = (order: AdminOrder & { email?: string }) => {
@@ -1116,7 +1166,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Main Content with Tabs */}
-      {view === "table" ? (
+      {view === "table" || shopType !== "RESTAURANT" ? (
         <Card className="border-none shadow-none bg-transparent">
           <Tabs
             defaultValue="all"
@@ -1203,6 +1253,17 @@ export default function OrdersPage() {
                 <table className="w-full text-sm text-left min-w-[800px]">
                   <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
                     <tr>
+                      <th className="p-4 w-10">
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                          checked={
+                            filteredOrders.length > 0 &&
+                            selectedOrders.length === filteredOrders.length
+                          }
+                          onChange={() => toggleSelectAllOrders(filteredOrders)}
+                        />
+                      </th>
                       <th className="p-4">Order ID</th>
                       <th className="p-4">Date & Time</th>
                       <th className="p-4">Customer</th>
@@ -1221,8 +1282,18 @@ export default function OrdersPage() {
                           className={cn(
                             "hover:bg-gray-50/50",
                             isSuspect(order) && "bg-red-50/30",
+                            selectedOrders.includes(order.id) &&
+                              "bg-orange-50/50",
                           )}
                         >
+                          <td className="p-4 w-10">
+                            <input
+                              type="checkbox"
+                              className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                              checked={selectedOrders.includes(order.id)}
+                              onChange={() => toggleOrderSelection(order.id)}
+                            />
+                          </td>
                           <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
                             {order.id}
                             {isSuspect(order) && (
@@ -1396,6 +1467,10 @@ export default function OrdersPage() {
         <FulfillmentBoard
           orders={filteredOrders}
           onStatusChange={handleStatusChange}
+          onPrint={handlePrint}
+          onEdit={handleEditClick}
+          onMarkAsFake={handleMarkAsFake}
+          onDelete={setDeleteId}
           readOnly={!canManageOrders}
         />
       )}
@@ -1423,6 +1498,56 @@ export default function OrdersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Action Bar */}
+      {selectedOrders.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <Card className="bg-slate-900 border-slate-800 shadow-2xl px-6 py-4 flex items-center gap-6">
+            <div className="flex items-center gap-3 pr-6 border-r border-slate-700">
+              <div className="bg-orange-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                {selectedOrders.length}
+              </div>
+              <span className="text-sm font-medium text-white">Selected</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-300 hover:text-white hover:bg-slate-800"
+                onClick={() => setSelectedOrders([])}
+              >
+                <X className="w-4 h-4 mr-2" /> Deselect
+              </Button>
+
+              <div className="h-6 w-px bg-slate-700 mx-2" />
+
+              <Select onValueChange={handleBulkOrderStatus}>
+                <SelectTrigger className="h-9 w-[160px] bg-slate-800 border-slate-700 text-white text-xs">
+                  <Check className="w-4 h-4 mr-2 text-slate-400" />
+                  <SelectValue placeholder="Update Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                  {getAllStatuses().map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-9 bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600 hover:text-white"
+                onClick={handleBulkOrderDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-2" /> Bulk Delete
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
