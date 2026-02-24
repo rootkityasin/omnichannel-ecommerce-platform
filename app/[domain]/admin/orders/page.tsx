@@ -16,6 +16,8 @@ import {
   Ban,
   Calendar as CalendarIcon,
   Printer,
+  MoreVertical,
+  Trash2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Select,
@@ -1278,93 +1283,95 @@ export default function OrdersPage() {
                           </td>
 
                           <td className="p-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className={cn(
-                                  "h-8 w-8",
-                                  order.stockDeducted
-                                    ? "text-green-600 bg-green-50"
-                                    : "text-gray-600 bg-gray-100 hover:bg-gray-200",
-                                  order.status !== "Ready" &&
-                                    order.status !== "Invoice Printed" &&
-                                    "opacity-30 cursor-not-allowed",
-                                )}
-                                onClick={() =>
-                                  (order.status === "Ready" ||
-                                    order.status === "Invoice Printed") &&
-                                  handlePrint(order)
-                                }
-                                title={
-                                  order.status === "Ready" ||
-                                  order.status === "Invoice Printed"
-                                    ? "Print Invoice & Deduct Stock"
-                                    : "Only available in Ready status"
-                                }
-                                disabled={
-                                  order.status !== "Ready" &&
-                                  order.status !== "Invoice Printed"
-                                }
-                              >
-                                <Printer className="w-4 h-4" />
-                              </Button>
-
-                              {canManageOrders && (
-                                <>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8"
-                                      >
-                                        Status{" "}
-                                        <ChevronDown className="w-3 h-3 ml-1" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      align="end"
-                                      className="w-[200px]"
-                                    >
-                                      <DropdownMenuLabel>
-                                        Update Status
-                                      </DropdownMenuLabel>
-                                      <DropdownMenuSeparator />
-                                      {getAllStatuses().map((status) => (
-                                        <DropdownMenuItem
-                                          key={status}
-                                          onClick={() =>
-                                            handleStatusChange(order.id, status)
-                                          }
-                                        >
-                                          {status}{" "}
-                                          {order.status === status && (
-                                            <Check className="w-3 h-3 ml-auto" />
-                                          )}
-                                        </DropdownMenuItem>
-                                      ))}
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        onClick={() => handleMarkAsFake(order)}
-                                        className="text-red-600 focus:text-red-700 bg-red-50 focus:bg-red-100 mt-2"
-                                      >
-                                        <Ban className="w-3 h-3 mr-2" /> Mark as
-                                        Fake
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-
+                            <div className="flex items-center justify-end">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-8 w-8 text-blue-600 bg-blue-50"
-                                    onClick={() => handleEditClick(order)}
+                                    className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                                   >
-                                    <Edit className="w-4 h-4" />
+                                    <MoreVertical className="w-4 h-4" />
                                   </Button>
-                                </>
-                              )}
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-[200px]"
+                                >
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+
+                                  <DropdownMenuItem
+                                    disabled={
+                                      order.status !== "Ready" &&
+                                      order.status !== "Invoice Printed"
+                                    }
+                                    onClick={() => handlePrint(order)}
+                                    className={cn(
+                                      order.stockDeducted && "text-green-600",
+                                    )}
+                                  >
+                                    <Printer className="w-4 h-4 mr-2" />
+                                    {order.stockDeducted
+                                      ? "Invoice Printed"
+                                      : "Print Invoice"}
+                                  </DropdownMenuItem>
+
+                                  {canManageOrders && (
+                                    <>
+                                      <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                          <Check className="w-4 h-4 mr-2" />
+                                          Update Status
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent className="w-[200px]">
+                                          {getAllStatuses().map((status) => (
+                                            <DropdownMenuItem
+                                              key={status}
+                                              onClick={() =>
+                                                handleStatusChange(
+                                                  order.id,
+                                                  status,
+                                                )
+                                              }
+                                            >
+                                              {status}
+                                              {order.status === status && (
+                                                <Check className="w-3 h-3 ml-auto text-orange-600" />
+                                              )}
+                                            </DropdownMenuItem>
+                                          ))}
+                                        </DropdownMenuSubContent>
+                                      </DropdownMenuSub>
+
+                                      <DropdownMenuItem
+                                        onClick={() => handleEditClick(order)}
+                                      >
+                                        <Edit className="w-4 h-4 mr-2" />
+                                        Edit Order
+                                      </DropdownMenuItem>
+
+                                      <DropdownMenuSeparator />
+
+                                      <DropdownMenuItem
+                                        onClick={() => handleMarkAsFake(order)}
+                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                      >
+                                        <Ban className="w-4 h-4 mr-2" />
+                                        Mark as Fake
+                                      </DropdownMenuItem>
+
+                                      <DropdownMenuItem
+                                        onClick={() => setDeleteId(order.id)}
+                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete Order
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </td>
                         </tr>

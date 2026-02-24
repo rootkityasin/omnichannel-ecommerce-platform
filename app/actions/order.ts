@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 
 const getSessionUser = async () => (await auth())?.user;
 
@@ -222,24 +222,27 @@ export async function printOrderInvoice(orderId: string) {
       for (const item of order.items) {
         const product = await prisma.product.findUnique({
           where: { id: item.productId },
-          include: { comboItems: true },
+          include: { comboItems: { include: { child: true } } },
         });
 
         if (!product) continue;
 
         if (product.type === "COMBO") {
           for (const comboItem of product.comboItems) {
+            const currentPieces = comboItem.child.pieces || 0;
+            const reduction = item.quantity * comboItem.quantity;
             await prisma.product.update({
               where: { id: comboItem.childId },
               data: {
-                pieces: { decrement: item.quantity * comboItem.quantity },
+                pieces: Math.max(0, currentPieces - reduction),
               },
             });
           }
         } else {
+          const currentPieces = product.pieces || 0;
           await prisma.product.update({
             where: { id: item.productId },
-            data: { pieces: { decrement: item.quantity } },
+            data: { pieces: Math.max(0, currentPieces - item.quantity) },
           });
         }
       }

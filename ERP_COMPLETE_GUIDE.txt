@@ -1,0 +1,145 @@
+ERP - THE COMPLETE BUSINESS OPERATIONS PLATFORM
+=======================================================
+
+What you are looking at is not just an e-commerce website. It is a full-scale ERP (Enterprise Resource Planning) system built specifically for modern retail businesses — whether you sell food, clothing, or any physical product.
+
+The short version: Every order, every Taka, every piece of stock, every staff action is tracked, protected, and visible to you in real time. You run your business; the software handles the rest.
+
+=======================================================
+SECTION 1: THE CORE BUSINESS MODULES
+=======================================================
+
+1. SMART DASHBOARD
+The moment you open the app, you see your business.
+- Exactly how much money came in today.
+- Are you doing better or worse than yesterday? (Side-by-side comparison.)
+- How many orders are live, pending, or delivered.
+- Your best-selling products at a glance.
+No more calling your manager to ask "how's business." You just look.
+
+2. OMNICHANNEL ORDER MANAGEMENT
+Orders come from everywhere: Website, WhatsApp, Facebook, walk-in customers. This system pulls every one into a single, clean board.
+- Visual Order Board: Your team drags orders from "Cooking/Packing" to "Ready" to "Delivered." No paper, no confusion.
+- Manual Order Entry: Walk-ins or Messenger orders are added in seconds and join the exact same queue as website orders.
+- Repeat Buyer Alerts: The system flags VIP customers who have ordered before, so your team can give them special treatment.
+- Full Order History: Search any customer's order history in 2 seconds by phone number.
+
+3. ADVANCED PRODUCT & INVENTORY
+- Variation Support: Manage sizes (S, M, L, XL) and colors in one interface.
+- Combo & Bundle Logic: If you sell a "Family Bundle," the system is smart enough to know it contains 3 separate items. When you sell the bundle, each individual item is automatically subtracted from stock.
+- Zero-Floor Safety: The system physically cannot sell a product you don't have. Stock will stop at zero. No negative stock, no liability.
+- AI Description Writer: Built-in AI generates professional, sales-focused product descriptions in seconds.
+- Multi-language: Bangla, English, and Regional dialects supported for product names and descriptions.
+
+4. CUSTOMER DIRECTORY & CRM
+- Every customer's phone number, name, address, and full order history is stored and searchable.
+- Loyalty Tracking: See exactly how many times a customer has returned to buy. Reward them appropriately.
+- Fake Order & Ban System: Mark orders as "Fake" and permanently ban abusive phone numbers, protecting your delivery budget and your team's time.
+
+5. CATEGORIES & SHOP NAVIGATION
+- Your customers navigate your shop exactly how you design it.
+- Featured Sections: Highlight "New Arrivals," "Sale Items," or "Seasonal Picks" on the homepage.
+
+=======================================================
+SECTION 2: THE CONFIGURATION ENGINE (CONTROL CENTER)
+=======================================================
+
+6. PAYMENT SETUP
+Full support for:
+- Cash on Delivery (COD)
+- Bkash & Nagad (MFS Payments)
+- Custom MFS or Bank Transfer
+- Advance Payment Rules (e.g., collect 30% before confirming)
+
+7. DELIVERY MANAGEMENT
+- Set delivery charges by City, Area, or Distance.
+- Free delivery above a minimum order value.
+- Weight-based delivery pricing for clothing or heavy goods.
+
+8. TAX & VAT ENGINE
+Automatic VAT calculation on every invoice, keeping your business legally compliant without any manual effort.
+
+9. PROFESSIONAL INVOICING
+One click generates a clean, branded PDF invoice with:
+- Your logo, address, and contact info.
+- Order summary, pricing breakdown, and tax line.
+- Return/refund policy text at the bottom.
+
+10. BRANDING & THEME
+Change your store's look and feel without touching any code.
+- Upload your logo, set brand colors, and update fonts.
+- Mobile-first design. Looks perfect on all phones.
+
+11. LANDING PAGE & PROMOTIONS
+- Update banners, hero images, and promotional content from the admin panel instantly.
+- Coupon & Discount Engine: Fixed-amount or percentage coupons with expiry dates and usage limits.
+- Promo Cards: Highlight special deals on the homepage.
+
+12. ENTERPRISE SECURITY
+- Role-Based Access Control (RBAC): Only the owner can see profits. Managers see orders. Kitchen staff see only what they need.
+- Trusted Device Locks: The system can be locked to verified machines only. Even if a password is stolen, access is denied without the registered device.
+- Full Audit Logs: Every action — who deleted an order, who changed a price, who logged in — is recorded with a name, time, and IP address.
+
+13. MULTI-HUB INVENTORY
+- Manage stock across multiple warehouses, kitchens, or branches from one place.
+- Freezer/Storage assignment for food businesses.
+- Expense tracking per hub/branch.
+
+=======================================================
+SECTION 3: REPORTING & GROWTH INTELLIGENCE
+=======================================================
+
+14. FINANCIAL ANALYTICS
+This is real accounting, not just a dashboard.
+- Log all business costs: Rent, Salary, Raw Materials, Ads, Delivery.
+- System calculates your Net Profit automatically (not just gross sales).
+- Export all data to CSV/PDF for your accountant or investor meetings.
+
+15. EVENT MATRIX (LIVE TRACKING)
+Tracks real user behavior on your website in real time.
+- What are customers clicking? What products are they looking at?
+- Identify drop-off points (where customers leave before buying).
+- Use this data to improve your homepage and increase conversions.
+
+16. MARKETING AUTOMATION
+- Status Triggers: Automatically notify customers via WhatsApp/Email when their order status changes.
+- Meta CAPI Integration: Unlike standard stores, our system uses Server-Side Tracking to communicate with Facebook's servers directly. This bypasses iPhone privacy blocks and Ad Blockers, making your Facebook ads perform 20-30% more efficiently.
+
+17. CUSTOMER REVIEWS
+- Collect and showcase authentic customer feedback.
+- Use reviews to improve product quality and build social proof for new buyers.
+
+=======================================================
+SECTION 4: THE ENGINEERING EDGE (WHY THIS IS DIFFERENT)
+=======================================================
+
+These are features that require deep software engineering expertise. They cannot be built with a free website builder or an AI tool.
+
+● MULTI-TENANT SAAS ARCHITECTURE
+One single platform powers unlimited shops simultaneously. Crab Khai runs on it. Your clothing brand can run on it. Each shop has its own isolated data, security, and settings. This is the foundation of a million-dollar SaaS business.
+
+● RELATIONAL DATA INTEGRITY
+When a "Combo" product is sold, the system runs a deep database transaction to find every child component and deduct the correct quantity simultaneously. This is protected by database-level locks to prevent any data corruption during high-traffic sales.
+
+● HARDWARE-LEVEL SECURITY
+Trusted Device Registration is a hardware-layer security system. Even if a password is compromised, the system blocks access on any unregistered device. This is the standard in banking software.
+
+● SERVER-SIDE CONVERSION TRACKING (Meta CAPI)
+Standard websites track sales in the browser, which gets blocked by 70% of iPhone users and AdBlockers. Our server talks directly to Facebook's servers using an encrypted handshake. Your sales data is captured 100% of the time, resulting in better ROAS (Return on Ad Spend) for your Facebook/Instagram campaigns.
+
+● DOCKER-POWERED SELF-HEALING INFRASTRUCTURE
+The system is containerized. If the server crashes for any reason, it detects the failure and restarts itself automatically within seconds — no downtime, no data loss. This is the industry standard for enterprise applications.
+
+● DYNAMIC SEO ENGINE
+Built-in automated sitemaps that update every hour. JSON-LD Schema markup that tells Google the exact price, availability, and rating of every product in computer language, resulting in richer Google Search results and more organic traffic.
+
+● MODULAR ARCHITECTURE (BUILT FOR SCALE)
+The system is not "locked in." Every feature is modular. Adding a Mobile App, a POS (Point of Sale) machine, or a new payment gateway is a plug-in operation, not a rebuild. This protects your investment for the long term.
+
+=======================================================
+SUMMARY
+=======================================================
+
+This software is not a template. It is not an AI-generated store. It is a custom-built, professionally engineered business operating system. It protects your money, eliminates stock theft, automates your delivery tracking, and gives you a real-time view of your entire business from any phone, anywhere in the world.
+
+It is built to grow with you — from 10 orders a day to 10,000.
