@@ -166,8 +166,7 @@
 
   /* Admin dropdowns / popovers — Radix Portals render at <body> level, OUTSIDE .admin-shell */
   [data-radix-popper-content-wrapper] {
-    color: #0f172a !important;
-    z-index: 50;
+    z-index: 50 !important;
   }
 }
 
