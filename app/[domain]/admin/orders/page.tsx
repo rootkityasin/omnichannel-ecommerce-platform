@@ -816,15 +816,12 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
-
-          {canManageOrders && (
-            <Button
-              onClick={() => setIsAdding(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create
-            </Button>
-          )}
+          <Button
+            onClick={() => setIsAdding(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" /> Create
+          </Button>
         </div>
       </div>
 

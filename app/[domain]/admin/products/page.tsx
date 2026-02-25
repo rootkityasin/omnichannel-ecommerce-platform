@@ -778,37 +778,35 @@ export default function ProductsPage() {
                 </div>
               </PopoverContent>
             </Popover>
-            {canManageProducts && (
-              <Button
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() => {
-                  setEditingId(null);
-                  setNewProduct({
-                    name: "",
-                    price: "",
-                    sku: "",
-                    image: "",
-                    images: [],
-                    categoryId: "",
-                    description: "",
-                    nutrition: "",
-                    cookingInstructions: "",
-                    pointsReward: "",
-                    weight: "",
-                    pieces: "",
-                    servingSize: "",
-                    stage: "Draft",
-                    type: "SINGLE",
-                    descriptionSwap: false,
-                    comboItems: [],
-                    sections: [],
-                  });
-                  setIsAdding(true);
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" /> Add Product
-              </Button>
-            )}
+            <Button
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+              onClick={() => {
+                setEditingId(null);
+                setNewProduct({
+                  name: "",
+                  price: "",
+                  sku: "",
+                  image: "",
+                  images: [],
+                  categoryId: "",
+                  description: "",
+                  nutrition: "",
+                  cookingInstructions: "",
+                  pointsReward: "",
+                  weight: "",
+                  pieces: "",
+                  servingSize: "",
+                  stage: "Draft",
+                  type: "SINGLE",
+                  descriptionSwap: false,
+                  comboItems: [],
+                  sections: [],
+                });
+                setIsAdding(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" /> Add Product
+            </Button>
           </div>
         </div>
       </div>
