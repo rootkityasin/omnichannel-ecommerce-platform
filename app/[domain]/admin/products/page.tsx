@@ -1539,45 +1539,38 @@ export default function ProductsPage() {
                                 >
                                   <Share2 className="w-4 h-4 mr-2" /> Share Link
                                 </DropdownMenuItem>
-                                {canManageProducts && (
+                                {product.stage === "Archived" ? (
                                   <>
-                                    {product.stage === "Archived" ? (
-                                      <>
-                                        <DropdownMenuItem
-                                          onClick={() =>
-                                            handleUnarchive(product.id)
-                                          }
-                                        >
-                                          <Plus className="w-4 h-4 mr-2" />{" "}
-                                          Restore / Unarchive
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="text-red-600"
-                                          onClick={() =>
-                                            handlePermanentDelete(product.id)
-                                          }
-                                        >
-                                          <Trash2 className="w-4 h-4 mr-2" />
-                                          Delete Permanently
-                                        </DropdownMenuItem>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <DropdownMenuItem
-                                          onClick={() =>
-                                            handleEditClick(product)
-                                          }
-                                        >
-                                          <Edit className="w-4 h-4 mr-2" /> Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          onClick={() => handleClone(product)}
-                                        >
-                                          <Copy className="w-4 h-4 mr-2" />{" "}
-                                          Clone
-                                        </DropdownMenuItem>
-                                      </>
-                                    )}
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleUnarchive(product.id)
+                                      }
+                                    >
+                                      <Plus className="w-4 h-4 mr-2" /> Restore
+                                      / Unarchive
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="text-red-600"
+                                      onClick={() =>
+                                        handlePermanentDelete(product.id)
+                                      }
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete Permanently
+                                    </DropdownMenuItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <DropdownMenuItem
+                                      onClick={() => handleEditClick(product)}
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => handleClone(product)}
+                                    >
+                                      <Copy className="w-4 h-4 mr-2" /> Clone
+                                    </DropdownMenuItem>
                                   </>
                                 )}
                                 <DropdownMenuItem

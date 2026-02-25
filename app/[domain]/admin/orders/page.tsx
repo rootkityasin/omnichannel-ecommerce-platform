@@ -1388,59 +1388,52 @@ export default function OrdersPage() {
                                       : "Print Invoice"}
                                   </DropdownMenuItem>
 
-                                  {canManageOrders && (
-                                    <>
-                                      <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger>
-                                          <Check className="w-4 h-4 mr-2" />
-                                          Update Status
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent className="w-[200px]">
-                                          {getAllStatuses().map((status) => (
-                                            <DropdownMenuItem
-                                              key={status}
-                                              onClick={() =>
-                                                handleStatusChange(
-                                                  order.id,
-                                                  status,
-                                                )
-                                              }
-                                            >
-                                              {status}
-                                              {order.status === status && (
-                                                <Check className="w-3 h-3 ml-auto text-orange-600" />
-                                              )}
-                                            </DropdownMenuItem>
-                                          ))}
-                                        </DropdownMenuSubContent>
-                                      </DropdownMenuSub>
+                                  <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                      <Check className="w-4 h-4 mr-2" />
+                                      Update Status
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="w-[200px]">
+                                      {getAllStatuses().map((status) => (
+                                        <DropdownMenuItem
+                                          key={status}
+                                          onClick={() =>
+                                            handleStatusChange(order.id, status)
+                                          }
+                                        >
+                                          {status}
+                                          {order.status === status && (
+                                            <Check className="w-3 h-3 ml-auto text-orange-600" />
+                                          )}
+                                        </DropdownMenuItem>
+                                      ))}
+                                    </DropdownMenuSubContent>
+                                  </DropdownMenuSub>
 
-                                      <DropdownMenuItem
-                                        onClick={() => handleEditClick(order)}
-                                      >
-                                        <Edit className="w-4 h-4 mr-2" />
-                                        Edit Order
-                                      </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditClick(order)}
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit Order
+                                  </DropdownMenuItem>
 
-                                      <DropdownMenuSeparator />
+                                  <DropdownMenuSeparator />
 
-                                      <DropdownMenuItem
-                                        onClick={() => handleMarkAsFake(order)}
-                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
-                                      >
-                                        <Ban className="w-4 h-4 mr-2" />
-                                        Mark as Fake
-                                      </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleMarkAsFake(order)}
+                                    className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                  >
+                                    <Ban className="w-4 h-4 mr-2" />
+                                    Mark as Fake
+                                  </DropdownMenuItem>
 
-                                      <DropdownMenuItem
-                                        onClick={() => setDeleteId(order.id)}
-                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
-                                      >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete Order
-                                      </DropdownMenuItem>
-                                    </>
-                                  )}
+                                  <DropdownMenuItem
+                                    onClick={() => setDeleteId(order.id)}
+                                    className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete Order
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
