@@ -148,21 +148,6 @@
     color: inherit;
   }
 
-  /* Admin form elements: force readable dark text & light background */
-  .admin-shell input,
-  .admin-shell textarea,
-  .admin-shell select,
-  .admin-shell [role="combobox"],
-  .admin-shell [role="listbox"] {
-    color: #0f172a;
-    background-color: #ffffff;
-    border-color: #e2e8f0;
-  }
-
-  .admin-shell input::placeholder,
-  .admin-shell textarea::placeholder {
-    color: #94a3b8;
-  }
 
   /* Admin dropdowns / popovers — Radix Portals render at <body> level, OUTSIDE .admin-shell */
   [data-radix-popper-content-wrapper] {
