@@ -391,17 +391,76 @@ import { unstable_cache } from "next/cache";
 
 const getCachedCustomersStats = unstable_cache(
   async (userRole: string | undefined, userTenantId: string | null | undefined) => {
-    const where: Prisma.UserWhereInput = {
-      role: "USER",
-    };
-
+    // 1. Base Criteria
+    const orderWhere: Prisma.OrderWhereInput = {};
     if (userRole !== "SUPER_ADMIN" && userTenantId) {
-      where.tenantId = userTenantId;
+      orderWhere.tenantId = userTenantId;
     }
 
-    const customers = await prisma.user.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
+    // 2. Fetch all orders (we need this anyway to calculate stats + guests)
+    const orders = await prisma.order.findMany({
+      where: orderWhere,
+      select: {
+        customerPhone: true,
+        customerName: true,
+        customerEmail: true,
+        totalAmount: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+
+    // 3. Build a map of phones -> { name, email, count, spent, firstSeen }
+    const phoneMap = new Map<string, {
+      phone: string;
+      name: string;
+      email: string | null;
+      count: number;
+      spent: number;
+      firstSeen: Date;
+    }>();
+
+    for (const order of orders) {
+      const phone = order.customerPhone;
+      if (!phone) continue;
+
+      const existing = phoneMap.get(phone);
+
+      const isCancelled = order.status === "CANCELLED";
+      const spentAddition = isCancelled ? 0 : order.totalAmount;
+      const countAddition = isCancelled ? 0 : 1;
+
+      if (!existing) {
+        phoneMap.set(phone, {
+          phone,
+          name: order.customerName || "Guest",
+          email: order.customerEmail || null,
+          count: countAddition,
+          spent: spentAddition,
+          firstSeen: order.createdAt,
+        });
+      } else {
+        existing.count += countAddition;
+        existing.spent += spentAddition;
+        // Keep the older date as firstSeen
+        if (order.createdAt < existing.firstSeen) {
+          existing.firstSeen = order.createdAt;
+        }
+        // Prefer a name if it was previously just "Guest"
+        if (existing.name === "Guest" && order.customerName) {
+          existing.name = order.customerName;
+        }
+      }
+    }
+
+    // 4. Fetch registered 'USER' role accounts
+    const userWhere: Prisma.UserWhereInput = { role: "USER" };
+    if (userRole !== "SUPER_ADMIN" && userTenantId) {
+      userWhere.tenantId = userTenantId;
+    }
+
+    const registeredUsers = await prisma.user.findMany({
+      where: userWhere,
       select: {
         id: true,
         name: true,
@@ -412,43 +471,48 @@ const getCachedCustomersStats = unstable_cache(
       },
     });
 
-    // Get orders for these phones to calculate spent and count
-    const phones = customers
-      .map((c) => c.phone)
-      .filter((phone): phone is string => Boolean(phone));
+    // 5. Merge Registered Users with the Phone Map
+    const mergedList: any[] = [];
+    const processedPhones = new Set<string>();
 
-    const ordersWhere: Prisma.OrderWhereInput = {
-      customerPhone: { in: phones },
-    };
-    // Only filter by tenantId if not a SUPER_ADMIN
-    if (userRole !== "SUPER_ADMIN" && userTenantId) {
-      ordersWhere.tenantId = userTenantId;
+    for (const user of registeredUsers) {
+      if (user.phone) processedPhones.add(user.phone);
+
+      const stats = user.phone ? phoneMap.get(user.phone) : null;
+      mergedList.push({
+        id: user.id, // Real UUID
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        createdAt: user.createdAt,
+        points: user.points,
+        orders: stats?.count || 0,
+        spent: stats?.spent || 0,
+        isGuest: false,
+      });
     }
 
-    const orders = await prisma.order.findMany({
-      where: ordersWhere,
-      select: { customerPhone: true, totalAmount: true, status: true },
-    });
-
-    // Group by phone
-    const statsMap = orders.reduce<
-      Record<string, { count: number; spent: number }>
-    >((acc, order) => {
-      if (!acc[order.customerPhone]) {
-        acc[order.customerPhone] = { count: 0, spent: 0 };
+    // 6. Append remaining unregistered Guests from the Phone Map
+    for (const [phone, guestData] of phoneMap.entries()) {
+      if (!processedPhones.has(phone)) {
+        mergedList.push({
+          id: `guest_${phone}`, // Virtual ID to satisfy React keys
+          name: guestData.name,
+          email: guestData.email,
+          phone: phone,
+          createdAt: guestData.firstSeen,
+          points: 0,
+          orders: guestData.count,
+          spent: guestData.spent,
+          isGuest: true,
+        });
       }
-      if (order.status !== "CANCELLED") {
-        acc[order.customerPhone].count++;
-        acc[order.customerPhone].spent += order.totalAmount;
-      }
-      return acc;
-    }, {});
+    }
 
-    return customers.map((c) => ({
-      ...c,
-      orders: statsMap[c.phone || ""]?.count || 0,
-      spent: statsMap[c.phone || ""]?.spent || 0,
-    }));
+    // 7. Sort globally by newest created/first seen descending
+    mergedList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    return mergedList;
   },
   ["customers-stats"],
   { tags: ["customers", "orders"], revalidate: 3600 }

@@ -40,6 +40,7 @@ type CustomerRow = {
     spent: number;
     points: number;
     createdAt: string | Date;
+    isGuest?: boolean;
 };
 
 type CustomerImportRow = { name: string; phone: string; email?: string };
@@ -72,6 +73,7 @@ const mapCustomerRow = (u: {
     spent: u.spent || 0,
     points: u.points || 0,
     createdAt: u.createdAt,
+    isGuest: (u as any).isGuest || false,
 });
 
 const normalizeBdPhone = (phone: string) => {
@@ -612,8 +614,11 @@ export default function CustomersPage() {
                                                 {customer.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <div className="font-bold text-slate-800">{customer.name}</div>
-                                                <div className="text-xs text-slate-400">ID: #{customer.id}</div>
+                                                <div className="font-bold text-slate-800 flex items-center gap-2">
+                                                    {customer.name}
+                                                    {customer.isGuest && <Badge variant="outline" className="text-[10px] h-4 px-1 py-0 border-slate-300 text-slate-500 font-normal">Guest</Badge>}
+                                                </div>
+                                                <div className="text-xs text-slate-400">ID: {customer.id.startsWith('guest_') ? 'Unregistered' : `#${customer.id}`}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -632,9 +637,11 @@ export default function CustomersPage() {
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleEdit(customer)}>
-                                                <Edit className="w-4 h-4" />
-                                            </Button>
+                                            {!customer.isGuest && (
+                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleEdit(customer)}>
+                                                    <Edit className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                             <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(customer.id)}>
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
