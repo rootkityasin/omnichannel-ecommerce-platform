@@ -128,17 +128,17 @@ export async function createUserWithRole(data: {
 
   // Authorization Logic
   if (callerRole !== "SUPER_ADMIN") {
-    if (data.role === "SUPER_ADMIN") return { success: false, error: "Unauthorized" };
+    if (data.role === "SUPER_ADMIN") return { success: false, error: `Unauthorized: Cannot create SUPER_ADMIN. Your role is ${callerRole}.` };
 
     if (callerRole === "TENANT_ADMIN") {
       // Tenant Admin can only manage their own Tenant (Hub Admins / Staff / Users)
       // And cannot create Tenant Admins (only Super Admin does that usually)
-      if (["TENANT_ADMIN"].includes(data.role)) return { success: false, error: "Unauthorized" };
+      if (["TENANT_ADMIN"].includes(data.role)) return { success: false, error: `Unauthorized: TENANT_ADMIN cannot create ${data.role}.` };
     } else if (callerRole === "HUB_ADMIN") {
       // Hub Admin can only create Staff/User
-      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role)) return { success: false, error: "Unauthorized" };
+      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role)) return { success: false, error: `Unauthorized: HUB_ADMIN cannot create ${data.role}.` };
     } else {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: `Unauthorized: Invalid caller role [${callerRole}] trying to create [${data.role}].` };
     }
   }
 

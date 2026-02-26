@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Trash2, Plus, X, Filter, RefreshCw, MoreVertical, CheckSquare, Square, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MoreHorizontal, Plus, Shield, User as UserIcon, X, Check, Eye, MoreVertical, Trash2, CheckSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getAllUsers, createUserWithRole, deleteUser, getUserProfile, updateUser, resetUserPassword, generateImpersonationToken, updateUserStatus } from '@/app/actions/user';
 import { signIn } from 'next-auth/react';
@@ -397,7 +397,6 @@ export function UsersTab() {
                                             <SelectContent>
                                                 <SelectItem value="STAFF">Staff (Worker)</SelectItem>
                                                 <SelectItem value="HUB_ADMIN">Hub Admin (Manager)</SelectItem>
-                                                <SelectItem value="TENANT_ADMIN">Shop Admin (Owner)</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
