@@ -1755,7 +1755,7 @@ export default function ProductsPage() {
               <div className="bg-orange-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
                 {selectedProducts.length}
               </div>
-              <span className="text-sm font-medium text-white">Selected</span>
+              <div className="text-sm font-medium text-white">Selected</div>
             </div>
 
             <div className="flex items-center gap-3">
