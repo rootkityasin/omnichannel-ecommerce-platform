@@ -19,7 +19,7 @@ export async function addExpense(data: {
     await prisma.expense.create({
       data: {
         title: data.title,
-        amount: data.amount,
+        amount: Math.abs(data.amount), // Force positive amount
         category: data.category,
         description: data.description,
         hubId: data.hubId,
@@ -85,7 +85,7 @@ export async function getInventoryStats() {
   // 3. Total Expenses
   const allExpenses = await prisma.expense.findMany();
   const totalExpenses = allExpenses.reduce(
-    (acc: number, e) => acc + e.amount,
+    (acc: number, e) => acc + Math.abs(e.amount), // Ensure legacy negative entries are summed positively
     0,
   );
 
@@ -93,7 +93,7 @@ export async function getInventoryStats() {
     stockValue: totalStockValue,
     totalSales,
     totalExpenses,
-    netProfit: totalSales - totalExpenses, // Simplified
+    netProfit: totalSales - totalExpenses, // Sales minus absolute expenses
   };
 }
 
