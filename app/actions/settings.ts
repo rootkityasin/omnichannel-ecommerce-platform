@@ -262,6 +262,7 @@ export async function getAdminSiteConfig() {
     customDomain: "",
     slug: "",
     invoiceTheme: "modern",
+    primaryHub: "dhaka-central",
     invoiceDetails: {
       showSeller: true,
       showBuyer: true,
@@ -292,6 +293,7 @@ export async function getAdminSiteConfig() {
         secondaryColor: true,
         taxPercentage: true,
         shopType: true,
+        primaryHub: true,
         weightUnitValue: true,
         volumeUnitValue: true,
         privacyPolicy: true,
@@ -414,6 +416,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
         typeof input.shopType === "string"
           ? (input.shopType as ShopType)
           : ShopType.RESTAURANT,
+      primaryHub: getString(input.primaryHub, "dhaka-central"),
       weightUnitValue: getNumber(input.weightUnitValue, 200),
       volumeUnitValue: getNumber(input.volumeUnitValue, 1000),
       privacyPolicy: getString(input.privacyPolicy),
@@ -424,7 +427,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       metaAccessToken: getString(input.metaAccessToken),
       invoiceTheme: getString(input.invoiceTheme, "modern"),
       invoiceDetails: (typeof input.invoiceDetails === "object" &&
-      input.invoiceDetails !== null
+        input.invoiceDetails !== null
         ? input.invoiceDetails
         : {}) as Prisma.InputJsonValue,
     };

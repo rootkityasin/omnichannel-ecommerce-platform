@@ -126,36 +126,18 @@ export async function createUserWithRole(data: {
   const sessionUser = await getSessionUser();
   const callerRole = sessionUser?.role;
 
-  console.log("createUserWithRole Attempt:", {
-    callerRole,
-    targetRole: data.role,
-  });
-
   // Authorization Logic
   if (callerRole !== "SUPER_ADMIN") {
-    if (data.role === "SUPER_ADMIN") {
-      console.log("Blocked: Cannot create SUPER_ADMIN");
-      return { success: false, error: "Unauthorized" };
-    }
+    if (data.role === "SUPER_ADMIN") return { success: false, error: "Unauthorized" };
 
     if (callerRole === "TENANT_ADMIN") {
       // Tenant Admin can only manage their own Tenant (Hub Admins / Staff / Users)
       // And cannot create Tenant Admins (only Super Admin does that usually)
-      if (["TENANT_ADMIN"].includes(data.role)) {
-        console.log("Blocked: TENANT_ADMIN cannot create TENANT_ADMIN");
-        return { success: false, error: "Unauthorized" };
-      }
+      if (["TENANT_ADMIN"].includes(data.role)) return { success: false, error: "Unauthorized" };
     } else if (callerRole === "HUB_ADMIN") {
       // Hub Admin can only create Staff/User
-      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role)) {
-        console.log("Blocked: HUB_ADMIN cannot create higher roles");
-        return { success: false, error: "Unauthorized" };
-      }
+      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role)) return { success: false, error: "Unauthorized" };
     } else {
-      console.log(
-        "Blocked: Caller role not authorized. callerRole=",
-        callerRole,
-      );
       return { success: false, error: "Unauthorized" };
     }
   }
