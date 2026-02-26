@@ -1,10 +1,27 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { unstable_cache, revalidatePath, updateTag } from "next/cache";
 import { getTenantByDomain } from "./tenant";
 
 import { auth } from "@/auth";
+
+const getCachedCategoriesByTenant = unstable_cache(
+  async (tenantId: string) => {
+    return await prisma.category.findMany({
+      where: {
+        tenantId: tenantId,
+      },
+      include: {
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+  },
+  ["categories-list"],
+  { tags: ["categories"], revalidate: 3600 }
+);
 
 export async function getCategories(domain?: string) {
   try {
@@ -22,23 +39,13 @@ export async function getCategories(domain?: string) {
 
     if (!tenantId) return [];
 
-    const categories = await prisma.category.findMany({
-      where: {
-        tenantId: tenantId,
-      },
-      include: {
-        _count: {
-          select: { products: true },
-        },
-      },
-    });
-
-    return categories;
+    return await getCachedCategoriesByTenant(tenantId);
   } catch (error) {
     console.error("Get Categories Error:", error);
     return [];
   }
 }
+
 
 export async function createCategory(
   name: string,
@@ -63,6 +70,7 @@ export async function createCategory(
     });
     revalidatePath("/admin/categories");
     revalidatePath("/");
+    updateTag("categories");
     return { success: true, category };
   } catch (error) {
     console.error("Create Category Error:", error);
@@ -75,6 +83,7 @@ export async function deleteCategory(id: string) {
     await prisma.category.delete({ where: { id } });
     revalidatePath("/admin/categories");
     revalidatePath("/");
+    updateTag("categories");
     return { success: true };
   } catch (error) {
     console.error("Delete Category Error:", error);
@@ -99,6 +108,7 @@ export async function updateCategory(
     });
     revalidatePath("/admin/categories");
     revalidatePath("/");
+    updateTag("categories");
     return { success: true };
   } catch (error) {
     console.error("Update Category Error:", error);

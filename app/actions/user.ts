@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { randomBytes } from "crypto";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
@@ -182,6 +182,7 @@ export async function createUserWithRole(data: {
         password: hashedPassword,
       },
     });
+    updateTag("customers");
     return { success: true, user };
   } catch (error) {
     console.error(error);
@@ -268,6 +269,7 @@ export async function updateUser(
         hubId: finalHubId,
       },
     });
+    updateTag("customers");
     return { success: true, user };
   } catch (error) {
     return { success: false, error: "Failed to update user" };
@@ -304,6 +306,7 @@ export async function deleteUser(userId: string) {
 
     await prisma.user.delete({ where: { id: userId } });
     revalidatePath("/admin/customers");
+    updateTag("customers");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to delete" };
@@ -384,16 +387,10 @@ export async function getAllUsers() {
   }
 }
 
-export async function getCustomers() {
-  const sessionUser = await getSessionUser();
-  const userRole = sessionUser?.role;
-  const userTenantId = sessionUser?.tenantId;
+import { unstable_cache } from "next/cache";
 
-  if (!hasAdminAccess(userRole)) {
-    throw new Error("Unauthorized");
-  }
-
-  try {
+const getCachedCustomersStats = unstable_cache(
+  async (userRole: string | undefined, userTenantId: string | null | undefined) => {
     const where: Prisma.UserWhereInput = {
       role: "USER",
     };
@@ -452,6 +449,22 @@ export async function getCustomers() {
       orders: statsMap[c.phone || ""]?.count || 0,
       spent: statsMap[c.phone || ""]?.spent || 0,
     }));
+  },
+  ["customers-stats"],
+  { tags: ["customers", "orders"], revalidate: 3600 }
+);
+
+export async function getCustomers() {
+  const sessionUser = await getSessionUser();
+  const userRole = sessionUser?.role;
+  const userTenantId = sessionUser?.tenantId;
+
+  if (!hasAdminAccess(userRole)) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    return await getCachedCustomersStats(userRole, userTenantId);
   } catch (error) {
     console.error("getCustomers Error:", error);
     return [];
