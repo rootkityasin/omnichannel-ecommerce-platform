@@ -101,7 +101,7 @@ export function StoryProducts({ data, products }: StoryProductsProps) {
             <Button
               variant="outline"
               size="lg"
-              className="border-white/20 text-white hover:bg-white/10 rounded-full group"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-full group"
             >
               Explore Full Menu
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
