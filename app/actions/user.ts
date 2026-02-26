@@ -1,260 +1,312 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import { auth } from '@/auth';
-import { randomBytes } from 'crypto';
-import { revalidatePath } from 'next/cache';
-import type { Prisma } from '@prisma/client';
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { auth } from "@/auth";
+import { randomBytes } from "crypto";
+import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
 
 const getErrorMessage = (error: unknown) => {
-    if (error instanceof Error) return error.message;
-    return 'Unknown error';
+  if (error instanceof Error) return error.message;
+  return "Unknown error";
 };
 
 const hasAdminAccess = (role?: string | null) =>
-    role === 'SUPER_ADMIN' || role === 'TENANT_ADMIN' || role === 'HUB_ADMIN' || role === 'STAFF';
+  role === "SUPER_ADMIN" ||
+  role === "TENANT_ADMIN" ||
+  role === "HUB_ADMIN" ||
+  role === "STAFF";
 
 const hasSuperTenantAccess = (role?: string | null) =>
-    role === 'SUPER_ADMIN' || role === 'TENANT_ADMIN';
+  role === "SUPER_ADMIN" || role === "TENANT_ADMIN";
 
 export async function checkUserExists(phone: string) {
-    if (!phone) return false;
-    try {
-        const user = await prisma.user.findFirst({ where: { phone: phone } });
-        return !!user;
-    } catch {
-        return false;
-    }
+  if (!phone) return false;
+  try {
+    const user = await prisma.user.findFirst({ where: { phone: phone } });
+    return !!user;
+  } catch {
+    return false;
+  }
 }
 
 export async function getCurrentUserRole() {
-    const sessionUser = await getSessionUser();
-    return sessionUser?.role || null;
+  const sessionUser = await getSessionUser();
+  return sessionUser?.role || null;
 }
 
-import { z } from 'zod';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { headers } from 'next/headers';
+import { z } from "zod";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 const CreateUserSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    phone: z.string().regex(/^(\+88)?01[3-9]\d{8}$/, "Invalid BD Phone Number"),
-    email: z.string().email("Invalid email address").optional().or(z.literal("")),
-    password: z.string().min(6, "Password must be at least 6 characters").optional(),
-    tenantId: z.string().optional()
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().regex(/^(\+88)?01[3-9]\d{8}$/, "Invalid BD Phone Number"),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .optional(),
+  tenantId: z.string().optional(),
 });
 
 // Basic simplified create for signup
-export async function createUser(data: { name: string; phone: string; email?: string; address?: string; password?: string, tenantId?: string }) {
-    // 1. Rate Limiting (IP-based)
-    const ip = (await headers()).get('x-forwarded-for') || '127.0.0.1';
-    if (!await checkRateLimit(`signup:${ip}`, 3, 60 * 1000)) {
-        return { success: false, error: "Too many signup attempts. Please try again later." };
-    }
+export async function createUser(data: {
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  password?: string;
+  tenantId?: string;
+}) {
+  // 1. Rate Limiting (IP-based)
+  const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
+  if (!(await checkRateLimit(`signup:${ip}`, 3, 60 * 1000))) {
+    return {
+      success: false,
+      error: "Too many signup attempts. Please try again later.",
+    };
+  }
 
-    // 2. Input Validation
-    const validation = CreateUserSchema.safeParse(data);
-    if (!validation.success) {
-        return { success: false, error: validation.error.issues[0].message };
-    }
+  // 2. Input Validation
+  const validation = CreateUserSchema.safeParse(data);
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
 
-    try {
-        // Note: data.tenantId should ideally be passed for multi-tenant apps so user is associated with a specific tenant
-        // But Users might be global in some designs? 
-        // Schema has `tenantId String?`. So it is scoped.
+  try {
+    // Note: data.tenantId should ideally be passed for multi-tenant apps so user is associated with a specific tenant
+    // But Users might be global in some designs?
+    // Schema has `tenantId String?`. So it is scoped.
 
-        const tenantId = data.tenantId;
+    const tenantId = data.tenantId;
 
-        // If checking existence, should we check per tenant?
-        // Usually phone numbers are unique system-wide OR unique per tenant.
-        // If unique per tenant:
-        const whereClause = tenantId ? { phone: data.phone, tenantId } : { phone: data.phone };
-        const existing = await prisma.user.findFirst({ where: whereClause });
+    // If checking existence, should we check per tenant?
+    // Usually phone numbers are unique system-wide OR unique per tenant.
+    // If unique per tenant:
+    const whereClause = tenantId
+      ? { phone: data.phone, tenantId }
+      : { phone: data.phone };
+    const existing = await prisma.user.findFirst({ where: whereClause });
 
-        if (existing) return { success: false, error: "User already exists" };
+    if (existing) return { success: false, error: "User already exists" };
 
-        const user = await prisma.user.create({
-            data: {
-                tenantId,
-                name: data.name,
-                phone: data.phone,
-                email: data.email || `${data.phone}@placeholder.com`,
-                password: data.password ? await bcrypt.hash(data.password, 10) : undefined,
-                role: 'USER'
-            }
-        });
-        return { success: true, user };
-    } catch (error) {
-        return { success: false, error: getErrorMessage(error) };
-    }
+    const user = await prisma.user.create({
+      data: {
+        tenantId,
+        name: data.name,
+        phone: data.phone,
+        email: data.email || `${data.phone}@placeholder.com`,
+        password: data.password
+          ? await bcrypt.hash(data.password, 10)
+          : undefined,
+        role: "USER",
+      },
+    });
+    return { success: true, user };
+  } catch (error) {
+    return { success: false, error: getErrorMessage(error) };
+  }
 }
 
 // Admin Create User with Roles
 export async function createUserWithRole(data: {
-    name: string;
-    email: string;
-    phone: string;
-    role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'HUB_ADMIN' | 'STAFF' | 'USER';
-    password?: string;
-    permissions?: string[];
-    tenantId?: string;
-    hubId?: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: "SUPER_ADMIN" | "TENANT_ADMIN" | "HUB_ADMIN" | "STAFF" | "USER";
+  password?: string;
+  permissions?: string[];
+  tenantId?: string;
+  hubId?: string;
 }) {
-    const sessionUser = await getSessionUser();
-    const callerRole = sessionUser?.role;
+  const sessionUser = await getSessionUser();
+  const callerRole = sessionUser?.role;
 
-    // Authorization Logic
-    if (callerRole !== 'SUPER_ADMIN') {
-        if (data.role === 'SUPER_ADMIN') return { success: false, error: "Unauthorized" };
+  console.log("createUserWithRole Attempt:", {
+    callerRole,
+    targetRole: data.role,
+  });
 
-        if (callerRole === 'TENANT_ADMIN') {
-            // Tenant Admin can only manage their own Tenant (Hub Admins / Staff / Users)
-            // And cannot create Tenant Admins (only Super Admin does that usually)
-            if (['TENANT_ADMIN'].includes(data.role)) return { success: false, error: "Unauthorized" };
-        } else if (callerRole === 'HUB_ADMIN') {
-            // Hub Admin can only create Staff/User
-            if (['SUPER_ADMIN', 'TENANT_ADMIN', 'HUB_ADMIN'].includes(data.role)) return { success: false, error: "Unauthorized" };
-        } else {
-            return { success: false, error: "Unauthorized" };
-        }
+  // Authorization Logic
+  if (callerRole !== "SUPER_ADMIN") {
+    if (data.role === "SUPER_ADMIN") {
+      console.log("Blocked: Cannot create SUPER_ADMIN");
+      return { success: false, error: "Unauthorized" };
     }
 
-    try {
-        const existing = await prisma.user.findUnique({ where: { email: data.email } });
-        if (existing) return { success: false, error: "Email already taken" };
-
-        // Secure default password generation
-        const generatedPassword = data.password || randomBytes(16).toString('hex');
-        const hashedPassword = await bcrypt.hash(generatedPassword, 10);
-
-        const user = await prisma.user.create({
-            data: {
-                tenantId: data.tenantId || sessionUser?.tenantId, // Inherit or Explicit
-                hubId: data.hubId || sessionUser?.hubId,
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-                role: data.role,
-                permissions: data.permissions || [],
-                password: hashedPassword
-            }
-        });
-        return { success: true, user };
-
-    } catch (error) {
-        console.error(error);
-        return { success: false, error: getErrorMessage(error) };
+    if (callerRole === "TENANT_ADMIN") {
+      // Tenant Admin can only manage their own Tenant (Hub Admins / Staff / Users)
+      // And cannot create Tenant Admins (only Super Admin does that usually)
+      if (["TENANT_ADMIN"].includes(data.role)) {
+        console.log("Blocked: TENANT_ADMIN cannot create TENANT_ADMIN");
+        return { success: false, error: "Unauthorized" };
+      }
+    } else if (callerRole === "HUB_ADMIN") {
+      // Hub Admin can only create Staff/User
+      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role)) {
+        console.log("Blocked: HUB_ADMIN cannot create higher roles");
+        return { success: false, error: "Unauthorized" };
+      }
+    } else {
+      console.log(
+        "Blocked: Caller role not authorized. callerRole=",
+        callerRole,
+      );
+      return { success: false, error: "Unauthorized" };
     }
+  }
+
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (existing) return { success: false, error: "Email already taken" };
+
+    // Secure default password generation
+    const generatedPassword = data.password || randomBytes(16).toString("hex");
+    const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        tenantId: data.tenantId || sessionUser?.tenantId, // Inherit or Explicit
+        hubId: data.hubId || sessionUser?.hubId,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        role: data.role,
+        permissions: data.permissions || [],
+        password: hashedPassword,
+      },
+    });
+    return { success: true, user };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: getErrorMessage(error) };
+  }
 }
 
-export async function updateUser(userId: string, data: {
+export async function updateUser(
+  userId: string,
+  data: {
     name: string;
     email: string;
     phone: string;
-    role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'HUB_ADMIN' | 'STAFF' | 'USER';
+    role: "SUPER_ADMIN" | "TENANT_ADMIN" | "HUB_ADMIN" | "STAFF" | "USER";
     permissions: string[];
     hubId?: string;
-}) {
-    const sessionUser = await getSessionUser();
-    const callerRole = sessionUser?.role;
+  },
+) {
+  const sessionUser = await getSessionUser();
+  const callerRole = sessionUser?.role;
 
-    // Basic Authorization (Can be refined)
-    if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN') {
-        return { success: false, error: "Unauthorized" };
+  // Basic Authorization (Can be refined)
+  if (callerRole !== "SUPER_ADMIN" && callerRole !== "TENANT_ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) return { success: false, error: "User not found" };
+
+    // Hierarchy Check: Prevent lower/equal tiers from modifying higher tiers
+    if (targetUser.role === "SUPER_ADMIN" && callerRole !== "SUPER_ADMIN") {
+      return { success: false, error: "Cannot modify Super Admin" };
     }
 
-    try {
-        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-        if (!targetUser) return { success: false, error: "User not found" };
-
-        // Hierarchy Check: Prevent lower/equal tiers from modifying higher tiers
-        if (targetUser.role === 'SUPER_ADMIN' && callerRole !== 'SUPER_ADMIN') {
-            return { success: false, error: "Cannot modify Super Admin" };
-        }
-
-        // Fix IDOR: Ensure Tenant Admin can only update users in their own tenant
-        const sessionTenantId = sessionUser?.tenantId;
-        if (callerRole === 'TENANT_ADMIN' && targetUser.tenantId !== sessionTenantId) {
-            return { success: false, error: "Unauthorized: Cannot modify user from another tenant" };
-        }
-
-        // Prevent Tenant Admin from modifying other Tenant Admins (unless self?)
-        if (targetUser.role === 'TENANT_ADMIN' && callerRole === 'TENANT_ADMIN' && targetUser.id !== sessionUser?.id) {
-            // Ideally Tenant Admin manages heirarchy below them. Modifying another Tenant Admin (peer) is usually blocked or limited.
-            // Allowing for now if same tenant, but typically Owner is singular.
-        }
-
-        const user = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-                role: data.role,
-                permissions: data.permissions,
-                hubId: data.hubId
-            }
-        });
-        return { success: true, user };
-    } catch (error) {
-        return { success: false, error: "Failed to update user" };
+    // Fix IDOR: Ensure Tenant Admin can only update users in their own tenant
+    const sessionTenantId = sessionUser?.tenantId;
+    if (
+      callerRole === "TENANT_ADMIN" &&
+      targetUser.tenantId !== sessionTenantId
+    ) {
+      return {
+        success: false,
+        error: "Unauthorized: Cannot modify user from another tenant",
+      };
     }
+
+    // Prevent Tenant Admin from modifying other Tenant Admins (unless self?)
+    if (
+      targetUser.role === "TENANT_ADMIN" &&
+      callerRole === "TENANT_ADMIN" &&
+      targetUser.id !== sessionUser?.id
+    ) {
+      // Ideally Tenant Admin manages heirarchy below them. Modifying another Tenant Admin (peer) is usually blocked or limited.
+      // Allowing for now if same tenant, but typically Owner is singular.
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        role: data.role,
+        permissions: data.permissions,
+        hubId: data.hubId,
+      },
+    });
+    return { success: true, user };
+  } catch (error) {
+    return { success: false, error: "Failed to update user" };
+  }
 }
 
 export async function deleteUser(userId: string) {
-    const sessionUser = await getSessionUser();
-    const callerRole = sessionUser?.role;
+  const sessionUser = await getSessionUser();
+  const callerRole = sessionUser?.role;
 
-    if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN') {
+  if (callerRole !== "SUPER_ADMIN" && callerRole !== "TENANT_ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) return { success: false, error: "User not found" };
+
+    // Hierarchy Protection
+    if (targetUser.role === "SUPER_ADMIN") {
+      return { success: false, error: "Cannot delete Super Admin" };
+    }
+
+    if (callerRole === "TENANT_ADMIN") {
+      // Tenant Admin cannot delete other Tenant Admins or Super Admins
+      if (["SUPER_ADMIN", "TENANT_ADMIN"].includes(targetUser.role)) {
+        return { success: false, error: "Unauthorized to delete this role" };
+      }
+      // Must belong to same tenant (implicit)
+      if (targetUser.tenantId !== sessionUser?.tenantId) {
         return { success: false, error: "Unauthorized" };
+      }
     }
 
-    try {
-        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-        if (!targetUser) return { success: false, error: "User not found" };
-
-        // Hierarchy Protection
-        if (targetUser.role === 'SUPER_ADMIN') {
-            return { success: false, error: "Cannot delete Super Admin" };
-        }
-
-        if (callerRole === 'TENANT_ADMIN') {
-            // Tenant Admin cannot delete other Tenant Admins or Super Admins
-            if (['SUPER_ADMIN', 'TENANT_ADMIN'].includes(targetUser.role)) {
-                return { success: false, error: "Unauthorized to delete this role" };
-            }
-            // Must belong to same tenant (implicit)
-            if (targetUser.tenantId !== sessionUser?.tenantId) {
-                return { success: false, error: "Unauthorized" };
-            }
-        }
-
-        await prisma.user.delete({ where: { id: userId } });
-        revalidatePath('/admin/customers');
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: "Failed to delete" };
-    }
+    await prisma.user.delete({ where: { id: userId } });
+    revalidatePath("/admin/customers");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to delete" };
+  }
 }
 
 export async function updateUserStatus(userId: string, status: string) {
-    const sessionUser = await getSessionUser();
-    if (sessionUser?.role !== 'SUPER_ADMIN') {
-        return { success: false, error: "Unauthorized" };
-    }
+  const sessionUser = await getSessionUser();
+  if (sessionUser?.role !== "SUPER_ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
 
-    try {
-        await prisma.user.update({
-            where: { id: userId },
-            data: { status }
-        });
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: "Failed to update status" };
-    }
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status },
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update status" };
+  }
 }
 
 /* 
@@ -262,299 +314,341 @@ export async function updateUserStatus(userId: string, status: string) {
   The previous file had simple getAllUsers. preserving it.
 */
 export async function getAllUsers() {
-    const sessionUser = await getSessionUser();
-    const userRole = sessionUser?.role;
-    const userTenantId = sessionUser?.tenantId;
-    const userHubId = sessionUser?.hubId;
+  const sessionUser = await getSessionUser();
+  const userRole = sessionUser?.role;
+  const userTenantId = sessionUser?.tenantId;
+  const userHubId = sessionUser?.hubId;
 
-    if (!hasAdminAccess(userRole)) {
-        throw new Error("Unauthorized");
+  if (!hasAdminAccess(userRole)) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    // Base filter: Exclude customers (role: 'USER') because they have their own section.
+    // Also exclude SUPER_ADMIN from this list (System Level, not Shop Level).
+    const where: Prisma.UserWhereInput = {
+      role: { notIn: ["USER", "SUPER_ADMIN"] },
+    };
+
+    // Role-based scoping
+    if (userRole === "SUPER_ADMIN") {
+      // Super Admin sees all (or could filter by tenant if context provided, but here all)
+    } else if (userRole === "TENANT_ADMIN") {
+      if (userTenantId) where.tenantId = userTenantId;
+    } else if (userRole === "HUB_ADMIN") {
+      if (userTenantId) where.tenantId = userTenantId;
+      if (userHubId) where.hubId = userHubId; // Hub Admins only see users in their hub
+    } else if (userRole === "STAFF") {
+      // Staff usually don't see this list, but if they do:
+      if (userTenantId) where.tenantId = userTenantId;
+      if (userHubId) where.hubId = userHubId;
     }
 
-    try {
-        // Base filter: Exclude customers (role: 'USER') because they have their own section.
-        // Also exclude SUPER_ADMIN from this list (System Level, not Shop Level).
-        const where: Prisma.UserWhereInput = {
-            role: { notIn: ['USER', 'SUPER_ADMIN'] }
-        };
-
-        // Role-based scoping
-        if (userRole === 'SUPER_ADMIN') {
-            // Super Admin sees all (or could filter by tenant if context provided, but here all)
-        } else if (userRole === 'TENANT_ADMIN') {
-            if (userTenantId) where.tenantId = userTenantId;
-        } else if (userRole === 'HUB_ADMIN') {
-            if (userTenantId) where.tenantId = userTenantId;
-            if (userHubId) where.hubId = userHubId; // Hub Admins only see users in their hub
-        } else if (userRole === 'STAFF') {
-            // Staff usually don't see this list, but if they do:
-            if (userTenantId) where.tenantId = userTenantId;
-            if (userHubId) where.hubId = userHubId;
-        }
-
-        const users = await prisma.user.findMany({
-            where,
-            orderBy: { id: 'desc' },
-            // Include permissions in select
-            select: { id: true, name: true, email: true, role: true, phone: true, status: true, permissions: true, hubId: true }
-        });
-        return users;
-    } catch (error) {
-        console.error("getAllUsers Error:", error);
-        return [];
-    }
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { id: "desc" },
+      // Include permissions in select
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        status: true,
+        permissions: true,
+        hubId: true,
+      },
+    });
+    return users;
+  } catch (error) {
+    console.error("getAllUsers Error:", error);
+    return [];
+  }
 }
 
 export async function getCustomers() {
-    const sessionUser = await getSessionUser();
-    const userRole = sessionUser?.role;
-    const userTenantId = sessionUser?.tenantId;
+  const sessionUser = await getSessionUser();
+  const userRole = sessionUser?.role;
+  const userTenantId = sessionUser?.tenantId;
 
-    if (!hasAdminAccess(userRole)) {
-        throw new Error("Unauthorized");
+  if (!hasAdminAccess(userRole)) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const where: Prisma.UserWhereInput = {
+      role: "USER",
+    };
+
+    if (userRole !== "SUPER_ADMIN" && userTenantId) {
+      where.tenantId = userTenantId;
     }
 
-    try {
-        const where: Prisma.UserWhereInput = {
-            role: 'USER'
-        };
+    const customers = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+        points: true,
+      },
+    });
 
-        if (userRole !== 'SUPER_ADMIN' && userTenantId) {
-            where.tenantId = userTenantId;
-        }
+    // Get orders for these phones to calculate spent and count
+    const phones = customers
+      .map((c) => c.phone)
+      .filter((phone): phone is string => Boolean(phone));
 
-        const customers = await prisma.user.findMany({
-            where,
-            orderBy: { createdAt: 'desc' },
-            select: { id: true, name: true, email: true, phone: true, createdAt: true, points: true }
-        });
-
-        // Get orders for these phones to calculate spent and count
-        const phones = customers.map((c) => c.phone).filter((phone): phone is string => Boolean(phone));
-
-        const ordersWhere: Prisma.OrderWhereInput = {
-            customerPhone: { in: phones }
-        };
-        // Only filter by tenantId if not a SUPER_ADMIN
-        if (userRole !== 'SUPER_ADMIN' && userTenantId) {
-            ordersWhere.tenantId = userTenantId;
-        }
-
-        const orders = await prisma.order.findMany({
-            where: ordersWhere,
-            select: { customerPhone: true, totalAmount: true, status: true }
-        });
-
-        // Group by phone
-        const statsMap = orders.reduce<Record<string, { count: number; spent: number }>>((acc, order) => {
-            if (!acc[order.customerPhone]) {
-                acc[order.customerPhone] = { count: 0, spent: 0 };
-            }
-            if (order.status !== 'CANCELLED') {
-                acc[order.customerPhone].count++;
-                acc[order.customerPhone].spent += order.totalAmount;
-            }
-            return acc;
-        }, {});
-
-        return customers.map((c) => ({
-            ...c,
-            orders: statsMap[c.phone || '']?.count || 0,
-            spent: statsMap[c.phone || '']?.spent || 0
-        }));
-    } catch (error) {
-        console.error("getCustomers Error:", error);
-        return [];
+    const ordersWhere: Prisma.OrderWhereInput = {
+      customerPhone: { in: phones },
+    };
+    // Only filter by tenantId if not a SUPER_ADMIN
+    if (userRole !== "SUPER_ADMIN" && userTenantId) {
+      ordersWhere.tenantId = userTenantId;
     }
+
+    const orders = await prisma.order.findMany({
+      where: ordersWhere,
+      select: { customerPhone: true, totalAmount: true, status: true },
+    });
+
+    // Group by phone
+    const statsMap = orders.reduce<
+      Record<string, { count: number; spent: number }>
+    >((acc, order) => {
+      if (!acc[order.customerPhone]) {
+        acc[order.customerPhone] = { count: 0, spent: 0 };
+      }
+      if (order.status !== "CANCELLED") {
+        acc[order.customerPhone].count++;
+        acc[order.customerPhone].spent += order.totalAmount;
+      }
+      return acc;
+    }, {});
+
+    return customers.map((c) => ({
+      ...c,
+      orders: statsMap[c.phone || ""]?.count || 0,
+      spent: statsMap[c.phone || ""]?.spent || 0,
+    }));
+  } catch (error) {
+    console.error("getCustomers Error:", error);
+    return [];
+  }
 }
 
 export async function getUserProfile(userId: string) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        return user;
-    } catch (error) {
-        return null;
-    }
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    return user;
+  } catch (error) {
+    return null;
+  }
 }
 
 /**
  * Bulk import customers from AI-parsed data
  */
-export async function bulkImportCustomers(customers: { name: string; phone: string; email?: string }[]) {
-    const sessionUser = await getSessionUser();
-    const role = sessionUser?.role;
-    const tenantId = sessionUser?.tenantId;
+export async function bulkImportCustomers(
+  customers: { name: string; phone: string; email?: string }[],
+) {
+  const sessionUser = await getSessionUser();
+  const role = sessionUser?.role;
+  const tenantId = sessionUser?.tenantId;
 
-    if (!hasSuperTenantAccess(role)) {
-        return { success: false, error: "Unauthorized", imported: 0, skipped: 0 };
+  if (!hasSuperTenantAccess(role)) {
+    return { success: false, error: "Unauthorized", imported: 0, skipped: 0 };
+  }
+
+  let imported = 0;
+  let skipped = 0;
+
+  for (const customer of customers) {
+    try {
+      // Check if phone already exists
+      const existing = await prisma.user.findFirst({
+        where: { phone: customer.phone },
+      });
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      await prisma.user.create({
+        data: {
+          name: customer.name,
+          phone: customer.phone,
+          email: customer.email || `${customer.phone}@placeholder.com`,
+          role: "USER",
+          tenantId: tenantId,
+        },
+      });
+      imported++;
+    } catch (error) {
+      console.error("Import error for", customer.phone, error);
+      skipped++;
     }
+  }
 
-    let imported = 0;
-    let skipped = 0;
-
-    for (const customer of customers) {
-        try {
-            // Check if phone already exists
-            const existing = await prisma.user.findFirst({ where: { phone: customer.phone } });
-            if (existing) {
-                skipped++;
-                continue;
-            }
-
-            await prisma.user.create({
-                data: {
-                    name: customer.name,
-                    phone: customer.phone,
-                    email: customer.email || `${customer.phone}@placeholder.com`,
-                    role: 'USER',
-                    tenantId: tenantId
-                }
-            });
-            imported++;
-        } catch (error) {
-            console.error("Import error for", customer.phone, error);
-            skipped++;
-        }
-    }
-
-    // ... existing code ...
-    revalidatePath('/admin/customers');
-    return { success: true, imported, skipped };
+  // ... existing code ...
+  revalidatePath("/admin/customers");
+  return { success: true, imported, skipped };
 }
 
 export async function resetUserPassword(userId: string, newPassword?: string) {
-    const sessionUser = await getSessionUser();
-    const callerRole = sessionUser?.role;
+  const sessionUser = await getSessionUser();
+  const callerRole = sessionUser?.role;
 
-    if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN' && callerRole !== 'HUB_ADMIN') {
-        return { success: false, error: "Unauthorized" };
+  if (
+    callerRole !== "SUPER_ADMIN" &&
+    callerRole !== "TENANT_ADMIN" &&
+    callerRole !== "HUB_ADMIN"
+  ) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) return { success: false, error: "User not found" };
+
+    // Hierarchy Check
+    if (targetUser.role === "SUPER_ADMIN" && callerRole !== "SUPER_ADMIN") {
+      return { success: false, error: "Cannot reset Super Admin password" };
+    }
+    if (targetUser.role === "TENANT_ADMIN" && callerRole === "HUB_ADMIN") {
+      return { success: false, error: "Unauthorized" };
     }
 
-    try {
-        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-        if (!targetUser) return { success: false, error: "User not found" };
+    const passwordToSet = newPassword || randomBytes(8).toString("hex");
+    const hashedPassword = await bcrypt.hash(passwordToSet, 10);
 
-        // Hierarchy Check
-        if (targetUser.role === 'SUPER_ADMIN' && callerRole !== 'SUPER_ADMIN') {
-            return { success: false, error: "Cannot reset Super Admin password" };
-        }
-        if (targetUser.role === 'TENANT_ADMIN' && callerRole === 'HUB_ADMIN') {
-            return { success: false, error: "Unauthorized" };
-        }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
 
-        const passwordToSet = newPassword || randomBytes(8).toString('hex');
-        const hashedPassword = await bcrypt.hash(passwordToSet, 10);
-
-        await prisma.user.update({
-            where: { id: userId },
-            data: { password: hashedPassword }
-        });
-
-        return { success: true, password: passwordToSet };
-    } catch (error) {
-        return { success: false, error: "Failed to reset password" };
-    }
+    return { success: true, password: passwordToSet };
+  } catch (error) {
+    return { success: false, error: "Failed to reset password" };
+  }
 }
 
 export async function generateImpersonationToken(targetUserId: string) {
-    const sessionUser = await getSessionUser();
-    const callerRole = sessionUser?.role;
+  const sessionUser = await getSessionUser();
+  const callerRole = sessionUser?.role;
 
-    // Only Admins can impersonate
-    if (callerRole !== 'SUPER_ADMIN' && callerRole !== 'TENANT_ADMIN') {
-        return { success: false, error: "Unauthorized" };
+  // Only Admins can impersonate
+  if (callerRole !== "SUPER_ADMIN" && callerRole !== "TENANT_ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+    if (!targetUser) return { success: false, error: "User not found" };
+
+    // Cannot impersonate a Super Admin unless you are one
+    if (targetUser.role === "SUPER_ADMIN" && callerRole !== "SUPER_ADMIN") {
+      return { success: false, error: "Cannot impersonate Super Admin" };
     }
 
-    try {
-        const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } });
-        if (!targetUser) return { success: false, error: "User not found" };
+    const token = randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-        // Cannot impersonate a Super Admin unless you are one
-        if (targetUser.role === 'SUPER_ADMIN' && callerRole !== 'SUPER_ADMIN') {
-            return { success: false, error: "Cannot impersonate Super Admin" };
-        }
+    // Use VerificationToken table
+    const identifier = `impersonate:${targetUserId}`;
 
-        const token = randomBytes(32).toString('hex');
-        const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    // Cleanup old tokens
+    await prisma.verificationToken.deleteMany({
+      where: { identifier },
+    });
 
-        // Use VerificationToken table
-        const identifier = `impersonate:${targetUserId}`;
+    await prisma.verificationToken.create({
+      data: {
+        identifier,
+        token,
+        expires,
+      },
+    });
 
-        // Cleanup old tokens
-        await prisma.verificationToken.deleteMany({
-            where: { identifier }
-        });
-
-        await prisma.verificationToken.create({
-            data: {
-                identifier,
-                token,
-                expires
-            }
-        });
-
-        return { success: true, token };
-    } catch (error) {
-        console.error("Impersonation error:", error);
-        return { success: false, error: "Failed to generate token" };
-    }
+    return { success: true, token };
+  } catch (error) {
+    console.error("Impersonation error:", error);
+    return { success: false, error: "Failed to generate token" };
+  }
 }
 
-export async function createCustomer(data: { name: string; phone: string; email?: string }) {
-    const sessionUser = await getSessionUser();
-    const role = sessionUser?.role;
+export async function createCustomer(data: {
+  name: string;
+  phone: string;
+  email?: string;
+}) {
+  const sessionUser = await getSessionUser();
+  const role = sessionUser?.role;
 
-    if (!hasAdminAccess(role)) {
-        return { success: false, error: "Unauthorized" };
-    }
+  if (!hasAdminAccess(role)) {
+    return { success: false, error: "Unauthorized" };
+  }
 
-    try {
-        const tenantId = sessionUser?.tenantId;
+  try {
+    const tenantId = sessionUser?.tenantId;
 
-        // Check duplicate
-        const existing = await prisma.user.findFirst({ where: { phone: data.phone } });
-        if (existing) return { success: false, error: "Phone number already exists" };
+    // Check duplicate
+    const existing = await prisma.user.findFirst({
+      where: { phone: data.phone },
+    });
+    if (existing)
+      return { success: false, error: "Phone number already exists" };
 
-        const user = await prisma.user.create({
-            data: {
-                name: data.name,
-                phone: data.phone,
-                email: data.email || `${data.phone}@placeholder.com`, // Fallback email
-                role: 'USER',
-                tenantId: tenantId, // Bind to tenant if available
-            }
-        });
-        revalidatePath('/admin/customers');
-        return { success: true, user };
-    } catch (error) {
-        console.error("createCustomer Error:", error);
-        return { success: false, error: getErrorMessage(error) || "Failed to create customer" };
-    }
+    const user = await prisma.user.create({
+      data: {
+        name: data.name,
+        phone: data.phone,
+        email: data.email || `${data.phone}@placeholder.com`, // Fallback email
+        role: "USER",
+        tenantId: tenantId, // Bind to tenant if available
+      },
+    });
+    revalidatePath("/admin/customers");
+    return { success: true, user };
+  } catch (error) {
+    console.error("createCustomer Error:", error);
+    return {
+      success: false,
+      error: getErrorMessage(error) || "Failed to create customer",
+    };
+  }
 }
 
-export async function updateCustomer(id: string, data: { name: string; phone: string; email?: string }) {
-    const sessionUser = await getSessionUser();
-    const role = sessionUser?.role;
+export async function updateCustomer(
+  id: string,
+  data: { name: string; phone: string; email?: string },
+) {
+  const sessionUser = await getSessionUser();
+  const role = sessionUser?.role;
 
-    if (!hasAdminAccess(role)) {
-        return { success: false, error: "Unauthorized" };
-    }
+  if (!hasAdminAccess(role)) {
+    return { success: false, error: "Unauthorized" };
+  }
 
-    try {
-        await prisma.user.update({
-            where: { id },
-            data: {
-                name: data.name,
-                phone: data.phone,
-                email: data.email
-            }
-        });
-        revalidatePath('/admin/customers');
-        return { success: true };
-    } catch {
-        return { success: false, error: "Failed to update customer" };
-    }
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: {
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+      },
+    });
+    revalidatePath("/admin/customers");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to update customer" };
+  }
 }
-
