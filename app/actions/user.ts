@@ -152,10 +152,28 @@ export async function createUserWithRole(data: {
     const generatedPassword = data.password || randomBytes(16).toString("hex");
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
+    let finalHubId = data.hubId || sessionUser?.hubId;
+    if (finalHubId && ['HUB_ADMIN', 'STAFF'].includes(data.role)) {
+      const hubNameWords = finalHubId.replace(/-hub$/i, '').split('-');
+      const hubName = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + ' Hub';
+      const hubLocation = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+      await prisma.hub.upsert({
+        where: { id: finalHubId },
+        update: {},
+        create: {
+          id: finalHubId,
+          name: hubName,
+          location: hubLocation,
+          tenantId: data.tenantId || sessionUser?.tenantId,
+        }
+      });
+    }
+
     const user = await prisma.user.create({
       data: {
         tenantId: data.tenantId || sessionUser?.tenantId, // Inherit or Explicit
-        hubId: data.hubId || sessionUser?.hubId,
+        hubId: finalHubId,
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -221,6 +239,24 @@ export async function updateUser(
       // Allowing for now if same tenant, but typically Owner is singular.
     }
 
+    let finalHubId = data.hubId;
+    if (finalHubId && ['HUB_ADMIN', 'STAFF'].includes(data.role)) {
+      const hubNameWords = finalHubId.replace(/-hub$/i, '').split('-');
+      const hubName = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + ' Hub';
+      const hubLocation = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+      await prisma.hub.upsert({
+        where: { id: finalHubId },
+        update: {},
+        create: {
+          id: finalHubId,
+          name: hubName,
+          location: hubLocation,
+          tenantId: targetUser.tenantId,
+        }
+      });
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -229,7 +265,7 @@ export async function updateUser(
         phone: data.phone,
         role: data.role,
         permissions: data.permissions,
-        hubId: data.hubId,
+        hubId: finalHubId,
       },
     });
     return { success: true, user };

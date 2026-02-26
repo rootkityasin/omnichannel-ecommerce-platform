@@ -405,16 +405,22 @@ export function UsersTab() {
                                     {['HUB_ADMIN', 'STAFF'].includes(newUser.role) && (
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-gray-700 uppercase">Assign Hub</label>
-                                            <Select value={newUser.hubId} onValueChange={(val) => setNewUser({ ...newUser, hubId: val })}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select Hub" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="dhaka-central">Dhaka Central Hub</SelectItem>
-                                                    <SelectItem value="khulna-hub">Khulna Hub</SelectItem>
-                                                    <SelectItem value="chattogram-hub">Chattogram Hub</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <div className="flex border border-slate-200 rounded-md shadow-sm bg-white overflow-hidden focus-within:ring-2 focus-within:ring-slate-900 focus-within:ring-offset-2">
+                                                <input
+                                                    type="text"
+                                                    value={newUser.hubId ? newUser.hubId.replace(/-hub$/i, '').replace(/-/g, ' ') : ''}
+                                                    onChange={(e) => {
+                                                        const baseName = e.target.value;
+                                                        const formattedId = baseName.trim() ? `${baseName.trim().toLowerCase().replace(/\s+/g, '-')}-hub` : '';
+                                                        setNewUser({ ...newUser, hubId: formattedId });
+                                                    }}
+                                                    placeholder="e.g. Mirpur"
+                                                    className="flex-1 h-10 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                                />
+                                                <div className="flex items-center px-3 bg-slate-50 border-l border-slate-200 text-sm font-medium text-slate-500 select-none">
+                                                    Hub
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                     <div className="space-y-1.5">
