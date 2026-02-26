@@ -281,14 +281,7 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
-  // Effect to set default view based on shop type
-  useEffect(() => {
-    if (config?.shopType === "RESTAURANT") {
-      setView("kanban");
-    } else {
-      setView("table");
-    }
-  }, [config.shopType]);
+  // Default view is 'table', avoiding forced kanban load even for Restaurants.
 
   // Filter Logic - for RESTAURANT, table view only shows Draft (Ready Stock) items
   const stages = Array.from(new Set(products.map((p) => p.stage))).filter(
@@ -1204,9 +1197,9 @@ export default function ProductsPage() {
                               value={
                                 newProduct.pieces
                                   ? Math.floor(
-                                      Number(newProduct.pieces) /
-                                        (Number(newProduct.weight) || 1),
-                                    )
+                                    Number(newProduct.pieces) /
+                                    (Number(newProduct.weight) || 1),
+                                  )
                                   : ""
                               }
                               onChange={(e) => {
@@ -1431,8 +1424,8 @@ export default function ProductsPage() {
                                     (item) =>
                                       item.child
                                         ? Math.floor(
-                                            item.child.pieces / item.quantity,
-                                          )
+                                          item.child.pieces / item.quantity,
+                                        )
                                         : 0,
                                   );
                                   return `${Math.min(...limits)} Sets`;
