@@ -6,7 +6,6 @@ import {
   Package,
   Truck,
   ArrowRight,
-  X,
   MoreVertical,
   Printer,
   Edit,
@@ -105,7 +104,11 @@ export function FulfillmentBoard({
                       o.status === "Processing"
                     );
                   if (col.status === "Ready To Fry")
-                    return o.status === "Ready To Fry" || o.status === "Ready";
+                    return (
+                      o.status === "Ready To Fry" ||
+                      o.status === "Ready" ||
+                      o.status === "Invoice Printed"
+                    );
                   return o.status === col.status;
                 }).length
               }
@@ -122,7 +125,11 @@ export function FulfillmentBoard({
                     o.status === "Ready to Process" || o.status === "Processing"
                   );
                 if (col.status === "Ready To Fry")
-                  return o.status === "Ready To Fry" || o.status === "Ready";
+                  return (
+                    o.status === "Ready To Fry" ||
+                    o.status === "Ready" ||
+                    o.status === "Invoice Printed"
+                  );
                 return o.status === col.status;
               })
               .map((order) => (

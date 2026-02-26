@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -183,7 +183,6 @@ export default function ProductsPage() {
   });
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [archiveRequired, setArchiveRequired] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -227,13 +226,6 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // Force table view for GROCERY shops — no kanban allowed
-  useEffect(() => {
-    if (config.shopType === "GROCERY") {
-      setView("table");
-    }
-  }, [config.shopType]);
 
   // Helper for Edit Click
   const handleEditClick = async (product: { id: string }) => {
@@ -397,63 +389,8 @@ export default function ProductsPage() {
       } else {
         toast.error(res.error || "Failed to delete");
       }
-    } catch (err: any) {
-      console.error("Permanent Delete Client Error:", err);
-      toast.error(err?.message || String(err) || "An unknown error occurred");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const toggleSelection = (id: string) => {
-    setSelectedProducts((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const toggleSelectAll = (filteredProducts: LocalProduct[]) => {
-    setSelectedProducts((prev) =>
-      prev.length === filteredProducts.length
-        ? []
-        : filteredProducts.map((p) => p.id),
-    );
-  };
-
-  const handleBulkDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${selectedProducts.length} products?`,
-      )
-    )
-      return;
-    setIsDeleting(true);
-    try {
-      for (const id of selectedProducts) {
-        await deleteProduct(id);
-      }
-      toast.success("Bulk delete successful");
-      setSelectedProducts([]);
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Bulk delete partially failed");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleBulkMove = async (targetStage: string) => {
-    setIsDeleting(true);
-    try {
-      for (const id of selectedProducts) {
-        await updateProduct(id, { stage: targetStage });
-      }
-      toast.success(`Bulk moved to ${targetStage}`);
-      setSelectedProducts([]);
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Bulk move partially failed");
+    } catch {
+      toast.error("An error occurred");
     } finally {
       setIsDeleting(false);
     }
@@ -664,7 +601,7 @@ export default function ProductsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-800">
-            📦 All Products
+            ≡ƒôª All Products
           </h1>
           <p className="text-sm text-slate-500">
             Manage your menu items and production pipeline.
@@ -672,7 +609,7 @@ export default function ProductsPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          {config.shopType === "RESTAURANT" && (
+          {config.shopType !== "GROCERY" && (
             <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
               <button
                 onClick={() => setView("table")}
@@ -770,7 +707,7 @@ export default function ProductsPage() {
                             value="Archived"
                             className="text-orange-600 font-bold"
                           >
-                            📂 Archived
+                            ≡ƒôé Archived
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -779,35 +716,37 @@ export default function ProductsPage() {
                 </div>
               </PopoverContent>
             </Popover>
-            <Button
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-              onClick={() => {
-                setEditingId(null);
-                setNewProduct({
-                  name: "",
-                  price: "",
-                  sku: "",
-                  image: "",
-                  images: [],
-                  categoryId: "",
-                  description: "",
-                  nutrition: "",
-                  cookingInstructions: "",
-                  pointsReward: "",
-                  weight: "",
-                  pieces: "",
-                  servingSize: "",
-                  stage: "Draft",
-                  type: "SINGLE",
-                  descriptionSwap: false,
-                  comboItems: [],
-                  sections: [],
-                });
-                setIsAdding(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" /> Add Product
-            </Button>
+            {canManageProducts && (
+              <Button
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => {
+                  setEditingId(null);
+                  setNewProduct({
+                    name: "",
+                    price: "",
+                    sku: "",
+                    image: "",
+                    images: [],
+                    categoryId: "",
+                    description: "",
+                    nutrition: "",
+                    cookingInstructions: "",
+                    pointsReward: "",
+                    weight: "",
+                    pieces: "",
+                    servingSize: "",
+                    stage: "Draft",
+                    type: "SINGLE",
+                    descriptionSwap: false,
+                    comboItems: [],
+                    sections: [],
+                  });
+                  setIsAdding(true);
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Product
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -857,7 +796,7 @@ export default function ProductsPage() {
                           try {
                             const bn = await translateToBanglaAI(val);
                             if (bn && bn.length > 0 && bn !== val) {
-                              toast("🇧🇩 AI Tip: " + bn, {
+                              toast("≡ƒçº≡ƒç⌐ AI Tip: " + bn, {
                                 position: "bottom-center",
                                 className:
                                   "bg-indigo-50 text-indigo-800 text-xs py-1 px-2 border-indigo-200",
@@ -1093,7 +1032,7 @@ export default function ProductsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium">
-                      Price (৳) <span className="text-red-500">*</span>
+                      Price (αº│) <span className="text-red-500">*</span>
                     </label>
                     <Input
                       type="number"
@@ -1350,7 +1289,7 @@ export default function ProductsPage() {
       )}
 
       {/* Table view for GROCERY or when view is 'table' */}
-      {view === "table" || config.shopType !== "RESTAURANT" ? (
+      {view === "table" || config.shopType === "GROCERY" ? (
         <Card className="border-none shadow-none bg-transparent">
           <Tabs defaultValue="all" className="w-full">
             <TabsContent value="all" className="mt-4">
@@ -1382,12 +1321,7 @@ export default function ProductsPage() {
                       filteredProducts.map((product) => (
                         <tr key={product.id} className="hover:bg-gray-50/50">
                           <td className="p-4">
-                            <input
-                              type="checkbox"
-                              className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                              checked={selectedProducts.includes(product.id)}
-                              onChange={() => toggleSelection(product.id)}
-                            />
+                            <input type="checkbox" />
                           </td>
                           <td className="p-4">
                             <div className="flex items-center gap-3">
@@ -1416,7 +1350,7 @@ export default function ProductsPage() {
                             {product.sku || "-"}
                           </td>
                           <td className="p-4 font-bold text-slate-800">
-                            ৳{product.price}
+                            αº│{product.price}
                           </td>
                           <td className="p-4 text-center">
                             {product.type === "COMBO" ? (
@@ -1538,38 +1472,45 @@ export default function ProductsPage() {
                                 >
                                   <Share2 className="w-4 h-4 mr-2" /> Share Link
                                 </DropdownMenuItem>
-                                {product.stage === "Archived" ? (
+                                {canManageProducts && (
                                   <>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        handleUnarchive(product.id)
-                                      }
-                                    >
-                                      <Plus className="w-4 h-4 mr-2" /> Restore
-                                      / Unarchive
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="text-red-600"
-                                      onClick={() =>
-                                        handlePermanentDelete(product.id)
-                                      }
-                                    >
-                                      <Trash2 className="w-4 h-4 mr-2" />
-                                      Delete Permanently
-                                    </DropdownMenuItem>
-                                  </>
-                                ) : (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() => handleEditClick(product)}
-                                    >
-                                      <Edit className="w-4 h-4 mr-2" /> Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleClone(product)}
-                                    >
-                                      <Copy className="w-4 h-4 mr-2" /> Clone
-                                    </DropdownMenuItem>
+                                    {product.stage === "Archived" ? (
+                                      <>
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            handleUnarchive(product.id)
+                                          }
+                                        >
+                                          <Plus className="w-4 h-4 mr-2" />{" "}
+                                          Restore / Unarchive
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="text-red-600"
+                                          onClick={() =>
+                                            handlePermanentDelete(product.id)
+                                          }
+                                        >
+                                          <Trash2 className="w-4 h-4 mr-2" />
+                                          Delete Permanently
+                                        </DropdownMenuItem>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            handleEditClick(product)
+                                          }
+                                        >
+                                          <Edit className="w-4 h-4 mr-2" /> Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          onClick={() => handleClone(product)}
+                                        >
+                                          <Copy className="w-4 h-4 mr-2" />{" "}
+                                          Clone
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
                                   </>
                                 )}
                                 <DropdownMenuItem
@@ -1746,52 +1687,6 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Bulk Action Bar */}
-      {selectedProducts.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
-          <Card className="bg-slate-900 border-slate-800 shadow-2xl px-6 py-4 flex items-center gap-6">
-            <div className="flex items-center gap-3 pr-6 border-r border-slate-700">
-              <div className="bg-orange-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                {selectedProducts.length}
-              </div>
-              <span className="text-sm font-medium text-white">Selected</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-800"
-                onClick={() => setSelectedProducts([])}
-              >
-                <X className="w-4 h-4 mr-2" /> Deselect
-              </Button>
-
-              <div className="h-6 w-px bg-slate-700 mx-2" />
-
-              <Select onValueChange={handleBulkMove}>
-                <SelectTrigger className="h-9 w-[160px] bg-slate-800 border-slate-700 text-white text-xs">
-                  <LayoutGrid className="w-4 h-4 mr-2 text-slate-400" />
-                  <SelectValue placeholder="Move to Stage" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                  <SelectItem value="Archived">Move to Archived</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="destructive"
-                size="sm"
-                className="h-9 bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600 hover:text-white"
-                onClick={handleBulkDelete}
-              >
-                <Trash2 className="w-4 h-4 mr-2" /> Bulk Delete
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

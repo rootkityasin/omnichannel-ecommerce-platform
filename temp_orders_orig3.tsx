@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Search,
@@ -187,8 +187,6 @@ export default function OrdersPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-
   // Edit Order State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -214,15 +212,7 @@ export default function OrdersPage() {
       filterStatus === "all" ||
       (filterStatus === "repeated"
         ? o.isRepeat
-        : filterStatus === "ready"
-          ? ["ready", "ready to fry", "invoice printed"].includes(
-              o.status.toLowerCase(),
-            )
-          : filterStatus === "processing"
-            ? ["processing", "ready to process"].includes(
-                o.status.toLowerCase(),
-              )
-            : o.status.toLowerCase() === filterStatus.toLowerCase());
+        : o.status.toLowerCase() === filterStatus.toLowerCase());
     const matchesSource = filterSource === "all" || o.source === filterSource;
 
     // Date Logic (Compare Date Objects)
@@ -394,17 +384,16 @@ export default function OrdersPage() {
     setDeleteId(id);
   };
 
-  const handlePrint = async (order: string | AdminOrder) => {
-    const id = typeof order === "string" ? order : order.id;
+  const handlePrint = async (order: AdminOrder) => {
     // Optimistic UI or wait? Let's wait to ensure stock is deducted.
-    const res = await printOrderInvoice(id); // Uses orderId (e.g. ORD-123)
+    const res = await printOrderInvoice(order.id); // Uses orderId (e.g. ORD-123)
     if (res.success) {
       toast.success("Invoice Printed & Stock Deducted");
       // Refresh local state to show "Invoice Printed" status
       const dbOrders = await getAdminOrders();
       setOrders(dbOrders);
       // Open Print Window
-      window.open(`/admin/orders/print/${id}`, "_blank");
+      window.open(`/admin/orders/print/${order.id}`, "_blank");
     } else {
       toast.error(res.error || "Failed to print invoice");
     }
@@ -437,53 +426,6 @@ export default function OrdersPage() {
       emails: newBlockedEmails,
     });
     toast.success(`Marked ${order.customer} as a suspect/fake source.`);
-  };
-
-  const toggleOrderSelection = (id: string) => {
-    setSelectedOrders((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const toggleSelectAllOrders = (filtered: AdminOrder[]) => {
-    setSelectedOrders((prev) =>
-      prev.length === filtered.length ? [] : filtered.map((o) => o.id),
-    );
-  };
-
-  const handleBulkOrderStatus = async (newStatus: string) => {
-    setIsAdding(true); // Reuse isAdding or add isProcessing
-    try {
-      for (const id of selectedOrders) {
-        await updateOrder(id, { status: newStatus });
-      }
-      toast.success(
-        `Bulk updated ${selectedOrders.length} orders to ${newStatus}`,
-      );
-      setSelectedOrders([]);
-    } catch (err) {
-      console.error(err);
-      toast.error("Bulk status update partially failed");
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
-  const handleBulkOrderDelete = async () => {
-    if (!confirm(`Permanently delete ${selectedOrders.length} orders?`)) return;
-    setIsAdding(true);
-    try {
-      for (const id of selectedOrders) {
-        await deleteOrder(id);
-      }
-      toast.success(`Bulk deleted ${selectedOrders.length} orders`);
-      setSelectedOrders([]);
-    } catch (err) {
-      console.error(err);
-      toast.error("Bulk delete partially failed");
-    } finally {
-      setIsAdding(false);
-    }
   };
 
   const isSuspect = (order: AdminOrder & { email?: string }) => {
@@ -553,7 +495,7 @@ export default function OrdersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-800">
-            🛍️ Orders
+            ≡ƒ¢ì∩╕Å Orders
           </h1>
           <p className="text-sm text-slate-500">
             Manage your kitchen flow here.
@@ -824,12 +766,15 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
-          <Button
-            onClick={() => setIsAdding(true)}
-            className="bg-orange-600 hover:bg-orange-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" /> Create
-          </Button>
+
+          {canManageOrders && (
+            <Button
+              onClick={() => setIsAdding(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create
+            </Button>
+          )}
         </div>
       </div>
 
@@ -931,7 +876,7 @@ export default function OrdersPage() {
                         >
                           <span className="truncate">{product.name}</span>
                           <span className="text-slate-500">
-                            ৳{product.price}
+                            αº│{product.price}
                           </span>
                         </label>
                         {selectedProducts[product.id] && (
@@ -964,7 +909,7 @@ export default function OrdersPage() {
                       htmlFor="new-delivery"
                       className="text-sm font-medium"
                     >
-                      Delivery Charge (৳)
+                      Delivery Charge (αº│)
                     </label>
                     <Input
                       id="new-delivery"
@@ -994,7 +939,9 @@ export default function OrdersPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium">Subtotal (৳)</label>
+                    <label className="text-sm font-medium">
+                      Subtotal (αº│)
+                    </label>
                     <Input
                       value={getSubtotal()}
                       readOnly
@@ -1002,7 +949,7 @@ export default function OrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Total (৳)</label>
+                    <label className="text-sm font-medium">Total (αº│)</label>
                     <Input
                       value={
                         getSubtotal() +
@@ -1074,7 +1021,7 @@ export default function OrdersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="edit-price" className="text-sm font-medium">
-                      Price (৳)
+                      Price (αº│)
                     </label>
                     <Input
                       id="edit-price"
@@ -1152,7 +1099,7 @@ export default function OrdersPage() {
         />
         <SummaryCard
           label="Total Amount"
-          value={`৳ ${orders.reduce((acc: number, o) => acc + o.price, 0).toLocaleString()}`}
+          value={`αº│ ${orders.reduce((acc: number, o) => acc + o.price, 0).toLocaleString()}`}
           subtext="Total Sales"
         />
         <SummaryCard
@@ -1171,7 +1118,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Main Content with Tabs */}
-      {view === "table" || shopType !== "RESTAURANT" ? (
+      {view === "table" ? (
         <Card className="border-none shadow-none bg-transparent">
           <Tabs
             defaultValue="all"
@@ -1198,22 +1145,12 @@ export default function OrdersPage() {
                 <TabTrigger
                   value="processing"
                   label="Processing"
-                  count={
-                    orders.filter((o) =>
-                      ["Processing", "Ready to Process"].includes(o.status),
-                    ).length
-                  }
+                  count={orders.filter((o) => o.status === "Processing").length}
                 />
                 <TabTrigger
                   value="ready"
                   label="Ready"
-                  count={
-                    orders.filter((o) =>
-                      ["Ready", "Ready To Fry", "Invoice Printed"].includes(
-                        o.status,
-                      ),
-                    ).length
-                  }
+                  count={orders.filter((o) => o.status === "Ready").length}
                 />
                 <TabTrigger
                   value="shipped"
@@ -1268,17 +1205,6 @@ export default function OrdersPage() {
                 <table className="w-full text-sm text-left min-w-[800px]">
                   <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
                     <tr>
-                      <th className="p-4 w-10">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                          checked={
-                            filteredOrders.length > 0 &&
-                            selectedOrders.length === filteredOrders.length
-                          }
-                          onChange={() => toggleSelectAllOrders(filteredOrders)}
-                        />
-                      </th>
                       <th className="p-4">Order ID</th>
                       <th className="p-4">Date & Time</th>
                       <th className="p-4">Customer</th>
@@ -1297,18 +1223,8 @@ export default function OrdersPage() {
                           className={cn(
                             "hover:bg-gray-50/50",
                             isSuspect(order) && "bg-red-50/30",
-                            selectedOrders.includes(order.id) &&
-                              "bg-orange-50/50",
                           )}
                         >
-                          <td className="p-4 w-10">
-                            <input
-                              type="checkbox"
-                              className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                              checked={selectedOrders.includes(order.id)}
-                              onChange={() => toggleOrderSelection(order.id)}
-                            />
-                          </td>
                           <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
                             {order.id}
                             {isSuspect(order) && (
@@ -1355,7 +1271,7 @@ export default function OrdersPage() {
                             </Badge>
                           </td>
                           <td className="p-4 font-bold text-slate-800">
-                            ৳{order.price}
+                            αº│{order.price}
                           </td>
                           <td className="p-4">
                             <Badge
@@ -1403,52 +1319,59 @@ export default function OrdersPage() {
                                       : "Print Invoice"}
                                   </DropdownMenuItem>
 
-                                  <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>
-                                      <Check className="w-4 h-4 mr-2" />
-                                      Update Status
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="w-[200px]">
-                                      {getAllStatuses().map((status) => (
-                                        <DropdownMenuItem
-                                          key={status}
-                                          onClick={() =>
-                                            handleStatusChange(order.id, status)
-                                          }
-                                        >
-                                          {status}
-                                          {order.status === status && (
-                                            <Check className="w-3 h-3 ml-auto text-orange-600" />
-                                          )}
-                                        </DropdownMenuItem>
-                                      ))}
-                                    </DropdownMenuSubContent>
-                                  </DropdownMenuSub>
+                                  {canManageOrders && (
+                                    <>
+                                      <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                          <Check className="w-4 h-4 mr-2" />
+                                          Update Status
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent className="w-[200px]">
+                                          {getAllStatuses().map((status) => (
+                                            <DropdownMenuItem
+                                              key={status}
+                                              onClick={() =>
+                                                handleStatusChange(
+                                                  order.id,
+                                                  status,
+                                                )
+                                              }
+                                            >
+                                              {status}
+                                              {order.status === status && (
+                                                <Check className="w-3 h-3 ml-auto text-orange-600" />
+                                              )}
+                                            </DropdownMenuItem>
+                                          ))}
+                                        </DropdownMenuSubContent>
+                                      </DropdownMenuSub>
 
-                                  <DropdownMenuItem
-                                    onClick={() => handleEditClick(order)}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit Order
-                                  </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleEditClick(order)}
+                                      >
+                                        <Edit className="w-4 h-4 mr-2" />
+                                        Edit Order
+                                      </DropdownMenuItem>
 
-                                  <DropdownMenuSeparator />
+                                      <DropdownMenuSeparator />
 
-                                  <DropdownMenuItem
-                                    onClick={() => handleMarkAsFake(order)}
-                                    className="text-red-600 focus:text-red-700 focus:bg-red-50"
-                                  >
-                                    <Ban className="w-4 h-4 mr-2" />
-                                    Mark as Fake
-                                  </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleMarkAsFake(order)}
+                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                      >
+                                        <Ban className="w-4 h-4 mr-2" />
+                                        Mark as Fake
+                                      </DropdownMenuItem>
 
-                                  <DropdownMenuItem
-                                    onClick={() => setDeleteId(order.id)}
-                                    className="text-red-600 focus:text-red-700 focus:bg-red-50"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Order
-                                  </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => setDeleteId(order.id)}
+                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete Order
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
@@ -1475,10 +1398,6 @@ export default function OrdersPage() {
         <FulfillmentBoard
           orders={filteredOrders}
           onStatusChange={handleStatusChange}
-          onPrint={handlePrint}
-          onEdit={handleEditClick}
-          onMarkAsFake={handleMarkAsFake}
-          onDelete={setDeleteId}
           readOnly={!canManageOrders}
         />
       )}
@@ -1506,56 +1425,6 @@ export default function OrdersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Bulk Action Bar */}
-      {selectedOrders.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
-          <Card className="bg-slate-900 border-slate-800 shadow-2xl px-6 py-4 flex items-center gap-6">
-            <div className="flex items-center gap-3 pr-6 border-r border-slate-700">
-              <div className="bg-orange-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                {selectedOrders.length}
-              </div>
-              <span className="text-sm font-medium text-white">Selected</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-800"
-                onClick={() => setSelectedOrders([])}
-              >
-                <X className="w-4 h-4 mr-2" /> Deselect
-              </Button>
-
-              <div className="h-6 w-px bg-slate-700 mx-2" />
-
-              <Select onValueChange={handleBulkOrderStatus}>
-                <SelectTrigger className="h-9 w-[160px] bg-slate-800 border-slate-700 text-white text-xs">
-                  <Check className="w-4 h-4 mr-2 text-slate-400" />
-                  <SelectValue placeholder="Update Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                  {getAllStatuses().map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="destructive"
-                size="sm"
-                className="h-9 bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600 hover:text-white"
-                onClick={handleBulkOrderDelete}
-              >
-                <Trash2 className="w-4 h-4 mr-2" /> Bulk Delete
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
