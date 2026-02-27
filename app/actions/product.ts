@@ -70,6 +70,7 @@ export async function getAdminProducts(domain?: string) {
         sku: true,
         totalSold: true,
         isAvailable: true,
+        servingSize: true,
         comboItems: {
           include: { child: { select: { pieces: true } } },
         },
@@ -147,6 +148,7 @@ export async function getProducts(domain?: string) {
         stage: true,
         sku: true,
         isAvailable: true,
+        servingSize: true,
         sections: {
           select: { slug: true },
         },
