@@ -128,17 +128,32 @@ export async function createUserWithRole(data: {
 
   // Authorization Logic
   if (callerRole !== "SUPER_ADMIN") {
-    if (data.role === "SUPER_ADMIN") return { success: false, error: `Unauthorized: Cannot create SUPER_ADMIN. Your role is ${callerRole}.` };
+    if (data.role === "SUPER_ADMIN")
+      return {
+        success: false,
+        error: `Unauthorized: Cannot create SUPER_ADMIN. Your role is ${callerRole}.`,
+      };
 
     if (callerRole === "TENANT_ADMIN") {
       // Tenant Admin can only manage their own Tenant (Hub Admins / Staff / Users)
       // And cannot create Tenant Admins (only Super Admin does that usually)
-      if (["TENANT_ADMIN"].includes(data.role)) return { success: false, error: `Unauthorized: TENANT_ADMIN cannot create ${data.role}.` };
+      if (["TENANT_ADMIN"].includes(data.role))
+        return {
+          success: false,
+          error: `Unauthorized: TENANT_ADMIN cannot create ${data.role}.`,
+        };
     } else if (callerRole === "HUB_ADMIN") {
       // Hub Admin can only create Staff/User
-      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role)) return { success: false, error: `Unauthorized: HUB_ADMIN cannot create ${data.role}.` };
+      if (["SUPER_ADMIN", "TENANT_ADMIN", "HUB_ADMIN"].includes(data.role))
+        return {
+          success: false,
+          error: `Unauthorized: HUB_ADMIN cannot create ${data.role}.`,
+        };
     } else {
-      return { success: false, error: `Unauthorized: Invalid caller role [${callerRole}] trying to create [${data.role}].` };
+      return {
+        success: false,
+        error: `Unauthorized: Invalid caller role [${callerRole}] trying to create [${data.role}].`,
+      };
     }
   }
 
@@ -152,11 +167,16 @@ export async function createUserWithRole(data: {
     const generatedPassword = data.password || randomBytes(16).toString("hex");
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-    let finalHubId = data.hubId || sessionUser?.hubId;
-    if (finalHubId && ['HUB_ADMIN', 'STAFF'].includes(data.role)) {
-      const hubNameWords = finalHubId.replace(/-hub$/i, '').split('-');
-      const hubName = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + ' Hub';
-      const hubLocation = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const finalHubId = data.hubId || sessionUser?.hubId;
+    if (finalHubId && ["HUB_ADMIN", "STAFF"].includes(data.role)) {
+      const hubNameWords = finalHubId.replace(/-hub$/i, "").split("-");
+      const hubName =
+        hubNameWords
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ") + " Hub";
+      const hubLocation = hubNameWords
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
 
       await prisma.hub.upsert({
         where: { id: finalHubId },
@@ -166,7 +186,7 @@ export async function createUserWithRole(data: {
           name: hubName,
           location: hubLocation,
           tenantId: data.tenantId || sessionUser?.tenantId,
-        }
+        },
       });
     }
 
@@ -240,11 +260,16 @@ export async function updateUser(
       // Allowing for now if same tenant, but typically Owner is singular.
     }
 
-    let finalHubId = data.hubId;
-    if (finalHubId && ['HUB_ADMIN', 'STAFF'].includes(data.role)) {
-      const hubNameWords = finalHubId.replace(/-hub$/i, '').split('-');
-      const hubName = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + ' Hub';
-      const hubLocation = hubNameWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const finalHubId = data.hubId;
+    if (finalHubId && ["HUB_ADMIN", "STAFF"].includes(data.role)) {
+      const hubNameWords = finalHubId.replace(/-hub$/i, "").split("-");
+      const hubName =
+        hubNameWords
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ") + " Hub";
+      const hubLocation = hubNameWords
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
 
       await prisma.hub.upsert({
         where: { id: finalHubId },
@@ -254,7 +279,7 @@ export async function updateUser(
           name: hubName,
           location: hubLocation,
           tenantId: targetUser.tenantId,
-        }
+        },
       });
     }
 
@@ -390,7 +415,10 @@ export async function getAllUsers() {
 import { unstable_cache } from "next/cache";
 
 const getCachedCustomersStats = unstable_cache(
-  async (userRole: string | undefined, userTenantId: string | null | undefined) => {
+  async (
+    userRole: string | undefined,
+    userTenantId: string | null | undefined,
+  ) => {
     // 1. Base Criteria
     const orderWhere: Prisma.OrderWhereInput = {};
     if (userRole !== "SUPER_ADMIN" && userTenantId) {
@@ -411,14 +439,17 @@ const getCachedCustomersStats = unstable_cache(
     });
 
     // 3. Build a map of phones -> { name, email, count, spent, firstSeen }
-    const phoneMap = new Map<string, {
-      phone: string;
-      name: string;
-      email: string | null;
-      count: number;
-      spent: number;
-      firstSeen: Date;
-    }>();
+    const phoneMap = new Map<
+      string,
+      {
+        phone: string;
+        name: string;
+        email: string | null;
+        count: number;
+        spent: number;
+        firstSeen: Date;
+      }
+    >();
 
     for (const order of orders) {
       const phone = order.customerPhone;
@@ -515,7 +546,7 @@ const getCachedCustomersStats = unstable_cache(
     return mergedList;
   },
   ["customers-stats"],
-  { tags: ["customers", "orders"], revalidate: 3600 }
+  { tags: ["customers", "orders"], revalidate: 3600 },
 );
 
 export async function getCustomers() {

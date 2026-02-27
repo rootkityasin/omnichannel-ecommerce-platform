@@ -25,6 +25,7 @@ export async function createOrder(data: {
   discountAmount?: number;
   tenantId?: string;
   source?: "WEB" | "MANUAL" | "WHATSAPP";
+  draftOrderId?: string;
 }) {
   // Bot check removed
 
@@ -41,29 +42,72 @@ export async function createOrder(data: {
       return { success: false, error: "System Error: Missing Tenant Context" };
     }
 
-    // 2. Create Order
-    const order = await prisma.order.create({
-      data: {
-        tenantId,
-        // SECURE ID: randomUUID is cryptographically strong
-        orderId: `ORD-${randomUUID().substring(0, 8).toUpperCase()}`,
-        customerName: data.customerName,
-        customerPhone: data.customerPhone,
-        customerEmail: data.customerEmail,
-        customerAddress: data.customerAddress,
-        totalAmount: data.totalAmount,
-        couponCode: data.couponCode,
-        discountAmount: data.discountAmount,
-        source: data.source || "WEB",
-        items: {
-          create: data.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
+    // 2. Create or Update Order
+    let order;
+
+    // Attempt to resolve existing draft
+    if (data.draftOrderId) {
+      const existingDraft = await prisma.order.findUnique({
+        where: { orderId: data.draftOrderId },
+        select: { id: true, status: true },
+      });
+
+      if (existingDraft && existingDraft.status === "INCOMPLETE") {
+        // We found an incomplete draft, let's convert it to a real pending order
+        // First delete old items just in case the cart changed
+        await prisma.orderItem.deleteMany({
+          where: { orderId: existingDraft.id },
+        });
+
+        order = await prisma.order.update({
+          where: { id: existingDraft.id },
+          data: {
+            status: "PENDING",
+            customerName: data.customerName,
+            customerPhone: data.customerPhone,
+            customerEmail: data.customerEmail,
+            customerAddress: data.customerAddress,
+            totalAmount: data.totalAmount,
+            couponCode: data.couponCode,
+            discountAmount: data.discountAmount,
+            source: data.source || "WEB",
+            items: {
+              create: data.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+            },
+          },
+        });
+      }
+    }
+
+    // fallback if no draft or draft wasn't found/incomplete
+    if (!order) {
+      order = await prisma.order.create({
+        data: {
+          tenantId,
+          // SECURE ID: randomUUID is cryptographically strong
+          orderId: `ORD-${randomUUID().substring(0, 8).toUpperCase()}`,
+          customerName: data.customerName,
+          customerPhone: data.customerPhone,
+          customerEmail: data.customerEmail,
+          customerAddress: data.customerAddress,
+          totalAmount: data.totalAmount,
+          couponCode: data.couponCode,
+          discountAmount: data.discountAmount,
+          source: data.source || "WEB",
+          items: {
+            create: data.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
         },
-      },
-    });
+      });
+    }
 
     // ... (rest of function)
 
@@ -87,6 +131,89 @@ export async function createOrder(data: {
   } catch (error) {
     console.error("Create Order Error:", error);
     return { success: false, error: "Failed to create order" };
+  }
+}
+
+export async function upsertIncompleteOrder(data: {
+  draftOrderId?: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  customerAddress: string;
+  items: { productId: string; quantity: number; price: number }[];
+  totalAmount: number;
+  couponCode?: string;
+  discountAmount?: number;
+  tenantId?: string;
+}) {
+  try {
+    let tenantId = data.tenantId;
+    if (!tenantId) {
+      const sessionUser = await getSessionUser();
+      tenantId = sessionUser?.tenantId ?? undefined;
+    }
+
+    if (!tenantId) return { success: false, error: "Missing Tenant" };
+
+    if (data.draftOrderId) {
+      const existing = await prisma.order.findUnique({
+        where: { orderId: data.draftOrderId },
+        select: { id: true, status: true },
+      });
+
+      if (existing && existing.status === "INCOMPLETE") {
+        await prisma.orderItem.deleteMany({ where: { orderId: existing.id } });
+        await prisma.order.update({
+          where: { id: existing.id },
+          data: {
+            customerName: data.customerName,
+            customerPhone: data.customerPhone,
+            customerEmail: data.customerEmail,
+            customerAddress: data.customerAddress,
+            totalAmount: data.totalAmount,
+            couponCode: data.couponCode,
+            discountAmount: data.discountAmount,
+            items: {
+              create: data.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+            },
+          },
+        });
+        return { success: true, orderId: data.draftOrderId };
+      }
+    }
+
+    const newOrderId = `ORD-${randomUUID().substring(0, 8).toUpperCase()}`;
+    await prisma.order.create({
+      data: {
+        tenantId,
+        orderId: newOrderId,
+        status: "INCOMPLETE",
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        customerEmail: data.customerEmail,
+        customerAddress: data.customerAddress,
+        totalAmount: data.totalAmount,
+        couponCode: data.couponCode,
+        discountAmount: data.discountAmount,
+        source: "WEB",
+        items: {
+          create: data.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        },
+      },
+    });
+
+    return { success: true, orderId: newOrderId };
+  } catch (error) {
+    console.error("Failed to upsert incomplete order:", error);
+    return { success: false, error: "Failed to sync checkout state" };
   }
 }
 

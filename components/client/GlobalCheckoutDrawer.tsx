@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createOrder } from "@/app/actions/order";
+import { createOrder, upsertIncompleteOrder } from "@/app/actions/order";
 import { getStorySections } from "@/app/actions/story";
 import { useLanguageStore } from "@/lib/languageStore";
 import { translations } from "@/lib/translations";
@@ -339,6 +339,7 @@ export function GlobalCheckoutDrawer() {
     coupon,
   } = useCartStore();
   const [isAnimating, setIsAnimating] = useState(false);
+  const [draftOrderId, setDraftOrderId] = useState<string | null>(null);
   const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
 
   const { language } = useLanguageStore();
@@ -422,6 +423,52 @@ export function GlobalCheckoutDrawer() {
     }
   }, [checkoutOpen]);
 
+  // Track Incomplete Orders (Auto-Save Draft)
+  useEffect(() => {
+    if (
+      !checkoutOpen ||
+      items.length === 0 ||
+      !formData.phone ||
+      formData.phone.length < 3
+    )
+      return;
+
+    const timeoutId = setTimeout(async () => {
+      const orderData = {
+        draftOrderId: draftOrderId || undefined,
+        tenantId: siteConfig?.tenantId,
+        customerName: formData.name || "Guest",
+        customerPhone: formData.phone,
+        customerEmail: formData.email,
+        customerAddress: `${formData.address}, ${formData.area}`,
+        items: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        totalAmount: totalAmount,
+        couponCode: coupon?.code,
+        discountAmount: discountAmount,
+      };
+
+      const res = await upsertIncompleteOrder(orderData);
+      if (res.success && res.orderId && res.orderId !== draftOrderId) {
+        setDraftOrderId(res.orderId);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    formData,
+    items,
+    totalAmount,
+    checkoutOpen,
+    draftOrderId,
+    siteConfig?.tenantId,
+    coupon?.code,
+    discountAmount,
+  ]);
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAnimating(true);
@@ -447,6 +494,7 @@ export function GlobalCheckoutDrawer() {
     }
 
     const orderData = {
+      draftOrderId: draftOrderId || undefined,
       tenantId: siteConfig?.tenantId,
       customerName: formData.name,
       customerPhone: formData.phone,
@@ -488,6 +536,7 @@ export function GlobalCheckoutDrawer() {
       toast.success("Order placed successfully!");
       clearCart();
       setSuccessOrder({ id: res.orderId as string, total: totalAmount });
+      setDraftOrderId(null);
       setIsAnimating(false);
       // Do NOT close immediately. Show success view.
     } else {

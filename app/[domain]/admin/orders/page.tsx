@@ -211,18 +211,19 @@ export default function OrdersPage() {
 
   const filteredOrders = orders.filter((o) => {
     const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "repeated"
-        ? o.isRepeat
-        : filterStatus === "ready"
-          ? ["ready", "ready to fry", "invoice printed"].includes(
-              o.status.toLowerCase(),
-            )
-          : filterStatus === "processing"
-            ? ["processing", "ready to process"].includes(
+      filterStatus === "all"
+        ? o.status.toLowerCase() !== "incomplete"
+        : filterStatus === "repeated"
+          ? o.isRepeat
+          : filterStatus === "ready"
+            ? ["ready", "ready to fry", "invoice printed"].includes(
                 o.status.toLowerCase(),
               )
-            : o.status.toLowerCase() === filterStatus.toLowerCase());
+            : filterStatus === "processing"
+              ? ["processing", "ready to process"].includes(
+                  o.status.toLowerCase(),
+                )
+              : o.status.toLowerCase() === filterStatus.toLowerCase();
     const matchesSource = filterSource === "all" || o.source === filterSource;
 
     // Date Logic (Compare Date Objects)
@@ -504,6 +505,7 @@ export default function OrdersPage() {
     "Returned",
     "Payment OnProcess",
     "Payment Failed",
+    "Incomplete",
   ];
 
   const getStatusColor = (status: string) => {
@@ -536,6 +538,8 @@ export default function OrdersPage() {
         return "bg-yellow-100 text-yellow-700";
       case "Payment Failed":
         return "bg-red-50 text-red-600 border border-red-200";
+      case "Incomplete":
+        return "bg-slate-200 text-slate-500 border border-slate-300 border-dashed animate-pulse text-xs";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -1183,12 +1187,22 @@ export default function OrdersPage() {
                 <TabTrigger
                   value="all"
                   label="All Orders"
-                  count={orders.length}
+                  count={orders.filter((o) => o.status !== "Incomplete").length}
                 />
                 <TabTrigger
                   value="placed"
                   label="Placed"
                   count={orders.filter((o) => o.status === "Placed").length}
+                />
+                <TabTrigger
+                  value="incomplete"
+                  label="Incomplete (Draft)"
+                  count={
+                    orders.filter(
+                      (o) =>
+                        o.status === "INCOMPLETE" || o.status === "Incomplete",
+                    ).length
+                  }
                 />
                 <TabTrigger
                   value="confirmed"
