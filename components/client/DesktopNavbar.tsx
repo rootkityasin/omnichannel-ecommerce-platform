@@ -87,7 +87,9 @@ export function DesktopNavbar() {
                 "relative z-[110] p-2 -ml-2 rounded-full transition-colors",
                 isSidebarOpen
                   ? "text-white hover:bg-white/10"
-                  : "!text-[#0A3D62] hover:bg-slate-100", // Removed transparent variance, always dark
+                  : !isTransparent
+                    ? "!text-[#0A3D62] hover:bg-slate-100"
+                    : "text-white hover:bg-white/10 drop-shadow-md",
               )}
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               animate={isSidebarOpen ? "open" : "closed"}
@@ -159,12 +161,12 @@ export function DesktopNavbar() {
                 />
               ) : (
                 <span
-                  style={{ color: "#0A3D62" }}
+                  style={
+                    !isTransparent ? { color: "#0A3D62" } : { color: "white" }
+                  }
                   className={cn(
                     "font-black tracking-tighter uppercase transition-colors",
-                    !isTransparent
-                      ? "text-2xl !text-[#0A3D62]"
-                      : "text-3xl !text-[#0A3D62] drop-shadow-sm",
+                    !isTransparent ? "text-2xl" : "text-3xl drop-shadow-md",
                   )}
                 >
                   {config?.shopName || "CrabKhai"}
@@ -198,7 +200,9 @@ export function DesktopNavbar() {
                     "text-sm font-bold tracking-wide uppercase transition-colors relative",
                     isActive
                       ? "text-crab-red"
-                      : "!text-[#0A3D62] hover:!text-crab-red", // Added hover importance
+                      : !isTransparent
+                        ? "!text-[#0A3D62] hover:!text-crab-red"
+                        : "text-white hover:text-crab-red drop-shadow-md",
                   )}
                 >
                   {item.label}
@@ -237,7 +241,7 @@ export function DesktopNavbar() {
                 language !== "en" ? "font-bangla" : "font-body",
                 !isTransparent
                   ? "border-slate-200 text-slate-600 hover:border-crab-red hover:text-crab-red"
-                  : "!border-[#0A3D62]/20 !text-[#0A3D62] hover:bg-black/5",
+                  : "!border-white/20 text-white hover:bg-white/10 drop-shadow-md",
               )}
             >
               {language === "en"
@@ -252,7 +256,9 @@ export function DesktopNavbar() {
               <div
                 className={cn(
                   "p-2 rounded-full transition-colors",
-                  "!text-[#0A3D62] hover:bg-slate-100", // Simplified
+                  !isTransparent
+                    ? "!text-[#0A3D62] hover:bg-slate-100"
+                    : "text-white hover:bg-white/10 drop-shadow-md",
                 )}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -269,7 +275,9 @@ export function DesktopNavbar() {
               onClick={handleLocationClick}
               className={cn(
                 "p-2 rounded-full transition-colors",
-                "!text-[#0A3D62] hover:bg-slate-100",
+                !isTransparent
+                  ? "!text-[#0A3D62] hover:bg-slate-100"
+                  : "text-white hover:bg-white/10 drop-shadow-md",
               )}
             >
               <MapPin className="w-5 h-5" />
@@ -282,7 +290,7 @@ export function DesktopNavbar() {
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all shadow-sm",
                 !isTransparent
                   ? "border-slate-200 bg-white text-slate-700 hover:border-crab-red hover:text-crab-red"
-                  : "!border-[#0A3D62]/10 bg-white/50 backdrop-blur-md !text-[#0A3D62] hover:bg-white/80",
+                  : "!border-white/20 bg-black/20 backdrop-blur-md text-white hover:bg-black/40 drop-shadow-md",
               )}
             >
               <User className="w-4 h-4" />
