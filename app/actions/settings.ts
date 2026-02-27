@@ -427,7 +427,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       metaAccessToken: getString(input.metaAccessToken),
       invoiceTheme: getString(input.invoiceTheme, "modern"),
       invoiceDetails: (typeof input.invoiceDetails === "object" &&
-      input.invoiceDetails !== null
+        input.invoiceDetails !== null
         ? input.invoiceDetails
         : {}) as Prisma.InputJsonValue,
     };
