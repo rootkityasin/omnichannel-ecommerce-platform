@@ -377,10 +377,15 @@ export function AdminSidebar() {
         {/* Collapse Toggle */}
         {/* Footer with Toggle Check - actually removing toggle from here as per request */}
         {/* Footer Limit */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
           {!isSidebarCollapsed && (
-            <div className="flex items-center justify-center p-2 text-xs font-medium text-slate-500 hover:text-orange-600 cursor-pointer gap-1">
-              90s Labs <FlaskConical className="w-3 h-3" />
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center text-xs font-medium text-slate-500 hover:text-orange-600 cursor-pointer gap-1 transition-colors">
+                90s Labs <FlaskConical className="w-3 h-3" />
+              </div>
+              <div className="text-[10px] font-mono text-slate-400 font-semibold bg-slate-100 px-1.5 py-0.5 rounded-full select-all">
+                v{process.env.NEXT_PUBLIC_APP_VERSION || "0.1.0"}
+              </div>
             </div>
           )}
         </div>

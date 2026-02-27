@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Bumping application version..."
+npm version patch --no-git-tag-version
+echo "✅ Version bumped successfully."

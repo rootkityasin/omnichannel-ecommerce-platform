@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
+import pkg from "./package.json" with { type: "json" };
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || pkg.version,
+  },
   // Enable standalone output for Docker deployment
   output: "standalone",
 
