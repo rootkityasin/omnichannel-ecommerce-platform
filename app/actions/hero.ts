@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag, unstable_cache } from "next/cache";
 import { getTenantByDomain } from "./tenant";
 import type { Prisma } from "@prisma/client";
 
@@ -9,8 +9,8 @@ type HeroSlideInput = Omit<Prisma.HeroSlideCreateInput, "order"> & {
   order?: number;
 };
 
-export async function getHeroSlides(domain?: string) {
-  try {
+const getCachedHeroSlides = unstable_cache(
+  async (domain?: string) => {
     const tenant = domain ? await getTenantByDomain(domain) : null;
 
     // Note: HeroSlide currently has no tenantId in schema.
@@ -26,6 +26,14 @@ export async function getHeroSlides(domain?: string) {
       createdAt: slide.createdAt.toISOString(),
       updatedAt: slide.updatedAt.toISOString(),
     }));
+  },
+  ["hero-slides"],
+  { tags: ["hero"], revalidate: 3600 },
+);
+
+export async function getHeroSlides(domain?: string) {
+  try {
+    return await getCachedHeroSlides(domain);
   } catch (error) {
     console.error("Failed to fetch hero slides:", error);
     return [];
@@ -48,6 +56,7 @@ export async function createHeroSlide(data: HeroSlideInput) {
       },
     });
     revalidatePath("/");
+    updateTag("hero");
     return { success: true };
   } catch (error) {
     console.error("Failed to create hero slide:", error);
@@ -72,6 +81,7 @@ export async function updateHeroSlide(id: string, data: HeroSlideInput) {
       },
     });
     revalidatePath("/");
+    updateTag("hero");
     return { success: true };
   } catch (error) {
     console.error("Failed to update hero slide:", error);
@@ -85,6 +95,7 @@ export async function deleteHeroSlide(id: string) {
       where: { id },
     });
     revalidatePath("/");
+    updateTag("hero");
     return { success: true };
   } catch (error) {
     console.error("Failed to delete hero slide:", error);
@@ -103,6 +114,7 @@ export async function updateHeroSlideOrder(
       });
     }
     revalidatePath("/");
+    updateTag("hero");
     return { success: true };
   } catch (error) {
     console.error("Failed to update slide order:", error);

@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
 
   // Image Optimization - Allow remote images
   images: {
+    unoptimized: true, // Crucial for VPS CPU performance with many images
     remotePatterns: [
       { protocol: "https", hostname: "*.easykoro.com" },
       { protocol: "https", hostname: "images.unsplash.com" },

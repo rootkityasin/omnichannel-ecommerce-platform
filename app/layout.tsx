@@ -8,7 +8,6 @@ export const viewport: Viewport = {
 };
 import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import PromoPopup from "@/components/client/PromoPopup";
 import SessionProvider from "@/components/providers/SessionProvider";
 
 import "./globals.css";
@@ -35,8 +34,6 @@ export const metadata: Metadata = {
     "Enterprise-grade multi-tenant e-commerce suite for scalability and security.",
 };
 
-import { SettingsProvider } from "@/components/providers/SettingsProvider";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -50,11 +47,8 @@ export default function RootLayout({
       >
         <main className="min-h-screen relative">
           <SessionProvider>
-            <SettingsProvider>
-              {children}
-              <PromoPopup />
-              <Toaster richColors position="top-center" />
-            </SettingsProvider>
+            {children}
+            <Toaster richColors position="top-center" />
           </SessionProvider>
         </main>
       </body>

@@ -9,6 +9,7 @@ import { DynamicCheckout } from "@/components/client/DynamicCheckout";
 import { PromoModal } from "@/components/client/PromoModal";
 import { getActivePromo } from "@/app/actions/promo";
 import { Metadata } from "next";
+import { SettingsProvider } from "@/components/providers/SettingsProvider";
 
 const getTwitterCardType = (card: string | null | undefined) => {
   if (card === "summary" || card === "player" || card === "app") return card;
@@ -90,7 +91,7 @@ export default async function ClientLayout({
   };
 
   return (
-    <>
+    <SettingsProvider initialSettings={config}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -112,6 +113,6 @@ export default async function ClientLayout({
         <BottomNav />
         <PromoModal promo={activePromo} />
       </div>
-    </>
+    </SettingsProvider>
   );
 }

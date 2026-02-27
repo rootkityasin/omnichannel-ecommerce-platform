@@ -10,6 +10,7 @@ import type {
 import { AdminProvider, useAdmin } from "@/components/providers/AdminProvider";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { SettingsProvider } from "@/components/providers/SettingsProvider";
 import { cn } from "@/lib/utils";
 import React from "react";
 import type { Session } from "next-auth";
@@ -31,12 +32,14 @@ export default function AdminLayoutClient({
 }>) {
   return (
     <SessionProvider session={session}>
-      <AdminProvider initialUser={initialUser} initialData={initialData}>
-        <div className="admin-shell min-h-screen bg-gray-50">
-          <AdminSidebar />
-          <MainContentWrapper>{children}</MainContentWrapper>
-        </div>
-      </AdminProvider>
+      <SettingsProvider initialSettings={initialData?.settings as any}>
+        <AdminProvider initialUser={initialUser} initialData={initialData}>
+          <div className="admin-shell min-h-screen bg-gray-50">
+            <AdminSidebar />
+            <MainContentWrapper>{children}</MainContentWrapper>
+          </div>
+        </AdminProvider>
+      </SettingsProvider>
     </SessionProvider>
   );
 }

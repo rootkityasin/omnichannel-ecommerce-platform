@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag, unstable_cache } from "next/cache";
 
 import { getTenantByDomain } from "./tenant";
 
@@ -104,27 +104,9 @@ export async function getProductById(id: string) {
   }
 }
 
-export async function getProducts(domain?: string) {
-  try {
-    let tenantId: string | undefined;
-
-    if (domain) {
-      const tenant = await getTenantByDomain(domain);
-      tenantId = tenant?.id;
-    }
-
-    if (!tenantId) {
-      const sessionUser = await getSessionUser();
-      tenantId = sessionUser?.tenantId || undefined;
-    }
-
-    if (!tenantId) {
-      // If we can't determine context, return empty to be safe/fast
-      // or return strictly public variants? For Admin, empty is safer.
-      return [];
-    }
-
-    const products = await prisma.product.findMany({
+const getCachedProducts = unstable_cache(
+  async (tenantId: string) => {
+    return await prisma.product.findMany({
       where: {
         tenantId: tenantId,
         isAvailable: true,
@@ -154,6 +136,32 @@ export async function getProducts(domain?: string) {
         },
       },
     });
+  },
+  ["products-public-list"],
+  { tags: ["products"], revalidate: 3600 },
+);
+
+export async function getProducts(domain?: string) {
+  try {
+    let tenantId: string | undefined;
+
+    if (domain) {
+      const tenant = await getTenantByDomain(domain);
+      tenantId = tenant?.id;
+    }
+
+    if (!tenantId) {
+      const sessionUser = await getSessionUser();
+      tenantId = sessionUser?.tenantId || undefined;
+    }
+
+    if (!tenantId) {
+      // If we can't determine context, return empty to be safe/fast
+      // or return strictly public variants? For Admin, empty is safer.
+      return [];
+    }
+
+    const products = await getCachedProducts(tenantId);
 
     return products;
   } catch (error) {
@@ -227,6 +235,7 @@ export async function createProduct(data: ProductMutationInput) {
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/", "layout");
+    updateTag("products");
     return { success: true, product };
   } catch (error) {
     console.error("Create Product Error:", error);
@@ -263,6 +272,7 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/", "layout");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     console.error("Update Product Error:", error);
@@ -297,6 +307,7 @@ export async function deleteProduct(id: string) {
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     console.error("Delete Product Error:", error);
@@ -338,6 +349,7 @@ export async function deleteArchivedProduct(id: string) {
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     console.error("Delete Archived Product Error:", error);
@@ -361,6 +373,7 @@ export async function archiveProduct(id: string) {
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     console.error("Archive Product Error:", error);
@@ -384,6 +397,7 @@ export async function unarchiveProduct(id: string) {
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     console.error("Unarchive Product Error:", error);
