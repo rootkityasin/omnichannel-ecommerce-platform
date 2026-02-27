@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { Prisma, ShopType } from "@prisma/client";
 import { auth } from "@/auth";
 import { isTenantMode } from "@/lib/deployment";
@@ -427,7 +427,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       metaAccessToken: getString(input.metaAccessToken),
       invoiceTheme: getString(input.invoiceTheme, "modern"),
       invoiceDetails: (typeof input.invoiceDetails === "object" &&
-        input.invoiceDetails !== null
+      input.invoiceDetails !== null
         ? input.invoiceDetails
         : {}) as Prisma.InputJsonValue,
     };
@@ -461,9 +461,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       });
     }
 
-    // revalidateTag('site-config');
-    // Revalidate specific tags if we were using them. For now, checking if we can add 'site-config' to the key in a better way.
-    // Actually, let's also revalidate the specific path just in case
+    revalidateTag("site-config", {});
     revalidatePath("/", "layout");
     revalidatePath("/[domain]", "layout"); // Try to catch dynamic routes
     revalidatePath("/admin/shop", "page");
