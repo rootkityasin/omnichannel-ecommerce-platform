@@ -82,7 +82,7 @@ async function main() {
 
     await prisma.tenant.update({
       where: { id: tenant.id },
-      data: { plan: targetPlan },
+      data: { plan: targetPlan.toLowerCase() },
     });
 
     const siteConfig = await prisma.siteConfig.findUnique({
@@ -103,7 +103,7 @@ async function main() {
     if (platform) {
       await platform.prisma.tenantRegistry.updateMany({
         where: { slug: tenantSlug },
-        data: { planSlug: targetPlan },
+        data: { planSlug: targetPlan.toLowerCase() },
       });
       console.log("✅ Platform plan updated.");
     } else {

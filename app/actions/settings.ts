@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { isAdvancedSeoPlan, normalizePlan } from "@/lib/planUtils";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { Prisma, ShopType } from "@prisma/client";
 import { auth } from "@/auth";
@@ -352,7 +353,7 @@ export async function getAdminSiteConfig() {
       customDomain: config.tenant?.customDomain || "",
       slug: config.tenant?.slug || "",
       tenant: config.tenant || undefined,
-      plan: config.tenant?.plan || "FREE",
+      plan: normalizePlan(config.tenant?.plan || "FREE"),
       invoiceDetails: (config.invoiceDetails ||
         defaults.invoiceDetails) as SiteConfig["invoiceDetails"],
       sitelinks: (config.sitelinks as SiteConfig["sitelinks"]) || [],
@@ -382,10 +383,8 @@ export async function updateSiteConfig<T extends object>(data: T) {
       where: { id: tenantId },
       select: { plan: true },
     });
-    const plan = tenant?.plan || "FREE";
-    const isStandardOrHigher = ["STANDARD", "PLATINUM", "ENTERPRISE"].includes(
-      plan,
-    );
+    const plan = normalizePlan(tenant?.plan || "FREE");
+    const isStandardOrHigher = isAdvancedSeoPlan(plan);
 
     // 2. Validate SEO Access
     const seoPayload = getSeoPayload(input, isStandardOrHigher);

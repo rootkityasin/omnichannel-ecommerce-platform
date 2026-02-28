@@ -7,6 +7,7 @@ import { platformAuth } from "@/auth.platform";
 import { ShopType } from "@prisma/client";
 
 import { hash } from "bcryptjs";
+import { normalizePlan, toPlanSlug } from "@/lib/planUtils";
 
 // --- Security Middleware ---
 async function checkSuperAdmin() {
@@ -44,7 +45,7 @@ export async function createTenant(data: {
       data: {
         name: data.name,
         slug: data.slug,
-        planSlug: data.plan || "FREE",
+        planSlug: toPlanSlug(data.plan || "FREE"),
         setupFee: 6000,
         setupFeePaid: data.setupFeePaid || false,
         status: "DRAFT",
@@ -96,7 +97,7 @@ export async function updateTenantPlan(tenantId: string, plan: string) {
   try {
     await platformPrisma.tenantRegistry.update({
       where: { id: tenantId },
-      data: { planSlug: plan },
+      data: { planSlug: toPlanSlug(plan) },
     });
     revalidatePath("/app");
     return { success: true };

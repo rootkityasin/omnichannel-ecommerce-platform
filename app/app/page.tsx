@@ -1,4 +1,5 @@
 import { platformPrisma } from "@/lib/platformPrisma";
+import { normalizePlan } from "@/lib/planUtils";
 import { DashboardClient } from "./DashboardClient";
 
 export default async function SuperAdminDashboard() {
@@ -25,7 +26,9 @@ export default async function SuperAdminDashboard() {
       tenants = (_tenants as unknown as DashboardProps["tenants"]).map(
         (tenant) => ({
           ...tenant,
-          plan: (tenant as { planSlug?: string }).planSlug ?? "FREE",
+          plan: normalizePlan(
+            (tenant as { planSlug?: string }).planSlug ?? "FREE",
+          ),
           isActive: (tenant as { status?: string }).status === "ACTIVE",
           primaryDomain: (tenant as { primaryDomain?: string }).primaryDomain,
           _count: { users: 0, orders: 0, products: 0 },
