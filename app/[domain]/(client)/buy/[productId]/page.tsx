@@ -32,6 +32,7 @@ type ProductDetail = {
   image?: string | null;
   images?: string[] | null;
   pieces?: number | null;
+  servingSize?: number | null;
   sku?: string | null;
 };
 
@@ -226,7 +227,7 @@ export default function SmartLinkPage() {
     );
   };
 
-  const pieces = product.pieces ?? 0;
+  const pieces = product.servingSize ?? 0;
   const imageList =
     product.images && product.images.length > 0
       ? product.images
@@ -253,7 +254,7 @@ export default function SmartLinkPage() {
                     <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2 group-hover:scale-105 transition-transform">
                       <span className="w-2 h-2 rounded-full bg-crab-red animate-pulse" />
                       <span className="text-sm font-bold text-slate-900">
-                        {pieces} Pieces
+                        {pieces} pcs inside
                       </span>
                     </div>
                   </div>

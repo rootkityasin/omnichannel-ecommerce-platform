@@ -123,8 +123,6 @@ export const ProductCard = memo(function ProductCard({
   const piecesInside = (() => {
     const serving = Number(servingSize);
     if (Number.isFinite(serving) && serving > 0) return serving;
-    const stockPieces = Number(pieces);
-    if (Number.isFinite(stockPieces) && stockPieces > 0) return stockPieces;
     return null;
   })();
 
@@ -301,6 +299,7 @@ export const ProductCard = memo(function ProductCard({
           weightOptions,
           images,
           weight,
+          servingSize,
         }}
       />
     </>
