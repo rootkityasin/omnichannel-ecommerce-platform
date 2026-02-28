@@ -71,14 +71,28 @@ export function SeoSettings({ initialConfig }: SeoProps) {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const result = await updateSiteConfig(config);
-    setIsSaving(false);
+    try {
+      let timedOut = false;
+      const timeoutId = setTimeout(() => {
+        timedOut = true;
+        toast.error("Request timed out. Please try again.");
+        setIsSaving(false);
+      }, 15000);
+      const result = await updateSiteConfig(config);
+      clearTimeout(timeoutId);
+      if (timedOut) return;
 
-    if (result.success) {
-      toast.success("SEO settings saved successfully!");
-      setOriginalConfig(config);
-    } else {
-      toast.error(result.error || "Failed to save settings.");
+      if (result.success) {
+        toast.success("SEO settings saved successfully!");
+        setOriginalConfig(config);
+      } else {
+        toast.error(result.error || "Failed to save settings.");
+      }
+    } catch (error) {
+      toast.error("Failed to save settings.");
+      console.error("SEO save error:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
