@@ -183,7 +183,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl h-[85vh] flex flex-col">
+      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl h-[85vh] flex flex-col">
         {heroLqip && (
           <img
             src={heroLqip}

@@ -56,7 +56,7 @@ export function MobileCartItem({
             {settings.measurementUnit === "WEIGHT"
               ? (() => {
                   const g = item.quantity * (settings.weightUnitValue || 200);
-                  return g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${g}g`;
+                  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
                 })()
               : `${item.quantity} units`}
           </p>
@@ -91,7 +91,7 @@ export function MobileCartItem({
               {settings.measurementUnit === "WEIGHT"
                 ? (() => {
                     const g = item.quantity * (settings.weightUnitValue || 200);
-                    return g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${g}g`;
+                    return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
                   })()
                 : item.quantity}
             </motion.span>

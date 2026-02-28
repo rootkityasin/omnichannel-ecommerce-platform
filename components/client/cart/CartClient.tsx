@@ -466,8 +466,8 @@ export function CartClient({
                                     item.quantity *
                                     (settings.weightUnitValue || 200);
                                   return g >= 1000
-                                    ? `${(g / 1000).toFixed(1)}kg`
-                                    : `${g}g`;
+                                    ? `${(g / 1000).toFixed(1)} kg`
+                                    : `${g} g`;
                                 })()
                               : item.quantity}
                           </span>
@@ -506,8 +506,8 @@ export function CartClient({
                                     item.quantity *
                                     (settings.weightUnitValue || 200);
                                   return grams >= 1000
-                                    ? `${(grams / 1000).toFixed(1)}kg`
-                                    : `${grams}g`;
+                                    ? `${(grams / 1000).toFixed(1)} kg`
+                                    : `${grams} g`;
                                 })()
                               : item.quantity}
                           </motion.span>
@@ -613,7 +613,7 @@ export function CartClient({
                     type="text"
                     placeholder="Full Name"
                     required
-                    className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm placeholder:text-gray-400"
+                    className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm text-slate-900 placeholder:text-slate-400"
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
@@ -623,7 +623,7 @@ export function CartClient({
                     type="email"
                     placeholder="Email"
                     required
-                    className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm placeholder:text-gray-400"
+                    className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm text-slate-900 placeholder:text-slate-400"
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -646,7 +646,7 @@ export function CartClient({
                       type="tel"
                       placeholder="17..."
                       required
-                      className="w-full p-3 bg-transparent border-0 outline-none focus:ring-0 text-sm placeholder:text-gray-400 font-medium font-body h-auto"
+                      className="w-full p-3 bg-transparent border-0 outline-none focus:ring-0 text-sm text-slate-900 placeholder:text-slate-400 font-medium font-body h-auto"
                       value={formData.phone}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, "");
@@ -672,7 +672,7 @@ export function CartClient({
                       }
                       required
                     >
-                      <SelectTrigger className="col-span-1 p-3 h-auto bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none data-[placeholder]:text-gray-400">
+                      <SelectTrigger className="col-span-1 p-3 h-auto bg-white border border-gray-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-black outline-none data-[placeholder]:text-slate-400">
                         <SelectValue placeholder="Area" />
                       </SelectTrigger>
                       <SelectContent>
@@ -684,7 +684,7 @@ export function CartClient({
                       type="text"
                       placeholder="Address"
                       required
-                      className="col-span-2 p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black transition-all outline-none text-sm"
+                      className="col-span-2 p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black transition-all outline-none text-sm text-slate-900 placeholder:text-slate-400"
                       value={formData.address}
                       onChange={(e) =>
                         setFormData({ ...formData, address: e.target.value })
@@ -773,7 +773,7 @@ export function CartClient({
               type="text"
               placeholder="Full Name"
               required
-              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium"
+              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -783,7 +783,7 @@ export function CartClient({
               type="email"
               placeholder="Email"
               required
-              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium"
+              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -806,7 +806,7 @@ export function CartClient({
                 type="tel"
                 placeholder="17..."
                 required
-                className="w-full p-3.5 bg-transparent border-0 outline-none focus:ring-0 font-medium font-body h-auto placeholder:text-gray-400"
+                className="w-full p-3.5 bg-transparent border-0 outline-none focus:ring-0 font-medium font-body h-auto text-slate-900 placeholder:text-slate-400"
                 value={formData.phone}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, "");
@@ -832,7 +832,7 @@ export function CartClient({
                 onValueChange={(val) => setFormData({ ...formData, area: val })}
                 required
               >
-                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-gray-900">
+                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-slate-900">
                   <SelectValue placeholder="Area" />
                 </SelectTrigger>
                 <SelectContent>
@@ -845,7 +845,7 @@ export function CartClient({
               type="text"
               placeholder="Address"
               required
-              className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium"
+              className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400"
               value={formData.address}
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })
