@@ -117,6 +117,7 @@ export function CartEditor() {
   const [previewMode, setPreviewMode] = useState<
     "empty" | "filled" | "success"
   >("filled");
+  const [previewEnabled, setPreviewEnabled] = useState(false);
 
   // Change detection
   const [_originalConfig, setOriginalConfig] = useState<CartConfig | null>(
@@ -125,10 +126,11 @@ export function CartEditor() {
   const [hasChanges, setHasChanges] = useState(false);
 
   const previewSrc = useMemo(() => {
+    if (!previewEnabled) return "";
     const mode = previewMode || "filled";
     const base = domain ? `/${domain}` : "";
     return `${base}/cart?preview=${mode}`;
-  }, [domain, previewMode]);
+  }, [domain, previewMode, previewEnabled]);
 
   const loadData = async () => {
     setLoading(true);
@@ -553,7 +555,10 @@ export function CartEditor() {
               Empty
             </button>
             <button
-              onClick={() => setPreviewMode("filled")}
+              onClick={() => {
+                setPreviewMode("filled");
+                setPreviewEnabled(false);
+              }}
               className={`text-xs px-2 py-1 rounded ${previewMode === "filled" ? "bg-slate-700 text-white" : "text-slate-400"}`}
             >
               Items
@@ -602,12 +607,25 @@ export function CartEditor() {
             )}
 
             {previewMode === "filled" && (
-              <iframe
-                title="Cart preview"
-                src={previewSrc}
-                className="absolute inset-0 w-full h-full border-0 bg-white"
-                sandbox="allow-scripts allow-same-origin"
-              />
+              <>
+                {!previewEnabled ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white">
+                    <button
+                      onClick={() => setPreviewEnabled(true)}
+                      className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors"
+                    >
+                      Load Preview
+                    </button>
+                  </div>
+                ) : (
+                  <iframe
+                    title="Cart preview"
+                    src={previewSrc}
+                    className="absolute inset-0 w-full h-full border-0 bg-white"
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                )}
+              </>
             )}
 
             {previewMode === "success" && (

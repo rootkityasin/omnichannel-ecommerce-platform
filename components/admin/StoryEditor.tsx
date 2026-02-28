@@ -79,6 +79,7 @@ export function StoryEditor() {
   >([]);
   const [saving, setSaving] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("hero");
+  const [previewEnabled, setPreviewEnabled] = useState(false);
   const [siteConfig, setSiteConfig] = useState<{
     primaryColor?: string;
     secondaryColor?: string;
@@ -830,36 +831,53 @@ export function StoryEditor() {
       {/* Preview Column */}
       <div className="hidden lg:block sticky top-6 h-[calc(100vh-100px)]">
         <div className="relative h-full bg-slate-950 rounded-xl overflow-hidden shadow-2xl border border-slate-800">
-          <div className="absolute top-4 left-4 z-50 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs text-white flex items-center gap-2">
-            <Eye className="w-3 h-3 text-green-400" /> Live Preview
-          </div>
-          <div
-            id="story-preview-container"
-            className="h-full overflow-y-auto custom-scrollbar"
-            style={
-              siteConfig?.primaryColor
-                ? ({
-                    "--crab-red": siteConfig.primaryColor,
-                    "--primary": hexToHsl(siteConfig.primaryColor) || undefined,
-                  } as React.CSSProperties)
-                : undefined
-            }
-          >
-            <StoryLayout
-              data={{
-                hero,
-                values,
-                productsContent: productsSection,
-                gallery,
-                team,
-                wholesale,
-                reviews,
-              }}
-              products={availableProducts.filter((p) =>
-                productsSection.productIds?.includes(p.id),
-              )}
-            />
-          </div>
+          {!previewEnabled ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center text-white">
+              <p className="text-sm font-semibold">
+                Click Load Preview to view the story page.
+              </p>
+              <button
+                onClick={() => setPreviewEnabled(true)}
+                className="px-4 py-2 rounded-lg bg-white text-slate-900 text-xs font-bold hover:bg-slate-100 transition-colors"
+              >
+                Load Preview
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="absolute top-4 left-4 z-50 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs text-white flex items-center gap-2">
+                <Eye className="w-3 h-3 text-green-400" /> Live Preview
+              </div>
+              <div
+                id="story-preview-container"
+                className="h-full overflow-y-auto custom-scrollbar"
+                style={
+                  siteConfig?.primaryColor
+                    ? ({
+                        "--crab-red": siteConfig.primaryColor,
+                        "--primary":
+                          hexToHsl(siteConfig.primaryColor) || undefined,
+                      } as React.CSSProperties)
+                    : undefined
+                }
+              >
+                <StoryLayout
+                  data={{
+                    hero,
+                    values,
+                    productsContent: productsSection,
+                    gallery,
+                    team,
+                    wholesale,
+                    reviews,
+                  }}
+                  products={availableProducts.filter((p) =>
+                    productsSection.productIds?.includes(p.id),
+                  )}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

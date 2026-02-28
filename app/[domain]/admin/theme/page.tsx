@@ -227,7 +227,7 @@ export default function ThemeSettingsPage() {
           {!previewEnabled ? (
             <div className="flex flex-col items-center justify-center gap-4 text-center">
               <p className="text-sm font-semibold text-slate-700">
-                Preview is paused to reduce server load.
+                Click Load Preview to view the storefront.
               </p>
               <button
                 onClick={() => {
