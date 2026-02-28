@@ -19,6 +19,7 @@ import { useLanguageStore } from "@/lib/languageStore";
 import { translations } from "@/lib/translations";
 import { getStorySections } from "@/app/actions/story";
 import { formatQuantity } from "@/lib/format";
+import { buildCloudinaryUrl } from "@/lib/cloudinary";
 
 export function CartDrawer() {
   const { language } = useLanguageStore();
@@ -280,7 +281,12 @@ export function CartDrawer() {
                 <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                   {item.image && (
                     <img
-                      src={item.image}
+                      src={buildCloudinaryUrl(item.image, {
+                        width: 160,
+                        aspect: "1:1",
+                        crop: "fill",
+                        gravity: "auto",
+                      })}
                       alt={item.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {

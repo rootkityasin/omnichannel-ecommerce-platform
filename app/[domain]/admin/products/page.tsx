@@ -1197,9 +1197,9 @@ export default function ProductsPage() {
                               value={
                                 newProduct.pieces
                                   ? Math.floor(
-                                    Number(newProduct.pieces) /
-                                    (Number(newProduct.weight) || 1),
-                                  )
+                                      Number(newProduct.pieces) /
+                                        (Number(newProduct.weight) || 1),
+                                    )
                                   : ""
                               }
                               onChange={(e) => {
@@ -1302,11 +1302,9 @@ export default function ProductsPage() {
                       setNewProduct({ ...newProduct, image: url as string })
                     }
                     onRemove={() => setNewProduct({ ...newProduct, image: "" })}
+                    recommendedText="1600x2000 (4:5) • Center subject"
+                    helperText="Used for cards (4:5), hero (16:9), and thumbnails (1:1)"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    Dimensions: <strong>1280x720px (16:9)</strong> | Max:{" "}
-                    <strong>5MB</strong>
-                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -1323,11 +1321,9 @@ export default function ProductsPage() {
                       })
                     }
                     multiple={true}
+                    recommendedText="1600x2000 (4:5) • Center subject"
+                    helperText="Used for cards (4:5), hero (16:9), and thumbnails (1:1)"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    Dimensions: <strong>1280x720px (16:9)</strong> | Max:{" "}
-                    <strong>5MB</strong>
-                  </p>
                 </div>
 
                 <Button
@@ -1424,8 +1420,8 @@ export default function ProductsPage() {
                                     (item) =>
                                       item.child
                                         ? Math.floor(
-                                          item.child.pieces / item.quantity,
-                                        )
+                                            item.child.pieces / item.quantity,
+                                          )
                                         : 0,
                                   );
                                   return `${Math.min(...limits)} Sets`;

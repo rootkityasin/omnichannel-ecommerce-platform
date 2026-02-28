@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { ProductModal } from "./ProductModal";
 import { trackEvent } from "@/lib/track";
+import { buildCloudinaryLqip, buildCloudinaryUrl } from "@/lib/cloudinary";
 
 import { Product } from "@/types/common";
 
@@ -49,6 +50,17 @@ export const ProductCard = memo(function ProductCard({
 
   // Active image state for gallery
   const [activeImage, setActiveImage] = useState(image);
+  const optimizedActiveImage = buildCloudinaryUrl(activeImage, {
+    width: 480,
+    aspect: "4:5",
+    crop: "fill",
+    gravity: "auto",
+  });
+  const lqipImage = buildCloudinaryLqip(activeImage, {
+    aspect: "4:5",
+    crop: "fill",
+    gravity: "auto",
+  });
 
   // Reset active image if prop changes
   useEffect(() => {
@@ -159,20 +171,22 @@ export const ProductCard = memo(function ProductCard({
         transition={{ duration: 0.2 }}
       >
         <div
-          className="aspect-square overflow-hidden bg-gray-100 relative group-hover:shadow-[inset_0_0_40px_rgba(0,0,0,0.05)] transition-all duration-500"
+          className="aspect-[4/5] overflow-hidden bg-gray-100 relative group-hover:shadow-[inset_0_0_40px_rgba(0,0,0,0.05)] transition-all duration-500"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
           <div className="w-full h-full overflow-hidden relative">
             <Image
               ref={imageRef}
-              src={activeImage || "/logo.svg"}
+              src={optimizedActiveImage || "/logo.svg"}
               alt={name}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 480px"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               priority={false}
               onError={() => setActiveImage("/logo.svg")}
+              placeholder={lqipImage ? "blur" : undefined}
+              blurDataURL={lqipImage || undefined}
             />
           </div>
 

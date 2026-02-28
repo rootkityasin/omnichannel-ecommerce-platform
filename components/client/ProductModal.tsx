@@ -31,6 +31,7 @@ import {
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/SettingsProvider";
+import { buildCloudinaryLqip, buildCloudinaryUrl } from "@/lib/cloudinary";
 
 const AnimatedCounter = ({ value }: { value: string | number }) => {
   const numericValue =
@@ -98,6 +99,18 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
   );
   const uniqueImages = Array.from(new Set(rawImages));
   const galleryImages = uniqueImages.length > 0 ? uniqueImages : ["/logo.svg"];
+  const heroImage = galleryImages[currentImageIndex];
+  const optimizedHeroImage = buildCloudinaryUrl(heroImage, {
+    width: 900,
+    aspect: "16:9",
+    crop: "fill",
+    gravity: "auto",
+  });
+  const heroLqip = buildCloudinaryLqip(heroImage, {
+    aspect: "16:9",
+    crop: "fill",
+    gravity: "auto",
+  });
 
   React.useEffect(() => {
     if (isOpen) {
@@ -171,6 +184,14 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl h-[85vh] flex flex-col">
+        {heroLqip && (
+          <img
+            src={heroLqip}
+            alt=""
+            className="absolute inset-0 w-full h-[35%] object-cover blur-xl opacity-60 pointer-events-none"
+            aria-hidden="true"
+          />
+        )}
         <DialogTitle className="sr-only">{product.name} Details</DialogTitle>
 
         {/* Hero Gallery Section */}
@@ -187,7 +208,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
             <AnimatePresence initial={false} custom={direction}>
               <motion.img
                 key={currentImageIndex}
-                src={galleryImages[currentImageIndex]}
+                src={optimizedHeroImage}
                 custom={direction}
                 variants={variants}
                 initial="enter"
@@ -288,7 +309,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
                   {/* Pinch Zoom / Pan capable area */}
                   <ZoomableImage
-                    src={galleryImages[currentImageIndex]}
+                    src={optimizedHeroImage}
                     onNext={() => paginate(1)}
                     onPrev={() => paginate(-1)}
                   />
