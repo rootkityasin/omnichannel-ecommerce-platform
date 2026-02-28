@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { logActionRequest } from "@/lib/actionLogger";
 import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { randomBytes } from "crypto";
@@ -34,6 +35,7 @@ export async function checkUserExists(phone: string) {
 }
 
 export async function getCurrentUserRole() {
+  await logActionRequest({ actionName: "getCurrentUserRole" });
   const sessionUser = await getSessionUser();
   return sessionUser?.role || null;
 }
@@ -63,6 +65,7 @@ export async function createUser(data: {
   tenantId?: string;
 }) {
   // 1. Rate Limiting (IP-based)
+  await logActionRequest({ actionName: "createUser" });
   const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
   if (!(await checkRateLimit(`signup:${ip}`, 3, 60 * 1000))) {
     return {
@@ -123,6 +126,7 @@ export async function createUserWithRole(data: {
   tenantId?: string;
   hubId?: string;
 }) {
+  await logActionRequest({ actionName: "createUserWithRole" });
   const sessionUser = await getSessionUser();
   const callerRole = sessionUser?.role;
 
@@ -221,6 +225,7 @@ export async function updateUser(
     hubId?: string;
   },
 ) {
+  await logActionRequest({ actionName: "updateUser" });
   const sessionUser = await getSessionUser();
   const callerRole = sessionUser?.role;
 
@@ -302,6 +307,7 @@ export async function updateUser(
 }
 
 export async function deleteUser(userId: string) {
+  await logActionRequest({ actionName: "deleteUser" });
   const sessionUser = await getSessionUser();
   const callerRole = sessionUser?.role;
 
@@ -339,6 +345,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserStatus(userId: string, status: string) {
+  await logActionRequest({ actionName: "updateUserStatus" });
   const sessionUser = await getSessionUser();
   if (sessionUser?.role !== "SUPER_ADMIN") {
     return { success: false, error: "Unauthorized" };
@@ -360,6 +367,7 @@ export async function updateUserStatus(userId: string, status: string) {
   The previous file had simple getAllUsers. preserving it.
 */
 export async function getAllUsers() {
+  await logActionRequest({ actionName: "getAllUsers" });
   const sessionUser = await getSessionUser();
   const userRole = sessionUser?.role;
   const userTenantId = sessionUser?.tenantId;
@@ -419,6 +427,7 @@ const getCachedCustomersStats = unstable_cache(
     userRole: string | undefined,
     userTenantId: string | null | undefined,
   ) => {
+    const startMs = process.env.PERF_LOG === "true" ? Date.now() : 0;
     // 1. Base Criteria
     const orderWhere: Prisma.OrderWhereInput = {};
     if (userRole !== "SUPER_ADMIN" && userTenantId) {
@@ -437,6 +446,13 @@ const getCachedCustomersStats = unstable_cache(
         createdAt: true,
       },
     });
+
+    if (process.env.PERF_LOG === "true") {
+      const { heapUsed, rss } = process.memoryUsage();
+      console.info(
+        `[Perf] getCustomers orders=${orders.length} ms=${Date.now() - startMs} heapMB=${Math.round(heapUsed / 1024 / 1024)} rssMB=${Math.round(rss / 1024 / 1024)}`,
+      );
+    }
 
     // 3. Build a map of phones -> { name, email, count, spent, firstSeen }
     const phoneMap = new Map<
@@ -502,6 +518,13 @@ const getCachedCustomersStats = unstable_cache(
       },
     });
 
+    if (process.env.PERF_LOG === "true") {
+      const { heapUsed, rss } = process.memoryUsage();
+      console.info(
+        `[Perf] getCustomers users=${registeredUsers.length} ms=${Date.now() - startMs} heapMB=${Math.round(heapUsed / 1024 / 1024)} rssMB=${Math.round(rss / 1024 / 1024)}`,
+      );
+    }
+
     // 5. Merge Registered Users with the Phone Map
     const mergedList: any[] = [];
     const processedPhones = new Set<string>();
@@ -550,6 +573,7 @@ const getCachedCustomersStats = unstable_cache(
 );
 
 export async function getCustomers() {
+  await logActionRequest({ actionName: "getCustomers" });
   const sessionUser = await getSessionUser();
   const userRole = sessionUser?.role;
   const userTenantId = sessionUser?.tenantId;
@@ -567,6 +591,7 @@ export async function getCustomers() {
 }
 
 export async function getUserProfile(userId: string) {
+  await logActionRequest({ actionName: "getUserProfile" });
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -583,6 +608,7 @@ export async function getUserProfile(userId: string) {
 export async function bulkImportCustomers(
   customers: { name: string; phone: string; email?: string }[],
 ) {
+  await logActionRequest({ actionName: "bulkImportCustomers" });
   const sessionUser = await getSessionUser();
   const role = sessionUser?.role;
   const tenantId = sessionUser?.tenantId;
@@ -627,6 +653,7 @@ export async function bulkImportCustomers(
 }
 
 export async function resetUserPassword(userId: string, newPassword?: string) {
+  await logActionRequest({ actionName: "resetUserPassword" });
   const sessionUser = await getSessionUser();
   const callerRole = sessionUser?.role;
 
@@ -665,6 +692,7 @@ export async function resetUserPassword(userId: string, newPassword?: string) {
 }
 
 export async function generateImpersonationToken(targetUserId: string) {
+  await logActionRequest({ actionName: "generateImpersonationToken" });
   const sessionUser = await getSessionUser();
   const callerRole = sessionUser?.role;
 
@@ -715,6 +743,7 @@ export async function createCustomer(data: {
   phone: string;
   email?: string;
 }) {
+  await logActionRequest({ actionName: "createCustomer" });
   const sessionUser = await getSessionUser();
   const role = sessionUser?.role;
 
@@ -756,6 +785,7 @@ export async function updateCustomer(
   id: string,
   data: { name: string; phone: string; email?: string },
 ) {
+  await logActionRequest({ actionName: "updateCustomer" });
   const sessionUser = await getSessionUser();
   const role = sessionUser?.role;
 

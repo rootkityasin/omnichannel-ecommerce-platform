@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { isTenantMode } from "@/lib/deployment";
 import { normalizeHost } from "@/lib/domain";
 import type { SiteConfig } from "@/types/common";
+import { logActionRequest } from "@/lib/actionLogger";
 
 type JsonObject = Record<string, unknown>;
 const getSessionUser = async () => (await auth())?.user;
@@ -207,6 +208,7 @@ const getPublicSiteConfig = unstable_cache(
 );
 
 export async function getSiteConfig(domain?: string) {
+  await logActionRequest({ actionName: "getSiteConfig" });
   if (domain) {
     return getPublicSiteConfig(domain);
   }
@@ -215,6 +217,7 @@ export async function getSiteConfig(domain?: string) {
 }
 
 export async function getAdminSiteConfig() {
+  await logActionRequest({ actionName: "getAdminSiteConfig" });
   const sessionUser = await getSessionUser();
   const tenantId = sessionUser?.tenantId;
 
@@ -361,6 +364,7 @@ export async function getAdminSiteConfig() {
 }
 
 export async function updateSiteConfig<T extends object>(data: T) {
+  await logActionRequest({ actionName: "updateSiteConfig" });
   const sessionUser = await getSessionUser();
   const tenantId = sessionUser?.tenantId;
   const input = data as Record<string, unknown>;
@@ -427,7 +431,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       metaAccessToken: getString(input.metaAccessToken),
       invoiceTheme: getString(input.invoiceTheme, "modern"),
       invoiceDetails: (typeof input.invoiceDetails === "object" &&
-        input.invoiceDetails !== null
+      input.invoiceDetails !== null
         ? input.invoiceDetails
         : {}) as Prisma.InputJsonValue,
     };
@@ -476,6 +480,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
 }
 
 export async function getPaymentConfig() {
+  await logActionRequest({ actionName: "getPaymentConfig" });
   const sessionUser = await getSessionUser();
   const tenantId = sessionUser?.tenantId;
 
@@ -518,6 +523,7 @@ export async function getPaymentConfig() {
 }
 
 export async function updatePaymentConfig<T extends object>(data: T) {
+  await logActionRequest({ actionName: "updatePaymentConfig" });
   const sessionUser = await getSessionUser();
   const tenantId = sessionUser?.tenantId;
 
@@ -552,6 +558,7 @@ export async function updatePaymentConfig<T extends object>(data: T) {
 }
 
 export async function getDeliveryConfig() {
+  await logActionRequest({ actionName: "getDeliveryConfig" });
   const sessionUser = await getSessionUser();
   const tenantId = sessionUser?.tenantId;
 
@@ -580,6 +587,7 @@ export async function getDeliveryConfig() {
 }
 
 export async function updateDeliveryConfig<T extends object>(data: T) {
+  await logActionRequest({ actionName: "updateDeliveryConfig" });
   const sessionUser = await getSessionUser();
   const tenantId = sessionUser?.tenantId;
   const input = data as Record<string, unknown>;

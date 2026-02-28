@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getSiteConfig } from "@/app/actions/settings";
+import { fetchSiteConfig } from "@/app/[domain]/actions/settings";
 import { useParams } from "next/navigation";
 
 export interface SettingsContextType {
@@ -72,7 +72,7 @@ export function SettingsProvider({
   const refreshSettings = async () => {
     setLoading(true);
     try {
-      const data = await getSiteConfig(domain);
+      const data = await fetchSiteConfig(domain);
       if (data) {
         setSettings(
           (prev) =>

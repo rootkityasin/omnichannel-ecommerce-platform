@@ -64,10 +64,10 @@ import { type AdminOrder } from "@/types/common";
 import { format } from "date-fns";
 import { getDeliveryConfig, getSiteConfig } from "@/app/actions/settings";
 import {
-  getAdminOrders,
   createOrder as createOrderAction,
   printOrderInvoice,
 } from "@/app/actions/order";
+import { fetchAdminOrders } from "./actions";
 import { getProducts } from "@/app/actions/product";
 import { getStorySections, updateStorySection } from "@/app/actions/story";
 import { toast } from "sonner";
@@ -342,7 +342,7 @@ export default function OrdersPage() {
     if (res.success) {
       toast.success("Order created successfully");
       // Refresh orders from DB
-      const dbOrders = await getAdminOrders();
+      const dbOrders = await fetchAdminOrders();
       setOrders(dbOrders);
       setIsAdding(false);
       setNewOrder({
@@ -402,7 +402,7 @@ export default function OrdersPage() {
     if (res.success) {
       toast.success("Invoice Printed & Stock Deducted");
       // Refresh local state to show "Invoice Printed" status
-      const dbOrders = await getAdminOrders();
+      const dbOrders = await fetchAdminOrders();
       setOrders(dbOrders);
       // Open Print Window
       window.open(`/admin/orders/print/${id}`, "_blank");

@@ -36,11 +36,20 @@ const createClient = () => {
 
   let adapter;
   if (useAdapter) {
+    const sslMode = (() => {
+      try {
+        return new URL(runtimeDatabaseUrl).searchParams.get("sslmode");
+      } catch {
+        return null;
+      }
+    })();
     const pool = new Pool({
       connectionString: runtimeDatabaseUrl,
       ssl:
         process.env.NODE_ENV === "production"
-          ? true
+          ? sslMode === "verify-full"
+            ? { rejectUnauthorized: true }
+            : true
           : { rejectUnauthorized: false },
     });
     adapter = new PrismaPg(pool);

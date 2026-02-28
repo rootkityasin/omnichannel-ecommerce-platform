@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { logActionRequest } from "@/lib/actionLogger";
 import { randomUUID } from "node:crypto";
 
 const getSessionUser = async () => (await auth())?.user;
@@ -30,6 +31,7 @@ export async function createOrder(data: {
   // Bot check removed
 
   try {
+    await logActionRequest({ actionName: "createOrder" });
     // 1. Resolve Tenant
     let tenantId = data.tenantId;
     if (!tenantId) {
@@ -147,6 +149,7 @@ export async function upsertIncompleteOrder(data: {
   tenantId?: string;
 }) {
   try {
+    await logActionRequest({ actionName: "upsertIncompleteOrder" });
     let tenantId = data.tenantId;
     if (!tenantId) {
       const sessionUser = await getSessionUser();
@@ -219,23 +222,44 @@ export async function upsertIncompleteOrder(data: {
 
 export async function getAdminOrders() {
   try {
+    await logActionRequest({ actionName: "getAdminOrders" });
     const sessionUser = await getSessionUser();
     const tenantId = sessionUser?.tenantId;
     if (!tenantId) return [];
 
+    const startMs = process.env.PERF_LOG === "true" ? Date.now() : 0;
+
     const orders = await prisma.order.findMany({
       where: { tenantId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
       orderBy: {
         createdAt: "desc",
       },
+      select: {
+        id: true,
+        orderId: true,
+        createdAt: true,
+        customerName: true,
+        customerPhone: true,
+        customerEmail: true,
+        totalAmount: true,
+        status: true,
+        source: true,
+        hubId: true,
+        stockDeducted: true,
+        items: {
+          select: {
+            quantity: true,
+          },
+        },
+      },
     });
+
+    if (process.env.PERF_LOG === "true") {
+      const { heapUsed, rss } = process.memoryUsage();
+      console.info(
+        `[Perf] getAdminOrders count=${orders.length} ms=${Date.now() - startMs} heapMB=${Math.round(heapUsed / 1024 / 1024)} rssMB=${Math.round(rss / 1024 / 1024)}`,
+      );
+    }
 
     // Calculate order counts per phone number
     const phoneCounts = orders.reduce((acc: Record<string, number>, order) => {
@@ -272,6 +296,7 @@ export async function updateAdminOrder(
   updates: AdminOrderUpdateInput,
 ) {
   try {
+    await logActionRequest({ actionName: "updateAdminOrder" });
     // Find by orderId (e.g., ORD-...)
     const order = await prisma.order.findUnique({
       where: { orderId: id },
@@ -300,6 +325,7 @@ export async function updateAdminOrder(
 
 export async function deleteAdminOrder(id: string) {
   try {
+    await logActionRequest({ actionName: "deleteAdminOrder" });
     const order = await prisma.order.findUnique({
       where: { orderId: id },
     });
@@ -324,6 +350,7 @@ export async function deleteAdminOrder(id: string) {
 
 export async function printOrderInvoice(orderId: string) {
   try {
+    await logActionRequest({ actionName: "printOrderInvoice" });
     const order = await prisma.order.findUnique({
       where: { orderId },
       include: { items: true },
