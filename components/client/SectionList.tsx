@@ -57,7 +57,7 @@ export function SectionList({ sections }: { sections: Section[] }) {
                 title={section.title}
                 products={section.products}
                 viewAllLink={`/menu?section=${section.slug}`}
-                enableScrollAnimation={false}
+                enableScrollAnimation={index === 0}
               />
             </motion.div>
           ),
