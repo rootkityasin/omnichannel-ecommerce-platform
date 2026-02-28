@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ProductRail } from "@/components/client/ProductRail";
 import { useCartStore } from "@/lib/store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface Section {
   id: string;
@@ -15,6 +15,7 @@ interface Section {
 
 export function SectionList({ sections }: { sections: Section[] }) {
   const setAllProducts = useCartStore((state) => state.setAllProducts);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (sections.length > 0) {
@@ -26,6 +27,13 @@ export function SectionList({ sections }: { sections: Section[] }) {
       setAllProducts(uniqueProducts);
     }
   }, [sections, setAllProducts]);
+
+  useEffect(() => {
+    const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
   if (sections.length === 0) {
     return (
       <div className="py-12 text-center text-slate-400">
@@ -36,32 +44,35 @@ export function SectionList({ sections }: { sections: Section[] }) {
 
   return (
     <div className="space-y-4">
-      {sections.map(
-        (section, index) =>
-          section.products.length > 0 && (
-            <motion.div
-              key={section.id}
-              id={`section-${section.slug}`}
-              className="scroll-mt-32"
-              initial={{ opacity: 0, y: 4 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 0.2,
-                delay: Math.min(index * 0.02, 0.1),
-                ease: "easeOut",
-              }}
-              style={{ willChange: "transform, opacity" }}
-            >
-              <ProductRail
-                title={section.title}
-                products={section.products}
-                viewAllLink={`/menu?section=${section.slug}`}
-                enableScrollAnimation={index === 0}
-              />
-            </motion.div>
-          ),
-      )}
+      {sections.map((section, index) => {
+        const limitedProducts = isMobile
+          ? section.products.slice(0, 8)
+          : section.products;
+        if (limitedProducts.length === 0) return null;
+        return (
+          <motion.div
+            key={section.id}
+            id={`section-${section.slug}`}
+            className="scroll-mt-32"
+            initial={{ opacity: 0, y: 4 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{
+              duration: 0.2,
+              delay: Math.min(index * 0.02, 0.1),
+              ease: "easeOut",
+            }}
+            style={{ willChange: "transform, opacity" }}
+          >
+            <ProductRail
+              title={section.title}
+              products={limitedProducts}
+              viewAllLink={`/menu?section=${section.slug}`}
+              enableScrollAnimation={index === 0}
+            />
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
