@@ -46,6 +46,9 @@ export function SeoSettings({ initialConfig }: SeoProps) {
   const [originalConfig, setOriginalConfig] =
     useState<SiteConfig>(initialConfig);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"basic" | "social" | "advanced">(
+    "basic",
+  );
 
   // Plan Gating Logic
   // Plan Gating Logic
@@ -55,6 +58,10 @@ export function SeoSettings({ initialConfig }: SeoProps) {
 
   const canEditBasic = true; // Everyone can now edit Basic SEO
   const canEditAdvanced = isStandardOrHigher; // Only Premium can edit Advanced
+
+  const previewBaseUrl = config.customDomain
+    ? `https://${config.customDomain}`
+    : `https://${config.tenant?.slug || "myshop"}.crabkhai.com`;
 
   // Derived state: check for changes
   const hasChanges = useMemo(
@@ -111,7 +118,13 @@ export function SeoSettings({ initialConfig }: SeoProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Settings */}
         <div className="lg:col-span-2 space-y-6">
-          <Tabs defaultValue="basic" className="w-full">
+          <Tabs
+            defaultValue="basic"
+            className="w-full"
+            onValueChange={(value) =>
+              setActiveTab(value as "basic" | "social" | "advanced")
+            }
+          >
             <TabsList className="grid w-full grid-cols-3 bg-slate-100 p-1 mb-6">
               <TabsTrigger value="basic">Basic SEO</TabsTrigger>
               <TabsTrigger value="social" disabled={!canEditAdvanced}>
@@ -657,106 +670,191 @@ export function SeoSettings({ initialConfig }: SeoProps) {
               Live Preview
             </h3>
 
-            {/* Google Result Preview */}
-            <div className="bg-white p-4 rounded-lg border shadow-sm space-y-1 mb-4 select-none font-sans">
-              <div className="text-xs text-slate-500 mb-2 font-medium flex justify-between items-center">
-                <span>Google Search Result</span>
-                <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
-                  Preview with Sitelinks
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 mb-1">
-                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] overflow-hidden shrink-0">
-                  {config.logoUrl ? (
-                    <img
-                      src={config.logoUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Globe className="w-4 h-4 text-slate-400" />
-                  )}
-                </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-sm text-[#202124] font-medium truncate">
-                    {config.shopName || "My Shop"}
-                  </span>
-                  <span className="text-xs text-[#4d5156] truncate">
-                    {config.customDomain
-                      ? `https://${config.customDomain}`
-                      : `https://${config.tenant?.slug || "myshop"}.crabkhai.com`}
+            {activeTab === "basic" && (
+              <div className="bg-white p-4 rounded-lg border shadow-sm space-y-1 mb-4 select-none font-sans">
+                <div className="text-xs text-slate-500 mb-2 font-medium flex justify-between items-center">
+                  <span>Google Search Result</span>
+                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
+                    Preview with Sitelinks
                   </span>
                 </div>
-              </div>
 
-              <div className="group cursor-pointer">
-                <div className="text-xl text-[#1a0dab] group-hover:underline font-normal leading-tight truncate mb-1">
-                  {config.seoTitle || config.shopName || "My Shop Name"}
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] overflow-hidden shrink-0">
+                    {config.logoUrl ? (
+                      <img
+                        src={config.logoUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Globe className="w-4 h-4 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-sm text-[#202124] font-medium truncate">
+                      {config.shopName || "My Shop"}
+                    </span>
+                    <span className="text-xs text-[#4d5156] truncate">
+                      {previewBaseUrl}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-sm text-[#4d5156] leading-normal line-clamp-2 mb-3">
-                {config.seoDescription ||
-                  "Welcome to our shop. We offer the best fresh seafood delivered directly to your doorstep. Order now for fast delivery."}
-              </div>
+                <div className="group cursor-pointer">
+                  <div className="text-xl text-[#1a0dab] group-hover:underline font-normal leading-tight truncate mb-1">
+                    {config.seoTitle || config.shopName || "My Shop Name"}
+                  </div>
+                </div>
 
-              {/* Sitelinks Simulation */}
-              {Array.isArray(config.sitelinks) &&
-                config.sitelinks.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {config.sitelinks.map((link: any, i: number) => (
-                      <div key={`${i}-${link.title}`}>
-                        <div className="text-[#1a0dab] text-sm hover:underline cursor-pointer font-medium truncate">
-                          {link.title || "Link Title"}
+                <div className="text-sm text-[#4d5156] leading-normal line-clamp-2 mb-3">
+                  {config.seoDescription ||
+                    "Welcome to our shop. We offer the best fresh seafood delivered directly to your doorstep. Order now for fast delivery."}
+                </div>
+
+                {Array.isArray(config.sitelinks) &&
+                  config.sitelinks.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {config.sitelinks.map((link: any, i: number) => (
+                        <div key={`${i}-${link.title}`}>
+                          <div className="text-[#1a0dab] text-sm hover:underline cursor-pointer font-medium truncate">
+                            {link.title || "Link Title"}
+                          </div>
+                          {link.description && (
+                            <div className="text-xs text-[#4d5156] truncate hidden sm:block">
+                              {link.description}
+                            </div>
+                          )}
                         </div>
-                        {link.description && (
-                          <div className="text-xs text-[#4d5156] truncate hidden sm:block">
-                            {link.description}
+                      ))}
+                    </div>
+                  )}
+              </div>
+            )}
+
+            {activeTab === "social" && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                  <div className="p-3 border-b text-xs text-slate-500 font-medium bg-slate-50">
+                    Social Share Preview
+                  </div>
+                  <div className="aspect-[1.91/1] bg-slate-100 relative items-center justify-center flex overflow-hidden">
+                    {config.ogImage ? (
+                      <img
+                        src={config.ogImage}
+                        alt="OG"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-slate-300 flex flex-col items-center">
+                        <Share2 className="w-8 h-8 mb-2" />
+                        <span className="text-xs">No Image Set</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 bg-slate-50">
+                    <div className="text-xs text-slate-500 uppercase mb-1">
+                      {previewBaseUrl.replace("https://", "").toUpperCase()}
+                    </div>
+                    <div className="font-bold text-slate-800 leading-tight mb-1 line-clamp-1">
+                      {config.ogTitle || config.seoTitle || "Page Title"}
+                    </div>
+                    <div className="text-xs text-slate-600 line-clamp-2">
+                      {config.ogDescription ||
+                        config.seoDescription ||
+                        "Page description goes here..."}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                  <div className="p-3 border-b text-xs text-slate-500 font-medium bg-slate-50">
+                    Twitter Card Preview (
+                    {config.twitterCard || "summary_large_image"})
+                  </div>
+                  {config.twitterCard === "summary" ? (
+                    <div className="p-4 space-y-2">
+                      <div className="text-xs text-slate-500 uppercase">
+                        {previewBaseUrl.replace("https://", "").toUpperCase()}
+                      </div>
+                      <div className="font-bold text-slate-800 line-clamp-2">
+                        {config.ogTitle || config.seoTitle || "Page Title"}
+                      </div>
+                      <div className="text-xs text-slate-600 line-clamp-3">
+                        {config.ogDescription ||
+                          config.seoDescription ||
+                          "Page description goes here..."}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="aspect-[2/1] bg-slate-100 relative items-center justify-center flex overflow-hidden">
+                        {config.ogImage ? (
+                          <img
+                            src={config.ogImage}
+                            alt="Twitter"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-slate-300 flex flex-col items-center">
+                            <Share2 className="w-8 h-8 mb-2" />
+                            <span className="text-xs">No Image Set</span>
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                )}
-            </div>
+                      <div className="p-3 bg-slate-50">
+                        <div className="text-xs text-slate-500 uppercase mb-1">
+                          {previewBaseUrl.replace("https://", "").toUpperCase()}
+                        </div>
+                        <div className="font-bold text-slate-800 leading-tight mb-1 line-clamp-1">
+                          {config.ogTitle || config.seoTitle || "Page Title"}
+                        </div>
+                        <div className="text-xs text-slate-600 line-clamp-2">
+                          {config.ogDescription ||
+                            config.seoDescription ||
+                            "Page description goes here..."}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
-            {/* Social Share Preview */}
-            <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-              <div className="p-3 border-b text-xs text-slate-500 font-medium bg-slate-50">
-                Social Share Preview
-              </div>
-              <div className="aspect-[1.91/1] bg-slate-100 relative items-center justify-center flex overflow-hidden">
-                {config.ogImage ? (
-                  <img
-                    src={config.ogImage}
-                    alt="OG"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-slate-300 flex flex-col items-center">
-                    <Share2 className="w-8 h-8 mb-2" />
-                    <span className="text-xs">No Image Set</span>
+            {activeTab === "advanced" && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg border shadow-sm p-4 space-y-3">
+                  <div className="text-xs text-slate-500 font-medium">
+                    Advanced SEO Preview
                   </div>
-                )}
+                  <div className="text-sm text-slate-700">
+                    <span className="font-semibold">Canonical:</span>{" "}
+                    {config.canonicalUrl || previewBaseUrl}
+                  </div>
+                  <div className="text-sm text-slate-700">
+                    <span className="font-semibold">Robots:</span>{" "}
+                    {config.robots || "index, follow"}
+                  </div>
+                  <div className="text-sm text-slate-700">
+                    <span className="font-semibold">JSON-LD:</span>{" "}
+                    {config.jsonLdType || "Restaurant"}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg border shadow-sm p-4 space-y-2">
+                  <div className="text-xs text-slate-500 font-medium">
+                    Social Profiles (Structured Data)
+                  </div>
+                  <ul className="text-sm text-slate-600 space-y-1">
+                    <li>Facebook: {config.socialFacebook || "Not set"}</li>
+                    <li>Instagram: {config.socialInstagram || "Not set"}</li>
+                    <li>Twitter: {config.socialTwitter || "Not set"}</li>
+                    <li>YouTube: {config.socialYoutube || "Not set"}</li>
+                  </ul>
+                </div>
               </div>
-              <div className="p-3 bg-slate-50">
-                <div className="text-xs text-slate-500 uppercase mb-1">
-                  {config.customDomain
-                    ? config.customDomain.toUpperCase()
-                    : `${config.tenant?.slug || "myshop"}.crabkhai.com`.toUpperCase()}
-                </div>
-                <div className="font-bold text-slate-800 leading-tight mb-1 line-clamp-1">
-                  {config.ogTitle || config.seoTitle || "Page Title"}
-                </div>
-                <div className="text-xs text-slate-600 line-clamp-2">
-                  {config.ogDescription ||
-                    config.seoDescription ||
-                    "Page description goes here..."}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
