@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ProductCard } from "@/components/client/ProductCard";
 import { useCartStore } from "@/lib/store";
+import { readMenuCache, writeMenuCache } from "@/lib/menuCache";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 
@@ -46,13 +47,66 @@ export function MenuClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const setAllProducts = useCartStore((state) => state.setAllProducts);
+  const setMenuCache = useCartStore((state) => state.setMenuCache);
+  const menuProducts = useCartStore((state) => state.menuProducts);
+  const menuCategories = useCartStore((state) => state.menuCategories);
+  const menuDomain = useCartStore((state) => state.menuDomain);
+  const menuCacheAt = useCartStore((state) => state.menuCacheAt);
+  const cacheDomain = typeof window !== "undefined" ? window.location.host : "";
+  const cachedMenu =
+    typeof window !== "undefined" ? readMenuCache(cacheDomain) : null;
+  const isCacheValid = Boolean(cachedMenu);
+  const initialMenuProducts = isCacheValid
+    ? (cachedMenu?.products as any[])
+    : menuProducts.length > 0 && menuDomain === cacheDomain
+      ? (menuProducts as any[])
+      : initialProducts;
+  const initialMenuCategories = isCacheValid
+    ? (cachedMenu?.categories as any[])
+    : menuCategories.length > 0 && menuDomain === cacheDomain
+      ? (menuCategories as any[])
+      : initialCategories;
+
+  const [clientProducts, setClientProducts] = useState(initialMenuProducts);
+  const [clientCategories, setClientCategories] = useState(
+    initialMenuCategories,
+  );
 
   // Populate global store with products for fast recommendations elsewhere
   useEffect(() => {
-    if (initialProducts?.length > 0) {
-      setAllProducts(initialProducts);
+    if (cachedMenu && isCacheValid) {
+      setMenuCache({
+        domain: cachedMenu.domain,
+        products: cachedMenu.products as any[],
+        categories: cachedMenu.categories as any[],
+        timestamp: cachedMenu.timestamp,
+      });
     }
-  }, [initialProducts, setAllProducts]);
+
+    if (initialProducts?.length > 0 && initialCategories?.length > 0) {
+      const payload = {
+        domain: cacheDomain,
+        products: initialProducts,
+        categories: initialCategories,
+        timestamp: Date.now(),
+      };
+      writeMenuCache(payload);
+      setMenuCache(payload);
+    }
+  }, [
+    cachedMenu,
+    isCacheValid,
+    initialProducts,
+    initialCategories,
+    cacheDomain,
+    setMenuCache,
+  ]);
+
+  useEffect(() => {
+    if (clientProducts?.length > 0) {
+      setAllProducts(clientProducts);
+    }
+  }, [clientProducts, setAllProducts]);
 
   const categoryId = searchParams.get("category") || "all";
   const filterId = searchParams.get("filter") || null;
@@ -75,17 +129,17 @@ export function MenuClient({
     () => [
       { id: "all", name: "All Items", icon: Utensils },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...initialCategories.map((c: any) => ({
+      ...clientCategories.map((c: any) => ({
         id: c.id,
         name: c.name,
         icon: getCategoryIcon(c.name),
       })),
     ],
-    [initialCategories],
+    [clientCategories],
   );
 
   const filteredItems = useMemo(() => {
-    const items = initialProducts.filter((item) => {
+    const items = clientProducts.filter((item) => {
       const matchesSearch = item.name
         .toLowerCase()
         .includes(debouncedSearch.toLowerCase());
@@ -123,7 +177,7 @@ export function MenuClient({
 
     return items;
   }, [
-    initialProducts,
+    clientProducts,
     debouncedSearch,
     activeCategory,
     activeFilter,
@@ -197,16 +251,16 @@ export function MenuClient({
 
   // Calculate counts for sidebar
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: initialProducts.length };
+    const counts: Record<string, number> = { all: clientProducts.length };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    initialCategories.forEach((c: any) => {
+    clientCategories.forEach((c: any) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      counts[c.id] = initialProducts.filter(
+      counts[c.id] = clientProducts.filter(
         (p: any) => p.categoryId === c.id,
       ).length;
     });
     return counts;
-  }, [initialProducts, initialCategories]);
+  }, [clientProducts, clientCategories]);
 
   return (
     <div className="bg-slate-50 min-h-screen pt-0 pb-32">
