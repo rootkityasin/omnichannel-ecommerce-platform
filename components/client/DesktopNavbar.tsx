@@ -137,7 +137,7 @@ export function DesktopNavbar() {
               </svg>
             </motion.button>
 
-            {/* Logo or Text Fallback */}
+            {/* Logo */}
             <Link
               href="/"
               className={cn(
@@ -145,33 +145,19 @@ export function DesktopNavbar() {
                 isSidebarOpen && "opacity-0 pointer-events-none",
               )}
             >
-              {config?.logoUrl ? (
-                <img
-                  src={config.logoUrl}
-                  alt={config?.shopName || "Store"}
-                  className={cn(
-                    "w-auto object-contain transition-all duration-300 group-hover:scale-105",
-                    !isTransparent ? "h-14" : "h-20",
-                  )}
-                  onError={(e) => {
-                    // Hide image on error and show text instead? Or just fallback to text logic
-                    (e.target as HTMLImageElement).style.display = "none";
-                    // You'd need a state/ref to toggle text visibility if relying on error
-                  }}
-                />
-              ) : (
-                <span
-                  style={
-                    !isTransparent ? { color: "#0A3D62" } : { color: "white" }
-                  }
-                  className={cn(
-                    "font-black tracking-tighter uppercase transition-colors",
-                    !isTransparent ? "text-2xl" : "text-3xl drop-shadow-md",
-                  )}
-                >
-                  {config?.shopName || "CrabKhai"}
-                </span>
-              )}
+              <img
+                src={config?.logoUrl || "/logo.svg"}
+                alt={config?.shopName || "Store"}
+                className={cn(
+                  "w-auto object-contain transition-all duration-300 group-hover:scale-105",
+                  !isTransparent ? "h-14" : "h-20",
+                )}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src.endsWith("/logo.svg")) return;
+                  target.src = "/logo.svg";
+                }}
+              />
             </Link>
           </div>
 
