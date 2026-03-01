@@ -1,31 +1,35 @@
-import { Suspense } from 'react';
-import { getProducts } from '@/app/actions/product';
-import { getCategories } from '@/app/actions/category';
-import { MenuClient } from '@/components/client/MenuClient';
+import { Suspense } from "react";
+import { getMenuData } from "@/app/actions/menu";
+import { MenuClient } from "@/components/client/MenuClient";
 
-export default async function MenuPage({ params }: { params: Promise<{ domain: string }> }) {
-    const { domain } = await params;
-    // Fetch initial data on the server for instant load
-    const [products, categories] = await Promise.all([
-        getProducts(domain),
-        getCategories(domain)
-    ]);
+export default async function MenuPage({
+  params,
+}: {
+  params: Promise<{ domain: string }>;
+}) {
+  const { domain } = await params;
+  // Fetch initial data on the server for instant load
+  const { products, categories } = await getMenuData(domain);
 
-    return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-slate-50 pt-12 flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-crab-red border-t-transparent rounded-full animate-spin" />
-                <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Preparing the Catch...</p>
-            </div>
-        }>
-            <MenuClient
-                initialProducts={structuredClone(products)}
-                initialCategories={structuredClone(categories)}
-            />
-        </Suspense>
-    );
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 pt-12 flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-crab-red border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-400 font-black uppercase tracking-widest text-xs">
+            Preparing the Catch...
+          </p>
+        </div>
+      }
+    >
+      <MenuClient
+        initialProducts={structuredClone(products)}
+        initialCategories={structuredClone(categories)}
+      />
+    </Suspense>
+  );
 }
 
 // Use ISR with 60-second revalidation
 // Products/categories already have Prisma Accelerate caching
-export const revalidate = 60;
+export const revalidate = 600;

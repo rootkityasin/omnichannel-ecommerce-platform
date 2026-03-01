@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProducts } from "@/app/actions/product";
-import { getCategories } from "@/app/actions/category";
+import { getMenuData } from "@/app/actions/menu";
 import { normalizeHost } from "@/lib/domain";
 
 export async function GET(request: Request) {
@@ -9,10 +8,7 @@ export async function GET(request: Request) {
   const domain = normalizeHost(rawDomain);
 
   try {
-    const [products, categories] = await Promise.all([
-      getProducts(domain),
-      getCategories(domain),
-    ]);
+    const { products, categories } = await getMenuData(domain);
 
     return NextResponse.json({ products, categories, domain });
   } catch (error) {
