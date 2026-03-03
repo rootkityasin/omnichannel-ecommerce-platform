@@ -200,9 +200,9 @@ export const ProductCard = memo(function ProductCard({
             </div>
           )}
 
-          {/* Gallery Thumbnails Overlay */}
+          {/* Gallery Thumbnails */}
           {galleryItems.length > 1 && (
-            <div className="absolute bottom-2 left-0 right-0 z-20 flex justify-center gap-2 px-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-3000">
+            <div className="absolute bottom-2 left-0 right-0 z-20 flex justify-center gap-2 px-2">
               {galleryItems.map((img, idx) => (
                 <button
                   key={idx}
@@ -281,7 +281,7 @@ export const ProductCard = memo(function ProductCard({
                   e.stopPropagation();
                   handleAddToCart();
                 }}
-                className="p-1.5 bg-gray-900 text-white rounded-full hover:bg-crab-red transition-colors active:scale-95 z-30 shadow-lg"
+                className="p-1.5 bg-white text-gray-900 border border-gray-200 rounded-full hover:bg-crab-red hover:text-white transition-colors active:scale-95 z-30 shadow-sm"
                 aria-label="Add to cart"
               >
                 <Plus className="w-4 h-4" />

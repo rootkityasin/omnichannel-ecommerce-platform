@@ -11,6 +11,7 @@ import { getActivePromo } from "@/app/actions/promo";
 import { Metadata } from "next";
 import { SettingsProvider } from "@/components/providers/SettingsProvider";
 import Script from "next/script";
+import { MetaPixel } from "@/components/client/MetaPixel";
 
 const getTwitterCardType = (card: string | null | undefined) => {
   if (card === "summary" || card === "player" || card === "app") return card;
@@ -127,6 +128,7 @@ fbq('track', 'PageView');`,
         primaryColor={config?.primaryColor}
         secondaryColor={config?.secondaryColor}
       />
+      <MetaPixel pixelId={config.metaPixelId} />
       <div className="client-shell flex flex-col min-h-screen bg-white relative font-body">
         <div className="md:hidden sticky top-0 z-50">
           <MobileHeader />

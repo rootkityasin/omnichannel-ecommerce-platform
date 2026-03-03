@@ -71,12 +71,14 @@ export function TenantCard({ tenant, plans }: Readonly<TenantProps>) {
   const getPlanBadge = (planName: string) => {
     const p = planName.toUpperCase();
     if (p.includes("PLATINUM"))
-      return { label: "Platinum", color: "bg-green-500 text-white" }; // Or specific hex from image
+      return { label: "Platinum", color: "bg-green-500 text-white" };
     if (p.includes("GOLD"))
       return { label: "Gold", color: "bg-yellow-500 text-white" };
     if (p.includes("SILVER"))
-      return { label: "Silver", color: "bg-slate-400 text-white" }; // Silver usually gray
-    return { label: "Free Plan", color: "bg-slate-500 text-white" }; // Default
+      return { label: "Silver", color: "bg-slate-400 text-white" };
+    if (p.includes("FREE"))
+      return { label: "Free Plan", color: "bg-slate-500 text-white" };
+    return { label: planName, color: "bg-slate-500 text-white" };
   };
 
   const planBadge = getPlanBadge(tenant.plan);

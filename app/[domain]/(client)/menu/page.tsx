@@ -23,8 +23,8 @@ export default async function MenuPage({
       }
     >
       <MenuClient
-        initialProducts={structuredClone(products)}
-        initialCategories={structuredClone(categories)}
+        initialProducts={JSON.parse(JSON.stringify(products))}
+        initialCategories={JSON.parse(JSON.stringify(categories))}
       />
     </Suspense>
   );

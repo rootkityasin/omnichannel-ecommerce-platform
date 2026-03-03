@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Product } from "@/types/common";
 
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 
 interface ProductRailProps {
   title: string;
@@ -23,11 +23,18 @@ export function ProductRail({
   enableScrollAnimation = false,
 }: ProductRailProps) {
   const containerRef = useRef<HTMLElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start 90%", "end 10%"],
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
 
   // Gentle floating effect: starts with offset (40px) and moves left (-120px) for speed
   const rawX = useTransform(scrollYProgress, [0, 1], [40, -120]);
@@ -36,7 +43,7 @@ export function ProductRail({
   return (
     <section
       ref={containerRef}
-      className="py-8 md:py-16 relative overflow-hidden"
+      className="py-5 md:py-10 relative overflow-hidden"
     >
       {/* Soft decorative background element */}
       {!enableScrollAnimation && (
@@ -74,40 +81,15 @@ export function ProductRail({
           <motion.div
             className="flex gap-4 w-max"
             style={{
-              x: enableScrollAnimation ? x : 0,
-              willChange: enableScrollAnimation ? "transform" : "auto",
-            }}
-            drag={enableScrollAnimation ? "x" : false}
-            dragConstraints={{ left: -120, right: 0 }}
-            dragElastic={0.1}
-            dragMomentum={false}
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={() => setIsDragging(false)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-10%" }} // Adjusted margin for mobile
-            variants={{
-              hidden: { opacity: 0 },
-              show: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.1,
-                },
-              },
+              x: enableScrollAnimation && !isMobile ? x : 0,
+              willChange:
+                enableScrollAnimation && !isMobile ? "transform" : "auto",
             }}
           >
             {products.map((product) => (
-              <motion.div
+              <div
                 key={product.id}
                 className={`w-[160px] flex-none ${enableScrollAnimation ? "" : "snap-start"}`}
-                variants={{
-                  hidden: { opacity: 0, x: 20 }, // Slide in from right slightly
-                  show: {
-                    opacity: 1,
-                    x: 0,
-                    transition: { type: "spring", stiffness: 100 },
-                  },
-                }}
               >
                 <ProductCard
                   id={product.id}
@@ -129,7 +111,7 @@ export function ProductRail({
                   weight={product.weight}
                   stage={product.stage}
                 />
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         </div>
