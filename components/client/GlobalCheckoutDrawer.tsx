@@ -61,6 +61,14 @@ function CheckoutForm({
   handlePlaceOrder: (e: React.FormEvent) => void;
   errors?: Partial<Record<keyof CheckoutFormData, string>>;
 }>) {
+
+  // Force layout recalculation to fix iOS/Safari keyboard white-space bug
+  const handleBlur = () => {
+    setTimeout(() => {
+      window.scrollTo({ top: window.scrollY, behavior: 'instant' });
+    }, 100);
+  };
+
   return (
     <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-4">
       <div className="space-y-4">
@@ -77,6 +85,7 @@ function CheckoutForm({
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
+              onBlur={handleBlur}
             />
             {errors.name && (
               <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
@@ -93,6 +102,7 @@ function CheckoutForm({
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
+              onBlur={handleBlur}
             />
             {errors.email && (
               <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
@@ -109,6 +119,7 @@ function CheckoutForm({
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
               }
+              onBlur={handleBlur}
             />
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
@@ -153,6 +164,7 @@ function CheckoutForm({
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
+                onBlur={handleBlur}
               />
               {errors.address && (
                 <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
@@ -194,6 +206,13 @@ function PaymentMethodSection({ paymentConfig, totalAmount, deliveryFee, formDat
   }
 
   const remainingAmount = Math.max(0, totalAmount - advanceAmount);
+
+  // Force layout recalculation to fix iOS/Safari keyboard white-space bug
+  const handleBlur = () => {
+    setTimeout(() => {
+      window.scrollTo({ top: window.scrollY, behavior: 'instant' });
+    }, 100);
+  };
 
   return (
     <div className="space-y-4 mt-6">
@@ -242,6 +261,7 @@ function PaymentMethodSection({ paymentConfig, totalAmount, deliveryFee, formDat
                   onChange={(e) =>
                     setFormData({ ...formData, transactionId: e.target.value })
                   }
+                  onBlur={handleBlur}
                 />
               </div>
             </div>
