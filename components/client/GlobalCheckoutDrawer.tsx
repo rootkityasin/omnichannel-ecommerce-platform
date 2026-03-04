@@ -303,7 +303,7 @@ function OrderSummary({
   totalAmount,
 }: Readonly<OrderSummaryProps>) {
   return (
-    <div className="space-y-4 h-full">
+    <div className="space-y-4">
       <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 space-y-4 shadow-sm">
         <h3 className="font-bold text-gray-900 border-b border-orange-200 pb-2">
           Order Summary
