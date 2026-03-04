@@ -6,13 +6,16 @@ import { Shield, AlertTriangle, Smartphone, Key } from 'lucide-react';
 import { TokenEditor } from '@/components/admin/TokenEditor';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { UsersTab } from '@/components/admin/UsersTab';
-
+import { auth } from '@/auth';
 import { BlockedListTab } from '@/components/admin/BlockedListTab';
 import { TrustedDeviceRevoke } from '@/components/admin/TrustedDeviceRevoke';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SecurityDashboard() {
+    const session = await auth();
+    const tenantId = session?.user?.tenantId;
+
     const logs = await prisma.securityLog.findMany({
         orderBy: { createdAt: 'desc' },
         take: 50
@@ -22,9 +25,12 @@ export default async function SecurityDashboard() {
         orderBy: { lastUsed: 'desc' }
     });
 
-    const config = await prisma.siteConfig.findFirst({
-        select: { adminSetupToken: true }
-    });
+    const config = tenantId
+        ? await prisma.siteConfig.findFirst({
+            where: { tenantId },
+            select: { adminSetupToken: true }
+        })
+        : null;
     const currentToken = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || 'crab-secret-setup-123';
 
     return (

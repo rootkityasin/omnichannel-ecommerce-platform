@@ -1,12 +1,18 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
 
+const getSessionUser = async () => (await auth())?.user;
 
 export async function getPendingOrderCount() {
     try {
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
+        if (!tenantId) return 0;
+
         const count = await prisma.order.count({
-            where: { status: 'PENDING' }
+            where: { tenantId, status: 'PENDING' }
         });
         return count;
     } catch {
@@ -15,21 +21,28 @@ export async function getPendingOrderCount() {
 }
 
 export async function getAdminSetupToken() {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return "";
+
     const config = await prisma.siteConfig.findFirst({
+        where: { tenantId },
         select: { adminSetupToken: true }
     });
     const token = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET;
-
-    // STRICT SECURITY: Do not allow default fallbacks in production
-    // if (!token) throw new Error("ADMIN_SETUP_SECRET is missing");
 
     return token || "";
 }
 
 export async function updateAdminSetupToken(rawToken: string) {
-    const newToken = rawToken.trim(); // Sanitize input
+    const newToken = rawToken.trim();
     try {
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
+        if (!tenantId) return { success: false, error: "Unauthorized" };
+
         const config = await prisma.siteConfig.findFirst({
+            where: { tenantId },
             select: { id: true }
         });
 
@@ -40,7 +53,7 @@ export async function updateAdminSetupToken(rawToken: string) {
             });
         } else {
             await prisma.siteConfig.create({
-                data: { adminSetupToken: newToken }
+                data: { tenantId, adminSetupToken: newToken }
             });
         }
 

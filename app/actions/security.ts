@@ -3,8 +3,9 @@
 import { prisma } from '@/lib/prisma';
 import { cookies, headers } from 'next/headers';
 import { UAParser } from 'ua-parser-js';
+import { auth } from '@/auth';
 
-
+const getSessionUser = async () => (await auth())?.user;
 
 // Generate a random device ID
 function generateDeviceId() {
@@ -13,13 +14,29 @@ function generateDeviceId() {
 
 export async function authorizeDevice(token: string, userAgentString: string) {
     try {
-        const config = await prisma.siteConfig.findFirst({
-            select: { adminSetupToken: true }
-        });
-        const validTokenRaw = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET;
+        // Resolve tenant from session
+        const sessionUser = await getSessionUser();
+        const tenantId = sessionUser?.tenantId;
+
+        let validTokenRaw: string | undefined | null;
+
+        if (tenantId) {
+            // Fetch the setup token for THIS tenant's config
+            const config = await prisma.siteConfig.findFirst({
+                where: { tenantId },
+                select: { adminSetupToken: true }
+            });
+            validTokenRaw = config?.adminSetupToken;
+        }
+
+        // Fallback to env variable if no tenant-specific token found
+        if (!validTokenRaw) {
+            validTokenRaw = process.env.ADMIN_SETUP_SECRET;
+        }
+
         if (!validTokenRaw) return { success: false, error: "Setup Secret Not Configured" };
 
-        const VALID_TOKEN = validTokenRaw.trim(); // Handle accidental trailing spaces
+        const VALID_TOKEN = validTokenRaw.trim();
 
         if (token.trim() !== VALID_TOKEN) {
             return { success: false, error: "Invalid Setup Token" };
