@@ -258,8 +258,8 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                       setCurrentImageIndex(idx);
                     }}
                     className={`transition-all duration-300 rounded-full ${idx === currentImageIndex
-                        ? "bg-white w-4 h-1.5 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
-                        : "bg-white/50 w-1.5 h-1.5 hover:bg-white/80"
+                      ? "bg-white w-4 h-1.5 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                      : "bg-white/50 w-1.5 h-1.5 hover:bg-white/80"
                       }`}
                   />
                 ))}
@@ -812,12 +812,12 @@ function ZoomableImage({
         }}
         drag
         dragConstraints={{
-          left: -1000 * scale,
-          right: 1000 * scale,
-          top: -1000 * scale,
-          bottom: 1000 * scale,
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
         }}
-        dragElastic={0.1}
+        dragElastic={0.2}
       />
 
       {/* Navigation Arrows - Side Centered */}
