@@ -59,19 +59,19 @@ export function StickyCartFooter({
       </div>
 
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[82dvh] max-h-[82dvh] bg-white border-0 flex flex-col p-0 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+        <DrawerContent className="h-[80vh] max-h-[80vh] bg-white border-0 flex flex-col p-0 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
 
           {/* Header */}
-          <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-8 pb-6 bg-white rounded-t-[32px]">
-            <DrawerTitle className="text-4xl font-heading font-black text-center text-slate-900 tracking-tight">
+          <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-6 pb-4 bg-white rounded-t-[32px]">
+            <DrawerTitle className="text-3xl font-heading font-black text-center text-slate-900 tracking-tight">
               Checkout
             </DrawerTitle>
-            <DrawerDescription className="text-center font-bold text-slate-400 text-lg mt-1 font-body uppercase tracking-widest">
+            <DrawerDescription className="text-center font-bold text-slate-400 text-sm mt-1 font-body uppercase tracking-widest">
               Complete your order
             </DrawerDescription>
             <button
               onClick={() => onOpenChange(false)}
-              className="absolute right-6 top-8 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
+              className="absolute right-6 top-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
             >
               <X className="w-5 h-5 text-gray-500" />
             </button>
