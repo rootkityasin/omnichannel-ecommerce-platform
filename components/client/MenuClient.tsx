@@ -53,8 +53,9 @@ export function MenuClient({
   const menuDomain = useCartStore((state) => state.menuDomain);
   const menuCacheAt = useCartStore((state) => state.menuCacheAt);
   const cacheDomain = typeof window !== "undefined" ? window.location.host : "";
-  const cachedMenu =
-    typeof window !== "undefined" ? readMenuCache(cacheDomain) : null;
+  const cachedMenu = useMemo(() => {
+    return typeof window !== "undefined" ? readMenuCache(cacheDomain) : null;
+  }, [cacheDomain]);
   const isCacheValid = Boolean(cachedMenu);
   const initialMenuProducts = isCacheValid
     ? (cachedMenu?.products as any[]) || []
@@ -81,9 +82,7 @@ export function MenuClient({
         categories: cachedMenu.categories as any[],
         timestamp: cachedMenu.timestamp,
       });
-    }
-
-    if (initialProducts?.length > 0 && initialCategories?.length > 0) {
+    } else if (initialProducts?.length > 0 && initialCategories?.length > 0) {
       const payload = {
         domain: cacheDomain,
         products: initialProducts,
