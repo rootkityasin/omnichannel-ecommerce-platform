@@ -2,6 +2,13 @@
 
 import { useCartStore, CartItem } from "@/lib/store";
 import { Loader2, X, Smartphone, CheckCircle2 } from "lucide-react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 import { useSession } from "next-auth/react";
 import { User } from "next-auth";
 
@@ -769,67 +776,81 @@ export function GlobalCheckoutDrawer() {
     );
   }
 
-  // Mobile: Full-screen fixed overlay (immune to keyboard viewport resize)
+  // Mobile: Swipeable Drawer
   return (
-    <>
-      {checkoutOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white" style={{ height: '100%' }}>
-          {successOrder ? (
-            <div className="w-full max-w-lg mx-auto bg-white py-8 overflow-y-auto flex-1">
-              <SuccessView
-                cartTexts={cartTexts}
-                successOrder={successOrder}
-                handleCloseSuccess={handleCloseSuccess}
-                t={t}
+    <Drawer
+      open={checkoutOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          successOrder ? handleCloseSuccess() : closeCheckout();
+        }
+      }}
+    >
+      <DrawerContent className="h-[96vh] bg-white border-0 flex flex-col p-0 rounded-t-[32px]">
+        <div className="mx-auto w-12 h-1.5 bg-gray-200 rounded-full mt-3 mb-1" />
+
+        {successOrder ? (
+          <div className="w-full max-w-lg mx-auto bg-white py-8 overflow-y-auto flex-1">
+            <SuccessView
+              cartTexts={cartTexts}
+              successOrder={successOrder}
+              handleCloseSuccess={handleCloseSuccess}
+              t={t}
+              formData={formData}
+            />
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-6 pb-4 relative">
+              <DrawerTitle className="text-3xl font-black text-center text-slate-900 font-heading">
+                Checkout
+              </DrawerTitle>
+              <DrawerDescription className="text-center font-bold text-slate-500 text-base mt-2">
+                Complete your order
+              </DrawerDescription>
+              <button
+                onClick={successOrder ? handleCloseSuccess : closeCheckout}
+                className="absolute right-6 top-8 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </DrawerHeader>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6 pb-32">
+              <OrderSummary
+                items={items}
+                subTotalAmount={subTotalAmount}
+                deliveryFee={deliveryFee}
+                discountAmount={discountAmount}
+                totalAmount={totalAmount}
+              />
+              <CheckoutForm
                 formData={formData}
+                setFormData={setFormData}
+                handlePlaceOrder={handlePlaceOrder}
+                errors={errors}
+              />
+              <PaymentMethodSection
+                paymentConfig={paymentConfig}
+                totalAmount={totalAmount}
+                deliveryFee={deliveryFee}
+                formData={formData}
+                setFormData={setFormData}
               />
             </div>
-          ) : (
-            <>
-              {/* Fixed Header */}
-              <div className="border-b border-gray-100 pb-3 pt-4 bg-white flex-shrink-0 relative px-4">
-                <h2 className="text-2xl font-black text-center text-slate-900">
-                  Checkout
-                </h2>
-                <p className="text-center font-medium text-sm text-slate-500 mt-1">
-                  Complete your order
-                </p>
-                <button
-                  onClick={successOrder ? handleCloseSuccess : closeCheckout}
-                  className="absolute right-4 top-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
 
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-6 pb-28">
-                <OrderSummary
-                  items={items}
-                  subTotalAmount={subTotalAmount}
-                  deliveryFee={deliveryFee}
-                  discountAmount={discountAmount}
-                  totalAmount={totalAmount}
-                />
-                <CheckoutForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  handlePlaceOrder={handlePlaceOrder}
-                  errors={errors}
-                />
-              </div>
-
-              {/* Sticky bottom button */}
-              <div className="flex-shrink-0 p-4 bg-white border-t border-gray-100 safe-area-bottom">
-                <CheckoutButton
-                  isAnimating={isAnimating}
-                  totalAmount={totalAmount}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </>
+            {/* Sticky bottom button */}
+            <div className="flex-shrink-0 p-6 bg-white border-t border-gray-100 safe-area-bottom">
+              <CheckoutButton
+                isAnimating={isAnimating}
+                totalAmount={totalAmount}
+              />
+            </div>
+          </>
+        )}
+      </DrawerContent>
+    </Drawer>
   );
 }

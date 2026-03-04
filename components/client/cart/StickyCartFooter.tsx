@@ -2,6 +2,13 @@
 
 import { ArrowRight, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 
 interface StickyCartFooterProps {
   totalAmount: number;
@@ -51,46 +58,47 @@ export function StickyCartFooter({
         </div>
       </div>
 
-      {/* Full-screen checkout overlay (immune to keyboard resize) */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white" style={{ height: '100%' }}>
-          <div className="w-full max-w-lg mx-auto flex flex-col h-full bg-white">
-            {/* Header */}
-            <div className="border-b border-gray-100 pb-3 pt-4 bg-white flex-shrink-0 relative px-4">
-              <h2 className="text-2xl font-black text-center text-slate-900">
-                Checkout
-              </h2>
-              <p className="text-center font-medium text-sm text-slate-500 mt-1">
-                Complete your order
-              </p>
-              <button
-                onClick={() => onOpenChange(false)}
-                className="absolute right-4 top-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
+      <Drawer open={isOpen} onOpenChange={onOpenChange}>
+        <DrawerContent className="h-[96vh] bg-white border-0 flex flex-col p-0 rounded-t-[32px]">
+          <div className="mx-auto w-12 h-1.5 bg-gray-200 rounded-full mt-3 mb-1" />
 
-            {/* Scrollable Form Area */}
-            <div className="p-4 overflow-y-auto overscroll-contain flex-1 pb-28">{children}</div>
+          {/* Header */}
+          <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-6 pb-4">
+            <DrawerTitle className="text-3xl font-black text-center text-slate-900 font-heading">
+              Checkout
+            </DrawerTitle>
+            <DrawerDescription className="text-center font-bold text-slate-500 text-base mt-2">
+              Complete your order
+            </DrawerDescription>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="absolute right-6 top-8 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </DrawerHeader>
 
-            {/* Sticky bottom button */}
-            <div className="p-4 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
-              <Button
-                onClick={onCheckout}
-                disabled={isAnimating || disabled}
-                className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAnimating ? (
-                  <Loader2 className="animate-spin w-5 h-5" />
-                ) : (
-                  `Place Order - ৳${totalAmount}`
-                )}
-              </Button>
-            </div>
+          {/* Scrollable Form Area */}
+          <div className="px-6 py-4 overflow-y-auto overscroll-contain flex-1 pb-32">
+            {children}
           </div>
-        </div>
-      )}
+
+          {/* Sticky bottom button */}
+          <div className="p-6 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
+            <Button
+              onClick={onCheckout}
+              disabled={isAnimating || disabled}
+              className="w-full h-16 bg-crab-red hover:bg-orange-600 text-white rounded-3xl font-black text-xl shadow-2xl shadow-crab-red/30 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isAnimating ? (
+                <Loader2 className="animate-spin w-6 h-6" />
+              ) : (
+                `Place Order - ৳${totalAmount}`
+              )}
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
