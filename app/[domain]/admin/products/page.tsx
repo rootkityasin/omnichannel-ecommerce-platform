@@ -68,7 +68,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getCategories } from "@/app/actions/category";
 import { getAdminSiteConfig } from "@/app/actions/settings";
-import { getHomeSections } from "@/app/actions/section";
+import { getSections } from "@/app/actions/section";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ProductBoard } from "@/components/admin/ProductBoard";
 import { cn } from "@/lib/utils";
@@ -107,7 +107,7 @@ type LocalProduct = {
   sections?: Array<{ id: string }>;
 };
 type CategoryItem = Awaited<ReturnType<typeof getCategories>>[number];
-type SectionItem = Awaited<ReturnType<typeof getHomeSections>>[number];
+type SectionItem = Awaited<ReturnType<typeof getSections>>[number];
 type SiteConfig = Awaited<ReturnType<typeof getAdminSiteConfig>>;
 
 type ProductFormState = {
@@ -205,7 +205,7 @@ export default function ProductsPage() {
       const [pData, cData, sData, confData] = await Promise.all([
         getAdminProducts(domain),
         getCategories(domain),
-        getHomeSections(domain),
+        getSections(),
         getAdminSiteConfig(),
       ]);
 
