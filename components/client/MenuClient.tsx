@@ -73,8 +73,14 @@ export function MenuClient({
     initialMenuCategories,
   );
 
+  // Add initialization lock to prevent infinite rendering loops
+  const hasInitialized = useRef(false);
+
   // Populate global store with products for fast recommendations elsewhere
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     if (cachedMenu && isCacheValid) {
       setMenuCache({
         domain: cachedMenu.domain,
