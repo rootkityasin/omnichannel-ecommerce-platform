@@ -142,6 +142,7 @@ export function CartClient({
     }
 
     const orderData = {
+      tenantId: settings?.tenantId,
       customerName: formData.name,
       customerPhone: `+880${formData.phone}`,
       customerEmail: formData.email,
@@ -215,24 +216,24 @@ export function CartClient({
 
   const previewCartTexts = cartTexts
     ? {
-        ...cartTexts,
-        emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
-        emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
-        browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
-        title: cartTexts.title || t.cartPage.title,
-        subtotal: cartTexts.subtotal || t.cartPage.subtotal,
-        deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
-        total: cartTexts.total || t.cartPage.total,
-        deliveryDetails:
-          cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
-        confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
-        successTitle: cartTexts.successTitle || t.cartPage.successTitle,
-        successMessage: cartTexts.successMessage || t.cartPage.successMessage,
-        backHome: cartTexts.backHome || t.cartPage.backHome,
-        emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
-        successImage: cartTexts.successImage || "/congrates_animation.gif",
-        fields: cartTexts.fields || [],
-      }
+      ...cartTexts,
+      emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
+      emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
+      browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
+      title: cartTexts.title || t.cartPage.title,
+      subtotal: cartTexts.subtotal || t.cartPage.subtotal,
+      deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
+      total: cartTexts.total || t.cartPage.total,
+      deliveryDetails:
+        cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
+      confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
+      successTitle: cartTexts.successTitle || t.cartPage.successTitle,
+      successMessage: cartTexts.successMessage || t.cartPage.successMessage,
+      backHome: cartTexts.backHome || t.cartPage.backHome,
+      emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
+      successImage: cartTexts.successImage || "/congrates_animation.gif",
+      fields: cartTexts.fields || [],
+    }
     : null;
   const activeCartTexts = isPreview ? previewCartTexts : cartTexts;
 
@@ -301,12 +302,12 @@ export function CartClient({
         </h2>
         {(!activeCartTexts ||
           activeCartTexts.emptyMessage !== activeCartTexts.emptyTitle) && (
-          <p
-            className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
-          >
-            {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
-          </p>
-        )}
+            <p
+              className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
+            >
+              {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
+            </p>
+          )}
 
         <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
           <Image
@@ -341,12 +342,12 @@ export function CartClient({
         </h2>
         {(!activeCartTexts ||
           activeCartTexts.emptyMessage !== activeCartTexts.emptyTitle) && (
-          <p
-            className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
-          >
-            {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
-          </p>
-        )}
+            <p
+              className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
+            >
+              {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
+            </p>
+          )}
 
         <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
           <Image
@@ -462,13 +463,13 @@ export function CartClient({
                             ৳{item.price} x{" "}
                             {settings.measurementUnit === "WEIGHT"
                               ? (() => {
-                                  const g =
-                                    item.quantity *
-                                    (settings.weightUnitValue || 200);
-                                  return g >= 1000
-                                    ? `${(g / 1000).toFixed(1)} kg`
-                                    : `${g} g`;
-                                })()
+                                const g =
+                                  item.quantity *
+                                  (settings.weightUnitValue || 200);
+                                return g >= 1000
+                                  ? `${(g / 1000).toFixed(1)} kg`
+                                  : `${g} g`;
+                              })()
                               : item.quantity}
                           </span>
                         )}
@@ -502,13 +503,13 @@ export function CartClient({
                           >
                             {settings.measurementUnit === "WEIGHT"
                               ? (() => {
-                                  const grams =
-                                    item.quantity *
-                                    (settings.weightUnitValue || 200);
-                                  return grams >= 1000
-                                    ? `${(grams / 1000).toFixed(1)} kg`
-                                    : `${grams} g`;
-                                })()
+                                const grams =
+                                  item.quantity *
+                                  (settings.weightUnitValue || 200);
+                                return grams >= 1000
+                                  ? `${(grams / 1000).toFixed(1)} kg`
+                                  : `${grams} g`;
+                              })()
                               : item.quantity}
                           </motion.span>
                           <motion.button
@@ -630,11 +631,10 @@ export function CartClient({
                     }
                   />
                   <div
-                    className={`flex items-center w-full bg-white rounded-lg border transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black ${
-                      formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
+                    className={`flex items-center w-full bg-white rounded-lg border transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
                         ? "border-red-500 focus-within:ring-red-200"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     <div className="pl-3 pr-2 py-3 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-lg">
                       <span className="text-gray-500 font-medium text-sm select-none font-body flex items-center gap-1">
@@ -790,11 +790,10 @@ export function CartClient({
               }
             />
             <div
-              className={`flex items-center w-full bg-white rounded-xl border transition-all focus-within:ring-2 focus-within:ring-crab-red/20 focus-within:border-crab-red ${
-                formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
+              className={`flex items-center w-full bg-white rounded-xl border transition-all focus-within:ring-2 focus-within:ring-crab-red/20 focus-within:border-crab-red ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
                   ? "border-red-500 focus-within:ring-red-200"
                   : "border-gray-200"
-              }`}
+                }`}
             >
               <div className="pl-4 pr-3 py-3.5 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-xl">
                 <span className="text-gray-500 font-medium text-base select-none font-body flex items-center gap-1">

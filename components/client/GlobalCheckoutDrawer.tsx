@@ -46,6 +46,7 @@ import { CouponSection } from "./CouponSection";
 import { trackEvent } from "@/lib/track";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import { SiteConfig, CheckoutFormData, CartTexts } from "@/types/common";
+import { useSettings } from "@/components/providers/SettingsProvider";
 
 // --- Extracted Components ---
 
@@ -340,7 +341,7 @@ export function GlobalCheckoutDrawer() {
   } = useCartStore();
   const [isAnimating, setIsAnimating] = useState(false);
   const [draftOrderId, setDraftOrderId] = useState<string | null>(null);
-  const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
+  const { settings } = useSettings();
 
   const { language } = useLanguageStore();
   const t: TranslationsType =
@@ -376,10 +377,6 @@ export function GlobalCheckoutDrawer() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    getSiteConfig().then(setSiteConfig);
-  }, []);
-
-  useEffect(() => {
     const user = session?.user as ExtendedUser;
     if (user && user.role === "USER") {
       // Only auto-fill for customers
@@ -398,7 +395,7 @@ export function GlobalCheckoutDrawer() {
   const discountAmount = discount();
   const discountedTotal = Math.max(0, subTotalAmount - discountAmount);
   const deliveryFee = 60;
-  const taxRate = siteConfig?.taxPercentage || 0;
+  const taxRate = settings?.taxPercentage || 0;
   const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
   const totalAmount = discountedTotal + deliveryFee + taxAmount;
 
@@ -436,7 +433,7 @@ export function GlobalCheckoutDrawer() {
     const timeoutId = setTimeout(async () => {
       const orderData = {
         draftOrderId: draftOrderId || undefined,
-        tenantId: siteConfig?.tenantId,
+        tenantId: settings?.tenantId,
         customerName: formData.name || "Guest",
         customerPhone: formData.phone,
         customerEmail: formData.email,
@@ -464,7 +461,7 @@ export function GlobalCheckoutDrawer() {
     totalAmount,
     checkoutOpen,
     draftOrderId,
-    siteConfig?.tenantId,
+    settings?.tenantId,
     coupon?.code,
     discountAmount,
   ]);
@@ -495,7 +492,7 @@ export function GlobalCheckoutDrawer() {
 
     const orderData = {
       draftOrderId: draftOrderId || undefined,
-      tenantId: siteConfig?.tenantId,
+      tenantId: settings?.tenantId,
       customerName: formData.name,
       customerPhone: formData.phone,
       customerEmail: formData.email,
