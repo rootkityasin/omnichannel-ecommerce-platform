@@ -69,11 +69,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.facebook.net https://*.facebook.com https://*.fbcdn.net",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.facebook.net https://*.facebook.com https://*.fbcdn.net https://static.cloudflareinsights.com https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://www.transparenttextures.com https://api.dicebear.com https://grainy-gradients.vercel.app",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "connect-src 'self' https://*.facebook.com https://*.fbcdn.net https://*.facebook.net",
+              "connect-src 'self' https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://cloudflareinsights.com ws://localhost:* wss://localhost:*",
               "frame-src 'self' https://*.facebook.com",
               "base-uri 'self'",
               "form-action 'self'",

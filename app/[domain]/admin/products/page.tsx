@@ -77,7 +77,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { generateDescriptionAI, translateToBanglaAI } from "@/app/actions/ai";
 import { useSession } from "next-auth/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { AdminProduct } from "@/types/common";
 
@@ -136,6 +136,7 @@ export default function ProductsPage() {
   const userRole = session?.user?.role;
   const userPermissions = session?.user?.permissions || [];
   const params = useParams();
+  const router = useRouter();
   const domain = params.domain as string;
 
   const canManageProducts =
@@ -225,6 +226,7 @@ export default function ProductsPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    router.refresh(); // Hard reset router cache so getHomeSections fetches fresh data
     fetchData();
   }, []);
 
@@ -275,13 +277,6 @@ export default function ProductsPage() {
       setEditingId(null);
     }
   };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Default view is 'table', avoiding forced kanban load even for Restaurants.
 
   // Filter Logic - for RESTAURANT, table view only shows Draft (Ready Stock) items
   const stages = Array.from(new Set(products.map((p) => p.stage))).filter(
@@ -1197,9 +1192,9 @@ export default function ProductsPage() {
                               value={
                                 newProduct.pieces
                                   ? Math.floor(
-                                      Number(newProduct.pieces) /
-                                        (Number(newProduct.weight) || 1),
-                                    )
+                                    Number(newProduct.pieces) /
+                                    (Number(newProduct.weight) || 1),
+                                  )
                                   : ""
                               }
                               onChange={(e) => {
@@ -1420,8 +1415,8 @@ export default function ProductsPage() {
                                     (item) =>
                                       item.child
                                         ? Math.floor(
-                                            item.child.pieces / item.quantity,
-                                          )
+                                          item.child.pieces / item.quantity,
+                                        )
                                         : 0,
                                   );
                                   return `${Math.min(...limits)} Sets`;

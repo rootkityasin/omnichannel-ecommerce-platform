@@ -42,9 +42,9 @@ export async function getHomeSections(domain?: string) {
 
         const sectionFilter = domain
           ? {
-              isActive: true,
-              products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
-            }
+            isActive: true,
+            products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
+          }
           : { isActive: true };
 
         let sections = await prisma.productSection.findMany({

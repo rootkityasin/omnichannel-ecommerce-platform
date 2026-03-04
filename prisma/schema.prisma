@@ -3,41 +3,38 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
-
 datasource db {
   provider = "postgresql"
 }
 
 model Tenant {
-  id             String   @id @default(cuid())
+  id             String          @id @default(cuid())
   name           String
-  slug           String   @unique
-  customDomain   String?  @unique
-  plan           String   @default("FREE")
-  setupFee       Int      @default(6000)
-  setupFeePaid   Boolean  @default(false)
-  isActive       Boolean  @default(true)
-  enabledModules String[] @default([])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  users          User[]
-  products       Product[]
-  orders         Order[]
-  siteConfig     SiteConfig?
-  paymentConfig  PaymentConfig?
-  deliveryConfig DeliveryConfig?
-  hubs           Hub[]
+  slug           String          @unique
+  customDomain   String?         @unique
+  plan           String          @default("FREE")
+  setupFee       Int             @default(6000)
+  setupFeePaid   Boolean         @default(false)
+  isActive       Boolean         @default(true)
+  enabledModules String[]        @default([])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  auditLogs      AuditLog[]
   categories     Category[]
   coupons        Coupon[]
+  deliveryConfig DeliveryConfig?
+  hubs           Hub[]
+  orders         Order[]
+  paymentConfig  PaymentConfig?
+  products       Product[]
   promos         PromoCard[]
-  auditLogs      AuditLog[]
+  siteConfig     SiteConfig?
+  users          User[]
 }
 
 model Product {
   id              String           @id @default(cuid())
   tenantId        String?
-  tenant          Tenant?          @relation(fields: [tenantId], references: [id])
   name            String
   price           Int
   image           String?
@@ -71,6 +68,7 @@ model Product {
   modifiers       Modifier[]
   orderItems      OrderItem[]
   category        Category         @relation(fields: [categoryId], references: [id])
+  tenant          Tenant?          @relation(fields: [tenantId], references: [id])
   reviews         Review[]
   sections        ProductSection[] @relation("ProductToProductSection")
 
@@ -115,10 +113,10 @@ model OrderItem {
 model Category {
   id            String    @id @default(cuid())
   tenantId      String?
-  tenant        Tenant?   @relation(fields: [tenantId], references: [id])
   name          String
   animationType String    @default("AUTO")
   icon          String    @default("Package")
+  tenant        Tenant?   @relation(fields: [tenantId], references: [id])
   products      Product[]
 
   @@index([tenantId])
@@ -127,7 +125,6 @@ model Category {
 model PromoCard {
   id            String   @id @default(cuid())
   tenantId      String?
-  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
   title         String
   description   String?
   imageUrl      String
@@ -139,80 +136,69 @@ model PromoCard {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
 }
 
 model SiteConfig {
-  id              String   @id @default(cuid())
-  tenantId        String?  @unique
-  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
-  contactPhone    String   @default("+880 0000 000 000")
-  contactEmail    String   @default("support@example.com")
-  contactAddress  String   @default("City, Country")
-  shopName        String   @default("Omnichannel Shop")
-  logoUrl         String?
-  measurementUnit String   @default("PCS")
-  allergensText   String   @default("None")
-  certificates    Json     @default("[]")
-  adminSetupToken String   @default("setup-token-123")
-  primaryColor    String   @default("#000000")
-  secondaryColor  String   @default("#0f172a")
-  taxPercentage   Float    @default(0.0)
-  shopType        ShopType @default(RESTAURANT)
-  primaryHub      String?  @default("dhaka-central")
-  weightUnitValue Int      @default(200)
-  volumeUnitValue Int      @default(1000)
-  privacyPolicy   String?  @default("We value your privacy. Your data is safe with us.")
-  refundPolicy    String?  @default("Refunds are processed within 5-7 business days.")
-  termsPolicy     String?  @default("By using our service, you agree to our terms of service.")
-
-  // SEO & Social
-  seoTitle       String?
-  seoDescription String?
-  seoKeywords    String?
-
-  ogTitle       String?
-  ogDescription String?
-  ogImage       String?
-
-  twitterCard        String? @default("summary_large_image")
-  twitterTitle       String?
-  twitterDescription String?
-  twitterImage       String?
-
-  jsonLdType   String? @default("Restaurant")
-  robots       String? @default("index, follow")
-  canonicalUrl String?
-  sitelinks    Json    @default("[]")
-
-  // Meta CAPI
-  metaPixelId     String?
-  metaAccessToken String?
-
-  socialFacebook  String?
-  socialInstagram String?
-  socialTwitter   String?
-  socialLinkedIn  String?
-  socialYoutube   String?
-
-  // Invoice Maker Configuration
-  invoiceTheme   String @default("modern")
-  invoiceDetails Json   @default("{\"showSeller\": true, \"showBuyer\": true, \"showSignature\": true, \"watermarkOpacity\": 0.1, \"fontSize\": 14}")
-
-  // LabsMail Lead Integration
+  id                     String    @id @default(cuid())
+  tenantId               String?   @unique
+  contactPhone           String    @default("+880 0000 000 000")
+  contactEmail           String    @default("support@example.com")
+  contactAddress         String    @default("City, Country")
+  shopName               String    @default("Omnichannel Shop")
+  logoUrl                String?
+  measurementUnit        String    @default("PCS")
+  allergensText          String    @default("None")
+  certificates           Json      @default("[]")
+  adminSetupToken        String    @default("setup-token-123")
+  primaryColor           String    @default("#000000")
+  secondaryColor         String    @default("#0f172a")
+  taxPercentage          Float     @default(0.0)
+  shopType               ShopType  @default(RESTAURANT)
+  weightUnitValue        Int       @default(200)
+  volumeUnitValue        Int       @default(1000)
+  privacyPolicy          String?   @default("We value your privacy. Your data is safe with us.")
+  refundPolicy           String?   @default("Refunds are processed within 5-7 business days.")
+  termsPolicy            String?   @default("By using our service, you agree to our terms of service.")
+  seoTitle               String?
+  seoDescription         String?
+  seoKeywords            String?
+  ogTitle                String?
+  ogDescription          String?
+  ogImage                String?
+  twitterCard            String?   @default("summary_large_image")
+  twitterTitle           String?
+  twitterDescription     String?
+  twitterImage           String?
+  jsonLdType             String?   @default("Restaurant")
+  robots                 String?   @default("index, follow")
+  canonicalUrl           String?
+  sitelinks              Json      @default("[]")
+  metaPixelId            String?
+  metaAccessToken        String?
+  socialFacebook         String?
+  socialInstagram        String?
+  socialTwitter          String?
+  socialLinkedIn         String?
+  socialYoutube          String?
+  invoiceTheme           String    @default("modern")
+  invoiceDetails         Json      @default("{\"fontSize\": 14, \"showBuyer\": true, \"showSeller\": true, \"showSignature\": true, \"watermarkOpacity\": 0.1}")
   labsmailBaseUrl        String?
   labsmailLeadKey        String?
   labsmailActive         Boolean   @default(false)
   labsmailLastExportedAt DateTime?
+  primaryHub             String?   @default("dhaka-central")
+  tenant                 Tenant?   @relation(fields: [tenantId], references: [id])
 }
 
 model Hub {
   id        String      @id @default(cuid())
   tenantId  String?
-  tenant    Tenant?     @relation(fields: [tenantId], references: [id])
   name      String
   location  String
   expenses  Expense[]
   freezers  Freezer[]
+  tenant    Tenant?     @relation(fields: [tenantId], references: [id])
   inventory Inventory[]
   orders    Order[]
   users     User[]
@@ -223,7 +209,6 @@ model Hub {
 model User {
   id          String    @id @default(cuid())
   tenantId    String?
-  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
   name        String
   email       String    @unique
   phone       String?   @unique
@@ -242,6 +227,7 @@ model User {
   reviews     Review[]
   sessions    Session[]
   hub         Hub?      @relation(fields: [hubId], references: [id])
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([email])
@@ -322,7 +308,6 @@ model Expense {
 model Coupon {
   id             String       @id @default(cuid())
   tenantId       String?
-  tenant         Tenant?      @relation(fields: [tenantId], references: [id])
   code           String       @unique
   discountType   DiscountType @default(FIXED)
   discountValue  Int
@@ -333,31 +318,31 @@ model Coupon {
   usedCount      Int          @default(0)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+  tenant         Tenant?      @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([code])
 }
 
 model Order {
-  id              String   @id @default(cuid())
+  id              String      @id @default(cuid())
   tenantId        String?
-  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
-  orderId         String   @unique
-  status          String   @default("PENDING")
+  orderId         String      @unique
+  status          String      @default("PENDING")
   customerName    String
   customerPhone   String
-  customerEmail   String?
   customerAddress String
-  source          String   @default("WEB")
+  source          String      @default("WEB")
   totalAmount     Int
-  createdAt       DateTime @default(now())
+  createdAt       DateTime    @default(now())
   hubId           String?
   couponCode      String?
   discountAmount  Int?
-  hub             Hub?     @relation(fields: [hubId], references: [id])
-
-  items         OrderItem[]
-  stockDeducted Boolean     @default(false)
+  stockDeducted   Boolean     @default(false)
+  customerEmail   String?
+  hub             Hub?        @relation(fields: [hubId], references: [id])
+  tenant          Tenant?     @relation(fields: [tenantId], references: [id])
+  items           OrderItem[]
 
   @@index([tenantId])
   @@index([hubId])
@@ -368,7 +353,6 @@ model Order {
 model PaymentConfig {
   id                  String   @id @default(cuid())
   tenantId            String?  @unique
-  tenant              Tenant?  @relation(fields: [tenantId], references: [id])
   isActive            Boolean  @default(true)
   codEnabled          Boolean  @default(true)
   bkashEnabled        Boolean  @default(false)
@@ -391,6 +375,7 @@ model PaymentConfig {
   advancePaymentValue Int?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+  tenant              Tenant?  @relation(fields: [tenantId], references: [id])
 }
 
 model SecurityLog {
@@ -406,18 +391,17 @@ model SecurityLog {
 model AuditLog {
   id         String   @id @default(cuid())
   tenantId   String?
-  actorName  String // Who did it (User Name)
-  actorEmail String // Who did it (User Email)
-  action     String // CREATE, UPDATE, DELETE, LOGIN
-  entity     String // PRODUCT, ORDER, SETTINGS
+  actorName  String
+  actorEmail String
+  action     String
+  entity     String
   entityId   String?
-  details    String? // Human readable description
-  metadata   Json? // Technical Diff { old, new }
+  details    String?
+  metadata   Json?
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
-
-  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([action])
@@ -494,33 +478,9 @@ model ProductSection {
   products  Product[] @relation("ProductToProductSection")
 }
 
-enum ProductType {
-  SINGLE
-  COMBO
-}
-
-enum ShopType {
-  RESTAURANT
-  GROCERY
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED
-}
-
-enum Role {
-  SUPER_ADMIN
-  TENANT_ADMIN // Shop Admin (Owner of the domain/shop)
-  HUB_ADMIN // Branch Manager
-  STAFF // Worker/Employee
-  USER // Customer
-}
-
 model DeliveryConfig {
   id                       String   @id @default(cuid())
   tenantId                 String?  @unique
-  tenant                   Tenant?  @relation(fields: [tenantId], references: [id])
   defaultCharge            Int      @default(60)
   defaultCodEnabled        Boolean  @default(true)
   nonRefundable            Boolean  @default(false)
@@ -532,6 +492,7 @@ model DeliveryConfig {
   freeDeliveryOver         Int      @default(0)
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
+  tenant                   Tenant?  @relation(fields: [tenantId], references: [id])
 }
 
 model TrackingEvent {
@@ -565,4 +526,27 @@ model Plan {
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+enum ProductType {
+  SINGLE
+  COMBO
+}
+
+enum ShopType {
+  RESTAURANT
+  GROCERY
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum Role {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  HUB_ADMIN
+  STAFF
+  USER
 }
