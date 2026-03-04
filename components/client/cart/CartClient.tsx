@@ -499,7 +499,7 @@ export function CartClient({
                             key={item.quantity}
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-sm font-bold min-w-[3rem] text-center"
+                            className="text-sm font-bold min-w-[3rem] text-center text-slate-900"
                           >
                             {settings.measurementUnit === "WEIGHT"
                               ? (() => {

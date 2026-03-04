@@ -55,9 +55,9 @@ export function MobileCartItem({
           <p className="font-body text-xs text-slate-500 mt-1 font-medium">
             {settings.measurementUnit === "WEIGHT"
               ? (() => {
-                  const g = item.quantity * (settings.weightUnitValue || 200);
-                  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
-                })()
+                const g = item.quantity * (settings.weightUnitValue || 200);
+                return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
+              })()
               : `${item.quantity} units`}
           </p>
         </div>
@@ -86,13 +86,13 @@ export function MobileCartItem({
               key={item.quantity}
               initial={{ scale: 0.8, y: 5, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
-              className="text-xs font-bold min-w-[3rem] text-center font-heading"
+              className="text-xs font-bold min-w-[3rem] text-center font-heading text-slate-900"
             >
               {settings.measurementUnit === "WEIGHT"
                 ? (() => {
-                    const g = item.quantity * (settings.weightUnitValue || 200);
-                    return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
-                  })()
+                  const g = item.quantity * (settings.weightUnitValue || 200);
+                  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
+                })()
                 : item.quantity}
             </motion.span>
 
