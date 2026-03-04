@@ -52,7 +52,13 @@ const getCachedMenuData = unstable_cache(
       }),
     ]);
 
-    return { products, categories };
+    // Stringify/Parse inside the unstable_cache wrapper to strip Prisma Decimal and Date 
+    // objects into safe native JSON structures BEFORE Next.js attempts to serialize them 
+    // to the filesystem or Redis. This violently prevents DataCloneErrors.
+    return {
+      products: JSON.parse(JSON.stringify(products)),
+      categories: JSON.parse(JSON.stringify(categories))
+    };
   },
   ["menu-data"],
   { tags: ["menu-data", "products", "categories"], revalidate: 600 },

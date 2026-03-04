@@ -57,15 +57,15 @@ export function MenuClient({
     typeof window !== "undefined" ? readMenuCache(cacheDomain) : null;
   const isCacheValid = Boolean(cachedMenu);
   const initialMenuProducts = isCacheValid
-    ? (cachedMenu?.products as any[])
+    ? (cachedMenu?.products as any[]) || []
     : menuProducts.length > 0 && menuDomain === cacheDomain
       ? (menuProducts as any[])
-      : initialProducts;
+      : initialProducts || [];
   const initialMenuCategories = isCacheValid
-    ? (cachedMenu?.categories as any[])
+    ? (cachedMenu?.categories as any[]) || []
     : menuCategories.length > 0 && menuDomain === cacheDomain
       ? (menuCategories as any[])
-      : initialCategories;
+      : initialCategories || [];
 
   const [clientProducts, setClientProducts] = useState(initialMenuProducts);
   const [clientCategories, setClientCategories] = useState(

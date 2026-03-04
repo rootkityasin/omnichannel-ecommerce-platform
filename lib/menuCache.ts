@@ -17,6 +17,7 @@ export const readMenuCache = (domain: string) => {
     if (!parsed?.timestamp || !parsed?.domain) return null;
     if (parsed.domain !== domain) return null;
     if (Date.now() - parsed.timestamp > MENU_CACHE_TTL_MS) return null;
+    if (!Array.isArray(parsed.products) || !Array.isArray(parsed.categories)) return null;
     return parsed;
   } catch {
     return null;
