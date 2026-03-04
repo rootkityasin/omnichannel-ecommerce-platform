@@ -257,11 +257,10 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                       setDirection(idx > currentImageIndex ? 1 : -1);
                       setCurrentImageIndex(idx);
                     }}
-                    className={`transition-all duration-300 rounded-full ${
-                      idx === currentImageIndex
+                    className={`transition-all duration-300 rounded-full ${idx === currentImageIndex
                         ? "bg-white w-4 h-1.5 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
                         : "bg-white/50 w-1.5 h-1.5 hover:bg-white/80"
-                    }`}
+                      }`}
                   />
                 ))}
               </div>
@@ -295,7 +294,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
         <AnimatePresence>
           {isZoomed && (
             <Dialog open={isZoomed} onOpenChange={setIsZoomed}>
-              <DialogContent className="!max-w-[100vw] !w-[100vw] !h-[100vh] !max-h-[100vh] !p-0 !bg-black/90 !border-none !shadow-none outline-none overflow-hidden">
+              <DialogContent className="!max-w-[100vw] !w-[100vw] !h-[100vh] !max-h-[100vh] !p-0 !bg-black/90 !border-none !shadow-none outline-none overflow-hidden [&>button]:hidden">
                 <DialogTitle className="sr-only">
                   Zoomed Image: {product.name}
                 </DialogTitle>
