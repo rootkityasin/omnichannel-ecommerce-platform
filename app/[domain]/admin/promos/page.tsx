@@ -343,7 +343,7 @@ export default function PromoPage() {
                 });
                 setIsAddingCard(true);
               }}
-              className="bg-ocean-blue hover:bg-ocean-blue/90 text-white font-bold shadow-lg shadow-blue-900/20"
+              className="bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-lg shadow-orange-900/20"
             >
               <Plus className="w-4 h-4 mr-2" /> Create Popup
             </Button>
@@ -654,9 +654,9 @@ export default function PromoPage() {
                           e.target.value === ""
                             ? ""
                             : Math.max(
-                                0,
-                                parseFloat(e.target.value),
-                              ).toString(),
+                              0,
+                              parseFloat(e.target.value),
+                            ).toString(),
                       })
                     }
                     required
@@ -679,9 +679,9 @@ export default function PromoPage() {
                           e.target.value === ""
                             ? ""
                             : Math.max(
-                                0,
-                                parseFloat(e.target.value),
-                              ).toString(),
+                              0,
+                              parseFloat(e.target.value),
+                            ).toString(),
                       })
                     }
                   />
@@ -825,9 +825,9 @@ export default function PromoPage() {
                               e.target.value === ""
                                 ? ""
                                 : Math.max(
-                                    0,
-                                    parseFloat(e.target.value),
-                                  ).toString(),
+                                  0,
+                                  parseFloat(e.target.value),
+                                ).toString(),
                           })
                         }
                       />
@@ -846,9 +846,9 @@ export default function PromoPage() {
                               e.target.value === ""
                                 ? ""
                                 : Math.max(
-                                    0,
-                                    parseFloat(e.target.value),
-                                  ).toString(),
+                                  0,
+                                  parseFloat(e.target.value),
+                                ).toString(),
                           })
                         }
                       />
