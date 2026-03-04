@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import PrintButton from './PrintButton';
 import { getAdminSiteConfig } from '@/app/actions/settings';
+import { auth } from '@/auth';
 import { Badge } from '@/components/ui/badge';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -12,15 +13,18 @@ export const dynamic = 'force-dynamic';
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    const [order, config] = await Promise.all([
+    const [order, config, session] = await Promise.all([
         prisma.order.findUnique({
             where: { orderId: id },
             include: { items: { include: { product: true } } }
         }),
-        getAdminSiteConfig()
+        getAdminSiteConfig(),
+        auth()
     ]);
 
-    if (!order) return notFound();
+    const tenantId = session?.user?.tenantId;
+    // Verify order exists AND belongs to this admin's tenant
+    if (!order || !tenantId || order.tenantId !== tenantId) return notFound();
 
     const subtotal = order.items.reduce((acc: number, item) => acc + (item.price * item.quantity), 0);
     const discount = order.discountAmount || 0;

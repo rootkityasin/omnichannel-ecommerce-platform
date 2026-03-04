@@ -181,10 +181,13 @@ export default function SmartLinkPage() {
       const productId = Array.isArray(params.productId)
         ? params.productId[0]
         : params.productId;
+      const domain = Array.isArray(params.domain)
+        ? params.domain[0]
+        : params.domain;
       if (productId) {
         try {
           const [productData, reviewsData] = await Promise.all([
-            getProduct(productId),
+            getProduct(productId, domain),
             getProductReviews(productId),
           ]);
 
@@ -192,11 +195,9 @@ export default function SmartLinkPage() {
           setReviews(reviewsData || []);
         } catch (error) {
           console.error("Failed to load product data:", error);
-          // Try to at least get product if reviews failed?
-          // Optional fallback logic could go here.
-          const productOnly = await getProduct(productId).catch(() => null);
+          const productOnly = await getProduct(productId, domain).catch(() => null);
           if (productOnly) setProduct(productOnly);
-          setReviews([]); // Ensure reviews is an empty array if fetch fails
+          setReviews([]);
         }
       }
       setLoading(false);

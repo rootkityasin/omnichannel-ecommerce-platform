@@ -90,6 +90,10 @@ export async function getAdminProducts(domain?: string) {
 
 export async function getProductById(id: string) {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return null;
+
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -97,6 +101,7 @@ export async function getProductById(id: string) {
         sections: { select: { id: true, slug: true } }, // Needed for edit form
       },
     });
+    if (product && product.tenantId !== tenantId) return null;
     return product;
   } catch (error) {
     console.error("Get Product By ID Error:", error);
@@ -170,7 +175,7 @@ export async function getProducts(domain?: string) {
   }
 }
 
-export async function getProduct(id: string) {
+export async function getProduct(id: string, domain?: string) {
   try {
     const product = await prisma.product.findUnique({
       where: { id },
@@ -184,6 +189,11 @@ export async function getProduct(id: string) {
         },
       },
     });
+    // Verify tenant ownership when domain is provided
+    if (domain && product) {
+      const tenant = await getTenantByDomain(domain);
+      if (!tenant || product.tenantId !== tenant.id) return null;
+    }
     return product;
   } catch {
     return null;
@@ -218,17 +228,17 @@ export async function createProduct(data: ProductMutationInput) {
         sections:
           data.sections && data.sections.length > 0
             ? {
-                connect: data.sections.map((id: string) => ({ id })),
-              }
+              connect: data.sections.map((id: string) => ({ id })),
+            }
             : undefined,
         comboItems:
           data.type === "COMBO" && data.comboItems
             ? {
-                create: data.comboItems.map((item) => ({
-                  childId: item.childId,
-                  quantity: Number.parseInt(String(item.quantity), 10),
-                })),
-              }
+              create: data.comboItems.map((item) => ({
+                childId: item.childId,
+                quantity: Number.parseInt(String(item.quantity), 10),
+              })),
+            }
             : undefined,
       },
     });
@@ -248,6 +258,14 @@ export async function createProduct(data: ProductMutationInput) {
 
 export async function updateProduct(id: string, data: ProductMutationInput) {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    // Verify ownership before update
+    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
+    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+
     await prisma.product.update({
       where: { id },
       data: {
@@ -264,8 +282,8 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
         stage: data.stage,
         sections: data.sections
           ? {
-              set: data.sections.map((id: string) => ({ id })),
-            }
+            set: data.sections.map((id: string) => ({ id })),
+          }
           : undefined,
       },
     });
@@ -285,6 +303,14 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
 
 export async function deleteProduct(id: string) {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    // Verify ownership before delete
+    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
+    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+
     // 1. Check for orders
     const ordersCount = await prisma.orderItem.count({
       where: { productId: id },
@@ -320,12 +346,16 @@ export async function deleteProduct(id: string) {
 
 export async function deleteArchivedProduct(id: string) {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
     const product = await prisma.product.findUnique({
       where: { id },
-      select: { stage: true },
+      select: { stage: true, tenantId: true },
     });
 
-    if (!product) {
+    if (!product || product.tenantId !== tenantId) {
       return { success: false, error: "Product not found" };
     }
 
@@ -362,6 +392,13 @@ export async function deleteArchivedProduct(id: string) {
 
 export async function archiveProduct(id: string) {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
+    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+
     await prisma.product.update({
       where: { id },
       data: {
@@ -386,6 +423,13 @@ export async function archiveProduct(id: string) {
 
 export async function unarchiveProduct(id: string) {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
+    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+
     await prisma.product.update({
       where: { id },
       data: {
@@ -410,7 +454,12 @@ export async function unarchiveProduct(id: string) {
 
 export async function generateUniqueSku() {
   try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
     const products = await prisma.product.findMany({
+      where: { tenantId },
       select: { sku: true },
     });
 

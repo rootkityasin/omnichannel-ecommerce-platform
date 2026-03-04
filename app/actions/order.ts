@@ -36,12 +36,9 @@ export async function createOrder(data: {
 
   try {
     await logActionRequest({ actionName: "createOrder" });
-    // 1. Resolve Tenant
-    let tenantId = data.tenantId;
-    if (!tenantId) {
-      const sessionUser = await getSessionUser();
-      tenantId = sessionUser?.tenantId ?? undefined;
-    }
+    // 1. Resolve Tenant - ALWAYS from session, never trust client-supplied tenantId
+    const sessionUser = await getSessionUser();
+    const tenantId = data.tenantId || sessionUser?.tenantId;
 
     if (!tenantId) {
       console.error("Create Order Failed: Missing Tenant ID");
@@ -166,11 +163,9 @@ export async function upsertIncompleteOrder(data: {
 }) {
   try {
     await logActionRequest({ actionName: "upsertIncompleteOrder" });
-    let tenantId = data.tenantId;
-    if (!tenantId) {
-      const sessionUser = await getSessionUser();
-      tenantId = sessionUser?.tenantId ?? undefined;
-    }
+    // Resolve tenant - ALWAYS from session, never trust client-supplied tenantId
+    const sessionUser = await getSessionUser();
+    const tenantId = data.tenantId || sessionUser?.tenantId;
 
     if (!tenantId) return { success: false, error: "Missing Tenant" };
 
@@ -313,12 +308,18 @@ export async function updateAdminOrder(
 ) {
   try {
     await logActionRequest({ actionName: "updateAdminOrder" });
+
+    // Verify session tenant
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
     // Find by orderId (e.g., ORD-...)
     const order = await prisma.order.findUnique({
       where: { orderId: id },
     });
 
-    if (!order) throw new Error("Order not found");
+    if (!order || order.tenantId !== tenantId) return { success: false, error: "Order not found" };
 
     await prisma.order.update({
       where: { id: order.id },
@@ -342,11 +343,17 @@ export async function updateAdminOrder(
 export async function deleteAdminOrder(id: string) {
   try {
     await logActionRequest({ actionName: "deleteAdminOrder" });
+
+    // Verify session tenant
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
     const order = await prisma.order.findUnique({
       where: { orderId: id },
     });
 
-    if (!order) throw new Error("Order not found");
+    if (!order || order.tenantId !== tenantId) return { success: false, error: "Order not found" };
 
     // Delete order items first (Prisma handles this if cascade is set, but let's be safe)
     await prisma.orderItem.deleteMany({
@@ -367,12 +374,18 @@ export async function deleteAdminOrder(id: string) {
 export async function printOrderInvoice(orderId: string) {
   try {
     await logActionRequest({ actionName: "printOrderInvoice" });
+
+    // Verify session tenant
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return { success: false, error: "Unauthorized" };
+
     const order = await prisma.order.findUnique({
       where: { orderId },
       include: { items: true },
     });
 
-    if (!order) return { success: false, error: "Order not found" };
+    if (!order || order.tenantId !== tenantId) return { success: false, error: "Order not found" };
 
     const canPrintByStatus =
       order.status === "Ready" || order.status === "Invoice Printed";

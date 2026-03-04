@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { getSiteConfig } from "@/app/actions/settings";
+import { getTenantByDomain } from "@/app/actions/tenant";
 import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -14,15 +15,17 @@ export default async function ReceiptPage({
 }) {
   const { id, domain } = await params;
 
-  const [order, config] = await Promise.all([
+  const [order, config, tenant] = await Promise.all([
     prisma.order.findUnique({
       where: { orderId: id },
       include: { items: { include: { product: true } } },
     }),
     getSiteConfig(domain),
+    getTenantByDomain(domain),
   ]);
 
-  if (!order) return notFound();
+  // Verify order exists AND belongs to this tenant
+  if (!order || !tenant || order.tenantId !== tenant.id) return notFound();
 
   const subtotal = order.items.reduce(
     (acc: number, item) => acc + item.price * item.quantity,
