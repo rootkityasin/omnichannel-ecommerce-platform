@@ -55,6 +55,8 @@ RUN mkdir .next && chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 # Copy static assets (not included in standalone output)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy prisma schema and migrations for production migrations
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
 
