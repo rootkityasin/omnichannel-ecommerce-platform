@@ -72,7 +72,7 @@ function CheckoutForm({
             <input
               type="text"
               placeholder="Full Name"
-              className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.name ? "border-red-500" : "border-gray-200"}`}
+              className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] !text-gray-900 placeholder:text-gray-400 ${errors.name ? "border-red-500" : "border-gray-200"}`}
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -88,7 +88,7 @@ function CheckoutForm({
             <input
               type="email"
               placeholder="Email"
-              className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.email ? "border-red-500" : "border-gray-200"}`}
+              className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] !text-gray-900 placeholder:text-gray-400 ${errors.email ? "border-red-500" : "border-gray-200"}`}
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -104,7 +104,7 @@ function CheckoutForm({
             <input
               type="tel"
               placeholder="Phone Number (01...)"
-              className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.phone ? "border-red-500" : "border-gray-200"}`}
+              className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] !text-gray-900 placeholder:text-gray-400 ${errors.phone ? "border-red-500" : "border-gray-200"}`}
               value={formData.phone}
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
@@ -123,7 +123,7 @@ function CheckoutForm({
                 onValueChange={(val) => setFormData({ ...formData, area: val })}
               >
                 <SelectTrigger
-                  className={`w-full h-[58px] !bg-white border rounded-xl focus:ring-crab-red/20 !text-gray-900 ${errors.area ? "border-red-500" : "border-gray-200"}`}
+                  className={`w-full h-[58px] !bg-white border rounded-xl focus:ring-crab-red/20 text-[16px] !text-gray-900 ${errors.area ? "border-red-500" : "border-gray-200"}`}
                 >
                   <SelectValue placeholder="Area" />
                 </SelectTrigger>
@@ -148,7 +148,7 @@ function CheckoutForm({
               <input
                 type="text"
                 placeholder="Address"
-                className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium !text-gray-900 placeholder:text-gray-400 ${errors.address ? "border-red-500" : "border-gray-200"}`}
+                className={`w-full p-4 !bg-white border rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] !text-gray-900 placeholder:text-gray-400 ${errors.address ? "border-red-500" : "border-gray-200"}`}
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
@@ -625,6 +625,7 @@ export function GlobalCheckoutDrawer() {
   return (
     <Drawer
       open={checkoutOpen}
+      shouldScaleBackground={false}
       onOpenChange={(open) =>
         !open && (successOrder ? handleCloseSuccess() : closeCheckout())
       }

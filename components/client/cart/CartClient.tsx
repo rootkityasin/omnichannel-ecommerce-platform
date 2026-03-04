@@ -632,8 +632,8 @@ export function CartClient({
                   />
                   <div
                     className={`flex items-center w-full bg-white rounded-lg border transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
-                        ? "border-red-500 focus-within:ring-red-200"
-                        : "border-gray-300"
+                      ? "border-red-500 focus-within:ring-red-200"
+                      : "border-gray-300"
                       }`}
                   >
                     <div className="pl-3 pr-2 py-3 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-lg">
@@ -646,7 +646,7 @@ export function CartClient({
                       type="tel"
                       placeholder="17..."
                       required
-                      className="w-full p-3 bg-transparent border-0 outline-none focus:ring-0 text-sm text-slate-900 placeholder:text-slate-400 font-medium font-body h-auto"
+                      className="w-full p-4 bg-transparent border-0 outline-none focus:ring-0 font-medium text-[16px] text-slate-900 placeholder:text-slate-400 font-body h-auto"
                       value={formData.phone}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, "");
@@ -672,7 +672,7 @@ export function CartClient({
                       }
                       required
                     >
-                      <SelectTrigger className="col-span-1 p-3 h-auto bg-white border border-gray-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-black outline-none data-[placeholder]:text-slate-400">
+                      <SelectTrigger className="col-span-1 p-4 h-auto bg-white border border-gray-200 rounded-xl text-slate-900 text-[16px] font-medium focus:ring-2 focus:ring-crab-red/20 outline-none data-[placeholder]:text-slate-400">
                         <SelectValue placeholder="Area" />
                       </SelectTrigger>
                       <SelectContent>
@@ -684,7 +684,7 @@ export function CartClient({
                       type="text"
                       placeholder="Address"
                       required
-                      className="col-span-2 p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black transition-all outline-none text-sm text-slate-900 placeholder:text-slate-400"
+                      className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] text-slate-900 placeholder:text-slate-400"
                       value={formData.address}
                       onChange={(e) =>
                         setFormData({ ...formData, address: e.target.value })
@@ -773,7 +773,7 @@ export function CartClient({
               type="text"
               placeholder="Full Name"
               required
-              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400"
+              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] text-slate-900 placeholder:text-slate-400"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -783,7 +783,7 @@ export function CartClient({
               type="email"
               placeholder="Email"
               required
-              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400"
+              className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-[16px] text-slate-900 placeholder:text-slate-400"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -791,8 +791,8 @@ export function CartClient({
             />
             <div
               className={`flex items-center w-full bg-white rounded-xl border transition-all focus-within:ring-2 focus-within:ring-crab-red/20 focus-within:border-crab-red ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
-                  ? "border-red-500 focus-within:ring-red-200"
-                  : "border-gray-200"
+                ? "border-red-500 focus-within:ring-2 focus-within:ring-red-200"
+                : "border-gray-200"
                 }`}
             >
               <div className="pl-4 pr-3 py-3.5 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-xl">
@@ -805,7 +805,7 @@ export function CartClient({
                 type="tel"
                 placeholder="17..."
                 required
-                className="w-full p-3.5 bg-transparent border-0 outline-none focus:ring-0 font-medium font-body h-auto text-slate-900 placeholder:text-slate-400"
+                className="w-full p-3.5 bg-transparent border-0 outline-none focus:ring-0 font-medium font-body h-auto text-slate-900 placeholder:text-slate-400 text-[16px]"
                 value={formData.phone}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, "");
@@ -831,7 +831,7 @@ export function CartClient({
                 onValueChange={(val) => setFormData({ ...formData, area: val })}
                 required
               >
-                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-slate-900">
+                <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-slate-900 text-[16px]">
                   <SelectValue placeholder="Area" />
                 </SelectTrigger>
                 <SelectContent>
@@ -844,7 +844,7 @@ export function CartClient({
               type="text"
               placeholder="Address"
               required
-              className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400"
+              className="col-span-2 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-medium text-slate-900 placeholder:text-slate-400 text-[16px]"
               value={formData.address}
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })

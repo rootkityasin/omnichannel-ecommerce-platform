@@ -129,7 +129,7 @@ fbq('track', 'PageView');`,
         secondaryColor={config?.secondaryColor}
       />
       <MetaPixel pixelId={config.metaPixelId} />
-      <div className="client-shell flex flex-col min-h-screen bg-white relative font-body">
+      <div data-vaul-drawer-wrapper="" className="client-shell flex flex-col min-h-screen bg-white relative font-body">
         <div className="md:hidden sticky top-0 z-50">
           <MobileHeader />
         </div>

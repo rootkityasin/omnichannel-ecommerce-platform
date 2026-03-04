@@ -46,7 +46,7 @@ export function StickyCartFooter({
           </p>
         </div>
 
-        <Drawer open={isOpen} onOpenChange={onOpenChange}>
+        <Drawer open={isOpen} onOpenChange={onOpenChange} shouldScaleBackground={false}>
           <DrawerTrigger asChild>
             <Button
               className="font-heading flex-1 h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-crab-red/20 active:scale-95 transition-all"
