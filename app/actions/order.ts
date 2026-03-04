@@ -27,6 +27,10 @@ export async function createOrder(data: {
   tenantId?: string;
   source?: "WEB" | "MANUAL" | "WHATSAPP";
   draftOrderId?: string;
+  paymentMethod?: string;
+  advancePaidAmount?: number;
+  advancePaymentStatus?: string;
+  transactionId?: string;
 }) {
   // Bot check removed
 
@@ -73,6 +77,10 @@ export async function createOrder(data: {
             couponCode: data.couponCode,
             discountAmount: data.discountAmount,
             source: data.source || "WEB",
+            paymentMethod: data.paymentMethod || "COD",
+            advancePaidAmount: data.advancePaidAmount || 0,
+            advancePaymentStatus: data.advancePaymentStatus || "NOT_REQUIRED",
+            transactionId: data.transactionId,
             items: {
               create: data.items.map((item) => ({
                 productId: item.productId,
@@ -99,6 +107,10 @@ export async function createOrder(data: {
           totalAmount: data.totalAmount,
           couponCode: data.couponCode,
           discountAmount: data.discountAmount,
+          paymentMethod: data.paymentMethod || "COD",
+          advancePaidAmount: data.advancePaidAmount || 0,
+          advancePaymentStatus: data.advancePaymentStatus || "NOT_REQUIRED",
+          transactionId: data.transactionId,
           source: data.source || "WEB",
           items: {
             create: data.items.map((item) => ({

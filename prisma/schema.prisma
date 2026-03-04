@@ -339,10 +339,14 @@ model Order {
   couponCode      String?
   discountAmount  Int?
   stockDeducted   Boolean     @default(false)
-  customerEmail   String?
-  hub             Hub?        @relation(fields: [hubId], references: [id])
-  tenant          Tenant?     @relation(fields: [tenantId], references: [id])
-  items           OrderItem[]
+  customerEmail       String?
+  paymentMethod       String?      @default("COD")
+  advancePaidAmount   Int          @default(0)
+  advancePaymentStatus String      @default("NOT_REQUIRED")
+  transactionId       String?
+  hub                 Hub?        @relation(fields: [hubId], references: [id])
+  tenant              Tenant?     @relation(fields: [tenantId], references: [id])
+  items               OrderItem[]
 
   @@index([tenantId])
   @@index([hubId])
@@ -371,6 +375,7 @@ model PaymentConfig {
   selfMfsPhone        String?
   selfMfsInstruction  String?
   selfMfsQrCode       String?
+  advancePaymentEnabled Boolean  @default(false)
   advancePaymentType  String?
   advancePaymentValue Int?
   createdAt           DateTime @default(now())

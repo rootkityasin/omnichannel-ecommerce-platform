@@ -27,7 +27,8 @@ export function PaymentSettings() {
         codEnabled: false,
         bkashEnabled: false,
         nagadEnabled: false,
-        selfMfsEnabled: false
+        selfMfsEnabled: false,
+        advancePaymentEnabled: false
     };
 
     const [config, setConfig] = useState<PaymentConfig>({ ...defaultConfig, ...paymentConfig });
@@ -347,59 +348,67 @@ export function PaymentSettings() {
 
             {/* Advance Payment */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-base">Set your advance payment</CardTitle>
-                    <CardDescription>Select how much amount you want to get advance from customer.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div>
+                        <CardTitle className="text-base">Set your advance payment</CardTitle>
+                        <CardDescription>Select how much amount you want to get advance from customer.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {config.advancePaymentEnabled && <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">Active</span>}
+                        <Switch checked={config.advancePaymentEnabled} onCheckedChange={(c) => setConfig({ ...config, advancePaymentEnabled: c })} />
+                    </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <RadioGroup
-                        value={config.advancePaymentType || 'FULL'}
-                        onValueChange={(v) => setConfig({ ...config, advancePaymentType: v })}
-                        className="space-y-3"
-                    >
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="FULL" id="adv-full" />
-                            <Label htmlFor="adv-full">Full Payment</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="DELIVERY" id="adv-delivery" />
-                            <Label htmlFor="adv-delivery">Delivery Charge Only</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="PERCENTAGE" id="adv-percentage" />
-                            <Label htmlFor="adv-percentage">Percentage</Label>
-                            {config.advancePaymentType === 'PERCENTAGE' && (
-                                <Input
-                                    type="number"
-                                    className="w-24 h-8 ml-2"
-                                    placeholder="%"
-                                    value={config.advancePaymentValue ?? ''}
-                                    onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
-                                />
-                            )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="FIXED" id="adv-fixed" />
-                            <Label htmlFor="adv-fixed">Fixed Amount</Label>
-                            {config.advancePaymentType === 'FIXED' && (
-                                <Input
-                                    type="number"
-                                    className="w-32 h-8 ml-2"
-                                    placeholder="Amount"
-                                    value={config.advancePaymentValue ?? ''}
-                                    onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
-                                />
-                            )}
-                        </div>
-                    </RadioGroup>
-                </CardContent>
+                {config.advancePaymentEnabled && (
+                    <CardContent className="space-y-4">
+                        <RadioGroup
+                            value={config.advancePaymentType || 'FULL'}
+                            onValueChange={(v) => setConfig({ ...config, advancePaymentType: v })}
+                            className="space-y-3"
+                        >
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="FULL" id="adv-full" />
+                                <Label htmlFor="adv-full">Full Payment</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="DELIVERY" id="adv-delivery" />
+                                <Label htmlFor="adv-delivery">Delivery Charge Only</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="PERCENTAGE" id="adv-percentage" />
+                                <Label htmlFor="adv-percentage">Percentage</Label>
+                                {config.advancePaymentType === 'PERCENTAGE' && (
+                                    <Input
+                                        type="number"
+                                        className="w-24 h-8 ml-2"
+                                        placeholder="%"
+                                        value={config.advancePaymentValue ?? ''}
+                                        onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
+                                    />
+                                )}
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="FIXED" id="adv-fixed" />
+                                <Label htmlFor="adv-fixed">Fixed Amount</Label>
+                                {config.advancePaymentType === 'FIXED' && (
+                                    <Input
+                                        type="number"
+                                        className="w-32 h-8 ml-2"
+                                        placeholder="Amount"
+                                        value={config.advancePaymentValue ?? ''}
+                                        onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
+                                    />
+                                )}
+                            </div>
+                        </RadioGroup>
+                    </CardContent>
+                )}
             </Card>
         </div>
     );
 }
 
 // Icon helper
-function Smartphone(props: Readonly<React.SVGProps<SVGSVGElement>>) {
+function Smartphone(props: any) {
     return (
         <svg
             {...props}
@@ -416,5 +425,5 @@ function Smartphone(props: Readonly<React.SVGProps<SVGSVGElement>>) {
             <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
             <path d="M12 18h.01" />
         </svg>
-    )
+    );
 }

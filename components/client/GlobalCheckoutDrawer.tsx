@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartStore, CartItem } from "@/lib/store";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, Smartphone, CheckCircle2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { User } from "next-auth";
 
@@ -32,12 +32,13 @@ import {
 } from "@/components/ui/select";
 import { createOrder, upsertIncompleteOrder } from "@/app/actions/order";
 import { getStorySections } from "@/app/actions/story";
+import { getPaymentConfig } from "@/app/actions/settings";
 import { useLanguageStore } from "@/lib/languageStore";
 import { translations } from "@/lib/translations";
 import { CouponSection } from "./CouponSection";
 import { trackEvent } from "@/lib/track";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
-import { SiteConfig, CheckoutFormData, CartTexts } from "@/types/common";
+import { PaymentConfig, SiteConfig, CheckoutFormData, CartTexts } from "@/types/common";
 import { useSettings } from "@/components/providers/SettingsProvider";
 
 // --- Extracted Components ---
@@ -156,6 +157,121 @@ function CheckoutForm({
         </div>
       </div>
     </form>
+  );
+}
+
+function PaymentMethodSection({ paymentConfig, totalAmount, deliveryFee, formData, setFormData }: {
+  paymentConfig: PaymentConfig | null,
+  totalAmount: number,
+  deliveryFee: number,
+  formData: CheckoutFormData,
+  setFormData: (data: CheckoutFormData) => void
+}) {
+  if (!paymentConfig) return null;
+
+  // Advance Payment Logic
+  let advanceAmount = 0;
+  if (paymentConfig.advancePaymentEnabled) {
+    const type = paymentConfig.advancePaymentType;
+    const value = Number(paymentConfig.advancePaymentValue) || 0;
+
+    if (type === "FULL") {
+      advanceAmount = totalAmount;
+    } else if (type === "DELIVERY_CHARGE") {
+      advanceAmount = deliveryFee;
+    } else if (type === "PERCENTAGE") {
+      advanceAmount = Math.ceil((totalAmount * value) / 100);
+    } else if (type === "FIXED") {
+      advanceAmount = value;
+    }
+  }
+
+  const remainingAmount = Math.max(0, totalAmount - advanceAmount);
+
+  return (
+    <div className="space-y-4 mt-6">
+      <h3 className="font-bold text-gray-900 border-b pb-2">
+        Payment Summary
+      </h3>
+
+      {advanceAmount > 0 && (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-blue-700 font-bold">Advance Payment Required</span>
+              <span className="text-blue-800 font-black font-heading text-lg">৳{advanceAmount}</span>
+            </div>
+            <p className="text-xs text-blue-600">Please pay this amount to confirm your order.</p>
+          </div>
+
+          {/* MFS Instructions */}
+          {(paymentConfig.selfMfsEnabled || paymentConfig.bkashEnabled || paymentConfig.nagadEnabled) && (
+            <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+                  <Smartphone className="w-4 h-4 text-pink-600" />
+                </div>
+                <span className="font-bold text-slate-900">Payment Instructions</span>
+              </div>
+
+              <div className="text-sm text-slate-700 leading-relaxed">
+                {paymentConfig.selfMfsInstruction || `Send ৳${advanceAmount} to our ${paymentConfig.selfMfsType || 'bKash/Nagad'} number: ${paymentConfig.selfMfsPhone || '01XXXXXXXXX'}`}
+              </div>
+
+              {paymentConfig.selfMfsPhone && (
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <span className="text-sm font-medium text-slate-500">{paymentConfig.selfMfsType?.toUpperCase() || 'MFS'} Number</span>
+                  <span className="font-bold text-slate-900 tracking-wider font-heading">{paymentConfig.selfMfsPhone}</span>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <input
+                  type="text"
+                  placeholder="Enter Transaction ID"
+                  required={advanceAmount > 0}
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal"
+                  value={formData.transactionId || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, transactionId: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-2">
+        {remainingAmount > 0 ? (
+          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm opacity-60">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold">৳</div>
+              <div>
+                <p className="font-bold text-slate-900">Cash on Delivery</p>
+                <p className="text-xs text-slate-500 text-left">Remaining ৳{remainingAmount} to be paid on delivery</p>
+              </div>
+            </div>
+            <CheckCircle2 className="w-5 h-5 text-green-500" />
+          </div>
+        ) : (
+          paymentConfig.codEnabled && !paymentConfig.advancePaymentEnabled && (
+            <div className="flex items-center justify-between p-4 bg-white border-2 border-crab-red rounded-xl shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold">৳</div>
+                <div>
+                  <p className="font-bold text-slate-900">Cash on Delivery</p>
+                  <p className="text-xs text-slate-500 text-left">Pay when you receive the order</p>
+                </div>
+              </div>
+              <div className="w-5 h-5 rounded-full bg-crab-red flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-white" />
+              </div>
+            </div>
+          )
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -339,9 +455,13 @@ export function GlobalCheckoutDrawer() {
   const t: TranslationsType =
     translations[language as keyof typeof translations] || translations.en;
 
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
+
   const [cartTexts, setCartTexts] = useState<CartTexts | null>(null);
   useEffect(() => {
-    const loadTexts = async () => {
+    async function init() {
+      // Load Texts
       const sections = await getStorySections();
       const cartSection = sections.find(
         (s: { type: string; content: unknown }) => s.type === "CART_TEXTS",
@@ -349,24 +469,30 @@ export function GlobalCheckoutDrawer() {
       if (cartSection?.content) {
         setCartTexts(cartSection.content as CartTexts);
       }
-    };
-    loadTexts();
+
+      // Load Payment Config
+      const pConfig = await getPaymentConfig();
+      if (pConfig) setPaymentConfig(pConfig as PaymentConfig);
+      setIsInitializing(false);
+    }
+    init();
   }, []);
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  const { data: session } = useSession();
   const [formData, setFormData] = useState<CheckoutFormData>({
     name: "",
-    phone: "",
-    email: "",
+    email: session?.user?.email || "",
+    phone: (session?.user as ExtendedUser)?.phone || "",
     area: "",
     address: "",
+    transactionId: "",
   });
   const [errors, setErrors] = useState<
     Partial<Record<keyof CheckoutFormData, string>>
   >({});
 
-  const { data: session } = useSession();
 
   useEffect(() => {
     const user = session?.user as ExtendedUser;
@@ -390,6 +516,23 @@ export function GlobalCheckoutDrawer() {
   const taxRate = settings?.taxPercentage || 0;
   const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
   const totalAmount = discountedTotal + deliveryFee + taxAmount;
+
+  // Advance Payment Logic (Calculated for Action)
+  let advanceAmount = 0;
+  if (paymentConfig?.advancePaymentEnabled) {
+    const type = paymentConfig.advancePaymentType;
+    const value = Number(paymentConfig.advancePaymentValue) || 0;
+
+    if (type === "FULL") {
+      advanceAmount = totalAmount;
+    } else if (type === "DELIVERY_CHARGE") {
+      advanceAmount = deliveryFee;
+    } else if (type === "PERCENTAGE") {
+      advanceAmount = Math.ceil((totalAmount * value) / 100);
+    } else if (type === "FIXED") {
+      advanceAmount = value;
+    }
+  }
 
   const [successOrder, setSuccessOrder] = useState<{
     id: string;
@@ -474,6 +617,8 @@ export function GlobalCheckoutDrawer() {
       newErrors.email = "Invalid email";
     if (!formData.area) newErrors.area = "Area is required";
     if (!formData.address?.trim()) newErrors.address = "Address is required";
+    if (advanceAmount > 0 && !formData.transactionId?.trim()) newErrors.transactionId = "Transaction ID is required for advance payment";
+
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -497,6 +642,10 @@ export function GlobalCheckoutDrawer() {
       totalAmount: totalAmount,
       couponCode: coupon?.code,
       discountAmount: discountAmount,
+      paymentMethod: advanceAmount > 0 ? (paymentConfig?.selfMfsType || "MFS") : "COD",
+      advancePaidAmount: advanceAmount,
+      advancePaymentStatus: advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
+      transactionId: formData.transactionId || "",
     };
 
     const res = await createOrder(orderData);
@@ -581,7 +730,14 @@ export function GlobalCheckoutDrawer() {
                     handlePlaceOrder={handlePlaceOrder}
                     errors={errors}
                   />
-                  <div className="hidden md:block">
+                  <PaymentMethodSection
+                    paymentConfig={paymentConfig}
+                    totalAmount={totalAmount}
+                    deliveryFee={deliveryFee}
+                    formData={formData}
+                    setFormData={setFormData}
+                  />
+                  <div className="hidden md:block mt-6">
                     <CheckoutButton
                       isAnimating={isAnimating}
                       totalAmount={totalAmount}

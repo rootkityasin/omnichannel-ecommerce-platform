@@ -9,6 +9,8 @@ import {
   ArrowRight,
   Loader2,
   ChevronDown,
+  Smartphone,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -97,6 +99,7 @@ export function CartClient({
     email: "",
     area: "",
     address: "",
+    transactionId: "",
   });
 
   // Tax Calculation
@@ -110,6 +113,25 @@ export function CartClient({
   const taxRate = siteConfig?.taxPercentage || 0;
   const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
   const totalAmount = discountedTotal + deliveryFee + taxAmount;
+
+  // Advance Payment Logic
+  let advanceAmount = 0;
+  if (initialPaymentConfig?.advancePaymentEnabled) {
+    const type = initialPaymentConfig.advancePaymentType;
+    const value = Number(initialPaymentConfig.advancePaymentValue) || 0;
+
+    if (type === "FULL") {
+      advanceAmount = totalAmount;
+    } else if (type === "DELIVERY_CHARGE") {
+      advanceAmount = deliveryFee;
+    } else if (type === "PERCENTAGE") {
+      advanceAmount = Math.ceil((totalAmount * value) / 100);
+    } else if (type === "FIXED") {
+      advanceAmount = value;
+    }
+  }
+
+  const remainingAmount = Math.max(0, totalAmount - advanceAmount);
 
   const handleQuantityChange = (item: (typeof items)[0], change: number) => {
     if (change === -1 && item.quantity === 1) {
@@ -152,11 +174,9 @@ export function CartClient({
         quantity: item.quantity,
         price: item.price,
       })),
-      totalAmount: totalAmount, // Including delivery fee & tax
-      // Append custom fields to address or ignore for now if schema not ready
-      // For now, let's append custom fields to the address string for visibility
+      totalAmount: totalAmount,
       orderNotes: Object.keys(formData)
-        .filter((k) => !["name", "phone", "area", "address"].includes(k))
+        .filter((k) => !["name", "phone", "area", "address", "transactionId"].includes(k))
         .map((k) => {
           const field = cartTexts?.fields?.find((f) => f.id === k);
           return field
@@ -166,6 +186,10 @@ export function CartClient({
         .join("\n"),
       couponCode: coupon?.code,
       discountAmount: discountAmount,
+      paymentMethod: advanceAmount > 0 ? (initialPaymentConfig?.selfMfsType || "MFS") : "COD",
+      advancePaidAmount: advanceAmount,
+      advancePaymentStatus: advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
+      transactionId: formData.transactionId || "",
     };
 
     if (orderData.orderNotes) {
@@ -693,6 +717,78 @@ export function CartClient({
                   </div>
                 </div>
 
+                {/* Payment Method Section (Desktop) */}
+                <div className="space-y-4 pt-4 border-t border-gray-100">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">
+                    Payment Summary
+                  </h3>
+
+                  {advanceAmount > 0 && (
+                    <div className="space-y-3">
+                      <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-blue-700 font-bold text-sm">Advance Required</span>
+                          <span className="text-blue-800 font-black font-heading">৳{advanceAmount}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-gray-200 p-4 rounded-xl space-y-3">
+                        <div className="text-xs text-slate-700 leading-relaxed">
+                          {initialPaymentConfig?.selfMfsInstruction || `Send ৳${advanceAmount} to our ${initialPaymentConfig?.selfMfsType || 'bKash/Nagad'} number: ${initialPaymentConfig?.selfMfsPhone || '01XXXXXXXXX'}`}
+                        </div>
+
+                        {initialPaymentConfig?.selfMfsPhone && (
+                          <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-100">
+                            <span className="text-[10px] font-medium text-slate-500 uppercase">{initialPaymentConfig?.selfMfsType || 'MFS'} Number</span>
+                            <span className="font-bold text-slate-900 tracking-wider text-sm">{initialPaymentConfig.selfMfsPhone}</span>
+                          </div>
+                        )}
+
+                        <input
+                          type="text"
+                          placeholder="Transaction ID"
+                          required={advanceAmount > 0}
+                          className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm font-bold text-slate-900 placeholder:font-normal"
+                          value={formData.transactionId || ""}
+                          onChange={(e) =>
+                            setFormData({ ...formData, transactionId: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-2">
+                    {remainingAmount > 0 ? (
+                      <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm opacity-60">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-sm">৳</div>
+                          <div>
+                            <p className="font-bold text-slate-900 text-xs">Cash on Delivery</p>
+                            <p className="text-[10px] text-slate-500 text-left">Remaining ৳{remainingAmount} on delivery</p>
+                          </div>
+                        </div>
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      </div>
+                    ) : (
+                      initialPaymentConfig?.codEnabled && !initialPaymentConfig?.advancePaymentEnabled && (
+                        <div className="flex items-center justify-between p-4 bg-white border-2 border-crab-red rounded-xl shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-sm">৳</div>
+                            <div>
+                              <p className="font-bold text-slate-900 text-xs">Cash on Delivery</p>
+                              <p className="text-[10px] text-slate-500 text-left">Pay when you receive the order</p>
+                            </div>
+                          </div>
+                          <div className="w-4 h-4 rounded-full bg-crab-red flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
                 <div className="pt-4">
                   <button
                     type="submit"
@@ -827,6 +923,89 @@ export function CartClient({
                 setFormData({ ...formData, address: e.target.value })
               }
             />
+          </div>
+
+          {/* Payment Method Section */}
+          <div className="space-y-4">
+            <h3 className="font-bold text-gray-900">Payment Summary</h3>
+
+            {advanceAmount > 0 && (
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-blue-700 font-bold">Advance Payment Required</span>
+                    <span className="text-blue-800 font-black font-heading text-lg">৳{advanceAmount}</span>
+                  </div>
+                  <p className="text-xs text-blue-600">Please pay this amount to confirm your order.</p>
+                </div>
+
+                {/* MFS Instructions */}
+                {(initialPaymentConfig?.selfMfsEnabled || initialPaymentConfig?.bkashEnabled || initialPaymentConfig?.nagadEnabled) && (
+                  <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+                        <Smartphone className="w-4 h-4 text-pink-600" />
+                      </div>
+                      <span className="font-bold text-slate-900">Payment Instructions</span>
+                    </div>
+
+                    <div className="text-sm text-slate-700 leading-relaxed">
+                      {initialPaymentConfig?.selfMfsInstruction || `Send ৳${advanceAmount} to our ${initialPaymentConfig?.selfMfsType || 'bKash/Nagad'} number: ${initialPaymentConfig?.selfMfsPhone || '01XXXXXXXXX'}`}
+                    </div>
+
+                    {initialPaymentConfig?.selfMfsPhone && (
+                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                        <span className="text-sm font-medium text-slate-500">{initialPaymentConfig?.selfMfsType?.toUpperCase() || 'MFS'} Number</span>
+                        <span className="font-bold text-slate-900 tracking-wider font-heading">{initialPaymentConfig.selfMfsPhone}</span>
+                      </div>
+                    )}
+
+                    <div className="pt-2">
+                      <input
+                        type="text"
+                        placeholder="Enter Transaction ID"
+                        required={advanceAmount > 0}
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all outline-none font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal"
+                        value={formData.transactionId || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, transactionId: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-2">
+              {remainingAmount > 0 ? (
+                <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm opacity-60">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold">৳</div>
+                    <div>
+                      <p className="font-bold text-slate-900">Cash on Delivery</p>
+                      <p className="text-xs text-slate-500 text-left">Remaining ৳{remainingAmount} to be paid on delivery</p>
+                    </div>
+                  </div>
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                </div>
+              ) : (
+                initialPaymentConfig?.codEnabled && !initialPaymentConfig?.advancePaymentEnabled && (
+                  <div className="flex items-center justify-between p-4 bg-white border-2 border-crab-red rounded-xl shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold">৳</div>
+                      <div>
+                        <p className="font-bold text-slate-900">Cash on Delivery</p>
+                        <p className="text-xs text-slate-500 text-left">Pay when you receive the order</p>
+                      </div>
+                    </div>
+                    <div className="w-5 h-5 rounded-full bg-crab-red flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
           </div>
 
           {/* Order Summary */}

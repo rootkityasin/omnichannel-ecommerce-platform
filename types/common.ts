@@ -199,9 +199,11 @@ export interface Order {
   customerPhone: string;
   customerAddress: string;
   status: string;
-  totalAmount: number;
-  discountAmount?: number;
-  couponCode?: string;
+  customerEmail?: string | null;
+  paymentMethod?: string | null;
+  advancePaidAmount?: number;
+  advancePaymentStatus?: string;
+  transactionId?: string | null;
   createdAt: Date;
   items?: OrderItem[];
 }
@@ -340,6 +342,7 @@ export interface PaymentConfig {
   selfMfsPhone?: string | null;
   selfMfsInstruction?: string | null;
   selfMfsQrCode?: string | null;
+  advancePaymentEnabled: boolean;
   advancePaymentType?: string | null;
   advancePaymentValue?: number | string | null;
   bkashLogo?: string | null;
