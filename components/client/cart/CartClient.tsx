@@ -733,40 +733,17 @@ export function CartClient({
         isOpen={showCheckoutDrawer}
         onOpenChange={isPreview ? () => undefined : setIsCheckoutOpen}
         disabled={
+          !formData.name ||
+          !formData.email ||
           !formData.phone ||
-          !/^(?:\+88|88)?(01[3-9]\d{8})$/.test(formData.phone)
+          !formData.area ||
+          !formData.address ||
+          !/^1[3-9]\d{8}$/.test(formData.phone)
         }
         isPreview={isPreview}
       >
         <div className="space-y-6">
-          <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-6">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="font-black font-heading text-gray-900">
-                ৳{subTotalAmount}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Delivery</span>
-              <span className="font-black font-heading text-gray-900">
-                ৳{deliveryFee}
-              </span>
-            </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-sm text-green-600 font-bold mb-2">
-                <span>Discount</span>
-                <span className="font-heading">-৳{discountAmount}</span>
-              </div>
-            )}
-            <div className="border-t border-orange-200 mt-2 pt-2 flex justify-between text-base font-black text-crab-red">
-              <span>Total</span>
-              <span className="font-heading">৳{totalAmount}</span>
-            </div>
-          </div>
-
-          <CouponSection />
-
-          {/* The same form fields but for Mobile Drawer */}
+          {/* Form Fields First for Mobile */}
           <div className="space-y-3">
             <h3 className="font-bold text-gray-900">Delivery Information</h3>
             <input
@@ -808,7 +785,7 @@ export function CartClient({
                 className="w-full p-3.5 bg-transparent border-0 outline-none focus:ring-0 font-medium font-body h-auto text-slate-900 placeholder:text-slate-400 text-[16px]"
                 value={formData.phone}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "");
+                  const val = e.target.value.replaceAll(/\D/g, "");
                   if (val.startsWith("0")) {
                     setFormData({ ...formData, phone: val.substring(1) });
                   } else {
@@ -851,6 +828,34 @@ export function CartClient({
               }
             />
           </div>
+
+          {/* Order Summary */}
+          <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-black font-heading text-gray-900">
+                ৳{subTotalAmount}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-gray-600">Delivery</span>
+              <span className="font-black font-heading text-gray-900">
+                ৳{deliveryFee}
+              </span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-sm text-green-600 font-bold mb-2">
+                <span>Discount</span>
+                <span className="font-heading">-৳{discountAmount}</span>
+              </div>
+            )}
+            <div className="border-t border-orange-200 mt-2 pt-2 flex justify-between text-base font-black text-crab-red">
+              <span>Total</span>
+              <span className="font-heading">৳{totalAmount}</span>
+            </div>
+          </div>
+
+          <CouponSection />
         </div>
       </StickyCartFooter>
     </div>
