@@ -287,6 +287,8 @@ interface OrderSummaryProps {
   subTotalAmount: number;
   deliveryFee: number;
   discountAmount: number;
+  taxAmount: number;
+  taxRate: number;
   totalAmount: number;
 }
 
@@ -295,6 +297,8 @@ function OrderSummary({
   subTotalAmount,
   deliveryFee,
   discountAmount,
+  taxAmount,
+  taxRate,
   totalAmount,
 }: Readonly<OrderSummaryProps>) {
   return (
@@ -316,6 +320,14 @@ function OrderSummary({
             ৳{deliveryFee}
           </span>
         </div>
+        {taxRate > 0 && (
+          <div className="flex justify-between text-base">
+            <span className="text-gray-600">Vat/Tax ({taxRate}%)</span>
+            <span className="font-black text-gray-900 font-heading">
+              ৳{taxAmount}
+            </span>
+          </div>
+        )}
         {discountAmount > 0 && (
           <div className="flex justify-between text-base text-green-600 font-bold">
             <span>Discount</span>
@@ -759,6 +771,8 @@ export function GlobalCheckoutDrawer() {
                     subTotalAmount={subTotalAmount}
                     deliveryFee={deliveryFee}
                     discountAmount={discountAmount}
+                    taxAmount={taxAmount}
+                    taxRate={taxRate}
                     totalAmount={totalAmount}
                   />
                   <div className="md:hidden mt-4">
@@ -834,6 +848,8 @@ export function GlobalCheckoutDrawer() {
                 subTotalAmount={subTotalAmount}
                 deliveryFee={deliveryFee}
                 discountAmount={discountAmount}
+                taxAmount={taxAmount}
+                taxRate={taxRate}
                 totalAmount={totalAmount}
               />
               <CheckoutForm

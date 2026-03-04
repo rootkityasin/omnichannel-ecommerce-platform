@@ -869,6 +869,14 @@ export function CartClient({
                 ৳{deliveryFee}
               </span>
             </div>
+            {settings?.taxPercentage ? (settings.taxPercentage > 0 && (
+              <div className="flex justify-between text-sm mb-2.5">
+                <span className="text-gray-600 font-medium">Vat/Tax ({settings.taxPercentage}%)</span>
+                <span className="font-black font-heading text-gray-900">
+                  ৳{Math.ceil((subTotalAmount - discountAmount) * settings.taxPercentage / 100)}
+                </span>
+              </div>
+            )) : null}
             {discountAmount > 0 && (
               <div className="flex justify-between text-sm text-green-600 font-bold mb-2.5 bg-green-50/50 p-2 rounded-lg -mx-1">
                 <span>Discount Applied</span>
