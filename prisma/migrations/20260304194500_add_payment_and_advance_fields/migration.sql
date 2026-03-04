@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN "paymentMethod" TEXT DEFAULT 'COD',
+ADD COLUMN "advancePaidAmount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "advancePaymentStatus" TEXT NOT NULL DEFAULT 'NOT_REQUIRED',
+ADD COLUMN "transactionId" TEXT;
