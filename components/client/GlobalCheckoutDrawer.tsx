@@ -711,10 +711,14 @@ export function GlobalCheckoutDrawer() {
       });
 
       toast.success("Order placed successfully!");
-      clearCart();
+      // IMPORTANT: Set successOrder BEFORE clearCart to prevent a race condition.
+      // clearCart() is a Zustand store update that empties `items` immediately.
+      // The guard `if (items.length === 0 && !successOrder) return null` would
+      // unmount the component before React batches the setSuccessOrder state update.
       setSuccessOrder({ id: res.orderId as string, total: totalAmount });
       setDraftOrderId(null);
       setIsAnimating(false);
+      clearCart();
       // Do NOT close immediately. Show success view.
     } else {
       toast.error(res.error || "Failed to place order");
