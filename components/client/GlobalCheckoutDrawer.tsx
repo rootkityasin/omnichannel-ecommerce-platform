@@ -125,7 +125,7 @@ function CheckoutForm({
                 <SelectTrigger
                   className={`w-full h-[58px] !bg-white border rounded-xl focus:ring-crab-red/20 text-[16px] !text-gray-900 ${errors.area ? "border-red-500" : "border-gray-200"}`}
                 >
-                  <SelectValue placeholder="Area" />
+                  <SelectValue placeholder="Area *" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Dhaka">Dhaka</SelectItem>

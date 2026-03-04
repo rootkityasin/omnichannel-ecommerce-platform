@@ -697,7 +697,7 @@ export function CartClient({
                       required
                     >
                       <SelectTrigger className="col-span-1 p-4 h-auto bg-white border border-gray-200 rounded-xl text-slate-900 text-[16px] font-medium focus:ring-2 focus:ring-crab-red/20 outline-none data-[placeholder]:text-slate-400">
-                        <SelectValue placeholder="Area" />
+                        <SelectValue placeholder="Area *" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Dhaka">Dhaka</SelectItem>
@@ -905,7 +905,7 @@ export function CartClient({
                 required
               >
                 <SelectTrigger className="w-full h-[58px] bg-white border-gray-200 rounded-xl focus:ring-crab-red/20 text-slate-900 text-[16px]">
-                  <SelectValue placeholder="Area" />
+                  <SelectValue placeholder="Area *" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Dhaka">Dhaka</SelectItem>
