@@ -7,12 +7,14 @@ import { CartTexts } from '@/types/common';
 
 
 
-async function getCartData() {
+async function getCartData(domain: string) {
     try {
-        const [sections, paymentConfig, siteConfig] = await Promise.all([
+        const siteConfig = await getSiteConfig(domain);
+        const tenantId = siteConfig?.tenantId;
+
+        const [sections, paymentConfig] = await Promise.all([
             prisma.storySection.findMany(),
-            getPaymentConfig(),
-            getSiteConfig()
+            getPaymentConfig(tenantId)
         ]);
 
         const cartSection = sections.find((s) => s.type === 'CART_TEXTS');
@@ -33,8 +35,9 @@ async function getCartData() {
     }
 }
 
-export default async function CartPage() {
-    const { cartTexts, paymentConfig, siteConfig } = await getCartData();
+export default async function CartPage({ params }: { params: Promise<{ domain: string }> }) {
+    const { domain } = await params;
+    const { cartTexts, paymentConfig, siteConfig } = await getCartData(domain);
 
     return (
         <Suspense fallback={
@@ -44,7 +47,7 @@ export default async function CartPage() {
         }>
             <CartClient
                 initialCartTexts={cartTexts}
-                initialPaymentConfig={paymentConfig}
+                initialPaymentConfig={paymentConfig as any}
                 initialSiteConfig={siteConfig}
             />
         </Suspense>

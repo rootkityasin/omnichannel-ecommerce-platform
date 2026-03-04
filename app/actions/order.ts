@@ -73,19 +73,19 @@ export async function createOrder(data: {
             customerPhone: data.customerPhone,
             customerEmail: data.customerEmail,
             customerAddress: data.customerAddress,
-            totalAmount: data.totalAmount,
+            totalAmount: Math.round(data.totalAmount),
             couponCode: data.couponCode,
-            discountAmount: data.discountAmount,
+            discountAmount: Math.round(data.discountAmount || 0),
             source: data.source || "WEB",
             paymentMethod: data.paymentMethod || "COD",
-            advancePaidAmount: data.advancePaidAmount || 0,
+            advancePaidAmount: Math.round(data.advancePaidAmount || 0),
             advancePaymentStatus: data.advancePaymentStatus || "NOT_REQUIRED",
             transactionId: data.transactionId,
             items: {
               create: data.items.map((item) => ({
                 productId: item.productId,
                 quantity: item.quantity,
-                price: item.price,
+                price: Math.round(item.price),
               })),
             },
           },
@@ -104,11 +104,11 @@ export async function createOrder(data: {
           customerPhone: data.customerPhone,
           customerEmail: data.customerEmail,
           customerAddress: data.customerAddress,
-          totalAmount: data.totalAmount,
+          totalAmount: Math.round(data.totalAmount),
           couponCode: data.couponCode,
-          discountAmount: data.discountAmount,
+          discountAmount: Math.round(data.discountAmount || 0),
           paymentMethod: data.paymentMethod || "COD",
-          advancePaidAmount: data.advancePaidAmount || 0,
+          advancePaidAmount: Math.round(data.advancePaidAmount || 0),
           advancePaymentStatus: data.advancePaymentStatus || "NOT_REQUIRED",
           transactionId: data.transactionId,
           source: data.source || "WEB",
@@ -116,7 +116,7 @@ export async function createOrder(data: {
             create: data.items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
-              price: item.price,
+              price: Math.round(item.price),
             })),
           },
         },
@@ -144,7 +144,11 @@ export async function createOrder(data: {
     return { success: true, orderId: order.orderId };
   } catch (error) {
     console.error("Create Order Error:", error);
-    return { success: false, error: "Failed to create order" };
+    if (error instanceof Error) {
+      console.error("Error Message:", error.message);
+      console.error("Error Stack:", error.stack);
+    }
+    return { success: false, error: "Failed to create order: " + (error instanceof Error ? error.message : "Internal Error") };
   }
 }
 

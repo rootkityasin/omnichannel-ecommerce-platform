@@ -478,7 +478,7 @@ export function GlobalCheckoutDrawer() {
       }
 
       // Load Payment Config
-      const pConfig = await getPaymentConfig();
+      const pConfig = await getPaymentConfig(settings?.tenantId);
       if (pConfig) setPaymentConfig(pConfig as PaymentConfig);
       setIsInitializing(false);
     }
@@ -587,7 +587,7 @@ export function GlobalCheckoutDrawer() {
         })),
         totalAmount: totalAmount,
         couponCode: coupon?.code,
-        discountAmount: discountAmount,
+        discountAmount: Math.round(discountAmount),
       };
 
       const res = await upsertIncompleteOrder(orderData);
@@ -644,13 +644,13 @@ export function GlobalCheckoutDrawer() {
       items: items.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        price: item.price,
+        price: Math.round(item.price),
       })),
-      totalAmount: totalAmount,
+      totalAmount: Math.round(totalAmount),
       couponCode: coupon?.code,
-      discountAmount: discountAmount,
+      discountAmount: Math.round(discountAmount),
       paymentMethod: advanceAmount > 0 ? (paymentConfig?.selfMfsType || "MFS") : "COD",
-      advancePaidAmount: advanceAmount,
+      advancePaidAmount: Math.round(advanceAmount),
       advancePaymentStatus: advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
       transactionId: formData.transactionId || "",
     };
@@ -782,12 +782,22 @@ export function GlobalCheckoutDrawer() {
       open={checkoutOpen}
       onOpenChange={(open) => {
         if (!open) {
-          successOrder ? handleCloseSuccess() : closeCheckout();
+          const url = new URL(globalThis.location.href);
+          url.searchParams.delete("action");
+          globalThis.history.pushState({}, "", url.toString());
+          if (successOrder) {
+            handleCloseSuccess();
+          } else {
+            closeCheckout();
+          }
+        } else {
+          const url = new URL(globalThis.location.href);
+          url.searchParams.set("action", "checkout");
+          globalThis.history.pushState({}, "", url.toString());
         }
       }}
     >
-      <DrawerContent className="h-[96vh] bg-white border-0 flex flex-col p-0 rounded-t-[32px]">
-        <div className="mx-auto w-12 h-1.5 bg-gray-200 rounded-full mt-3 mb-1" />
+      <DrawerContent className="h-[82dvh] max-h-[82dvh] bg-white border-0 flex flex-col p-0 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
 
         {successOrder ? (
           <div className="w-full max-w-lg mx-auto bg-white py-8 overflow-y-auto flex-1">
@@ -802,11 +812,11 @@ export function GlobalCheckoutDrawer() {
         ) : (
           <>
             {/* Header */}
-            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-6 pb-4 relative">
-              <DrawerTitle className="text-3xl font-black text-center text-slate-900 font-heading">
+            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-8 pb-6 relative bg-white rounded-t-[32px]">
+              <DrawerTitle className="text-4xl font-heading font-black text-center text-slate-900 tracking-tight">
                 Checkout
               </DrawerTitle>
-              <DrawerDescription className="text-center font-bold text-slate-500 text-base mt-2">
+              <DrawerDescription className="text-center font-bold text-slate-400 text-lg mt-1 font-body uppercase tracking-widest">
                 Complete your order
               </DrawerDescription>
               <button

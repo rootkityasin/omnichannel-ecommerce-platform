@@ -478,10 +478,10 @@ export async function updateSiteConfig<T extends object>(data: T) {
   }
 }
 
-export async function getPaymentConfig() {
+export async function getPaymentConfig(explicitTenantId?: string) {
   await logActionRequest({ actionName: "getPaymentConfig" });
   const sessionUser = await getSessionUser();
-  const tenantId = sessionUser?.tenantId;
+  const tenantId = explicitTenantId || sessionUser?.tenantId;
 
   if (!tenantId) return null;
 
@@ -557,10 +557,10 @@ export async function updatePaymentConfig<T extends object>(data: T) {
   }
 }
 
-export async function getDeliveryConfig() {
+export async function getDeliveryConfig(explicitTenantId?: string) {
   await logActionRequest({ actionName: "getDeliveryConfig" });
   const sessionUser = await getSessionUser();
-  const tenantId = sessionUser?.tenantId;
+  const tenantId = explicitTenantId || sessionUser?.tenantId;
 
   if (!tenantId) return null;
 

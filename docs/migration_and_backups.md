@@ -82,5 +82,13 @@ As the store grows to process hundreds of daily orders and high concurrent traff
 *   **Disk Usage Alerts:** Implement a cron script (or utilize Dokploy's built-in alerts when available) to send email/Slack notifications when the VPS disk usage exceeds 80%.
 *   **Slow Query Logging:** Expose and edit the VPS `postgresql.conf` to enable logging of queries that exceed `500ms`. This will help identify missing indexes as order volume scales.
 *   **Autovacuum Tuning:** Adjust `autovacuum_vacuum_scale_factor` to `0.05` to ensure tables with heavy read/write operations (like `User` or `Session` tables) stay optimized.
+- [x] **Restore Swipeable Checkout Drawer**: Reintroduced the `Drawer` component for the checkout overlay on mobile, providing a premium swipe-to-dismiss experience.
+- [x] **Fix Header Text Visibility**: Adjusted styling and positioning of "Complete your order" text to ensure it's visible and correctly placed within the drawer.
+- [x] **Required Field Indicators**: Added an asterisk (`*`) to the "Area" field placeholder in checkout to clearly mark it as mandatory.
+- [x] **Resolved Order Creation Failure**:
+    - Fixed a bug where `tenantId` was missing for storefront visitors, causing order creation to fail.
+    - Added `Math.round()` to all currency fields (total amount, price, advance payment) to prevent Prisma `Int` type errors in PostgreSQL.
+    - Verified that `paymentMethod` and advance payment status are correctly persisted in the database.
+    - Synchronized Prisma client with the latest schema fields.
 *   **Hot/Cold Data Archiving:** Schedule a yearly or bi-yearly operation to move old `Order` and `AuditLog` records into an archive table, reducing the active query dataset size to keep database read speeds essentially instant.
 *   **Point in Time Recovery (PITR):** Transition from nightly snapshots to Write-Ahead Log (WAL) archiving to allow restoring the database to the exact minute before an accidental deletion.

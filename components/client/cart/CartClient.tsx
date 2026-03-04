@@ -83,6 +83,9 @@ export function CartClient({
     if (searchParams.get("action") === "checkout") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsCheckoutOpen(true);
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsCheckoutOpen(false);
     }
   }, [searchParams]);
 
@@ -172,9 +175,9 @@ export function CartClient({
       items: items.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        price: item.price,
+        price: Math.round(item.price),
       })),
-      totalAmount: totalAmount,
+      totalAmount: Math.round(totalAmount),
       orderNotes: Object.keys(formData)
         .filter((k) => !["name", "phone", "area", "address", "transactionId"].includes(k))
         .map((k) => {
@@ -185,9 +188,9 @@ export function CartClient({
         })
         .join("\n"),
       couponCode: coupon?.code,
-      discountAmount: discountAmount,
+      discountAmount: Math.round(discountAmount),
       paymentMethod: advanceAmount > 0 ? (initialPaymentConfig?.selfMfsType || "MFS") : "COD",
-      advancePaidAmount: advanceAmount,
+      advancePaidAmount: Math.round(advanceAmount),
       advancePaymentStatus: advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
       transactionId: formData.transactionId || "",
     };
@@ -827,7 +830,19 @@ export function CartClient({
         onCheckout={handlePlaceOrder}
         isAnimating={isAnimating}
         isOpen={showCheckoutDrawer}
-        onOpenChange={isPreview ? () => undefined : setIsCheckoutOpen}
+        onOpenChange={(open) => {
+          if (isPreview) return;
+          if (open) {
+            const url = new URL(globalThis.location.href);
+            url.searchParams.set("action", "checkout");
+            globalThis.history.pushState({}, "", url.toString());
+          } else {
+            const url = new URL(globalThis.location.href);
+            url.searchParams.delete("action");
+            globalThis.history.pushState({}, "", url.toString());
+          }
+          setIsCheckoutOpen(open);
+        }}
         disabled={
           !formData.name ||
           !formData.email ||
@@ -839,9 +854,42 @@ export function CartClient({
         isPreview={isPreview}
       >
         <div className="space-y-6">
-          {/* Form Fields First for Mobile */}
-          <div className="space-y-3">
-            <h3 className="font-bold text-gray-900">Delivery Information</h3>
+          {/* Order Summary & Pricing First for Mobile */}
+          <div className="bg-orange-50 p-5 rounded-3xl border border-orange-100 shadow-sm">
+            <h3 className="font-black text-gray-900 mb-3 text-lg">Order Summary</h3>
+            <div className="flex justify-between text-sm mb-2.5">
+              <span className="text-gray-600 font-medium">Subtotal</span>
+              <span className="font-black font-heading text-gray-900">
+                ৳{subTotalAmount}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm mb-2.5">
+              <span className="text-gray-600 font-medium">Delivery Fee</span>
+              <span className="font-black font-heading text-gray-900">
+                ৳{deliveryFee}
+              </span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-sm text-green-600 font-bold mb-2.5 bg-green-50/50 p-2 rounded-lg -mx-1">
+                <span>Discount Applied</span>
+                <span className="font-heading">-৳{discountAmount}</span>
+              </div>
+            )}
+            <div className="border-t-2 border-dashed border-orange-200 mt-3 pt-3 flex justify-between items-baseline text-xl font-black text-crab-red">
+              <span>Total Price</span>
+              <span className="font-heading text-2xl">৳{totalAmount}</span>
+            </div>
+          </div>
+
+          <CouponSection />
+
+          {/* Form Fields Second */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-black text-gray-900 text-lg">Delivery Information</h3>
+              <div className="h-px flex-1 bg-gray-100" />
+            </div>
+
             <input
               type="text"
               placeholder="Full Name"
@@ -897,6 +945,7 @@ export function CartClient({
               </p>
             )}
           </div>
+
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-1">
               <Select
@@ -927,36 +976,36 @@ export function CartClient({
 
           {/* Payment Method Section */}
           <div className="space-y-4">
-            <h3 className="font-bold text-gray-900">Payment Summary</h3>
+            <h3 className="font-black text-gray-900 text-lg">Payment Method</h3>
 
             {advanceAmount > 0 && (
               <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                <div className="bg-blue-50 border border-blue-100 p-5 rounded-2xl">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-blue-700 font-bold">Advance Payment Required</span>
-                    <span className="text-blue-800 font-black font-heading text-lg">৳{advanceAmount}</span>
+                    <span className="text-blue-700 font-black">Advance Required</span>
+                    <span className="text-blue-800 font-black font-heading text-xl">৳{advanceAmount}</span>
                   </div>
-                  <p className="text-xs text-blue-600">Please pay this amount to confirm your order.</p>
+                  <p className="text-xs text-blue-600 font-medium">Payment verification required to confirm order.</p>
                 </div>
 
                 {/* MFS Instructions */}
                 {(initialPaymentConfig?.selfMfsEnabled || initialPaymentConfig?.bkashEnabled || initialPaymentConfig?.nagadEnabled) && (
-                  <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm space-y-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
-                        <Smartphone className="w-4 h-4 text-pink-600" />
+                  <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-3 mb-1">
+                      <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+                        <Smartphone className="w-5 h-5 text-pink-600" />
                       </div>
-                      <span className="font-bold text-slate-900">Payment Instructions</span>
+                      <span className="font-black text-slate-900">MFS Instruction</span>
                     </div>
 
-                    <div className="text-sm text-slate-700 leading-relaxed">
-                      {initialPaymentConfig?.selfMfsInstruction || `Send ৳${advanceAmount} to our ${initialPaymentConfig?.selfMfsType || 'bKash/Nagad'} number: ${initialPaymentConfig?.selfMfsPhone || '01XXXXXXXXX'}`}
+                    <div className="text-sm text-slate-700 leading-relaxed font-medium bg-slate-50 p-4 rounded-xl">
+                      {initialPaymentConfig?.selfMfsInstruction || `Please send ৳${advanceAmount} to our ${initialPaymentConfig?.selfMfsType?.toUpperCase() || 'MFS'} number.`}
                     </div>
 
                     {initialPaymentConfig?.selfMfsPhone && (
-                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <span className="text-sm font-medium text-slate-500">{initialPaymentConfig?.selfMfsType?.toUpperCase() || 'MFS'} Number</span>
-                        <span className="font-bold text-slate-900 tracking-wider font-heading">{initialPaymentConfig.selfMfsPhone}</span>
+                      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <span className="text-sm font-bold text-slate-500">{initialPaymentConfig?.selfMfsType?.toUpperCase() || 'MFS'} Number</span>
+                        <span className="font-black text-slate-900 tracking-wider font-heading text-lg">{initialPaymentConfig.selfMfsPhone}</span>
                       </div>
                     )}
 
@@ -979,12 +1028,12 @@ export function CartClient({
 
             <div className="grid grid-cols-1 gap-2">
               {remainingAmount > 0 ? (
-                <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm opacity-60">
+                <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm opacity-80">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold">৳</div>
                     <div>
                       <p className="font-bold text-slate-900">Cash on Delivery</p>
-                      <p className="text-xs text-slate-500 text-left">Remaining ৳{remainingAmount} to be paid on delivery</p>
+                      <p className="text-xs text-slate-500 text-left">Remaining ৳{remainingAmount} on delivery</p>
                     </div>
                   </div>
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -1007,34 +1056,6 @@ export function CartClient({
               )}
             </div>
           </div>
-
-          {/* Order Summary */}
-          <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="font-black font-heading text-gray-900">
-                ৳{subTotalAmount}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Delivery</span>
-              <span className="font-black font-heading text-gray-900">
-                ৳{deliveryFee}
-              </span>
-            </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-sm text-green-600 font-bold mb-2">
-                <span>Discount</span>
-                <span className="font-heading">-৳{discountAmount}</span>
-              </div>
-            )}
-            <div className="border-t border-orange-200 mt-2 pt-2 flex justify-between text-base font-black text-crab-red">
-              <span>Total</span>
-              <span className="font-heading">৳{totalAmount}</span>
-            </div>
-          </div>
-
-          <CouponSection />
         </div>
       </StickyCartFooter>
     </div>
