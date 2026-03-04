@@ -5,6 +5,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  interactiveWidget: "resizes-content",
 };
 import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
