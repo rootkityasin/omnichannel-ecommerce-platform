@@ -831,19 +831,13 @@ export function GlobalCheckoutDrawer() {
         ) : (
           <>
             {/* Header */}
-            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-4 pb-3 relative bg-white rounded-t-[32px]">
+            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-2 pb-3 bg-white rounded-t-[32px]">
               <DrawerTitle className="text-2xl font-heading font-black text-center text-slate-900 tracking-tight">
                 Checkout
               </DrawerTitle>
               <DrawerDescription className="text-center font-bold text-slate-400 text-xs mt-0.5 font-body uppercase tracking-widest">
                 Complete your order
               </DrawerDescription>
-              <button
-                onClick={successOrder ? handleCloseSuccess : closeCheckout}
-                className="absolute right-6 top-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-50 focus:outline-none"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
             </DrawerHeader>
 
             {/* Scrollable Content */}
