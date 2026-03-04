@@ -443,7 +443,7 @@ function CheckoutButton({
       form="checkout-form"
       type="submit"
       disabled={isAnimating}
-      className="w-full h-14 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-crab-red/20 active:scale-95 transition-all mt-6 font-heading"
+      className="w-full h-11 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-crab-red/20 active:scale-95 transition-all font-heading"
       style={{ backgroundColor: "#E60000" }}
     >
       {isAnimating ? (
@@ -831,11 +831,11 @@ export function GlobalCheckoutDrawer() {
         ) : (
           <>
             {/* Header */}
-            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-6 pb-4 relative bg-white rounded-t-[32px]">
-              <DrawerTitle className="text-3xl font-heading font-black text-center text-slate-900 tracking-tight">
+            <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-4 pb-3 relative bg-white rounded-t-[32px]">
+              <DrawerTitle className="text-2xl font-heading font-black text-center text-slate-900 tracking-tight">
                 Checkout
               </DrawerTitle>
-              <DrawerDescription className="text-center font-bold text-slate-400 text-sm mt-1 font-body uppercase tracking-widest">
+              <DrawerDescription className="text-center font-bold text-slate-400 text-xs mt-0.5 font-body uppercase tracking-widest">
                 Complete your order
               </DrawerDescription>
               <button
@@ -873,7 +873,7 @@ export function GlobalCheckoutDrawer() {
             </div>
 
             {/* Sticky bottom button */}
-            <div className="flex-shrink-0 p-6 bg-white border-t border-gray-100 safe-area-bottom">
+            <div className="flex-shrink-0 px-6 py-3 bg-white border-t border-gray-100 safe-area-bottom">
               <CheckoutButton
                 isAnimating={isAnimating}
                 totalAmount={totalAmount}

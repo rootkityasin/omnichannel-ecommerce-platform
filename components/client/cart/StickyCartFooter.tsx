@@ -62,11 +62,11 @@ export function StickyCartFooter({
         <DrawerContent className="h-[80vh] max-h-[80vh] bg-white border-0 flex flex-col p-0 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
 
           {/* Header */}
-          <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-6 pb-4 bg-white rounded-t-[32px]">
-            <DrawerTitle className="text-3xl font-heading font-black text-center text-slate-900 tracking-tight">
+          <DrawerHeader className="border-b border-gray-50 flex-shrink-0 pt-4 pb-3 bg-white rounded-t-[32px]">
+            <DrawerTitle className="text-2xl font-heading font-black text-center text-slate-900 tracking-tight">
               Checkout
             </DrawerTitle>
-            <DrawerDescription className="text-center font-bold text-slate-400 text-sm mt-1 font-body uppercase tracking-widest">
+            <DrawerDescription className="text-center font-bold text-slate-400 text-xs mt-0.5 font-body uppercase tracking-widest">
               Complete your order
             </DrawerDescription>
             <button
@@ -83,11 +83,11 @@ export function StickyCartFooter({
           </div>
 
           {/* Sticky bottom button */}
-          <div className="p-6 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
+          <div className="px-6 py-3 bg-white border-t border-gray-100 safe-area-bottom flex-shrink-0">
             <Button
               onClick={onCheckout}
               disabled={isAnimating || disabled}
-              className="w-full h-16 bg-crab-red hover:bg-orange-600 text-white rounded-3xl font-black text-xl shadow-2xl shadow-crab-red/30 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-11 bg-crab-red hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-crab-red/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-heading"
             >
               {isAnimating ? (
                 <Loader2 className="animate-spin w-6 h-6" />
