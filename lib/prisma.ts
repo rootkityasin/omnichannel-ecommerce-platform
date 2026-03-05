@@ -81,7 +81,7 @@ if (useAdapter && adapter) {
   prismaOptions.accelerateUrl = connectionString;
 }
 
-const baseClient = new PrismaClient(prismaOptions);
+export const baseClient = new PrismaClient(prismaOptions);
 
 export const prisma: PrismaClient =
   globalForPrisma.prisma ||

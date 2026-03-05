@@ -3,7 +3,7 @@ import Google from "next-auth/providers/google";
 import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
+import { prisma, baseClient } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authConfig } from "./auth.config";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -61,6 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.phone = user.phone;
         token.tenantId = user.tenantId;
         token.permissions = user.permissions;
+        token.lastChecked = Date.now(); // Prevents immediate re-check on sign-in
         return token;
       }
 
@@ -125,7 +126,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
   },
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(baseClient),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
