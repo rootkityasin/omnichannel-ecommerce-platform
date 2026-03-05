@@ -108,7 +108,7 @@ export async function createReview(productId: string, rating: number, comment: s
             }
         });
 
-        revalidatePath('/[domain]/(client)/buy/[productId]', 'page');
+        revalidatePath('/', 'layout');
         revalidatePath('/admin/reviews');
         return { success: true };
 
