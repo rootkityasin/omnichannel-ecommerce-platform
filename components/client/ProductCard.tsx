@@ -225,42 +225,7 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         <div className="p-3 bg-white relative z-20 flex flex-col flex-grow overflow-hidden">
-          {/* Animated Crab Background */}
-          <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-            <motion.svg
-              viewBox="0 0 100 100"
-              className="w-full h-full absolute -right-8 -bottom-8 text-crab-red"
-              initial="hidden"
-              whileHover="visible"
-            >
-              <motion.path
-                d="M20 80 Q 50 20 80 40 T 90 90 M10 90 Q 40 40 80 60"
-                fill="transparent"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                variants={{
-                  hidden: { pathLength: 0, opacity: 0 },
-                  visible: {
-                    pathLength: 1,
-                    opacity: 0.4,
-                    transition: { duration: 1.5, ease: "easeInOut" },
-                  },
-                }}
-              />
-            </motion.svg>
-            {/* Static stylized claw watermark */}
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="w-32 h-32 absolute -right-8 -bottom-8 text-gray-100/50 rotate-[-15deg]"
-            >
-              <path
-                d="M12 2C8 2 6 5 6 5C6 5 4 2 2 4C2 6 5 6 5 6C5 6 2 8 2 12C2 17 6 20 12 20C18 20 22 17 22 12C22 8 19 6 19 6C19 6 22 6 22 4C20 2 18 5 18 5C18 5 16 2 12 2Z"
-                fill="currentColor"
-              />
-            </svg>
-          </div>
+
 
           <h3
             className={`font-bold text-gray-800 line-clamp-1 mb-1 relative z-10 ${language !== "en" ? "font-bangla text-base" : "font-heading text-sm"}`}

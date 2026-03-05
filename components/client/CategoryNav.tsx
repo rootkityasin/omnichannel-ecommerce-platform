@@ -276,7 +276,7 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: Ca
     const categories = initialCategories;
 
     return (
-        <section className="relative py-8 md:py-16 overflow-hidden">
+        <section className="relative py-4 md:py-16 overflow-hidden">
             {/* Background Accent */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-7xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-crab-red/5 rounded-full blur-[120px] -z-10 animate-pulse" />
@@ -285,14 +285,14 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: Ca
 
             <div className="container mx-auto px-4 relative z-10">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-12 gap-4">
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
                             Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-crab-red to-orange-600">Categories</span>
                         </h2>
                     </motion.div>
@@ -311,7 +311,7 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: Ca
                 </div>
 
                 {/* Mobile View: Horizontal Scroll */}
-                <div className="md:hidden flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4 snap-x">
+                <div className="md:hidden flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x">
                     {categories.map((cat, index) => {
                         const style = getCategoryStyle(cat.name, index, cat.animationType, cat.icon);
                         const Icon = style.icon;
@@ -319,15 +319,15 @@ export function CategoryNav({ initialCategories = [] }: { initialCategories?: Ca
                             <Link
                                 key={cat.id}
                                 href={`/menu?category=${cat.id}`}
-                                className="flex flex-col items-center gap-3 min-w-[100px] snap-center group"
+                                className="flex flex-col items-center gap-2 min-w-[72px] sm:min-w-[80px] snap-center group"
                             >
                                 <div className="relative">
-                                    <div className={`w-20 h-20 rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-center ${style.color} group-active:scale-95 transition-all duration-300`}>
-                                        <Icon className="w-8 h-8 transition-transform group-active:scale-110" />
+                                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-center ${style.color} group-active:scale-95 transition-all duration-300`}>
+                                        <Icon className="w-6 h-6 sm:w-7 sm:h-7 transition-transform group-active:scale-110" />
                                     </div>
-                                    <div className={`absolute inset-0 opacity-0 group-active:opacity-10 rounded-2xl transition-opacity bg-current ${style.color}`} />
+                                    <div className={`absolute inset-0 opacity-0 group-active:opacity-10 rounded-xl sm:rounded-2xl transition-opacity bg-current ${style.color}`} />
                                 </div>
-                                <span className="text-xs font-black text-center text-slate-800 uppercase tracking-wider line-clamp-2 w-full px-1">
+                                <span className="text-[10px] sm:text-xs font-black text-center text-slate-800 uppercase tracking-wider line-clamp-2 w-full px-0.5 sm:px-1">
                                     {cat.name}
                                 </span>
                             </Link>
