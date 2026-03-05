@@ -31,7 +31,7 @@ export default async function SecurityDashboard() {
             select: { adminSetupToken: true }
         })
         : null;
-    const currentToken = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || 'crab-secret-setup-123';
+    const hasToken = !!config?.adminSetupToken || !!process.env.ADMIN_SETUP_SECRET;
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
@@ -67,7 +67,7 @@ export default async function SecurityDashboard() {
                                         This secret code is required to authorize new devices. Change it periodically to maintain security.
                                     </p>
                                 </div>
-                                <TokenEditor initialToken={currentToken} />
+                                <TokenEditor hasToken={hasToken} />
                             </div>
                         </div>
 

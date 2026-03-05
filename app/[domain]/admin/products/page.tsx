@@ -17,6 +17,7 @@ import {
   LayoutGrid,
   List,
   Edit,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { smartParseAI } from "@/app/actions/ai";
@@ -160,6 +161,7 @@ export default function ProductsPage() {
   const [filterStage, setFilterStage] = useState("all");
 
   const [isAdding, setIsAdding] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [newProduct, setNewProduct] = useState<ProductFormState>({
@@ -1035,9 +1037,9 @@ export default function ProductsPage() {
                     <button
                       type="button"
                       onClick={async () => {
+                        if (isGeneratingDesc) return;
+                        setIsGeneratingDesc(true);
                         const catName = getCatName(newProduct.categoryId);
-                        const btn = document.getElementById("ai-desc-btn");
-                        if (btn) btn.innerText = "Writing...";
 
                         try {
                           const desc = await generateDescriptionAI(
@@ -1053,16 +1055,22 @@ export default function ProductsPage() {
                           }));
                         } catch (e) {
                           toast.error("AI Error");
+                        } finally {
+                          setIsGeneratingDesc(false);
                         }
-
-                        if (btn)
-                          btn.innerHTML =
-                            '<span class="flex items-center"><svg class="w-3 h-3 mr-1" .../> Auto-Write (AI)</span>';
                       }}
-                      id="ai-desc-btn"
-                      className="text-[10px] text-indigo-600 font-bold hover:underline flex items-center"
+                      disabled={isGeneratingDesc}
+                      className="text-[10px] text-indigo-600 font-bold hover:underline flex items-center disabled:opacity-50"
                     >
-                      <Sparkles className="w-3 h-3 mr-1" /> Auto-Write (AI)
+                      {isGeneratingDesc ? (
+                        <>
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Writing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3 h-3 mr-1" /> Auto-Write (AI)
+                        </>
+                      )}
                     </button>
                   </div>
                   <Textarea
