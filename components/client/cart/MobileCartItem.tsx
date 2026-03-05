@@ -52,7 +52,7 @@ export function MobileCartItem({
           <h3 className="font-heading font-bold text-slate-900 text-base line-clamp-2 leading-tight">
             {item.name}
           </h3>
-          <p className="font-body text-xs text-slate-500 mt-1 font-medium">
+          <p className="font-body text-xs text-slate-800 mt-1 font-semibold">
             {settings.measurementUnit === "WEIGHT"
               ? (() => {
                 const g = item.quantity * (settings.weightUnitValue || 200);

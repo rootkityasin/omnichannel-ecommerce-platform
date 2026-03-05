@@ -301,15 +301,15 @@ export function CartDrawer() {
                   <div className="flex justify-between items-start gap-2">
                     <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-tight">
                       {item.name}
-                      <span className="ml-1 text-xs font-normal text-gray-500">
+                      <span className="ml-1 text-xs font-semibold text-gray-900">
                         (
                         {settings.measurementUnit === "WEIGHT"
                           ? (() => {
-                              const grams = settings.weightUnitValue || 200;
-                              return grams >= 1000
-                                ? `${(grams / 1000).toFixed(1)} kg`
-                                : `${grams} g`;
-                            })()
+                            const grams = settings.weightUnitValue || 200;
+                            return grams >= 1000
+                              ? `${(grams / 1000).toFixed(1)} kg`
+                              : `${grams} g`;
+                          })()
                           : "1 pcs"}
                         )
                       </span>
