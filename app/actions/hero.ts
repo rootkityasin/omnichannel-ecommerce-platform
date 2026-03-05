@@ -27,13 +27,31 @@ const getCachedHeroSlides = unstable_cache(
       updatedAt: slide.updatedAt.toISOString(),
     }));
   },
-  ["hero-slides"],
+  ["hero-slides"], // <--- This will be overridden dynamically by passing it below
   { tags: ["hero"], revalidate: 3600 },
 );
 
 export async function getHeroSlides(domain?: string) {
   try {
-    return await getCachedHeroSlides(domain);
+    // Dynamically inject the domain into the cache key for isolation
+    const cacheKey = ["hero-slides", domain ?? "global"];
+    const cachedFn = unstable_cache(
+      async () => {
+        const tenant = domain ? await getTenantByDomain(domain) : null;
+        if (domain && !tenant) return [];
+        const slides = await prisma.heroSlide.findMany({
+          orderBy: { order: "asc" },
+        });
+        return slides.map((slide) => ({
+          ...slide,
+          createdAt: slide.createdAt.toISOString(),
+          updatedAt: slide.updatedAt.toISOString(),
+        }));
+      },
+      cacheKey,
+      { tags: ["hero", ...(domain ? [`hero-${domain}`] : [])], revalidate: 3600 }
+    );
+    return await cachedFn();
   } catch (error) {
     console.error("Failed to fetch hero slides:", error);
     return [];

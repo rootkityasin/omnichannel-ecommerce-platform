@@ -27,6 +27,9 @@ export default function AccountPage() {
         if (impersonateId && token && status === 'unauthenticated') {
             const toastId = toast.loading("Setting up your admin session...");
 
+            // Wipe token from the URL immediately so it doesn't leak in browser history or referer headers
+            globalThis.history.replaceState({}, document.title, globalThis.location.pathname);
+
             signIn('credentials', {
                 phone: `impersonate:${impersonateId}`,
                 password: token,

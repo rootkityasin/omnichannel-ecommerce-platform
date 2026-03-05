@@ -38,7 +38,7 @@ export async function getHomeSections(domain?: string) {
 
         const productFilter = domain
           ? { tenantId: tenant?.id || "__no_tenant__", isAvailable: true }
-          : { isAvailable: true };
+          : { tenantId: null, isAvailable: true };
 
         const sectionFilter = domain
           ? {
@@ -127,7 +127,7 @@ export async function getHomeSections(domain?: string) {
       }
     },
     ["home-sections", domain ?? "global"],
-    { revalidate: 60, tags: ["home-sections"] },
+    { revalidate: 60, tags: ["home-sections", ...(domain ? [`home-sections-${domain}`] : [])] },
   )();
 }
 
