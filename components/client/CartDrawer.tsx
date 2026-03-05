@@ -260,12 +260,13 @@ export function CartDrawer() {
                   translations[language as keyof typeof translations]?.cartPage
                     ?.emptyMessage}
               </p>
-              <button
+              <Link
+                href="/menu"
                 onClick={closeCart}
-                className="px-8 py-3 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-crab-red transition-all active:scale-95"
+                className="inline-block px-8 py-3 bg-crab-red text-white font-bold text-sm rounded-xl shadow-lg hover:bg-red-600 transition-all active:scale-95"
               >
                 {cartTexts?.browseMenu || "Browse Menu"}
-              </button>
+              </Link>
             </div>
           ) : (
             items.map((item) => (
@@ -338,10 +339,8 @@ export function CartDrawer() {
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="text-xs font-bold min-w-[32px] text-center">
-                        <span className="text-xs font-bold min-w-[32px] text-center">
-                          {formatQuantity(item.quantity, settings)}
-                        </span>
+                      <span className="text-xs font-bold min-w-[32px] text-center text-slate-900">
+                        {formatQuantity(item.quantity, settings)}
                       </span>
                       <button
                         onClick={() => addItem({ ...item, quantity: 1 })}
