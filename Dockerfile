@@ -68,4 +68,5 @@ ENV PORT=3003
 ENV HOSTNAME="0.0.0.0"
 
 # Use standalone server.js directly instead of next start
-CMD ["node", "server.js"]
+# First we synchronize the DB schema, then start the server
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
