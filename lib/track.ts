@@ -44,6 +44,11 @@ export const trackEvent = async ({ eventName, eventData, userData }: TrackEventP
             }),
         });
 
+        if (!response.ok) {
+            console.error('Track API Error:', response.status, response.statusText);
+            return null;
+        }
+
         return await response.json();
     } catch (error) {
         console.error('Client Track Error:', error);

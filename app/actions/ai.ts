@@ -51,6 +51,7 @@ You are a high-end Luxury Brand Copywriter and sensory psychologist. Your goal i
             try {
                 // Fetch image and convert to base64
                 const imgRes = await fetch(imageUrl);
+                if (!imgRes.ok) throw new Error(`Image fetch failed: ${imgRes.status}`);
                 const imgBuffer = await imgRes.arrayBuffer();
                 const base64Image = Buffer.from(imgBuffer).toString('base64');
 
