@@ -528,6 +528,24 @@ export function GlobalCheckoutDrawer() {
     }
   }, [session]);
 
+  // Fix for iOS Safari virtual keyboard leaving a white blank gap on dismiss
+  useEffect(() => {
+    if (!checkoutOpen) return;
+    const handleFocusOut = (e: FocusEvent) => {
+      // If focus goes to nothing or a non-input element, the keyboard is likely hiding
+      const target = e.relatedTarget as HTMLElement;
+      if (!target || !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          document.body.style.height = '100dvh'; // Force repaint
+          setTimeout(() => document.body.style.height = '', 50);
+        }, 100);
+      }
+    };
+    window.addEventListener("focusout", handleFocusOut);
+    return () => window.removeEventListener("focusout", handleFocusOut);
+  }, [checkoutOpen]);
+
   // Totals
   const subTotalAmount = total();
   const discountAmount = discount();
@@ -816,7 +834,7 @@ export function GlobalCheckoutDrawer() {
         }
       }}
     >
-      <DrawerContent className="h-[80vh] max-h-[80vh] bg-white border-0 flex flex-col p-0 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+      <DrawerContent className="h-[85dvh] max-h-[85dvh] bg-white border-0 flex flex-col p-0 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
 
         {successOrder ? (
           <div className="w-full max-w-lg mx-auto bg-white py-8 overflow-y-auto flex-1">
