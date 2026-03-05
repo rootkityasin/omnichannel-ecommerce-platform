@@ -1,0 +1,1 @@
+-- This is an empty migration to synchronize the Prisma migrations table with the schema changes that were pushed directly using `db push`.

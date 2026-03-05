@@ -65,8 +65,10 @@ USER nextjs
 EXPOSE 3003
 
 ENV PORT=3003
-ENV HOSTNAME="0.0.0.0"
+# Copy entrypoint script
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
+RUN chmod +x ./docker-entrypoint.sh
 
 # Use standalone server.js directly instead of next start
-# First we synchronize the DB schema, then start the server
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["node", "server.js"]
