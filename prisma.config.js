@@ -1,5 +1,6 @@
 // Prisma 7 configuration file
 // https://www.prisma.io/docs/orm/reference/prisma-cli-reference#prisma-config-file
+require('dotenv').config();
 
 /** @type {import('prisma/config').Config} */
 module.exports = {

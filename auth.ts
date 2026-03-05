@@ -23,7 +23,7 @@ async function fetchUserWithRetry(userId: string) {
   const MAX_RETRIES = 2;
   while (retries < MAX_RETRIES) {
     try {
-      return await prisma.user.findUnique({
+      return await baseClient.user.findUnique({
         where: { id: userId },
         select: {
           id: true,
