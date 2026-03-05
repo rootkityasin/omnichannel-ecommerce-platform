@@ -3,12 +3,31 @@ import Google from "next-auth/providers/google";
 import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma, baseClient } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authConfig } from "./auth.config";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+// #region agent log
+fetch("http://127.0.0.1:7285/ingest/d17b1f85-80dd-43fe-a9dd-cad5f735137d", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Debug-Session-Id": "d1ab8a",
+  },
+  body: JSON.stringify({
+    sessionId: "d1ab8a",
+    runId: "init",
+    hypothesisId: "H0",
+    location: "auth.ts:module",
+    message: "auth module loaded",
+    data: {},
+    timestamp: Date.now(),
+  }),
+}).catch(() => {});
+// #endregion
 
 const isLocal = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes("localhost");
 const useSecureCookies = process.env.NODE_ENV === "production" && !isLocal;
@@ -23,7 +42,7 @@ async function fetchUserWithRetry(userId: string) {
   const MAX_RETRIES = 2;
   while (retries < MAX_RETRIES) {
     try {
-      return await baseClient.user.findUnique({
+      return await prisma.user.findUnique({
         where: { id: userId },
         select: {
           id: true,
@@ -61,7 +80,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.phone = user.phone;
         token.tenantId = user.tenantId;
         token.permissions = user.permissions;
-        token.lastChecked = Date.now(); // Prevents immediate re-check on sign-in
         return token;
       }
 
@@ -126,13 +144,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
   },
-  adapter: PrismaAdapter(baseClient),
+  adapter: PrismaAdapter(prisma),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
-      checks: ["pkce", "state"],
+      checks: ["pkce"],
     }),
     Apple({
       clientId: process.env.APPLE_CLIENT_ID,

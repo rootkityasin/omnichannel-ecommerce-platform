@@ -1,5 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -210,7 +211,6 @@ model User {
   tenantId    String?
   name        String
   email       String    @unique
-  emailVerified DateTime?
   phone       String?   @unique
   role        Role      @default(USER)
   permissions String[]  @default([])
