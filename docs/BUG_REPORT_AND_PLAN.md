@@ -226,4 +226,47 @@ These were found in a follow-up pass. Assume the earlier tenant-isolation and re
 
 ---
 
+## Additional bugs (third pass)
+
+### 1. **Critical: Unprotected API routes (no auth)**
+
+These API routes perform destructive or sensitive operations with **no authentication**:
+
+- **`app/api/admin-cleanup/route.ts`** – `GET` calls `prisma.product.deleteMany({})` and **deletes every product** in the database. Anyone who can send a GET request can wipe all products.
+- **`app/api/fix-hubs/route.ts`** – `GET` upserts default hubs (no auth). Any caller can mutate hub data.
+- **`app/api/upgrade-crab/route.ts`** – `GET` updates all tenants with name containing "crab" to plan `PREMIUM` (no auth).
+- **`app/api/fix-super-admin/route.ts`** – `GET` finds the first user with name containing "Yasin" and sets `role: 'SUPER_ADMIN'` (no auth). Anyone can escalate that user to super-admin.
+- **`app/api/debug-session/route.ts`** – `GET` returns the full session object (and `nodeEnv`) to the caller. No auth check; anyone can read session data (role, tenantId, etc.) if they hit the route.
+
+**Remediation:**  
+- Remove or strictly protect these routes. For admin/maintenance endpoints: require auth and role (e.g. SUPER_ADMIN), or restrict by IP/env (e.g. only in development or from a known IP).  
+- For `debug-session`: require auth and run only in development, or remove.  
+- For `admin-cleanup`: if kept, require SUPER_ADMIN and use a server action (like `resetDatabaseAction`) instead of an open GET endpoint.
+
+---
+
+### 2. **Impersonation URL params (account page)**
+
+- **`app/[domain]/(client)/account/page.tsx`** (lines ~22–42): Auto-login uses `?impersonate=X&token=Y` from the URL. The token is sent to the credentials provider. If the token is not a single-use, server-validated magic link, an attacker who obtains a valid token (e.g. from logs, referrer, or history) could impersonate the user. Tokens in URLs can also leak via Referer.
+
+**Remediation:** Ensure the credentials provider validates the token server-side (e.g. against a short-lived store or DB) and invalidates it after one use. Prefer POST body or a one-time code over long-lived tokens in query params.
+
+---
+
+### 3. **Hero slides cache key ignores domain**
+
+- **`app/actions/hero.ts`** (lines ~12–31): `getCachedHeroSlides` is defined with `unstable_cache(..., ["hero-slides"], { ... })`. The cache key is only `["hero-slides"]`; the `domain` argument is **not** part of the key. So all domains get the same cached result. If hero slides ever become tenant-specific (e.g. by adding `tenantId` to the schema), the cache would be wrong.
+
+**Remediation:** Include `domain ?? "global"` in the cache key array (e.g. `["hero-slides", domain ?? "global"]`) so cache is per-domain. If hero slides are intentionally global forever, document that and leave as-is.
+
+---
+
+### 4. **getHomeSections() without domain returns global data**
+
+- **`app/actions/section.ts`** (lines ~32–41): When `getHomeSections(domain)` is called with no domain (or `undefined`), the cache key is `["home-sections", "global"]` and the query uses `isAvailable: true` / `isActive: true` with **no tenantId filter**. So all tenants’ sections and products are returned. Callers that pass a domain get correct tenant-scoped data; any future caller that omits domain would get mixed tenant data.
+
+**Remediation:** Either require `domain` (make it non-optional and return [] or throw when missing), or document that the “global” case is intentional (e.g. super-admin only). If multi-tenant, avoid calling without domain in tenant context.
+
+---
+
 *Generated from full-project bug hunt. No code was modified; this is planning only.*
