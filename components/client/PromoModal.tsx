@@ -73,13 +73,13 @@ export function PromoModal({ promo }: PromoModalProps) {
         )}
 
         {/* Gradient Overlays for Readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent h-32" />
+        <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? "from-black via-black/50" : "from-white via-white/80"} to-transparent`} />
+        <div className={`absolute inset-0 bg-gradient-to-b ${isDarkMode ? "from-black/60" : "from-white/60"} to-transparent h-32`} />
 
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-30 border border-white/10"
+          className={`absolute top-4 right-4 p-2 ${isDarkMode ? "bg-white/10 hover:bg-white/20 text-white border-white/10" : "bg-black/5 hover:bg-black/10 text-slate-800 border-black/10"} backdrop-blur-md rounded-full transition-colors z-30 border`}
         >
           <X className="w-5 h-5" />
         </button>
@@ -97,7 +97,7 @@ export function PromoModal({ promo }: PromoModalProps) {
 
           {/* Title */}
           {promo.title && (
-            <h2 className="text-2xl font-black text-white mb-2 drop-shadow-lg">
+            <h2 className={`text-2xl font-black ${isDarkMode ? "text-white" : "text-slate-900"} mb-2 drop-shadow-lg`}>
               {promo.title}
             </h2>
           )}
@@ -107,7 +107,7 @@ export function PromoModal({ promo }: PromoModalProps) {
             {(promo.price || promo.originalPrice) && (
               <div className="flex items-center justify-center gap-4 mb-4">
                 {promo.originalPrice && (
-                  <span className="text-white/40 line-through text-sm decoration-2">
+                  <span className={`${isDarkMode ? "text-white/40" : "text-slate-500/60"} line-through text-sm decoration-2`}>
                     BDT {promo.originalPrice}
                   </span>
                 )}
@@ -125,7 +125,7 @@ export function PromoModal({ promo }: PromoModalProps) {
 
             <button
               onClick={handleAction}
-              className="w-full py-4 bg-white text-crab-red font-black uppercase tracking-widest rounded-xl shadow-xl active:scale-95 transition-all hover:bg-gray-100 flex items-center justify-center gap-2 group/btn"
+              className={`w-full py-4 ${isDarkMode ? "bg-white text-crab-red" : "bg-crab-red text-white"} font-black uppercase tracking-widest rounded-xl shadow-xl active:scale-95 transition-all hover:opacity-90 flex items-center justify-center gap-2 group/btn`}
             >
               <Clock className="w-4 h-4 group-hover/btn:animate-spin" />
               {promo.buttonText || "Order Now"}

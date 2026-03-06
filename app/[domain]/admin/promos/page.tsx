@@ -734,14 +734,9 @@ export default function PromoPage() {
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 p-0 shadow-2xl border-none">
             <div className="sticky top-0 z-10 bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center">
               <div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-800">
-                    {editingPromoId ? "Edit Promotion" : "New Promotion Popup"}
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Create engaging popups for your visitors
-                  </p>
-                </div>
+                <h2 className="text-xl font-bold text-slate-800">
+                  {editingPromoId ? "Edit Promotion" : "New Promotion Popup"}
+                </h2>
                 <p className="text-xs text-slate-500">
                   Create engaging popups for your visitors
                 </p>
@@ -921,7 +916,7 @@ export default function PromoPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-ocean-blue hover:bg-ocean-blue/90"
+                  className="flex-1 bg-ocean-blue hover:bg-ocean-blue/90 text-white"
                 >
                   {editingPromoId ? "Update Promotion" : "Create Promotion"}
                 </Button>
