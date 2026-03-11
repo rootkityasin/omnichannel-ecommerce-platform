@@ -52,18 +52,22 @@ export async function deleteExpense(id: string) {
 
 // --- Inventory Stats ---
 export async function getInventoryStats() {
-  // 1. Total Stock Value (Assumes quantity in Product or Inventory)
-  // For now, looking at Product.pieces as simple stock representation + Inventory model
-  // This is complex so we will start simple:
-
-  // Get all products to calculate potential stock value
+  // 1. Total Stock Value
+  // Select only the absolutely necessary fields to prevent massive memory payloads
   const products = await prisma.product.findMany({
-    include: { inventory: true },
+    select: {
+      price: true,
+      pieces: true,
+      inventory: {
+        select: {
+          quantity: true,
+        },
+      },
+    },
   });
 
   let totalStockValue = 0;
   products.forEach((p) => {
-    // Sum up inventory from hubs + base pieces if modeled that way
     const inventoryCount = p.inventory.reduce(
       (acc: number, inv) => acc + inv.quantity,
       0,
@@ -74,18 +78,20 @@ export async function getInventoryStats() {
   });
 
   // 2. Total Sales (Completed Orders)
-  const paidOrders = await prisma.order.findMany({
-    where: { status: "DELIVERED" }, // or statuses that imply payment
+  // Use DB-level aggregation to count total sales without pulling orders into memory
+  const salesAggregation = await prisma.order.aggregate({
+    _sum: { totalAmount: true },
+    where: { status: "DELIVERED" },
   });
-  const totalSales = paidOrders.reduce(
-    (acc: number, order) => acc + order.totalAmount,
-    0,
-  );
+  const totalSales = salesAggregation._sum.totalAmount || 0;
 
   // 3. Total Expenses
-  const allExpenses = await prisma.expense.findMany();
+  // Select only 'amount' as we need Math.abs() in JS before summing
+  const allExpenses = await prisma.expense.findMany({
+    select: { amount: true },
+  });
   const totalExpenses = allExpenses.reduce(
-    (acc: number, e) => acc + Math.abs(e.amount), // Ensure legacy negative entries are summed positively
+    (acc: number, e) => acc + Math.abs(e.amount),
     0,
   );
 
@@ -93,7 +99,7 @@ export async function getInventoryStats() {
     stockValue: totalStockValue,
     totalSales,
     totalExpenses,
-    netProfit: totalSales - totalExpenses, // Sales minus absolute expenses
+    netProfit: totalSales - totalExpenses,
   };
 }
 

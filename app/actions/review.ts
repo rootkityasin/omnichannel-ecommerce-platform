@@ -16,6 +16,7 @@ export async function getAdminReviews() {
             where: {
                 product: { tenantId }
             },
+            take: 200,
             include: {
                 user: {
                     select: { name: true, phone: true, email: true }
@@ -37,6 +38,7 @@ export async function getProductReviews(productId: string) {
     try {
         const reviews = await prisma.review.findMany({
             where: { productId },
+            take: 200,
             include: {
                 user: {
                     select: { name: true, image: true }

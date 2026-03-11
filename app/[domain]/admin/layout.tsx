@@ -4,9 +4,7 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminLayoutClient from './AdminLayoutClient';
 import { type User } from '@/types/common';
-import { getAdminOrders } from '@/app/actions/order';
 import { getAdminSiteConfig } from '@/app/actions/settings';
-import { getAdminProducts } from '@/app/actions/product';
 
 // How often to verify device against DB (30 minutes)
 const DB_VERIFY_INTERVAL = 30 * 60 * 1000;
@@ -49,19 +47,14 @@ export default async function AdminLayout({
 
     await verifyTrustedDevice(deviceId, lastDbCheck, isSetupPage);
 
-    const { domain } = await params;
-
-    // Fast Data Load Phase 1: Fetch Server Side to avoid "Loading..." states
-    const [initialOrders, initialConfig, initialProducts] = await Promise.all([
-        getAdminOrders(),
-        getAdminSiteConfig(),
-        getAdminProducts(domain)
-    ]);
+    // Fetch site config for layout rendering, but defer heavy 
+    // orders/products fetching to client to prevent CPU spikes
+    const initialConfig = await getAdminSiteConfig();
 
     const initialData = {
-        orders: initialOrders || [],
+        orders: [], // Fetched by client-side AdminProvider
         settings: initialConfig || undefined,
-        products: initialProducts || []
+        products: [] // Fetched by client-side AdminProvider
     };
 
     // Return Client Layout

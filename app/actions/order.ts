@@ -242,6 +242,7 @@ export async function getAdminOrders() {
 
     const orders = await prisma.order.findMany({
       where: { tenantId },
+      take: 1000,
       orderBy: {
         createdAt: "desc",
       },

@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react';
 import { getAdminOrders, updateAdminOrder, deleteAdminOrder } from '@/app/actions/order';
 import { toast } from 'sonner';
+import { getAdminProducts } from '@/app/actions/product';
 
 import { SiteConfig, PaymentConfig, AdminOrder, AdminProduct, User, Hub } from '@/types/common';
 
@@ -165,9 +166,16 @@ export function AdminProvider({ children, initialUser, initialData }: {
             });
 
             // 3. Fetch Orders from DB (IF NOT PROVIDED)
-            if (!initialData?.orders || initialData.orders.length === 0) {
+                        if (!initialData?.orders || initialData.orders.length === 0) {
                 getAdminOrders().then(dbOrders => {
                     if (dbOrders) setOrdersState(dbOrders);
+                });
+            }
+
+            // 4. Fetch Products from DB (IF NOT PROVIDED)
+            if (!initialData?.products || initialData.products.length === 0) {
+                getAdminProducts().then(dbProducts => {
+                    if (dbProducts) setProductsState(dbProducts);
                 });
             }
         }
