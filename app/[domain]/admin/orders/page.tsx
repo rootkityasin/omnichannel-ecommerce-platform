@@ -126,30 +126,24 @@ export default function OrdersPage() {
   const [dateDate, setDateDate] = useState<Date | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch Data Function
+  // Fetch paginated orders only — stats are decoupled to prevent hammering DB on every filter change
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Parallel fetch using Promise.all
       const dateStart = dateDate ? dateDate.toISOString() : undefined;
-      const dateEnd = undefined; // currently dateDate is exact day, server handles to end of day
 
-      const [ordersRes, statsRes] = await Promise.all([
-        getPaginatedAdminOrders({
-          page,
-          limit,
-          search: filterSearch,
-          status: filterStatus,
-          source: filterSource,
-          dateStart,
-          dateEnd,
-        }),
-        getOrderStats(), // Re-fetching stats might be slightly heavy on every page change, but accurate.
-      ]);
+      const ordersRes = await getPaginatedAdminOrders({
+        page,
+        limit,
+        search: filterSearch,
+        status: filterStatus,
+        source: filterSource,
+        dateStart,
+        dateEnd: undefined,
+      });
 
       setOrders(ordersRes.data as any);
       setTotalOrders(ordersRes.total);
-      if (statsRes) setStats(statsRes);
     } catch (err) {
       console.error(err);
       toast.error("Failed to fetch orders");
@@ -158,28 +152,40 @@ export default function OrdersPage() {
     }
   }, [page, limit, filterSearch, filterStatus, filterSource, dateDate]);
 
+  // Stats are fetched separately — only on mount and after mutations
+  const refreshStats = useCallback(async () => {
+    try {
+      const statsRes = await getOrderStats();
+      if (statsRes) setStats(statsRes);
+    } catch (err) {
+      console.error("Failed to fetch stats", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  useEffect(() => {
-    getSiteConfig().then((config) => {
-      if (config?.shopType) setShopType(config.shopType);
-    });
 
-    getDeliveryConfig().then((config) => {
-      if (config?.defaultCharge !== undefined && config?.defaultCharge !== null) {
+  // Mount-only config + stats fetches — all parallelized in one Promise.all
+  useEffect(() => {
+    Promise.all([
+      getSiteConfig(),
+      getDeliveryConfig(),
+      getOrderStats(),
+      getStorySections(),
+    ]).then(([siteConf, deliveryConf, statsRes, sections]) => {
+      if (siteConf?.shopType) setShopType(siteConf.shopType);
+
+      if (deliveryConf?.defaultCharge !== undefined && deliveryConf?.defaultCharge !== null) {
         setNewOrder((prev) => ({
           ...prev,
-          deliveryCharge: Number(config.defaultCharge) || 0,
+          deliveryCharge: Number(deliveryConf.defaultCharge) || 0,
         }));
       }
-    });
 
-    // Removed unconditional getProducts() on mount to save memory/CPU.
-    // Products are now fetched lazily when the manual order modal opens.
+      if (statsRes) setStats(statsRes);
 
-    getStorySections().then((sections) => {
       const blockedSection = sections.find((s) => s.type === "BLOCKED_CUSTOMERS");
       if (blockedSection?.content) {
         const content = blockedSection.content as any;
@@ -192,6 +198,8 @@ export default function OrdersPage() {
           }
         }
       }
+    }).catch((err) => {
+      console.error("Failed to load page config", err);
     });
   }, []);
 

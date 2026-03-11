@@ -81,7 +81,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { generateDescriptionAI, translateToBanglaAI } from "@/app/actions/ai";
 import { useSession } from "next-auth/react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { AdminProduct } from "@/types/common";
 
@@ -140,7 +140,6 @@ export default function ProductsPage() {
   const userRole = session?.user?.role;
   const userPermissions = session?.user?.permissions || [];
   const params = useParams();
-  const router = useRouter();
   const domain = params.domain as string;
 
   const canManageProducts =
@@ -252,10 +251,7 @@ export default function ProductsPage() {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    router.refresh(); // Hard reset router cache so getHomeSections fetches fresh data
-  }, []);
+  // NOTE: router.refresh() removed — caused CPU spikes on every mount by forcing a full server re-render cycle.
 
   // Fetch data on parameters change
   useEffect(() => {
