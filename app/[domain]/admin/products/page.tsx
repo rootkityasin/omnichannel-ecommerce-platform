@@ -217,35 +217,28 @@ export default function ProductsPage() {
       isMounted.current = false;
     };
   }, []);
-  const fetchData = async () => {
+  // Fetch ONLY paginated products — runs on every filter/page/search change
+  const fetchProducts = async () => {
     try {
       setLoading(true);
-      const [pData, cData, sData, confData] = await Promise.all([
-        getPaginatedAdminProducts({
-          domain,
-          page,
-          limit,
-          search: debouncedSearch,
-          stage: filterStage,
-          stockStatus: filterStock,
-        }),
-        getCategories(domain),
-        getSections(),
-        getAdminSiteConfig(),
-      ]);
+      const pData = await getPaginatedAdminProducts({
+        domain,
+        page,
+        limit,
+        search: debouncedSearch,
+        stage: filterStage,
+        stockStatus: filterStock,
+      });
 
       if (!isMounted.current) return;
 
       setProducts(pData.data as unknown as LocalProduct[]);
       setTotalPages(pData.pages);
       setTotalCount(pData.total);
-      setCategories(cData);
-      setSectionsList(sData);
-      setConfig(confData || { measurementUnit: "PCS" });
     } catch (err) {
       if (!isMounted.current) return;
       console.error(err);
-      toast.error("Failed to load data");
+      toast.error("Failed to load products");
     } finally {
       if (isMounted.current) setLoading(false);
     }
@@ -253,9 +246,26 @@ export default function ProductsPage() {
 
   // NOTE: router.refresh() removed — caused CPU spikes on every mount by forcing a full server re-render cycle.
 
-  // Fetch data on parameters change
+  // Fetch static data ONCE on mount — categories/sections/config rarely change
   useEffect(() => {
-    fetchData();
+    Promise.all([
+      getCategories(domain),
+      getSections(),
+      getAdminSiteConfig(),
+    ]).then(([cData, sData, confData]) => {
+      if (!isMounted.current) return;
+      setCategories(cData);
+      setSectionsList(sData);
+      setConfig(confData || { measurementUnit: "PCS" } as SiteConfig);
+    }).catch((err) => {
+      console.error("Failed to load static data", err);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [domain]);
+
+  // Fetch paginated products on filter/page/search change
+  useEffect(() => {
+    fetchProducts();
   }, [page, debouncedSearch, filterStage, filterStock, domain]);
 
   // Force table view for GROCERY shops — no kanban allowed
@@ -339,7 +349,7 @@ export default function ProductsPage() {
       if (res.success) {
         toast.success("Product deleted");
         setDeleteId(null);
-        fetchData();
+        fetchProducts();
       } else if (res.error === "failed to deleted ordered item") {
         setArchiveRequired(true);
       } else {
@@ -363,7 +373,7 @@ export default function ProductsPage() {
         toast.success("Product archived successfully");
         setDeleteId(null);
         setArchiveRequired(false);
-        fetchData();
+        fetchProducts();
       } else {
         toast.error(res.error || "Failed to archive");
       }
@@ -379,7 +389,7 @@ export default function ProductsPage() {
       const res = await unarchiveProduct(id);
       if (res.success) {
         toast.success("Product restored successfully");
-        fetchData();
+        fetchProducts();
       } else {
         toast.error(res.error || "Failed to restore product");
       }
@@ -401,7 +411,7 @@ export default function ProductsPage() {
       const res = await deleteArchivedProduct(id);
       if (res.success) {
         toast.success("Product deleted permanently");
-        fetchData();
+        fetchProducts();
       } else {
         toast.error(res.error || "Failed to delete");
       }
@@ -441,7 +451,7 @@ export default function ProductsPage() {
       }
       toast.success("Bulk delete successful");
       setSelectedProducts([]);
-      fetchData();
+      fetchProducts();
     } catch (err) {
       console.error(err);
       toast.error("Bulk delete partially failed");
@@ -458,7 +468,7 @@ export default function ProductsPage() {
       }
       toast.success(`Bulk moved to ${targetStage}`);
       setSelectedProducts([]);
-      fetchData();
+      fetchProducts();
     } catch (err) {
       console.error(err);
       toast.error("Bulk move partially failed");
@@ -502,7 +512,7 @@ export default function ProductsPage() {
         await deleteProduct(id);
 
         toast.success(`Returned ${product.pieces} items to Ready Stock`);
-        fetchData();
+        fetchProducts();
         return;
       } else {
         // No original found, just move it back as is
@@ -553,10 +563,10 @@ export default function ProductsPage() {
 
     if (res.success) {
       toast.success(`Moved ${quantity} items to ${newStage}`);
-      fetchData(); // Refresh to ensure IDs are synced
+      fetchProducts(); // Refresh to ensure IDs are synced
     } else {
       toast.error("Failed to create batch");
-      fetchData(); // Revert on failure
+      fetchProducts(); // Revert on failure
     }
   };
 
@@ -585,7 +595,7 @@ export default function ProductsPage() {
     });
     if (res.success) {
       toast.success("Product cloned");
-      fetchData();
+      fetchProducts();
     }
   };
 
@@ -638,7 +648,7 @@ export default function ProductsPage() {
         toast.success("Product updated");
         setIsAdding(false);
         setEditingId(null);
-        fetchData();
+        fetchProducts();
       } else {
         toast.error(res.error || "Update failed");
       }
@@ -655,7 +665,7 @@ export default function ProductsPage() {
       if (res.success) {
         toast.success("Product created");
         setIsAdding(false);
-        fetchData();
+        fetchProducts();
       } else {
         toast.error(res.error || "Creation failed");
       }
