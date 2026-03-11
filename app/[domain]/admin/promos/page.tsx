@@ -375,7 +375,7 @@ export default function PromoPage() {
                         variant="outline"
                         className="bg-black/40 text-white border-white/20 backdrop-blur-md"
                       >
-                        {card.style === "DARK" ? "Dark Mode" : "Classic Mode"}
+                        {card.style === "DARK" ? "Dark Mode" : card.style === "WHITE" ? "White Card" : "Classic Mode"}
                       </Badge>
                     </div>
 
@@ -779,7 +779,7 @@ export default function PromoPage() {
 
                   <div className="space-y-2">
                     <Label>Popup Style</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <div
                         onClick={() =>
                           setNewCard({ ...newCard, style: "CLASSIC" })
@@ -788,7 +788,20 @@ export default function PromoPage() {
                       >
                         <div className="w-full h-12 bg-white rounded border border-slate-200 shadow-sm"></div>
                         <span className="text-xs font-bold text-slate-600">
-                          Classic (White)
+                          Classic
+                        </span>
+                      </div>
+                      <div
+                        onClick={() =>
+                          setNewCard({ ...newCard, style: "WHITE" })
+                        }
+                        className={`cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center gap-2 transition-all ${newCard.style === "WHITE" ? "border-green-500 bg-green-50/50" : "border-slate-100 hover:border-slate-200"}`}
+                      >
+                        <div className="w-full h-12 bg-white rounded border-2 border-slate-300 shadow-md flex items-center justify-center">
+                          <div className="w-6 h-2 bg-slate-200 rounded-full"></div>
+                        </div>
+                        <span className="text-xs font-bold text-slate-600">
+                          White Card
                         </span>
                       </div>
                       <div
@@ -799,7 +812,7 @@ export default function PromoPage() {
                       >
                         <div className="w-full h-12 bg-slate-900 rounded border border-slate-700 shadow-sm"></div>
                         <span className="text-xs font-bold text-slate-600">
-                          Dark (Premium)
+                          Dark
                         </span>
                       </div>
                     </div>

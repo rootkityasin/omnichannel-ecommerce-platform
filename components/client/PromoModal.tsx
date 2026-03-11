@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Clock } from "lucide-react";
+import { X, Clock, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PromoData {
@@ -26,13 +26,10 @@ export function PromoModal({ promo }: PromoModalProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!promo || !promo.isActive) return;
+    if (!promo?.isActive) return;
 
-    // Check if user has already seen this specific promo
     const seenPromoId = localStorage.getItem("seenPromoId");
-
     if (seenPromoId !== promo.id) {
-      // Show popup after a short delay (e.g., 2 seconds)
       const timer = setTimeout(() => {
         setIsVisible(true);
       }, 2000);
@@ -57,7 +54,73 @@ export function PromoModal({ promo }: PromoModalProps) {
   if (!isVisible || !promo) return null;
 
   const isDarkMode = promo.style === "DARK";
+  const isWhiteCard = promo.style === "WHITE";
 
+  // ── WHITE CARD STYLE ──────────────────────────────────────────────────────
+  // Legacy first popup design: structured card layout with image on top, text below.
+  if (isWhiteCard) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div className="relative w-full max-w-xs bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100">
+          {/* Close */}
+          <button
+            onClick={handleClose}
+            className="absolute top-3 right-3 z-30 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Image Block */}
+          {promo.imageUrl && (
+            <div className="w-full h-48 overflow-hidden bg-slate-100">
+              <img
+                src={promo.imageUrl}
+                alt={promo.title || "Promotion"}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          {/* Content Block */}
+          <div className="p-5 text-center">
+            {promo.description && (
+              <span className="inline-block px-3 py-1 bg-crab-red/10 text-crab-red text-[11px] font-bold uppercase tracking-widest rounded-full mb-3">
+                {promo.description}
+              </span>
+            )}
+            <h2 className="text-xl font-black text-slate-900 mb-1 leading-tight">
+              {promo.title}
+            </h2>
+
+            {(promo.price || promo.originalPrice) && (
+              <div className="flex items-center justify-center gap-3 my-3">
+                {promo.originalPrice && (
+                  <span className="text-slate-400 line-through text-sm">
+                    ৳{promo.originalPrice}
+                  </span>
+                )}
+                {promo.price && (
+                  <span className="text-2xl font-black text-crab-red">
+                    ৳{promo.price}
+                  </span>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={handleAction}
+              className="mt-3 w-full py-3 bg-crab-red text-white font-black uppercase tracking-widest rounded-xl shadow-lg active:scale-95 transition-all hover:opacity-90 flex items-center justify-center gap-2"
+            >
+              {promo.buttonText || "Order Now"}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── CLASSIC / DARK STYLE ──────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div
@@ -72,7 +135,7 @@ export function PromoModal({ promo }: PromoModalProps) {
           />
         )}
 
-        {/* Gradient Overlays for Readability */}
+        {/* Gradient Overlays */}
         <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? "from-black via-black/50" : "from-white via-white/80"} to-transparent`} />
         <div className={`absolute inset-0 bg-gradient-to-b ${isDarkMode ? "from-black/60" : "from-white/60"} to-transparent h-32`} />
 

@@ -694,6 +694,22 @@ export default function OrdersPage() {
             )}
           </div>
           <Button
+            variant={filterStatus === "INCOMPLETE" ? "default" : "outline"}
+            onClick={() => {
+              setFilterStatus(filterStatus === "INCOMPLETE" ? "all" : "INCOMPLETE");
+              setPage(1);
+            }}
+            className={cn(
+              "shadow-sm",
+              filterStatus === "INCOMPLETE" 
+                ? "bg-slate-800 hover:bg-slate-700 text-white border-transparent" 
+                : "bg-white text-slate-700 hover:text-slate-900"
+            )}
+          >
+            <Edit className="w-4 h-4 mr-2" /> 
+            {filterStatus === "INCOMPLETE" ? "Exit Drafts" : "Drafts"}
+          </Button>
+          <Button
             onClick={() => {
               setIsAdding(true);
               loadProductsForModal();
@@ -881,7 +897,6 @@ export default function OrdersPage() {
                     Object.keys(stats?.statusCounts || {}).reduce((sum, key) => key !== 'INCOMPLETE' && key !== 'Incomplete' ? sum + stats.statusCounts[key] : sum, 0)
                 } />
                 <TabTrigger value="Placed" label="Placed" count={getStatusCountString("Placed")} />
-                <TabTrigger value="Incomplete" label="Incomplete (Draft)" count={getStatusCountString("INCOMPLETE", ["INCOMPLETE", "Incomplete"])} />
                 <TabTrigger value="Confirmed" label="Confirmed" count={getStatusCountString("Confirmed")} />
                 <TabTrigger value="Processing" label="Processing" count={getStatusCountString("Processing", ["Processing", "Ready to Process"])} />
                 <TabTrigger value="Ready" label="Ready" count={getStatusCountString("Ready", ["Ready", "Ready To Fry", "Invoice Printed"])} />

@@ -172,23 +172,7 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
                                 className="h-20 resize-none"
                             />
                         </div>
-                        <div className="space-y-2 pt-2 border-t border-gray-100">
-                            <Label className="text-xs font-bold text-gray-700 uppercase">Assign Hub</Label>
-                            <Select
-                                value={config.primaryHub || ''}
-                                onValueChange={(val) => setConfig({ ...config, primaryHub: val })}
-                            >
-                                <SelectTrigger><SelectValue placeholder="Select Hub" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="dhaka-central">Dhaka Central Hub</SelectItem>
-                                    <SelectItem value="khulna-hub">Khulna Hub</SelectItem>
-                                    <SelectItem value="chattogram-hub">Chattogram Hub</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-slate-500">
-                                This is the default fulfillment center for new stock and orders.
-                            </p>
-                        </div>
+
                     </CardContent>
                 </Card>
 
