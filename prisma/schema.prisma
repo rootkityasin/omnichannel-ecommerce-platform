@@ -353,6 +353,7 @@ model Order {
   @@index([hubId])
   @@index([status])
   @@index([customerPhone])
+  @@index([createdAt])
 }
 
 model PaymentConfig {

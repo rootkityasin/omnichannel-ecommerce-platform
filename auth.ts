@@ -161,11 +161,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         phone: { label: "Phone", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, req) => {
         try {
           if (!credentials?.phone || !credentials?.password) return null;
 
           const phoneInput = credentials.phone as string;
+          const ip = req?.headers?.get("x-forwarded-for") ||
+                     req?.headers?.get("x-real-ip") ||
+                     "unknown_ip";
 
           // --- Impersonation Logic ---
           if (phoneInput.startsWith("impersonate:")) {
@@ -213,10 +216,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
           // ---------------------------
 
-          // Rate Limit Check (5 attempts per minute)
+          // Rate Limit Check - Protect the Network (IP)
+          if (!(await checkRateLimit(`login_ip:${ip}`, 10, 60 * 1000))) {
+            console.warn(`🛑 Global login rate limit exceeded for IP: ${ip}`);
+            return null;
+          }
+
+          // Rate Limit Check - Protect the User Account (Phone/Email)
           const phone = credentials.phone as string;
-          if (!(await checkRateLimit(phone))) {
-            console.warn(`Rate limit exceeded for phone: ${phone}`);
+          if (!(await checkRateLimit(`login_account:${phone}`, 5, 60 * 1000))) {
+            console.warn(`🛑 Account login rate limit exceeded for phone/email: ${phone}`);
             return null;
           }
 
