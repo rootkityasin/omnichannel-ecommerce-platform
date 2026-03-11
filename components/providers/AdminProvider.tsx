@@ -1,16 +1,8 @@
 'use client';
 
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 
-
-
-import React, { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react';
-import { getAdminOrders, updateAdminOrder, deleteAdminOrder } from '@/app/actions/order';
-import { toast } from 'sonner';
-import { getAdminProducts } from '@/app/actions/product';
-
-import { SiteConfig, PaymentConfig, AdminOrder, AdminProduct, User, Hub } from '@/types/common';
-
-// --- Constants ---
+import { SiteConfig, PaymentConfig, User, Hub } from '@/types/common';
 
 // --- Constants ---
 const HUBS: Hub[] = [
@@ -24,10 +16,6 @@ const MOCK_USERS: User[] = [
 ];
 
 interface AdminContextType {
-    orders: AdminOrder[];
-    products: AdminProduct[];
-    allProducts: AdminProduct[];
-    allOrders: AdminOrder[];
     settings: SiteConfig;
     paymentConfig: Partial<PaymentConfig>;
 
@@ -40,17 +28,8 @@ interface AdminContextType {
     loginAs: (userId: string) => void;
 
     // Actions
-    setOrders: (orders: AdminOrder[]) => void;
-    setProducts: (products: AdminProduct[]) => void;
     updateSettings: (settings: Partial<SiteConfig>) => void;
     updatePaymentConfig: (config: Partial<PaymentConfig>) => void;
-    addOrder: (order: AdminOrder) => void;
-    updateOrder: (id: string, updates: Partial<AdminOrder>) => void;
-    updateProduct: (id: string, updates: Partial<AdminProduct>) => void;
-    addProduct: (product: AdminProduct) => void;
-    deleteOrder: (id: string) => void;
-    deleteProduct: (id: string) => void;
-    toggleStock: (id: string) => void;
     isSidebarCollapsed: boolean;
     toggleSidebar: () => void;
     logout: () => void;
@@ -62,8 +41,6 @@ export function AdminProvider({ children, initialUser, initialData }: {
     children: React.ReactNode;
     initialUser?: User;
     initialData?: {
-        orders?: AdminOrder[];
-        products?: AdminProduct[];
         settings?: SiteConfig;
     };
 }) {
@@ -71,8 +48,6 @@ export function AdminProvider({ children, initialUser, initialData }: {
     const [currentUser, setCurrentUser] = useState<User>(initialUser || MOCK_USERS[0]); // Fallback for dev only
     const [activeHubId, setActiveHubId] = useState<string | 'ALL'>('ALL');
 
-    const [orders, setOrdersState] = useState<AdminOrder[]>(initialData?.orders || []);
-    const [products, setProductsState] = useState<AdminProduct[]>(initialData?.products || []);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(true); // Default collapsed (mobile friendly start)
 
     // --- RBAC Logic ---
@@ -96,17 +71,6 @@ export function AdminProvider({ children, initialUser, initialData }: {
         if (currentUser.role === 'SUPER_ADMIN') return HUBS;
         return HUBS.filter(h => h.id === currentUser.hubId);
     }, [currentUser]);
-
-    // Derived: Filtered Data based on Active Hub / Role
-    const filteredOrders = useMemo(() => {
-        if (activeHubId === 'ALL') return orders;
-        return orders.filter(o => o.hubId === activeHubId);
-    }, [orders, activeHubId]);
-
-    const filteredProducts = useMemo(() => {
-        if (activeHubId === 'ALL') return products;
-        return products.filter(p => p.hubId === activeHubId || !p.hubId); // Products might remain global? Assuming local for now.
-    }, [products, activeHubId]);
 
 
     // --- Persistence & Settings ---
@@ -132,18 +96,17 @@ export function AdminProvider({ children, initialUser, initialData }: {
     const [paymentConfig, setPaymentConfigState] = useState<Partial<PaymentConfig>>({});
     const hasFetched = React.useRef(false);
 
-    // Load from LocalStorage on Mount AND fetch fresh config/orders
+    // Load from LocalStorage on Mount AND fetch fresh config
     useEffect(() => {
         if (hasFetched.current) return;
         hasFetched.current = true;
 
         if (typeof window !== 'undefined') {
-            // 1. Try LocalStorage for settings/products (not orders anymore, orders are handled by server)
+            // 1. Try LocalStorage for settings
             const savedData = localStorage.getItem('crab-khai-admin-data-v8');
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
-                    if (parsed.products) setProductsState(parsed.products);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if (parsed.settings) setSettings((prev: any) => ({ ...prev, ...parsed.settings }));
                 } catch (e) { console.error(e); }
@@ -164,28 +127,13 @@ export function AdminProvider({ children, initialUser, initialData }: {
                     }
                 });
             });
-
-            // 3. Fetch Orders from DB (IF NOT PROVIDED)
-                        if (!initialData?.orders || initialData.orders.length === 0) {
-                getAdminOrders().then(dbOrders => {
-                    if (dbOrders) setOrdersState(dbOrders);
-                });
-            }
-
-            // 4. Fetch Products from DB (IF NOT PROVIDED)
-            if (!initialData?.products || initialData.products.length === 0) {
-                getAdminProducts().then(dbProducts => {
-                    if (dbProducts) setProductsState(dbProducts);
-                });
-            }
         }
     }, []);
 
-    // Save to LocalStorage on Change (excluding orders)
+    // Save to LocalStorage on Change (excluding orders/products)
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const dataToSave = {
-                // products: products, // Too large for localStorage, fetches fresh from DB anyway
                 settings: settings,
                 paymentConfig: paymentConfig
             };
@@ -197,62 +145,18 @@ export function AdminProvider({ children, initialUser, initialData }: {
                 console.warn("Failed to save to localStorage:", e);
             }
         }
-    }, [products, settings, paymentConfig]);
+    }, [settings, paymentConfig]);
 
 
     // --- Actions ---
-    const setOrders = (newOrders: AdminOrder[]) => setOrdersState(newOrders);
-    const setProducts = (newProducts: AdminProduct[]) => setProductsState(newProducts);
     const updateSettings = (newSettings: Partial<SiteConfig>) => setSettings((prev) => ({ ...prev, ...newSettings }));
     const updatePaymentConfig = (newConfig: Partial<PaymentConfig>) => setPaymentConfigState((prev) => ({ ...prev, ...newConfig }));
-
-    const addOrder = (order: AdminOrder) => {
-        // Since manual orders are created via OrdersPage form, they should ideally call createOrder action
-        // For now we keep this local-first if needed, but the true fix is fetching after creation.
-        setOrdersState([order, ...orders]);
-    };
-
-    const updateOrder = async (id: string, updates: Partial<AdminOrder>) => {
-        // 1. Update UI immediately
-        setOrdersState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
-
-        // 2. Update DB
-        const res = await updateAdminOrder(id, updates);
-        if (!res.success) {
-            toast.error("Failed to sync status with database");
-            // Optionally revert UI here
-        }
-    };
-
-    const deleteOrder = async (id: string) => {
-        const res = await deleteAdminOrder(id);
-        if (res.success) {
-            setOrdersState(prev => prev.filter(o => o.id !== id));
-            toast.success("Order deleted from database");
-        } else {
-            toast.error("Failed to delete from database");
-        }
-    };
-
-    const addProduct = (product: AdminProduct) => setProductsState([{ ...product, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...products]);
-    const updateProduct = (id: string, updates: Partial<AdminProduct>) => {
-        setProductsState(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    };
-    const toggleStock = (id: string) => {
-        setProductsState(prev => prev.map(p => p.id === id ? { ...p, stock: !p.stock } : p));
-    };
-    const deleteProduct = (id: string) => setProductsState(prev => prev.filter(p => p.id !== id));
 
     const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
     const switchHub = (hubId: string | 'ALL') => setActiveHubId(hubId);
 
     return (
         <AdminContext.Provider value={{
-            // Data exposed is now filtered!
-            orders: filteredOrders,
-            products: filteredProducts,
-            allProducts: products, // Expose raw products for client usage ignoring admin hub filter
-            allOrders: orders, // Expose raw orders if needed
             settings,
             paymentConfig,
 
@@ -263,9 +167,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
             switchHub,
             loginAs,
 
-            setOrders, setProducts, updateSettings, updatePaymentConfig,
-            addOrder, updateOrder, deleteOrder,
-            addProduct, updateProduct, deleteProduct, toggleStock,
+            updateSettings, updatePaymentConfig,
             isSidebarCollapsed, toggleSidebar,
             logout: () => {
                 window.location.href = '/api/admin/logout';

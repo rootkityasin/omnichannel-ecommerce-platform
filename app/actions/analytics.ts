@@ -175,6 +175,43 @@ export async function getAnalyticsMetrics(domain?: string, hubId?: string) {
       value: g._count,
     }));
 
+    // Generate Trend Data (Last 7 Days) for Analytics Chart
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const recentOrders = await prisma.order.findMany({
+      where: {
+        ...validWhere,
+        createdAt: { gte: sevenDaysAgo },
+      },
+      select: {
+        createdAt: true,
+        totalAmount: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const salesByDay: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const label = d.toLocaleDateString("en-US", { weekday: "short" });
+      salesByDay[label] = 0;
+    }
+
+    recentOrders.forEach((o) => {
+      const day = o.createdAt.toLocaleDateString("en-US", { weekday: "short" });
+      if (salesByDay[day] !== undefined) {
+        salesByDay[day] += o.totalAmount;
+      }
+    });
+
+    const trendData = Object.keys(salesByDay).map((name) => ({
+      name,
+      sales: salesByDay[name],
+    }));
+
     return {
       totalRevenue,
       uniqueCustomers: uniquePhones.length,
@@ -182,6 +219,7 @@ export async function getAnalyticsMetrics(domain?: string, hubId?: string) {
       cancellationRate,
       cancelledOrders: cancelledCount,
       sourceData,
+      trendData,
     };
   } catch (error) {
     console.error("Failed to fetch analytics metrics:", error);

@@ -18,6 +18,8 @@ import {
   List,
   Edit,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { smartParseAI } from "@/app/actions/ai";
@@ -48,6 +50,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Textarea } from "@/components/ui/textarea";
 import {
   getAdminProducts,
+  getPaginatedAdminProducts,
   getProductById,
   createProduct,
   updateProduct,
@@ -156,6 +159,20 @@ export default function ProductsPage() {
 
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const limit = 50;
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset page to 1 when search changes
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   const [filterStock, setFilterStock] = useState("all");
   const [filterStage, setFilterStage] = useState("all");
@@ -205,7 +222,14 @@ export default function ProductsPage() {
     try {
       setLoading(true);
       const [pData, cData, sData, confData] = await Promise.all([
-        getAdminProducts(domain),
+        getPaginatedAdminProducts({
+          domain,
+          page,
+          limit,
+          search: debouncedSearch,
+          stage: filterStage,
+          stockStatus: filterStock,
+        }),
         getCategories(domain),
         getSections(),
         getAdminSiteConfig(),
@@ -213,7 +237,9 @@ export default function ProductsPage() {
 
       if (!isMounted.current) return;
 
-      setProducts(pData as unknown as LocalProduct[]);
+      setProducts(pData.data as unknown as LocalProduct[]);
+      setTotalPages(pData.pages);
+      setTotalCount(pData.total);
       setCategories(cData);
       setSectionsList(sData);
       setConfig(confData || { measurementUnit: "PCS" });
@@ -229,8 +255,12 @@ export default function ProductsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     router.refresh(); // Hard reset router cache so getHomeSections fetches fresh data
-    fetchData();
   }, []);
+
+  // Fetch data on parameters change
+  useEffect(() => {
+    fetchData();
+  }, [page, debouncedSearch, filterStage, filterStock, domain]);
 
   // Force table view for GROCERY shops — no kanban allowed
   useEffect(() => {
@@ -284,8 +314,11 @@ export default function ProductsPage() {
   const stages = Array.from(new Set(products.map((p) => p.stage))).filter(
     (s) => s !== "Archived",
   );
+  
+  // Products are already filtered by the server for stock, stage, and search.
+  // We just apply the RESTAURANT specific "Draft only in table view" here 
+  // if filterStage is 'all' to prevent showing batch stage items.
   const filteredProducts = products.filter((p) => {
-    // For RESTAURANT: Only show Draft items in table (batch items are for Kanban only)
     if (
       config.shopType === "RESTAURANT" &&
       view === "table" &&
@@ -294,18 +327,7 @@ export default function ProductsPage() {
     ) {
       return false;
     }
-    const matchesStock =
-      filterStock === "all"
-        ? true
-        : filterStock === "instock"
-          ? p.pieces > 0
-          : p.pieces <= 0;
-    const matchesStage =
-      filterStage === "all" ? p.stage !== "Archived" : p.stage === filterStage;
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.sku && p.sku.toLowerCase().includes(search.toLowerCase()));
-    return matchesStock && matchesStage && matchesSearch;
+    return true;
   });
 
   const handleDelete = async (id: string) => {
@@ -1579,6 +1601,72 @@ export default function ProductsPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Table Pagination */}
+              {totalCount > 0 && (
+                <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 rounded-b-lg mt-4 shadow-sm border">
+                  <div className="flex flex-1 justify-between sm:hidden">
+                    <Button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      variant="outline"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page >= totalPages}
+                      variant="outline"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                  <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing{" "}
+                        <span className="font-medium">
+                          {(page - 1) * limit + 1}
+                        </span>{" "}
+                        to{" "}
+                        <span className="font-medium">
+                          {Math.min(page * limit, totalCount)}
+                        </span>{" "}
+                        of <span className="font-medium">{totalCount}</span>{" "}
+                        products
+                      </p>
+                    </div>
+                    <div>
+                      <nav
+                        className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                        aria-label="Pagination"
+                      >
+                        <Button
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                          variant="outline"
+                          className="rounded-l-md px-2 py-2"
+                        >
+                          <span className="sr-only">Previous</span>
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center px-4 font-medium text-sm border-y border-gray-200 bg-white">
+                          Page {page} of {totalPages}
+                        </div>
+                        <Button
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                          variant="outline"
+                          className="rounded-r-md px-2 py-2"
+                        >
+                          <span className="sr-only">Next</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </Card>

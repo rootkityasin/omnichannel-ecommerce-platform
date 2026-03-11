@@ -88,6 +88,102 @@ export async function getAdminProducts(domain?: string) {
   }
 }
 
+export async function getPaginatedAdminProducts({
+  domain,
+  page = 1,
+  limit = 50,
+  search = "",
+  stage = "all",
+  stockStatus = "all",
+}: {
+  domain?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  stage?: string;
+  stockStatus?: string;
+}) {
+  try {
+    let tenantId: string | undefined;
+
+    if (domain) {
+      const tenant = await getTenantByDomain(domain);
+      tenantId = tenant?.id;
+    } else {
+      const sessionUser = await getSessionUser();
+      tenantId = sessionUser?.tenantId ?? undefined;
+    }
+
+    if (!tenantId) return { data: [], total: 0, pages: 0 };
+
+    const whereClause: any = { tenantId };
+
+    if (search) {
+      whereClause.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (stage !== "all") {
+      whereClause.stage = stage;
+    } else {
+      whereClause.stage = { not: "Archived" }; // Hide archived by default
+    }
+
+    if (stockStatus === "instock") {
+      whereClause.pieces = { gt: 0 };
+    } else if (stockStatus === "outstock") {
+      whereClause.pieces = { lte: 0 };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: whereClause,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          image: true,
+          categoryId: true,
+          pieces: true,
+          weight: true,
+          type: true,
+          stage: true,
+          sku: true,
+          totalSold: true,
+          isAvailable: true,
+          servingSize: true,
+          comboItems: {
+            include: { child: { select: { pieces: true } } },
+          },
+          sections: { select: { id: true } },
+        },
+      }),
+      prisma.product.count({ where: whereClause }),
+    ]);
+
+    const data = products.map((p) => ({
+      ...p,
+      stock: p.pieces > 0,
+    }));
+
+    return {
+      data,
+      total,
+      pages: Math.ceil(total / limit),
+    };
+  } catch (error) {
+    console.error("Get Paginated Admin Products Error:", error);
+    return { data: [], total: 0, pages: 0 };
+  }
+}
+
 export async function getProductById(id: string) {
   try {
     const sessionUser = await getSessionUser();

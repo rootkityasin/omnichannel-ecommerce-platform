@@ -14,75 +14,23 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, 
 import { TrendingUp, Users, ShoppingCart, XCircle, Download } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
+import { toast } from 'sonner';
 
 const SOURCE_COLORS = ['#ea580c', '#22c55e', '#3b82f6'];
 
 export default function AnalyticsClient({ metrics }: { readonly metrics: any }) {
-    const { orders } = useAdmin(); // Using AdminProvider specifically for CSV export feature (limited to last 1000 in memory)
+
 
     const handleExport = (days: number) => {
-        const now = new Date();
-        const cutoffDate = new Date();
-        cutoffDate.setDate(now.getDate() - days);
-
-        const filteredOrders = orders.filter(o => {
-            const orderDate = new Date(o.date); 
-            return orderDate >= cutoffDate;
-        });
-
-        if (filteredOrders.length === 0) {
-            alert(`No orders found for the last ${days} days.`);
-            return;
-        }
-
-        // CSV Creation
-        const headers = ['Order ID', 'Date', 'Customer', 'Phone', 'Items', 'Total Price', 'Status', 'Source'];
-        const rows = filteredOrders.map(o => [
-            o.id,
-            `"${o.date}"`, 
-            `"${o.customer}"`,
-            o.phone,
-            o.items,
-            o.price,
-            o.status,
-            o.source
-        ]);
-
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(r => r.join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = globalThis.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Sales_Report_${days}Days_${now.toISOString().split('T')[0]}.csv`;
-        a.click();
-        globalThis.URL.revokeObjectURL(url);
+        toast.info(`CSV Export for ${days} days is currently being migrated to background jobs.`);
     };
 
     if (!metrics) {
         return <div className="p-8 text-center text-slate-500">Failed to load metrics.</div>;
     }
 
-    const { totalRevenue, uniqueCustomers, avgOrderValue, cancellationRate, cancelledOrders, sourceData } = metrics;
-
-    // Trend Data - Keeping the simple trend based on the latest orders chunk in the admin store for the charts
-    // (This prevents needing complex date bucketing logic on the server for full-time graph generation immediately)
-    const salesByDate: Record<string, number> = {};
-    orders.forEach(o => {
-        if (o.status !== 'Cancelled') {
-            const dateKey = o.date.split(',')[0];
-            salesByDate[dateKey] = (salesByDate[dateKey] || 0) + o.price;
-        }
-    });
-
-    const trendData = Object.keys(salesByDate).map(date => ({
-        name: date,
-        sales: salesByDate[date],
-    }));
-
+    const { totalRevenue, uniqueCustomers, avgOrderValue, cancellationRate, cancelledOrders, sourceData, trendData = [] } = metrics;
+    
     if (trendData.length === 0) trendData.push({ name: 'No Data', sales: 0 });
 
     return (
