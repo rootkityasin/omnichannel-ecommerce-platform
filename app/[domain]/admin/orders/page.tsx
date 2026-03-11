@@ -105,6 +105,7 @@ export default function OrdersPage() {
   // Product Selection State
   const [availableProducts, setAvailableProducts] = useState<ProductOption[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
+  const [isProductsLoading, setIsProductsLoading] = useState(false);
 
   // Pagination & Server State
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -175,7 +176,8 @@ export default function OrdersPage() {
       }
     });
 
-    getProducts().then((prods) => setAvailableProducts(prods));
+    // Removed unconditional getProducts() on mount to save memory/CPU.
+    // Products are now fetched lazily when the manual order modal opens.
 
     getStorySections().then((sections) => {
       const blockedSection = sections.find((s) => s.type === "BLOCKED_CUSTOMERS");
@@ -262,6 +264,20 @@ export default function OrdersPage() {
 
   const getItemsCount = () => {
     return Object.values(selectedProducts).reduce((sum, qty) => sum + qty, 0);
+  };
+
+  const loadProductsForModal = async () => {
+    if (availableProducts.length === 0) {
+      setIsProductsLoading(true);
+      try {
+        const prods = await getProducts();
+        setAvailableProducts(prods);
+      } catch (error) {
+        toast.error("Failed to load products for manual order.");
+      } finally {
+        setIsProductsLoading(false);
+      }
+    }
   };
 
   const handleCreateOrder = async (e: React.FormEvent) => {
@@ -678,7 +694,10 @@ export default function OrdersPage() {
             )}
           </div>
           <Button
-            onClick={() => setIsAdding(true)}
+            onClick={() => {
+              setIsAdding(true);
+              loadProductsForModal();
+            }}
             className="bg-orange-600 hover:bg-orange-700 text-white"
           >
             <Plus className="w-4 h-4 mr-2" /> Create
@@ -748,7 +767,8 @@ export default function OrdersPage() {
                         )}
                       </div>
                     ))}
-                    {availableProducts.length === 0 && <p className="text-xs text-slate-400">Loading products...</p>}
+                    {isProductsLoading && <p className="text-xs text-slate-400">Loading product catalog...</p>}
+                    {!isProductsLoading && availableProducts.length === 0 && <p className="text-xs text-slate-400">No products available.</p>}
                   </div>
                 </div>
 
