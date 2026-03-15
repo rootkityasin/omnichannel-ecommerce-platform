@@ -23,25 +23,50 @@ export async function resetDatabaseAction() {
     }
 
     const currentUserId = sessionUser.id;
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { id: true, slug: true, customDomain: true },
+    });
+
+    if (!tenant) {
+      return {
+        success: false,
+        message: "Tenant not found.",
+      };
+    }
+
     console.log(
       `⚠️  Tenant Reset Initiated by User: ${currentUserId} (${sessionUser.email}) for tenant ${tenantId}`,
     );
 
-    const [tenantProducts, tenantOrders, tenantHubs, tenantUsers] =
-      await Promise.all([
-        prisma.product.findMany({ where: { tenantId }, select: { id: true } }),
-        prisma.order.findMany({ where: { tenantId }, select: { id: true } }),
-        prisma.hub.findMany({ where: { tenantId }, select: { id: true } }),
-        prisma.user.findMany({
-          where: { tenantId, id: { not: currentUserId } },
-          select: { id: true },
-        }),
-      ]);
+    const [
+      tenantProducts,
+      tenantOrders,
+      tenantHubs,
+      tenantUsers,
+      touchedSections,
+    ] = await Promise.all([
+      prisma.product.findMany({ where: { tenantId }, select: { id: true } }),
+      prisma.order.findMany({ where: { tenantId }, select: { id: true } }),
+      prisma.hub.findMany({ where: { tenantId }, select: { id: true } }),
+      prisma.user.findMany({
+        where: { tenantId, id: { not: currentUserId } },
+        select: { id: true },
+      }),
+      prisma.productSection.findMany({
+        where: { products: { some: { tenantId } } },
+        select: { id: true },
+      }),
+    ]);
 
     const productIds = tenantProducts.map((product) => product.id);
     const orderIds = tenantOrders.map((order) => order.id);
     const hubIds = tenantHubs.map((hub) => hub.id);
     const userIds = tenantUsers.map((user) => user.id);
+    const touchedSectionIds = touchedSections.map((section) => section.id);
+    const tenantSourceMatchers = [tenant.slug, tenant.customDomain]
+      .filter(Boolean)
+      .map((value) => value!.toLowerCase());
 
     // 2. Delete tenant-scoped business data in FK-safe order
     await prisma.$transaction(async (tx) => {
@@ -104,6 +129,15 @@ export async function resetDatabaseAction() {
       await tx.category.deleteMany({ where: { tenantId } });
       await tx.coupon.deleteMany({ where: { tenantId } });
       await tx.promoCard.deleteMany({ where: { tenantId } });
+      if (tenantSourceMatchers.length > 0) {
+        await tx.trackingEvent.deleteMany({
+          where: {
+            OR: tenantSourceMatchers.map((matcher) => ({
+              sourceUrl: { contains: matcher, mode: "insensitive" },
+            })),
+          },
+        });
+      }
 
       if (hubIds.length > 0) {
         await tx.expense.deleteMany({ where: { hubId: { in: hubIds } } });
@@ -115,6 +149,15 @@ export async function resetDatabaseAction() {
 
       if (userIds.length > 0) {
         await tx.user.deleteMany({ where: { id: { in: userIds } } });
+      }
+
+      if (touchedSectionIds.length > 0) {
+        await tx.productSection.deleteMany({
+          where: {
+            id: { in: touchedSectionIds },
+            products: { none: {} },
+          },
+        });
       }
     });
 
