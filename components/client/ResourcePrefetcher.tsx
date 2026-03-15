@@ -11,16 +11,6 @@ export function ResourcePrefetcher() {
   const menuCacheAt = useCartStore((state) => state.menuCacheAt);
 
   useEffect(() => {
-    // 1. Prefetch Critical Routes (Menu & Account)
-    // We delay slightly to let the main home page interactions settle
-    const prefetchRoutes = () => {
-      router.prefetch("/menu");
-      router.prefetch("/account");
-      console.log("🦀 Routes Prefetched: /menu, /account");
-    };
-
-    const routeTimer = setTimeout(prefetchRoutes, 2500);
-
     const prefetchMenuData = async () => {
       if (typeof window === "undefined") return;
       if (menuCacheAt && Date.now() - menuCacheAt < 10 * 60 * 1000) return;
@@ -55,7 +45,7 @@ export function ResourcePrefetcher() {
       }
     };
 
-    const menuTimer = setTimeout(prefetchMenuData, 2800);
+    const menuTimer = setTimeout(prefetchMenuData, 2500);
 
     // 2. Preload Heavy Assets (Images)
     const preloadAssets = () => {
@@ -80,10 +70,9 @@ export function ResourcePrefetcher() {
     }
 
     return () => {
-      clearTimeout(routeTimer);
       clearTimeout(menuTimer);
     };
-  }, [router]);
+  }, [menuCacheAt, router, setMenuCache]);
 
   return null; // This component handles side-effects only
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -49,7 +50,6 @@ import {
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  getAdminProducts,
   getPaginatedAdminProducts,
   getProductById,
   createProduct,
@@ -71,10 +71,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getCategories } from "@/app/actions/category";
-import { getAdminSiteConfig } from "@/app/actions/settings";
+import { getAdminProductPageConfig } from "@/app/actions/settings";
 import { getSections } from "@/app/actions/section";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { ProductBoard } from "@/components/admin/ProductBoard";
 import { cn } from "@/lib/utils";
 // import { smartParse, generateMagicDescription, getBanglaSuggestion } from '@/lib/ai-utils';
 // import Link from 'next/link';
@@ -112,7 +111,20 @@ type LocalProduct = {
 };
 type CategoryItem = Awaited<ReturnType<typeof getCategories>>[number];
 type SectionItem = Awaited<ReturnType<typeof getSections>>[number];
-type SiteConfig = Awaited<ReturnType<typeof getAdminSiteConfig>>;
+type SiteConfig = Awaited<ReturnType<typeof getAdminProductPageConfig>>;
+
+const ProductBoard = dynamic(
+  () =>
+    import("@/components/admin/ProductBoard").then((mod) => mod.ProductBoard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        Loading board...
+      </div>
+    ),
+  },
+);
 
 type ProductFormState = {
   name: string;
@@ -209,6 +221,7 @@ export default function ProductsPage() {
   const [showSmartPaste, setShowSmartPaste] = useState(false);
   const [smartPasteInput, setSmartPasteInput] = useState("");
   const [isParsing, setIsParsing] = useState(false);
+  const [hasLoadedSections, setHasLoadedSections] = useState(false);
 
   const isMounted = useRef(true);
 
@@ -244,23 +257,33 @@ export default function ProductsPage() {
     }
   };
 
+  const ensureSectionsLoaded = useCallback(async () => {
+    if (hasLoadedSections) return;
+    try {
+      const sData = await getSections(domain);
+      if (!isMounted.current) return;
+      setSectionsList(sData);
+      setHasLoadedSections(true);
+    } catch (err) {
+      console.error("Failed to load sections", err);
+      toast.error("Failed to load sections");
+    }
+  }, [domain, hasLoadedSections]);
+
   // NOTE: router.refresh() removed — caused CPU spikes on every mount by forcing a full server re-render cycle.
 
-  // Fetch static data ONCE on mount — categories/sections/config rarely change
+  // Fetch static data ONCE on mount — categories/config only
   useEffect(() => {
-    Promise.all([
-      getCategories(domain),
-      getSections(),
-      getAdminSiteConfig(),
-    ]).then(([cData, sData, confData]) => {
-      if (!isMounted.current) return;
-      setCategories(cData);
-      setSectionsList(sData);
-      setConfig(confData || { measurementUnit: "PCS" } as SiteConfig);
-    }).catch((err) => {
-      console.error("Failed to load static data", err);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    Promise.all([getCategories(domain), getAdminProductPageConfig()])
+      .then(([cData, confData]) => {
+        if (!isMounted.current) return;
+        setCategories(cData);
+        setConfig(confData || ({ measurementUnit: "PCS" } as SiteConfig));
+      })
+      .catch((err) => {
+        console.error("Failed to load static data", err);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [domain]);
 
   // Fetch paginated products on filter/page/search change
@@ -281,6 +304,7 @@ export default function ProductsPage() {
     setEditingId(product.id);
 
     try {
+      await ensureSectionsLoaded();
       // Optimistic or placeholder for immediate feedback could go here
       const fullProduct = await getProductById(product.id);
 
@@ -320,9 +344,9 @@ export default function ProductsPage() {
   const stages = Array.from(new Set(products.map((p) => p.stage))).filter(
     (s) => s !== "Archived",
   );
-  
+
   // Products are already filtered by the server for stock, stage, and search.
-  // We just apply the RESTAURANT specific "Draft only in table view" here 
+  // We just apply the RESTAURANT specific "Draft only in table view" here
   // if filterStage is 'all' to prevent showing batch stage items.
   const filteredProducts = products.filter((p) => {
     if (
@@ -821,6 +845,7 @@ export default function ProductsPage() {
                   comboItems: [],
                   sections: [],
                 });
+                void ensureSectionsLoaded();
                 setIsAdding(true);
               }}
             >
@@ -1092,7 +1117,8 @@ export default function ProductsPage() {
                     >
                       {isGeneratingDesc ? (
                         <>
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Writing...
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />{" "}
+                          Writing...
                         </>
                       ) : (
                         <>
@@ -1228,9 +1254,9 @@ export default function ProductsPage() {
                               value={
                                 newProduct.pieces
                                   ? Math.floor(
-                                    Number(newProduct.pieces) /
-                                    (Number(newProduct.weight) || 1),
-                                  )
+                                      Number(newProduct.pieces) /
+                                        (Number(newProduct.weight) || 1),
+                                    )
                                   : ""
                               }
                               onChange={(e) => {
@@ -1451,8 +1477,8 @@ export default function ProductsPage() {
                                     (item) =>
                                       item.child
                                         ? Math.floor(
-                                          item.child.pieces / item.quantity,
-                                        )
+                                            item.child.pieces / item.quantity,
+                                          )
                                         : 0,
                                   );
                                   return `${Math.min(...limits)} Sets`;
@@ -1620,7 +1646,9 @@ export default function ProductsPage() {
                       Previous
                     </Button>
                     <Button
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages, p + 1))
+                      }
                       disabled={page >= totalPages}
                       variant="outline"
                     >
@@ -1660,7 +1688,9 @@ export default function ProductsPage() {
                           Page {page} of {totalPages}
                         </div>
                         <Button
-                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          onClick={() =>
+                            setPage((p) => Math.min(totalPages, p + 1))
+                          }
                           disabled={page >= totalPages}
                           variant="outline"
                           className="rounded-r-md px-2 py-2"

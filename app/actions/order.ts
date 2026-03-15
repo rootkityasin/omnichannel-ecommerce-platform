@@ -4,8 +4,60 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { logActionRequest } from "@/lib/actionLogger";
 import { randomUUID } from "node:crypto";
+import { unstable_cache, updateTag } from "next/cache";
 
 const getSessionUser = async () => (await auth())?.user;
+
+const getCachedOrderStats = unstable_cache(
+  async (tenantId: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [statusCounts, todayAgg, todayCancelledAgg, totalSalesAgg] =
+      await Promise.all([
+        prisma.order.groupBy({
+          by: ["status"],
+          where: { tenantId },
+          _count: { id: true },
+        }),
+        prisma.order.aggregate({
+          where: { tenantId, createdAt: { gte: today } },
+          _count: { id: true },
+        }),
+        prisma.order.aggregate({
+          where: { tenantId, createdAt: { gte: today }, status: "Cancelled" },
+          _count: { id: true },
+        }),
+        prisma.order.aggregate({
+          where: { tenantId, status: { not: "Cancelled" } },
+          _sum: { totalAmount: true },
+        }),
+      ]);
+
+    const statusMap = statusCounts.reduce(
+      (acc, curr) => {
+        acc[curr.status || "Unknown"] = curr._count.id;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    return {
+      statusCounts: statusMap,
+      todayCount: todayAgg._count.id,
+      todayCancelled: todayCancelledAgg._count.id,
+      totalSales: totalSalesAgg._sum.totalAmount || 0,
+    };
+  },
+  ["order-stats"],
+  { tags: ["order-stats"], revalidate: 60 },
+);
+
+function invalidateOrderCaches() {
+  updateTag("order-stats");
+  updateTag("dashboard-metrics");
+  updateTag("analytics-metrics");
+}
 
 type AdminOrderUpdateInput = {
   customer?: string;
@@ -138,6 +190,7 @@ export async function createOrder(data: {
       }
     }
 
+    invalidateOrderCaches();
     return { success: true, orderId: order.orderId };
   } catch (error) {
     console.error("Create Order Error:", error);
@@ -145,7 +198,12 @@ export async function createOrder(data: {
       console.error("Error Message:", error.message);
       console.error("Error Stack:", error.stack);
     }
-    return { success: false, error: "Failed to create order: " + (error instanceof Error ? error.message : "Internal Error") };
+    return {
+      success: false,
+      error:
+        "Failed to create order: " +
+        (error instanceof Error ? error.message : "Internal Error"),
+    };
   }
 }
 
@@ -320,7 +378,8 @@ export async function updateAdminOrder(
       where: { orderId: id },
     });
 
-    if (!order || order.tenantId !== tenantId) return { success: false, error: "Order not found" };
+    if (!order || order.tenantId !== tenantId)
+      return { success: false, error: "Order not found" };
 
     await prisma.order.update({
       where: { id: order.id },
@@ -334,6 +393,7 @@ export async function updateAdminOrder(
       },
     });
 
+    invalidateOrderCaches();
     return { success: true };
   } catch (error) {
     console.error("Update Admin Order Error:", error);
@@ -354,7 +414,8 @@ export async function deleteAdminOrder(id: string) {
       where: { orderId: id },
     });
 
-    if (!order || order.tenantId !== tenantId) return { success: false, error: "Order not found" };
+    if (!order || order.tenantId !== tenantId)
+      return { success: false, error: "Order not found" };
 
     // Delete order items first (Prisma handles this if cascade is set, but let's be safe)
     await prisma.orderItem.deleteMany({
@@ -365,6 +426,7 @@ export async function deleteAdminOrder(id: string) {
       where: { id: order.id },
     });
 
+    invalidateOrderCaches();
     return { success: true };
   } catch (error) {
     console.error("Delete Admin Order Error:", error);
@@ -386,7 +448,8 @@ export async function printOrderInvoice(orderId: string) {
       include: { items: true },
     });
 
-    if (!order || order.tenantId !== tenantId) return { success: false, error: "Order not found" };
+    if (!order || order.tenantId !== tenantId)
+      return { success: false, error: "Order not found" };
 
     const canPrintByStatus =
       order.status === "Ready" || order.status === "Invoice Printed";
@@ -441,6 +504,7 @@ export async function printOrderInvoice(orderId: string) {
       });
     }
 
+    invalidateOrderCaches();
     return { success: true };
   } catch (error) {
     console.error("Print Invoice Logic Error:", error);
@@ -454,7 +518,7 @@ export async function getPaginatedAdminOrders(params: {
   search?: string;
   status?: string;
   source?: string;
-  dateStart?: string; // ISO string 
+  dateStart?: string; // ISO string
   dateEnd?: string; // ISO string
 }) {
   try {
@@ -478,17 +542,19 @@ export async function getPaginatedAdminOrders(params: {
     if (status && status !== "all") {
       if (status === "Repeated") {
         // Repeated logic in a paginated DB is tough since it requires a group by.
-        // For simplicity, we skip repeated filter on server-side unless we add an `isRepeated` column. 
+        // For simplicity, we skip repeated filter on server-side unless we add an `isRepeated` column.
       } else if (status === "Ready") {
-        whereClause.status = { in: ["Ready", "Ready to Fry", "Invoice Printed"] };
+        whereClause.status = {
+          in: ["Ready", "Ready to Fry", "Invoice Printed"],
+        };
       } else if (status === "Processing") {
         whereClause.status = { in: ["Processing", "Ready to Process"] };
       } else {
         whereClause.status = status;
       }
     } else {
-        // Exclude incomplete by default
-        whereClause.status = { not: "INCOMPLETE" };
+      // Exclude incomplete by default
+      whereClause.status = { not: "INCOMPLETE" };
     }
 
     if (source && source !== "all") {
@@ -500,7 +566,7 @@ export async function getPaginatedAdminOrders(params: {
       start.setHours(0, 0, 0, 0); // Start of day
       whereClause.createdAt = { ...whereClause.createdAt, gte: start };
     }
-    
+
     // We add +1 day to dateStart if no dateEnd is provided to signify a 1-day range block
     if (dateEnd || dateStart) {
       const end = dateEnd ? new Date(dateEnd) : new Date(dateStart!);
@@ -529,7 +595,7 @@ export async function getPaginatedAdminOrders(params: {
           items: { select: { quantity: true } },
         },
       }),
-      prisma.order.count({ where: whereClause })
+      prisma.order.count({ where: whereClause }),
     ]);
 
     // Format like getAdminOrders did
@@ -562,50 +628,9 @@ export async function getOrderStats() {
     const sessionUser = await getSessionUser();
     const tenantId = sessionUser?.tenantId;
     if (!tenantId) return null;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Run all 4 queries in parallel instead of sequentially — 
-    // this reduces DB connection hold time by ~75%
-    const [statusCounts, todayAgg, todayCancelledAgg, totalSalesAgg] =
-      await Promise.all([
-        prisma.order.groupBy({
-          by: ["status"],
-          where: { tenantId },
-          _count: { id: true },
-        }),
-        prisma.order.aggregate({
-          where: { tenantId, createdAt: { gte: today } },
-          _count: { id: true },
-        }),
-        prisma.order.aggregate({
-          where: { tenantId, createdAt: { gte: today }, status: "Cancelled" },
-          _count: { id: true },
-        }),
-        prisma.order.aggregate({
-          where: { tenantId, status: { not: "Cancelled" } },
-          _sum: { totalAmount: true },
-        }),
-      ]);
-
-    const statusMap = statusCounts.reduce(
-      (acc, curr) => {
-        acc[curr.status || "Unknown"] = curr._count.id;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    return {
-      statusCounts: statusMap,
-      todayCount: todayAgg._count.id,
-      todayCancelled: todayCancelledAgg._count.id,
-      totalSales: totalSalesAgg._sum.totalAmount || 0,
-    };
+    return await getCachedOrderStats(tenantId);
   } catch (error) {
     console.error("getOrderStats error:", error);
     return null;
   }
 }
-

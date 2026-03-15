@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getTenantByDomain } from "./tenant";
+import { unstable_cache } from "next/cache";
 
 const getSessionUser = async () => (await auth())?.user;
 
@@ -19,127 +20,141 @@ async function resolveTenantId(domain?: string) {
   return tenantId;
 }
 
-export async function getDashboardMetrics(domain?: string, hubId?: string) {
-  try {
-    const tenantId = await resolveTenantId(domain);
-    if (!tenantId) return null;
+function getRecentDaysSales(
+  orders: Array<{ createdAt: Date; totalAmount: number }>,
+) {
+  const salesByDay: Record<string, number> = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const label = d.toLocaleDateString("en-US", { weekday: "short" });
+    salesByDay[label] = 0;
+  }
 
-    // Filters based on Role/Hub
+  orders.forEach((o) => {
+    const day = o.createdAt.toLocaleDateString("en-US", { weekday: "short" });
+    if (salesByDay[day] !== undefined) {
+      salesByDay[day] += o.totalAmount;
+    }
+  });
+
+  return Object.keys(salesByDay).map((name) => ({
+    name,
+    sales: salesByDay[name],
+  }));
+}
+
+const getCachedDashboardMetrics = unstable_cache(
+  async (tenantId: string, hubId?: string) => {
     const baseWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
-      status: { not: "Cancelled" }, // Excluding cancelled for pure sales
+      status: { not: "Cancelled" as const },
     };
 
-    // 1. Total All-Time Revenue & Order Count
-    const orderAggregations = await prisma.order.aggregate({
-      _sum: { totalAmount: true },
-      _count: true,
-      where: baseWhere,
-    });
-
-    const totalRevenue = orderAggregations._sum.totalAmount || 0;
-    const totalOrders = orderAggregations._count || 0;
-
-    // 2. Pending Orders
-    const pendingCount = await prisma.order.count({
-      where: {
-        ...baseWhere,
-        status: { in: ["Placed", "Confirmed", "Cooking"] },
-      },
-    });
-
-    // 3. Unique Customers (Approximate based on phone)
-    // Prisma doesn't natively support count(distinct) directly in aggregate yet for all types easily,
-    // but calculating unique phones by grouping is efficient.
-    const uniquePhones = await prisma.order.groupBy({
-      by: ["customerPhone"],
-      where: { tenantId }, // Customers across all statuses
-    });
-    const uniqueCustomers = uniquePhones.length;
-
-    // 4. Trend Data (Last 7 Days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    const recentOrders = await prisma.order.findMany({
-      where: {
-        ...baseWhere,
-        createdAt: { gte: sevenDaysAgo },
-      },
-      select: {
-        createdAt: true,
-        totalAmount: true,
-      },
-      orderBy: { createdAt: "asc" },
-    });
+    const distinctCustomerQuery =
+      hubId && hubId !== "ALL"
+        ? 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1 AND "hubId" = $2'
+        : 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1';
 
-    const salesByDay: Record<string, number> = {};
-    // Pre-fill last 7 days to ensure empty days show 0
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const label = d.toLocaleDateString("en-US", { weekday: "short" });
-      salesByDay[label] = 0;
-    }
-
-    recentOrders.forEach((o) => {
-      const day = o.createdAt.toLocaleDateString("en-US", { weekday: "short" });
-      if (salesByDay[day] !== undefined) {
-        salesByDay[day] += o.totalAmount;
-      }
-    });
-
-    const trendData = Object.keys(salesByDay).map((name) => ({
-      name,
-      sales: salesByDay[name],
-    }));
-
-    const topRecentOrders = await prisma.order.findMany({
-      where: baseWhere,
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        id: true,
-        customerName: true,
-        totalAmount: true,
-        status: true,
-        createdAt: true,
-      }
-    });
+    const [
+      orderAggregations,
+      pendingCount,
+      uniqueCustomerCount,
+      recentOrders,
+      topRecentOrders,
+    ] = await Promise.all([
+      prisma.order.aggregate({
+        _sum: { totalAmount: true },
+        _count: true,
+        where: baseWhere,
+      }),
+      prisma.order.count({
+        where: {
+          tenantId,
+          ...(hubId && hubId !== "ALL" ? { hubId } : {}),
+          status: { in: ["Placed", "Confirmed", "Cooking"] },
+        },
+      }),
+      hubId && hubId !== "ALL"
+        ? prisma.$queryRawUnsafe<Array<{ count: bigint | number }>>(
+            distinctCustomerQuery,
+            tenantId,
+            hubId,
+          )
+        : prisma.$queryRawUnsafe<Array<{ count: bigint | number }>>(
+            distinctCustomerQuery,
+            tenantId,
+          ),
+      prisma.order.findMany({
+        where: {
+          ...baseWhere,
+          createdAt: { gte: sevenDaysAgo },
+        },
+        select: {
+          createdAt: true,
+          totalAmount: true,
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.order.findMany({
+        where: baseWhere,
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          customerName: true,
+          totalAmount: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+    ]);
 
     return {
-      totalRevenue,
-      totalOrders,
+      totalRevenue: orderAggregations._sum.totalAmount || 0,
+      totalOrders: orderAggregations._count || 0,
       pendingOrders: pendingCount,
-      uniqueCustomers,
-      trendData,
+      uniqueCustomers: Number(uniqueCustomerCount[0]?.count || 0),
+      trendData: getRecentDaysSales(recentOrders),
       recentOrders: topRecentOrders,
     };
-  } catch (error) {
-    console.error("Failed to fetch dashboard metrics:", error);
-    return null;
-  }
-}
+  },
+  ["dashboard-metrics"],
+  { tags: ["dashboard-metrics"], revalidate: 60 },
+);
 
-export async function getAnalyticsMetrics(domain?: string, hubId?: string) {
-  try {
-    const tenantId = await resolveTenantId(domain);
-    if (!tenantId) return null;
-
+const getCachedAnalyticsMetrics = unstable_cache(
+  async (tenantId: string, hubId?: string) => {
     const baseWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
     };
-
     const validWhere = {
       ...baseWhere,
-      status: { not: "Cancelled" },
+      status: { not: "Cancelled" as const },
     };
 
-    // Aggregates
-    const [allTimeSales, cancelledCount, sourceGroups] = await Promise.all([
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const distinctCustomerQuery =
+      hubId && hubId !== "ALL"
+        ? 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1 AND "hubId" = $2'
+        : 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1';
+
+    const [
+      allTimeSales,
+      cancelledCount,
+      sourceGroups,
+      uniqueCustomerCount,
+      recentOrders,
+    ] = await Promise.all([
       prisma.order.aggregate({
         _sum: { totalAmount: true },
         _count: true,
@@ -153,74 +168,71 @@ export async function getAnalyticsMetrics(domain?: string, hubId?: string) {
         where: baseWhere,
         _count: true,
       }),
+      hubId && hubId !== "ALL"
+        ? prisma.$queryRawUnsafe<Array<{ count: bigint | number }>>(
+            distinctCustomerQuery,
+            tenantId,
+            hubId,
+          )
+        : prisma.$queryRawUnsafe<Array<{ count: bigint | number }>>(
+            distinctCustomerQuery,
+            tenantId,
+          ),
+      prisma.order.findMany({
+        where: {
+          ...validWhere,
+          createdAt: { gte: sevenDaysAgo },
+        },
+        select: {
+          createdAt: true,
+          totalAmount: true,
+        },
+        orderBy: { createdAt: "asc" },
+      }),
     ]);
 
     const totalRevenue = allTimeSales._sum.totalAmount || 0;
     const totalOrders = allTimeSales._count || 0;
-    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
-    
+    const avgOrderValue =
+      totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
     const totalWithCancelled = totalOrders + cancelledCount;
-    const cancellationRate = totalWithCancelled > 0 
-      ? ((cancelledCount / totalWithCancelled) * 100).toFixed(1) 
-      : "0";
-
-    const uniquePhones = await prisma.order.groupBy({
-      by: ["customerPhone"],
-      where: baseWhere,
-    });
-
-    // Formatting Source Data for Recharts Pie
-    const sourceData = sourceGroups.map((g) => ({
-      name: g.source,
-      value: g._count,
-    }));
-
-    // Generate Trend Data (Last 7 Days) for Analytics Chart
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
-
-    const recentOrders = await prisma.order.findMany({
-      where: {
-        ...validWhere,
-        createdAt: { gte: sevenDaysAgo },
-      },
-      select: {
-        createdAt: true,
-        totalAmount: true,
-      },
-      orderBy: { createdAt: "asc" },
-    });
-
-    const salesByDay: Record<string, number> = {};
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const label = d.toLocaleDateString("en-US", { weekday: "short" });
-      salesByDay[label] = 0;
-    }
-
-    recentOrders.forEach((o) => {
-      const day = o.createdAt.toLocaleDateString("en-US", { weekday: "short" });
-      if (salesByDay[day] !== undefined) {
-        salesByDay[day] += o.totalAmount;
-      }
-    });
-
-    const trendData = Object.keys(salesByDay).map((name) => ({
-      name,
-      sales: salesByDay[name],
-    }));
 
     return {
       totalRevenue,
-      uniqueCustomers: uniquePhones.length,
+      uniqueCustomers: Number(uniqueCustomerCount[0]?.count || 0),
       avgOrderValue,
-      cancellationRate,
+      cancellationRate:
+        totalWithCancelled > 0
+          ? ((cancelledCount / totalWithCancelled) * 100).toFixed(1)
+          : "0",
       cancelledOrders: cancelledCount,
-      sourceData,
-      trendData,
+      sourceData: sourceGroups.map((g) => ({
+        name: g.source,
+        value: g._count,
+      })),
+      trendData: getRecentDaysSales(recentOrders),
     };
+  },
+  ["analytics-metrics"],
+  { tags: ["analytics-metrics"], revalidate: 60 },
+);
+
+export async function getDashboardMetrics(domain?: string, hubId?: string) {
+  try {
+    const tenantId = await resolveTenantId(domain);
+    if (!tenantId) return null;
+    return getCachedDashboardMetrics(tenantId, hubId);
+  } catch (error) {
+    console.error("Failed to fetch dashboard metrics:", error);
+    return null;
+  }
+}
+
+export async function getAnalyticsMetrics(domain?: string, hubId?: string) {
+  try {
+    const tenantId = await resolveTenantId(domain);
+    if (!tenantId) return null;
+    return getCachedAnalyticsMetrics(tenantId, hubId);
   } catch (error) {
     console.error("Failed to fetch analytics metrics:", error);
     return null;

@@ -73,6 +73,10 @@ model Product {
   sections        ProductSection[] @relation("ProductToProductSection")
 
   @@index([tenantId])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, stage])
+  @@index([tenantId, categoryId])
+  @@index([tenantId, isAvailable])
   @@index([categoryId])
   @@index([isAvailable])
 }
@@ -282,6 +286,7 @@ model Inventory {
 
   @@index([hubId])
   @@index([productId])
+  @@index([hubId, productId])
 }
 
 model Freezer {
@@ -304,6 +309,8 @@ model Expense {
   description String?
   createdAt   DateTime @default(now())
   hub         Hub?     @relation(fields: [hubId], references: [id])
+
+  @@index([hubId, date])
 }
 
 model Coupon {
@@ -350,6 +357,11 @@ model Order {
   items               OrderItem[]
 
   @@index([tenantId])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, source, createdAt])
+  @@index([tenantId, customerPhone])
+  @@index([tenantId, hubId, createdAt])
   @@index([hubId])
   @@index([status])
   @@index([customerPhone])

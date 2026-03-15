@@ -364,6 +364,56 @@ export async function getAdminSiteConfig() {
   }
 }
 
+const getCachedAdminProductPageConfig = unstable_cache(
+  async (tenantId: string) => {
+    const config = await prisma.siteConfig.findFirst({
+      where: { tenantId },
+      select: {
+        measurementUnit: true,
+        shopType: true,
+        weightUnitValue: true,
+        volumeUnitValue: true,
+      },
+    });
+
+    return {
+      measurementUnit: config?.measurementUnit || "PCS",
+      shopType: config?.shopType || "RESTAURANT",
+      weightUnitValue: config?.weightUnitValue || 200,
+      volumeUnitValue: config?.volumeUnitValue || 1000,
+    };
+  },
+  ["product-page-config"],
+  { tags: ["site-config", "product-page-config"], revalidate: 300 },
+);
+
+export async function getAdminProductPageConfig() {
+  await logActionRequest({ actionName: "getAdminProductPageConfig" });
+  const sessionUser = await getSessionUser();
+  const tenantId = sessionUser?.tenantId;
+
+  if (!tenantId) {
+    return {
+      measurementUnit: "PCS",
+      shopType: "RESTAURANT",
+      weightUnitValue: 200,
+      volumeUnitValue: 1000,
+    };
+  }
+
+  try {
+    return await getCachedAdminProductPageConfig(tenantId);
+  } catch (error) {
+    console.error("Failed to fetch admin product page config:", error);
+    return {
+      measurementUnit: "PCS",
+      shopType: "RESTAURANT",
+      weightUnitValue: 200,
+      volumeUnitValue: 1000,
+    };
+  }
+}
+
 export async function updateSiteConfig<T extends object>(data: T) {
   await logActionRequest({ actionName: "updateSiteConfig" });
   const sessionUser = await getSessionUser();
@@ -430,7 +480,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       metaAccessToken: getString(input.metaAccessToken),
       invoiceTheme: getString(input.invoiceTheme, "modern"),
       invoiceDetails: (typeof input.invoiceDetails === "object" &&
-        input.invoiceDetails !== null
+      input.invoiceDetails !== null
         ? input.invoiceDetails
         : {}) as Prisma.InputJsonValue,
     };
@@ -465,6 +515,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
     }
 
     revalidateTag("site-config", {});
+    revalidateTag("product-page-config", {});
     revalidatePath("/", "layout");
     revalidatePath("/[domain]", "layout"); // Try to catch dynamic routes
     revalidatePath("/admin/shop", "page");
