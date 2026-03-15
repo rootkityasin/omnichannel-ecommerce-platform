@@ -8,21 +8,32 @@ export async function getSections(domain?: string) {
   try {
     const tenant = domain ? await getTenantByDomain(domain) : null;
     if (domain && !tenant) return [];
+    const tenantId = tenant?.id;
 
-    const tenantFilter = tenant?.id
-      ? { products: { some: { tenantId: tenant.id } } }
+    const tenantFilter = tenantId
+      ? { products: { some: { tenantId } } }
       : undefined;
 
     const sections = await prisma.productSection.findMany({
       where: domain ? tenantFilter : undefined,
       orderBy: { order: "asc" },
       include: {
-        _count: {
-          select: { products: true },
-        },
+        products: domain
+          ? {
+              where: { tenantId },
+              select: { id: true },
+            }
+          : {
+              select: { id: true },
+            },
       },
     });
-    return sections;
+    return sections.map((section) => ({
+      ...section,
+      _count: {
+        products: section.products.length,
+      },
+    }));
   } catch (error) {
     console.error("Failed to fetch sections:", error);
     return [];
@@ -42,9 +53,9 @@ export async function getHomeSections(domain?: string) {
 
         const sectionFilter = domain
           ? {
-            isActive: true,
-            products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
-          }
+              isActive: true,
+              products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
+            }
           : { isActive: true };
 
         let sections = await prisma.productSection.findMany({
@@ -75,8 +86,15 @@ export async function getHomeSections(domain?: string) {
           },
         });
 
-        // Auto-Seed if no sections found (Self-Healing for new envs)
+        // Auto-seed only for local/global dev bootstrap.
+        // Never auto-create sample products for real tenant storefronts.
         if (sections.length === 0) {
+          const shouldAutoSeed =
+            !domain && process.env.NODE_ENV !== "production";
+          if (!shouldAutoSeed) {
+            return [];
+          }
+
           console.log(
             "[Auto-Seed] No home sections found. Creating defaults...",
           );
@@ -127,7 +145,10 @@ export async function getHomeSections(domain?: string) {
       }
     },
     ["home-sections", domain ?? "global"],
-    { revalidate: 60, tags: ["home-sections", ...(domain ? [`home-sections-${domain}`] : [])] },
+    {
+      revalidate: 60,
+      tags: ["home-sections", ...(domain ? [`home-sections-${domain}`] : [])],
+    },
   )();
 }
 
@@ -362,18 +383,21 @@ export async function seedDefaultSections(domain?: string) {
   const sections = await upsertDefaultSections();
 
   try {
+    const shouldCreateSampleProducts =
+      !tenantId && process.env.NODE_ENV !== "production";
+
     // Check if products exist for this tenant
     const productCount = await prisma.product.count({
       where: tenantId ? { tenantId } : undefined,
     });
 
-    if (productCount === 0) {
+    if (productCount === 0 && shouldCreateSampleProducts) {
       console.log(
         `No products found for tenant ${tenantId || "global"}. Creating sample products...`,
       );
       const createdProducts = await createSampleProducts(tenantId);
       await assignSampleProducts(sections, createdProducts);
-    } else {
+    } else if (productCount > 0) {
       await assignExistingProducts(sections, tenantId);
     }
 

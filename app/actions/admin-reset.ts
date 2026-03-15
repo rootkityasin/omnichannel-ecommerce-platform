@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function resetDatabaseAction() {
   try {
@@ -163,6 +163,11 @@ export async function resetDatabaseAction() {
 
     console.log(`✅ Tenant reset complete for ${tenantId} (Admin preserved).`);
 
+    revalidateTag("products", {});
+    revalidateTag("categories", {});
+    revalidateTag("menu-data", {});
+    revalidateTag("home-sections", {});
+    revalidateTag(`home-sections-${tenant.customDomain || tenant.slug}`, {});
     revalidatePath("/");
     revalidatePath("/menu");
     revalidatePath("/admin/security");
