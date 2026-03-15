@@ -700,6 +700,32 @@ export default function ProductsPage() {
   const getCatName = (id: string) =>
     categories.find((c) => c.id === id)?.name || "Uncategorized";
 
+  const getComboAvailableSets = useCallback(
+    (product: LocalProduct | AdminProduct) => {
+      if (!product.comboItems || product.comboItems.length === 0) return 0;
+
+      const measurementUnit = config.measurementUnit || "PCS";
+      const baseUnitValue =
+        measurementUnit === "WEIGHT"
+          ? config.weightUnitValue || 200
+          : measurementUnit === "VOLUME"
+            ? config.volumeUnitValue || 1000
+            : 1;
+
+      const limits = product.comboItems.map((item) => {
+        const childPieces = item.child?.pieces || 0;
+        const availableUnits =
+          measurementUnit === "PCS"
+            ? childPieces
+            : Math.floor(childPieces / baseUnitValue);
+        return Math.floor(availableUnits / Math.max(1, item.quantity || 1));
+      });
+
+      return limits.length > 0 ? Math.max(0, Math.min(...limits)) : 0;
+    },
+    [config.measurementUnit, config.volumeUnitValue, config.weightUnitValue],
+  );
+
   return (
     <div className="space-y-6 relative">
       {/* Header */}
@@ -1467,22 +1493,7 @@ export default function ProductsPage() {
                           <td className="p-4 text-center">
                             {product.type === "COMBO" ? (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                {(() => {
-                                  if (
-                                    !product.comboItems ||
-                                    product.comboItems.length === 0
-                                  )
-                                    return "0 Sets";
-                                  const limits = product.comboItems.map(
-                                    (item) =>
-                                      item.child
-                                        ? Math.floor(
-                                            item.child.pieces / item.quantity,
-                                          )
-                                        : 0,
-                                  );
-                                  return `${Math.min(...limits)} Sets`;
-                                })()}
+                                {getComboAvailableSets(product)} Sets
                               </span>
                             ) : (
                               (() => {

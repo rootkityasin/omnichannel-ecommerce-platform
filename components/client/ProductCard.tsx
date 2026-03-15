@@ -138,11 +138,8 @@ export const ProductCard = memo(function ProductCard({
     return null;
   })();
 
-  // Check availability
-  // If pieces is -1, it might denote "coming soon" or specific logic, but let's stick to isAvailable
-  // Or if pieces logic is strictly "0 means out of stock" for pieces items, but we don't know type.
-  // Safest is to rely on explicitly passed availability.
-  const isOutOfStock = isAvailable === false;
+  const isOutOfStock =
+    isAvailable === false || (typeof pieces === "number" && pieces <= 0);
 
   return (
     <>
@@ -225,8 +222,6 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         <div className="p-3 bg-white relative z-20 flex flex-col flex-grow overflow-hidden">
-
-
           <h3
             className={`font-bold text-gray-800 line-clamp-1 mb-1 relative z-10 ${language !== "en" ? "font-bangla text-base" : "font-heading text-sm"}`}
           >
@@ -279,6 +274,8 @@ export const ProductCard = memo(function ProductCard({
           images,
           weight,
           servingSize,
+          pieces,
+          isAvailable,
         }}
       />
     </>

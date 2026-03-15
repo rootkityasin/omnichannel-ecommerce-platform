@@ -73,6 +73,8 @@ interface ProductModalProps {
     weightOptions?: string[];
     weight?: number;
     servingSize?: number;
+    pieces?: number;
+    isAvailable?: boolean;
   };
 }
 
@@ -84,6 +86,9 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     product.weightOptions?.[0] || "Standard",
   );
   const piecesInside = Number(product.servingSize || 0);
+  const isOutOfStock =
+    product.isAvailable === false ||
+    (typeof product.pieces === "number" && product.pieces <= 0);
 
   // Gallery State
   // Gallery State
@@ -257,10 +262,11 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                       setDirection(idx > currentImageIndex ? 1 : -1);
                       setCurrentImageIndex(idx);
                     }}
-                    className={`transition-all duration-300 rounded-full ${idx === currentImageIndex
-                      ? "bg-white w-4 h-1.5 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
-                      : "bg-white/50 w-1.5 h-1.5 hover:bg-white/80"
-                      }`}
+                    className={`transition-all duration-300 rounded-full ${
+                      idx === currentImageIndex
+                        ? "bg-white w-4 h-1.5 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                        : "bg-white/50 w-1.5 h-1.5 hover:bg-white/80"
+                    }`}
                   />
                 ))}
               </div>
@@ -736,16 +742,25 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
               </button>
             </div>
 
-            <Button
-              onClick={handleAddToCart}
-              className="flex-1 h-12 text-lg bg-[#F40000] hover:bg-[#D90000] text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-red-500/20 transition-all font-bold border-t-2 border-white/20 border-b-4 border-[#B00000] active:border-b-0 active:translate-y-1 active:mt-1 relative overflow-hidden group"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FEF08A]/40 to-transparent -translate-x-full group-hover:animate-shine" />
-              <div className="flex items-center justify-center gap-2">
-                <Plus className="w-5 h-5 stroke-[3] text-white group-hover:text-[#FEF08A] transition-colors" />
-                <span className="tracking-wide">Add to Cart</span>
-              </div>
-            </Button>
+            {isOutOfStock ? (
+              <Button
+                disabled
+                className="flex-1 h-12 text-lg bg-slate-200 text-slate-500 rounded-xl font-bold"
+              >
+                Out of Stock
+              </Button>
+            ) : (
+              <Button
+                onClick={handleAddToCart}
+                className="flex-1 h-12 text-lg bg-[#F40000] hover:bg-[#D90000] text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-red-500/20 transition-all font-bold border-t-2 border-white/20 border-b-4 border-[#B00000] active:border-b-0 active:translate-y-1 active:mt-1 relative overflow-hidden group"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FEF08A]/40 to-transparent -translate-x-full group-hover:animate-shine" />
+                <div className="flex items-center justify-center gap-2">
+                  <Plus className="w-5 h-5 stroke-[3] text-white group-hover:text-[#FEF08A] transition-colors" />
+                  <span className="tracking-wide">Add to Cart</span>
+                </div>
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -195,7 +195,9 @@ export default function SmartLinkPage() {
           setReviews(reviewsData || []);
         } catch (error) {
           console.error("Failed to load product data:", error);
-          const productOnly = await getProduct(productId, domain).catch(() => null);
+          const productOnly = await getProduct(productId, domain).catch(
+            () => null,
+          );
           if (productOnly) setProduct(productOnly);
           setReviews([]);
         }
@@ -244,6 +246,7 @@ export default function SmartLinkPage() {
   };
 
   const pieces = product.servingSize ?? 0;
+  const isOutOfStock = (product.pieces ?? 0) <= 0;
   const imageList =
     product.images && product.images.length > 0
       ? product.images
@@ -327,9 +330,14 @@ export default function SmartLinkPage() {
               <div className="flex items-center gap-3 mb-4">
                 <Badge
                   variant="outline"
-                  className="rounded-full px-4 py-1 text-xs uppercase tracking-widest border-slate-300 text-slate-500"
+                  className={cn(
+                    "rounded-full px-4 py-1 text-xs uppercase tracking-widest",
+                    isOutOfStock
+                      ? "border-red-200 text-red-600 bg-red-50"
+                      : "border-slate-300 text-slate-500",
+                  )}
                 >
-                  Premium Selection
+                  {isOutOfStock ? "Out of Stock" : "Premium Selection"}
                 </Badge>
                 {product.sku && (
                   <span className="text-xs text-slate-400 font-mono">
@@ -384,10 +392,18 @@ export default function SmartLinkPage() {
                 <div className="flex flex-col gap-4">
                   <Button
                     onClick={handleWhatsAppOrder}
-                    className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-[#25D366]/30 transition-all transform hover:-translate-y-0.5"
+                    disabled={isOutOfStock}
+                    className={cn(
+                      "w-full h-14 font-bold text-lg rounded-xl transition-all",
+                      isOutOfStock
+                        ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                        : "bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-lg hover:shadow-[#25D366]/30 transform hover:-translate-y-0.5",
+                    )}
                   >
                     <MessageCircle className="w-6 h-6 mr-2" />
-                    Order via WhatsApp
+                    {isOutOfStock
+                      ? "Currently Unavailable"
+                      : "Order via WhatsApp"}
                   </Button>
 
                   <div className="relative flex items-center gap-4 py-2">

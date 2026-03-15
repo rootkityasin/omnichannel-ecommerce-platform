@@ -324,17 +324,17 @@ export async function createProduct(data: ProductMutationInput) {
         sections:
           data.sections && data.sections.length > 0
             ? {
-              connect: data.sections.map((id: string) => ({ id })),
-            }
+                connect: data.sections.map((id: string) => ({ id })),
+              }
             : undefined,
         comboItems:
           data.type === "COMBO" && data.comboItems
             ? {
-              create: data.comboItems.map((item) => ({
-                childId: item.childId,
-                quantity: Number.parseInt(String(item.quantity), 10),
-              })),
-            }
+                create: data.comboItems.map((item) => ({
+                  childId: item.childId,
+                  quantity: Number.parseInt(String(item.quantity), 10),
+                })),
+              }
             : undefined,
       },
     });
@@ -359,8 +359,12 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
     // Verify ownership before update
-    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
-    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      select: { tenantId: true },
+    });
+    if (!existing || existing.tenantId !== tenantId)
+      return { success: false, error: "Product not found" };
 
     await prisma.product.update({
       where: { id },
@@ -376,11 +380,25 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
         description: data.description,
         descriptionSwap: data.descriptionSwap,
         stage: data.stage,
+        type: data.type === "COMBO" ? "COMBO" : "SINGLE",
         sections: data.sections
           ? {
-            set: data.sections.map((id: string) => ({ id })),
-          }
+              set: data.sections.map((id: string) => ({ id })),
+            }
           : undefined,
+        comboItems:
+          data.type === "COMBO"
+            ? {
+                deleteMany: {},
+                create: (data.comboItems || []).map((item) => ({
+                  childId: item.childId,
+                  quantity:
+                    Number.parseInt(String(item.quantity || 0), 10) || 0,
+                })),
+              }
+            : {
+                deleteMany: {},
+              },
       },
     });
     revalidatePath("/admin/products");
@@ -404,8 +422,12 @@ export async function deleteProduct(id: string) {
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
     // Verify ownership before delete
-    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
-    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      select: { tenantId: true },
+    });
+    if (!existing || existing.tenantId !== tenantId)
+      return { success: false, error: "Product not found" };
 
     // 1. Check for orders
     const ordersCount = await prisma.orderItem.count({
@@ -492,8 +514,12 @@ export async function archiveProduct(id: string) {
     const tenantId = sessionUser?.tenantId;
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
-    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
-    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      select: { tenantId: true },
+    });
+    if (!existing || existing.tenantId !== tenantId)
+      return { success: false, error: "Product not found" };
 
     await prisma.product.update({
       where: { id },
@@ -523,8 +549,12 @@ export async function unarchiveProduct(id: string) {
     const tenantId = sessionUser?.tenantId;
     if (!tenantId) return { success: false, error: "Unauthorized" };
 
-    const existing = await prisma.product.findUnique({ where: { id }, select: { tenantId: true } });
-    if (!existing || existing.tenantId !== tenantId) return { success: false, error: "Product not found" };
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      select: { tenantId: true },
+    });
+    if (!existing || existing.tenantId !== tenantId)
+      return { success: false, error: "Product not found" };
 
     await prisma.product.update({
       where: { id },

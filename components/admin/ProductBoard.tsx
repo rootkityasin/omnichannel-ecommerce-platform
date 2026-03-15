@@ -235,6 +235,29 @@ export function ProductBoard({
     return `Stock: ${pieces}`;
   };
 
+  const formatComboStock = (product: AdminProduct) => {
+    if (!product.comboItems || product.comboItems.length === 0) {
+      return "0 Sets";
+    }
+
+    const unit = config?.measurementUnit || "PCS";
+    const baseUnitValue =
+      unit === "WEIGHT"
+        ? config?.weightUnitValue || 200
+        : unit === "VOLUME"
+          ? config?.volumeUnitValue || 1000
+          : 1;
+
+    const limits = product.comboItems.map((item) => {
+      const childPieces = item.child?.pieces || 0;
+      const availableUnits =
+        unit === "PCS" ? childPieces : Math.floor(childPieces / baseUnitValue);
+      return Math.floor(availableUnits / Math.max(1, item.quantity || 1));
+    });
+
+    return `${limits.length ? Math.max(0, Math.min(...limits)) : 0} Sets`;
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     setActiveId(active.id as string);
@@ -322,7 +345,11 @@ export function ProductBoard({
             <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
               <span>৳{p.price}</span>
               <span>•</span>
-              <span>{formatStock(p.pieces || 0, p.weight || 200)}</span>
+              <span>
+                {p.type === "COMBO"
+                  ? formatComboStock(p)
+                  : formatStock(p.pieces || 0, p.weight || 200)}
+              </span>
               {p.stage !== "Draft" && !readOnly && (
                 <button
                   onClick={(e) => {
