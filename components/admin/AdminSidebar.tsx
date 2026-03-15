@@ -12,6 +12,7 @@ import {
   Palette,
   Ticket,
   BarChart3,
+  Activity,
   Zap,
   ChevronLeft,
   Menu,
@@ -205,7 +206,7 @@ export function AdminSidebar() {
         {
           label: "Event Matrix",
           href: "/admin/events",
-          icon: BarChart3,
+          icon: Activity,
           badge: "LIVE",
           badgeColor: "bg-green-100 text-green-600",
           permission: "VIEW_REPORTS",
