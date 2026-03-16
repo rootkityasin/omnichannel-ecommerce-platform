@@ -704,26 +704,14 @@ export default function ProductsPage() {
     (product: LocalProduct | AdminProduct) => {
       if (!product.comboItems || product.comboItems.length === 0) return 0;
 
-      const measurementUnit = config.measurementUnit || "PCS";
-      const baseUnitValue =
-        measurementUnit === "WEIGHT"
-          ? config.weightUnitValue || 200
-          : measurementUnit === "VOLUME"
-            ? config.volumeUnitValue || 1000
-            : 1;
-
       const limits = product.comboItems.map((item) => {
         const childPieces = item.child?.pieces || 0;
-        const availableUnits =
-          measurementUnit === "PCS"
-            ? childPieces
-            : Math.floor(childPieces / baseUnitValue);
-        return Math.floor(availableUnits / Math.max(1, item.quantity || 1));
+        return Math.floor(childPieces / Math.max(1, item.quantity || 1));
       });
 
       return limits.length > 0 ? Math.max(0, Math.min(...limits)) : 0;
     },
-    [config.measurementUnit, config.volumeUnitValue, config.weightUnitValue],
+    [],
   );
 
   return (
@@ -883,9 +871,9 @@ export default function ProductsPage() {
 
       {/* Modal */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
-            <div className="p-6">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
+          <Card className="my-auto w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-slate-800">
                   {editingId ? "Edit Product" : "New Product"}
@@ -1385,8 +1373,7 @@ export default function ProductsPage() {
                       setNewProduct({ ...newProduct, image: url as string })
                     }
                     onRemove={() => setNewProduct({ ...newProduct, image: "" })}
-                    recommendedText="1600x2000 (4:5) • Center subject"
-                    helperText="Used for cards (4:5), hero (16:9), and thumbnails (1:1)"
+                    recommendedText="1600 x 2000 px (4:5 ratio) for full mobile storefront card"
                   />
                 </div>
 
@@ -1404,8 +1391,7 @@ export default function ProductsPage() {
                       })
                     }
                     multiple={true}
-                    recommendedText="1600x2000 (4:5) • Center subject"
-                    helperText="Used for cards (4:5), hero (16:9), and thumbnails (1:1)"
+                    recommendedText="1600 x 2000 px (4:5 ratio) for full mobile storefront card"
                   />
                 </div>
 

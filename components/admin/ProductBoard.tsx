@@ -240,19 +240,9 @@ export function ProductBoard({
       return "0 Sets";
     }
 
-    const unit = config?.measurementUnit || "PCS";
-    const baseUnitValue =
-      unit === "WEIGHT"
-        ? config?.weightUnitValue || 200
-        : unit === "VOLUME"
-          ? config?.volumeUnitValue || 1000
-          : 1;
-
     const limits = product.comboItems.map((item) => {
       const childPieces = item.child?.pieces || 0;
-      const availableUnits =
-        unit === "PCS" ? childPieces : Math.floor(childPieces / baseUnitValue);
-      return Math.floor(availableUnits / Math.max(1, item.quantity || 1));
+      return Math.floor(childPieces / Math.max(1, item.quantity || 1));
     });
 
     return `${limits.length ? Math.max(0, Math.min(...limits)) : 0} Sets`;

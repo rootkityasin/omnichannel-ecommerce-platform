@@ -111,6 +111,10 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     crop: "fill",
     gravity: "auto",
   });
+  const fullscreenImage = buildCloudinaryUrl(heroImage, {
+    width: 1600,
+    crop: "limit",
+  });
   const heroLqip = buildCloudinaryLqip(heroImage, {
     aspect: "16:9",
     crop: "fill",
@@ -314,7 +318,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
                   {/* Pinch Zoom / Pan capable area */}
                   <ZoomableImage
-                    src={optimizedHeroImage}
+                    src={fullscreenImage || heroImage}
                     onNext={() => paginate(1)}
                     onPrev={() => paginate(-1)}
                   />
