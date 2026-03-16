@@ -9,6 +9,19 @@ import { unstable_cache, updateTag } from "next/cache";
 const getSessionUser = async () => (await auth())?.user;
 const SALE_STATUS = "Payment Received";
 const RESTOCK_STATUSES = ["Returned", "Cancelled"] as const;
+const FINAL_ORDER_STATUSES = [
+  "Placed",
+  "Confirmed",
+  "Ready",
+  "Invoice Printed",
+  "Delivered",
+  "Payment Received",
+  "Payment OnProcess",
+  "Payment Failed",
+  "Returned",
+  "Cancelled",
+  "Incomplete",
+] as const;
 const PENDING_ORDER_STATUSES = [
   "Placed",
   "Confirmed",
@@ -75,7 +88,11 @@ const getCachedOrderStats = unstable_cache(
           _count: { id: true },
         }),
         prisma.order.aggregate({
-          where: { tenantId, createdAt: { gte: today } },
+          where: {
+            tenantId,
+            createdAt: { gte: today },
+            status: { not: "Incomplete" },
+          },
           _count: { id: true },
         }),
         prisma.order.aggregate({
@@ -602,7 +619,10 @@ export async function getPaginatedAdminOrders(params: {
     const { page, limit, search, status, source, dateStart, dateEnd } = params;
     const skip = (page - 1) * limit;
 
-    const whereClause: any = { tenantId };
+    const whereClause: any = {
+      tenantId,
+      status: { in: [...FINAL_ORDER_STATUSES] },
+    };
 
     if (search) {
       whereClause.OR = [
@@ -623,9 +643,6 @@ export async function getPaginatedAdminOrders(params: {
       } else {
         whereClause.status = status;
       }
-    } else {
-      // Exclude incomplete by default
-      whereClause.status = { not: "INCOMPLETE" };
     }
 
     if (source && source !== "all") {
@@ -670,22 +687,28 @@ export async function getPaginatedAdminOrders(params: {
     ]);
 
     // Format like getAdminOrders did
-    const mapped = orders.map((o) => ({
-      id: o.orderId,
-      dbId: o.id,
-      date: o.createdAt.toISOString(),
-      customer: o.customerName,
-      phone: o.customerPhone,
-      email: o.customerEmail || undefined,
-      items: o.items.reduce((acc: number, item) => acc + item.quantity, 0),
-      source: o.source,
-      price: o.totalAmount,
-      status: o.status,
-      hubId: o.hubId,
-      isRepeat: false, // Omitted for performance, user can check customer page
-      orderCount: 1,
-      stockDeducted: o.stockDeducted,
-    }));
+    const mapped = orders
+      .map((o) => ({
+        id: o.orderId,
+        dbId: o.id,
+        date: o.createdAt.toISOString(),
+        customer: o.customerName,
+        phone: o.customerPhone,
+        email: o.customerEmail || undefined,
+        items: o.items.reduce((acc: number, item) => acc + item.quantity, 0),
+        source: o.source,
+        price: o.totalAmount,
+        status: o.status,
+        hubId: o.hubId,
+        isRepeat: false,
+        orderCount: 1,
+        stockDeducted: o.stockDeducted,
+      }))
+      .sort((a, b) => {
+        if (a.status === "Incomplete" && b.status !== "Incomplete") return 1;
+        if (a.status !== "Incomplete" && b.status === "Incomplete") return -1;
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
 
     return { data: mapped, total };
   } catch (error) {

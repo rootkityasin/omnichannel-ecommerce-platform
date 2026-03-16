@@ -568,10 +568,10 @@ export default function OrdersPage() {
     "Invoice Printed",
     "Delivered",
     "Payment Received",
-    "Cancelled",
-    "Returned",
     "Payment OnProcess",
     "Payment Failed",
+    "Returned",
+    "Cancelled",
     "Incomplete",
   ];
 
@@ -1354,7 +1354,9 @@ export default function OrdersPage() {
                   label="All Orders"
                   count={Object.keys(stats?.statusCounts || {}).reduce(
                     (sum, key) =>
-                      key !== "INCOMPLETE" && key !== "Incomplete"
+                      key !== "INCOMPLETE" &&
+                      key !== "Incomplete" &&
+                      getAllStatuses().includes(key)
                         ? sum + stats.statusCounts[key]
                         : sum,
                     0,
