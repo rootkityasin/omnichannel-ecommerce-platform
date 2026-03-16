@@ -104,6 +104,8 @@ export function ProductRail({
                   cookingInstructions={product.cookingInstructions}
                   pieces={product.pieces}
                   totalSold={product.totalSold}
+                  type={product.type}
+                  comboItems={product.comboItems}
                   weightOptions={product.weightOptions}
                   images={product.images}
                   isAvailable={product.isAvailable}
@@ -146,6 +148,8 @@ export function ProductRail({
                 cookingInstructions={product.cookingInstructions}
                 pieces={product.pieces}
                 totalSold={product.totalSold}
+                type={product.type}
+                comboItems={product.comboItems}
                 weightOptions={product.weightOptions}
                 images={product.images}
                 stage={product.stage}

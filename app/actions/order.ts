@@ -7,6 +7,60 @@ import { randomUUID } from "node:crypto";
 import { unstable_cache, updateTag } from "next/cache";
 
 const getSessionUser = async () => (await auth())?.user;
+const SALE_STATUS = "Payment Received";
+const RESTOCK_STATUSES = ["Returned", "Cancelled"] as const;
+const PENDING_ORDER_STATUSES = [
+  "Placed",
+  "Confirmed",
+  "Ready",
+  "Invoice Printed",
+  "Delivered",
+  "Payment OnProcess",
+] as const;
+
+async function restoreOrderStock(orderDbId: string) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderDbId },
+    include: {
+      items: true,
+    },
+  });
+
+  if (!order || !order.stockDeducted) return;
+
+  for (const item of order.items) {
+    const product = await prisma.product.findUnique({
+      where: { id: item.productId },
+      include: { comboItems: { include: { child: true } } },
+    });
+
+    if (!product) continue;
+
+    if (product.type === "COMBO") {
+      for (const comboItem of product.comboItems) {
+        const currentPieces = comboItem.child.pieces || 0;
+        const restoration = item.quantity * comboItem.quantity;
+        await prisma.product.update({
+          where: { id: comboItem.childId },
+          data: {
+            pieces: currentPieces + restoration,
+          },
+        });
+      }
+    } else {
+      const currentPieces = product.pieces || 0;
+      await prisma.product.update({
+        where: { id: item.productId },
+        data: { pieces: currentPieces + item.quantity },
+      });
+    }
+  }
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { stockDeducted: false },
+  });
+}
 
 const getCachedOrderStats = unstable_cache(
   async (tenantId: string) => {
@@ -29,7 +83,7 @@ const getCachedOrderStats = unstable_cache(
           _count: { id: true },
         }),
         prisma.order.aggregate({
-          where: { tenantId, status: { not: "Cancelled" } },
+          where: { tenantId, status: SALE_STATUS },
           _sum: { totalAmount: true },
         }),
       ]);
@@ -117,7 +171,7 @@ export async function createOrder(data: {
         order = await prisma.order.update({
           where: { id: existingDraft.id },
           data: {
-            status: "PENDING",
+            status: "Placed",
             customerName: data.customerName,
             customerPhone: data.customerPhone,
             customerEmail: data.customerEmail,
@@ -149,6 +203,7 @@ export async function createOrder(data: {
           tenantId,
           // SECURE ID: randomUUID is cryptographically strong
           orderId: `ORD-${randomUUID().substring(0, 8).toUpperCase()}`,
+          status: "Placed",
           customerName: data.customerName,
           customerPhone: data.customerPhone,
           customerEmail: data.customerEmail,
@@ -381,6 +436,24 @@ export async function updateAdminOrder(
     if (!order || order.tenantId !== tenantId)
       return { success: false, error: "Order not found" };
 
+    if (updates.status === "Invoice Printed" && !order.stockDeducted) {
+      return {
+        success: false,
+        error: "Use Print Invoice to deduct stock and mark as Invoice Printed.",
+      };
+    }
+
+    if (
+      updates.status &&
+      updates.status !== order.status &&
+      RESTOCK_STATUSES.includes(
+        updates.status as (typeof RESTOCK_STATUSES)[number],
+      ) &&
+      order.stockDeducted
+    ) {
+      await restoreOrderStock(order.id);
+    }
+
     await prisma.order.update({
       where: { id: order.id },
       data: {
@@ -545,10 +618,8 @@ export async function getPaginatedAdminOrders(params: {
         // For simplicity, we skip repeated filter on server-side unless we add an `isRepeated` column.
       } else if (status === "Ready") {
         whereClause.status = {
-          in: ["Ready", "Ready to Fry", "Invoice Printed"],
+          in: ["Ready", "Invoice Printed"],
         };
-      } else if (status === "Processing") {
-        whereClause.status = { in: ["Processing", "Ready to Process"] };
       } else {
         whereClause.status = status;
       }

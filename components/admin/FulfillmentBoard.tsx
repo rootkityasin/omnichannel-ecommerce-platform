@@ -5,6 +5,7 @@ import {
   CheckCircle,
   Package,
   Truck,
+  Wallet,
   ArrowRight,
   MoreVertical,
   Printer,
@@ -45,41 +46,47 @@ export function FulfillmentBoard({
 }: FulfillmentBoardProps) {
   const columns = [
     {
-      title: "Pending",
+      title: "Placed",
       status: "Placed",
       icon: Clock,
       color: "bg-gray-100 text-gray-500",
     },
     {
-      title: "Ready to Process",
-      status: "Ready to Process",
+      title: "Confirmed",
+      status: "Confirmed",
       icon: Package,
       color: "bg-indigo-100 text-indigo-600",
     },
     {
-      title: "Ready To Fry",
-      status: "Ready To Fry",
+      title: "Ready",
+      status: "Ready",
       icon: CheckCircle,
       color: "bg-orange-100 text-orange-600",
     },
     {
-      title: "Dispatched",
-      status: "Shipped",
+      title: "Delivered",
+      status: "Delivered",
       icon: Truck,
       color: "bg-blue-100 text-blue-600",
+    },
+    {
+      title: "Payment Received",
+      status: "Payment Received",
+      icon: Wallet,
+      color: "bg-green-100 text-green-600",
     },
   ];
 
   const getNextStatus = (current: string) => {
     if (current === "Placed") return "Confirmed";
-    if (current === "Confirmed") return "Ready to Process";
-    if (current === "Ready to Process") return "Ready To Fry";
-    if (current === "Ready To Fry") return "Shipped";
-    return "Shipped";
+    if (current === "Confirmed") return "Ready";
+    if (current === "Invoice Printed") return "Delivered";
+    if (current === "Delivered") return "Payment Received";
+    return null;
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[calc(100vh-200px)] overflow-x-auto pb-4">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100vh-200px)] overflow-x-auto pb-4">
       {columns.map((col) => (
         <div
           key={col.status}
@@ -94,44 +101,13 @@ export function FulfillmentBoard({
               variant="outline"
               className="ml-auto bg-white shadow-sm border-none"
             >
-              {
-                orders.filter((o) => {
-                  if (col.status === "Placed")
-                    return o.status === "Placed" || o.status === "Confirmed";
-                  if (col.status === "Ready to Process")
-                    return (
-                      o.status === "Ready to Process" ||
-                      o.status === "Processing"
-                    );
-                  if (col.status === "Ready To Fry")
-                    return (
-                      o.status === "Ready To Fry" ||
-                      o.status === "Ready" ||
-                      o.status === "Invoice Printed"
-                    );
-                  return o.status === col.status;
-                }).length
-              }
+              {orders.filter((o) => o.status === col.status).length}
             </Badge>
           </div>
 
           <div className="p-2 space-y-2 flex-1 overflow-y-auto">
             {orders
-              .filter((o) => {
-                if (col.status === "Placed")
-                  return o.status === "Placed" || o.status === "Confirmed";
-                if (col.status === "Ready to Process")
-                  return (
-                    o.status === "Ready to Process" || o.status === "Processing"
-                  );
-                if (col.status === "Ready To Fry")
-                  return (
-                    o.status === "Ready To Fry" ||
-                    o.status === "Ready" ||
-                    o.status === "Invoice Printed"
-                  );
-                return o.status === col.status;
-              })
+              .filter((o) => o.status === col.status)
               .map((order) => (
                 <Card
                   key={order.id}
@@ -168,7 +144,6 @@ export function FulfillmentBoard({
                                     onPrint(order.id);
                                   }}
                                   disabled={
-                                    order.status !== "Ready To Fry" &&
                                     order.status !== "Ready" &&
                                     order.status !== "Invoice Printed"
                                   }
@@ -221,7 +196,7 @@ export function FulfillmentBoard({
                   {/* Quick Actions */}
                   {!readOnly && (
                     <div className="flex gap-2">
-                      {order.status !== "Shipped" && (
+                      {getNextStatus(order.status) && (
                         <Button
                           size="sm"
                           variant="secondary"
@@ -230,7 +205,7 @@ export function FulfillmentBoard({
                             e.stopPropagation();
                             onStatusChange(
                               order.id,
-                              getNextStatus(order.status),
+                              getNextStatus(order.status) as string,
                             );
                           }}
                         >
@@ -243,14 +218,6 @@ export function FulfillmentBoard({
                 </Card>
               ))}
             {orders.filter((o) => {
-              if (col.status === "Placed")
-                return o.status === "Placed" || o.status === "Confirmed";
-              if (col.status === "Ready to Process")
-                return (
-                  o.status === "Ready to Process" || o.status === "Processing"
-                );
-              if (col.status === "Ready To Fry")
-                return o.status === "Ready To Fry" || o.status === "Ready";
               return o.status === col.status;
             }).length === 0 && (
               <div className="h-24 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400">

@@ -564,11 +564,23 @@ export default function OrdersPage() {
   const getAllStatuses = () => [
     "Placed",
     "Confirmed",
-    "Processing",
     "Ready",
-    "Shipped",
+    "Invoice Printed",
     "Delivered",
-    "Completed",
+    "Payment Received",
+    "Cancelled",
+    "Returned",
+    "Payment OnProcess",
+    "Payment Failed",
+    "Incomplete",
+  ];
+
+  const getUpdateStatuses = () => [
+    "Placed",
+    "Confirmed",
+    "Ready",
+    "Delivered",
+    "Payment Received",
     "Cancelled",
     "Returned",
     "Payment OnProcess",
@@ -584,20 +596,12 @@ export default function OrdersPage() {
         return "bg-green-100 text-green-700";
       case "Invoice Printed":
         return "bg-teal-100 text-teal-700 font-bold border border-teal-200";
-      case "Ready to Process":
-        return "bg-indigo-100 text-indigo-700";
-      case "Ready To Fry":
-        return "bg-orange-100 text-orange-700";
-      case "Processing":
-        return "bg-orange-100 text-orange-700";
       case "Ready":
         return "bg-purple-100 text-purple-700";
-      case "Shipped":
-        return "bg-slate-800 text-white";
       case "Delivered":
         return "bg-emerald-100 text-emerald-700";
-      case "Completed":
-        return "bg-slate-100 text-slate-700";
+      case "Payment Received":
+        return "bg-green-600 text-white";
       case "Cancelled":
         return "bg-red-100 text-red-700";
       case "Returned":
@@ -1307,25 +1311,27 @@ export default function OrdersPage() {
           subtext={`${stats?.todayCancelled || "0"} canceled today`}
         />
         <SummaryCard
-          label="Total Amount"
+          label="Revenue"
           value={`৳ ${parseFloat(stats?.totalSales || 0).toLocaleString()}`}
-          subtext="Total Sales"
+          subtext="Counted sales only"
         />
         <SummaryCard
-          label="Pending Processing"
+          label="Pending Orders"
           value={(
-            getStatusCountString("Processing", [
-              "Processing",
-              "Ready to Process",
-            ]) + getStatusCountString("Placed")
+            getStatusCountString("Placed") +
+            getStatusCountString("Confirmed") +
+            getStatusCountString("Ready") +
+            getStatusCountString("Invoice Printed") +
+            getStatusCountString("Delivered") +
+            getStatusCountString("Payment OnProcess")
           ).toString()}
           subtext="Need attention"
           active
         />
         <SummaryCard
-          label="Dispatched"
-          value={getStatusCountString("Shipped").toString()}
-          subtext="On the way"
+          label="Received Orders"
+          value={getStatusCountString("Payment Received").toString()}
+          subtext="Real sales"
         />
       </div>
 
@@ -1365,26 +1371,14 @@ export default function OrdersPage() {
                   count={getStatusCountString("Confirmed")}
                 />
                 <TabTrigger
-                  value="Processing"
-                  label="Processing"
-                  count={getStatusCountString("Processing", [
-                    "Processing",
-                    "Ready to Process",
-                  ])}
-                />
-                <TabTrigger
                   value="Ready"
                   label="Ready"
-                  count={getStatusCountString("Ready", [
-                    "Ready",
-                    "Ready To Fry",
-                    "Invoice Printed",
-                  ])}
+                  count={getStatusCountString("Ready")}
                 />
                 <TabTrigger
-                  value="Shipped"
-                  label="Shipped"
-                  count={getStatusCountString("Shipped")}
+                  value="Invoice Printed"
+                  label="Invoice Printed"
+                  count={getStatusCountString("Invoice Printed")}
                 />
                 <TabTrigger
                   value="Delivered"
@@ -1392,9 +1386,9 @@ export default function OrdersPage() {
                   count={getStatusCountString("Delivered")}
                 />
                 <TabTrigger
-                  value="Completed"
-                  label="Completed"
-                  count={getStatusCountString("Completed")}
+                  value="Payment Received"
+                  label="Payment Received"
+                  count={getStatusCountString("Payment Received")}
                 />
                 <TabTrigger
                   value="Cancelled"
@@ -1575,7 +1569,7 @@ export default function OrdersPage() {
                                       Status
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuSubContent className="w-[200px]">
-                                      {getAllStatuses().map((status) => (
+                                      {getUpdateStatuses().map((status) => (
                                         <DropdownMenuItem
                                           key={status}
                                           onClick={() =>

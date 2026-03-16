@@ -454,6 +454,8 @@ export function MenuClient({
                       price_bn={item.price_bn || String(item.price)}
                       pieces={item.pieces}
                       totalSold={item.totalSold}
+                      type={item.type}
+                      comboItems={item.comboItems}
                       weightOptions={item.weightOptions}
                       images={item.images}
                       weight={item.weight}

@@ -6,6 +6,15 @@ import { getTenantByDomain } from "./tenant";
 import { unstable_cache } from "next/cache";
 
 const getSessionUser = async () => (await auth())?.user;
+const SALE_STATUS = "Payment Received";
+const PENDING_ORDER_STATUSES = [
+  "Placed",
+  "Confirmed",
+  "Ready",
+  "Invoice Printed",
+  "Delivered",
+  "Payment OnProcess",
+];
 
 async function resolveTenantId(domain?: string) {
   let tenantId: string | undefined;
@@ -49,7 +58,7 @@ const getCachedDashboardMetrics = unstable_cache(
     const baseWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
-      status: { not: "Cancelled" as const },
+      status: SALE_STATUS,
     };
 
     const sevenDaysAgo = new Date();
@@ -77,7 +86,7 @@ const getCachedDashboardMetrics = unstable_cache(
         where: {
           tenantId,
           ...(hubId && hubId !== "ALL" ? { hubId } : {}),
-          status: { in: ["Placed", "Confirmed", "Cooking"] },
+          status: { in: PENDING_ORDER_STATUSES },
         },
       }),
       hubId && hubId !== "ALL"
@@ -136,7 +145,7 @@ const getCachedAnalyticsMetrics = unstable_cache(
     };
     const validWhere = {
       ...baseWhere,
-      status: { not: "Cancelled" as const },
+      status: SALE_STATUS,
     };
 
     const sevenDaysAgo = new Date();

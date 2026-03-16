@@ -47,7 +47,7 @@ const getCachedInventoryStats = unstable_cache(
     const [salesAggregation, expenseAggregation] = await Promise.all([
       prisma.order.aggregate({
         _sum: { totalAmount: true },
-        where: { tenantId, status: "DELIVERED" },
+        where: { tenantId, status: "Payment Received" },
       }),
       prisma.expense.aggregate({
         _sum: { amount: true },
