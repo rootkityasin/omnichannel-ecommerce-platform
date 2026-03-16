@@ -30,6 +30,25 @@ const PENDING_ORDER_STATUSES = [
   "Delivered",
   "Payment OnProcess",
 ] as const;
+const INCOMPLETE_STATUSES = ["Incomplete", "INCOMPLETE"] as const;
+
+function getDhakaTodayRange() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dhaka",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  const start = new Date(`${year}-${month}-${day}T00:00:00+06:00`);
+  const end = new Date(`${year}-${month}-${day}T23:59:59.999+06:00`);
+
+  return { start, end };
+}
 
 async function restoreOrderStock(orderDbId: string) {
   const order = await prisma.order.findUnique({
@@ -77,8 +96,7 @@ async function restoreOrderStock(orderDbId: string) {
 
 const getCachedOrderStats = unstable_cache(
   async (tenantId: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { start, end } = getDhakaTodayRange();
 
     const [statusCounts, todayAgg, todayCancelledAgg, totalSalesAgg] =
       await Promise.all([
@@ -90,13 +108,17 @@ const getCachedOrderStats = unstable_cache(
         prisma.order.aggregate({
           where: {
             tenantId,
-            createdAt: { gte: today },
-            status: { not: "Incomplete" },
+            createdAt: { gte: start, lte: end },
+            status: { notIn: [...INCOMPLETE_STATUSES] },
           },
           _count: { id: true },
         }),
         prisma.order.aggregate({
-          where: { tenantId, createdAt: { gte: today }, status: "Cancelled" },
+          where: {
+            tenantId,
+            createdAt: { gte: start, lte: end },
+            status: "Cancelled",
+          },
           _count: { id: true },
         }),
         prisma.order.aggregate({
@@ -619,10 +641,7 @@ export async function getPaginatedAdminOrders(params: {
     const { page, limit, search, status, source, dateStart, dateEnd } = params;
     const skip = (page - 1) * limit;
 
-    const whereClause: any = {
-      tenantId,
-      status: { in: [...FINAL_ORDER_STATUSES] },
-    };
+    const whereClause: any = { tenantId };
 
     if (search) {
       whereClause.OR = [
@@ -640,9 +659,17 @@ export async function getPaginatedAdminOrders(params: {
         whereClause.status = {
           in: ["Ready", "Invoice Printed"],
         };
+      } else if (status === "Incomplete") {
+        whereClause.status = { in: [...INCOMPLETE_STATUSES] };
       } else {
         whereClause.status = status;
       }
+    } else {
+      whereClause.status = {
+        in: FINAL_ORDER_STATUSES.filter(
+          (statusValue) => !INCOMPLETE_STATUSES.includes(statusValue as never),
+        ),
+      };
     }
 
     if (source && source !== "all") {

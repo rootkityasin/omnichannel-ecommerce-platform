@@ -611,6 +611,7 @@ export default function OrdersPage() {
       case "Payment Failed":
         return "bg-red-50 text-red-600 border border-red-200";
       case "Incomplete":
+      case "INCOMPLETE":
         return "bg-slate-200 text-slate-500 border border-slate-300 border-dashed animate-pulse text-xs";
       default:
         return "bg-gray-100 text-gray-700";
@@ -901,24 +902,6 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
-          <Button
-            variant={filterStatus === "INCOMPLETE" ? "default" : "outline"}
-            onClick={() => {
-              setFilterStatus(
-                filterStatus === "INCOMPLETE" ? "all" : "INCOMPLETE",
-              );
-              setPage(1);
-            }}
-            className={cn(
-              "shadow-sm",
-              filterStatus === "INCOMPLETE"
-                ? "bg-slate-800 hover:bg-slate-700 text-white border-transparent"
-                : "bg-white text-slate-700 hover:text-slate-900",
-            )}
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            {filterStatus === "INCOMPLETE" ? "Exit Drafts" : "Drafts"}
-          </Button>
           <Button
             onClick={() => {
               setIsAdding(true);
@@ -1411,6 +1394,14 @@ export default function OrdersPage() {
                   value="Payment Failed"
                   label="Payment Failed"
                   count={getStatusCountString("Payment Failed")}
+                />
+                <TabTrigger
+                  value="Incomplete"
+                  label="Incomplete"
+                  count={
+                    getStatusCountString("Incomplete") +
+                    getStatusCountString("INCOMPLETE")
+                  }
                 />
                 {/* Repeated cannot be efficiently calculated on the server without heavy groupings continuously. Hidden for now. */}
               </TabsList>

@@ -7,6 +7,7 @@ import { unstable_cache } from "next/cache";
 
 const getSessionUser = async () => (await auth())?.user;
 const SALE_STATUS = "Payment Received";
+const NON_DRAFT_STATUSES = ["Incomplete", "INCOMPLETE"];
 const PENDING_ORDER_STATUSES = [
   "Placed",
   "Confirmed",
@@ -55,10 +56,15 @@ function getRecentDaysSales(
 
 const getCachedDashboardMetrics = unstable_cache(
   async (tenantId: string, hubId?: string) => {
-    const baseWhere = {
+    const saleWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
       status: SALE_STATUS,
+    };
+    const allOrdersWhere = {
+      tenantId,
+      ...(hubId && hubId !== "ALL" ? { hubId } : {}),
+      status: { notIn: NON_DRAFT_STATUSES },
     };
 
     const sevenDaysAgo = new Date();
@@ -72,6 +78,7 @@ const getCachedDashboardMetrics = unstable_cache(
 
     const [
       orderAggregations,
+      totalOrderCount,
       pendingCount,
       uniqueCustomerCount,
       recentOrders,
@@ -79,8 +86,10 @@ const getCachedDashboardMetrics = unstable_cache(
     ] = await Promise.all([
       prisma.order.aggregate({
         _sum: { totalAmount: true },
-        _count: true,
-        where: baseWhere,
+        where: saleWhere,
+      }),
+      prisma.order.count({
+        where: allOrdersWhere,
       }),
       prisma.order.count({
         where: {
@@ -101,7 +110,7 @@ const getCachedDashboardMetrics = unstable_cache(
           ),
       prisma.order.findMany({
         where: {
-          ...baseWhere,
+          ...saleWhere,
           createdAt: { gte: sevenDaysAgo },
         },
         select: {
@@ -111,7 +120,7 @@ const getCachedDashboardMetrics = unstable_cache(
         orderBy: { createdAt: "asc" },
       }),
       prisma.order.findMany({
-        where: baseWhere,
+        where: allOrdersWhere,
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {
@@ -126,7 +135,7 @@ const getCachedDashboardMetrics = unstable_cache(
 
     return {
       totalRevenue: orderAggregations._sum.totalAmount || 0,
-      totalOrders: orderAggregations._count || 0,
+      totalOrders: totalOrderCount || 0,
       pendingOrders: pendingCount,
       uniqueCustomers: Number(uniqueCustomerCount[0]?.count || 0),
       trendData: getRecentDaysSales(recentOrders),
@@ -146,6 +155,10 @@ const getCachedAnalyticsMetrics = unstable_cache(
     const validWhere = {
       ...baseWhere,
       status: SALE_STATUS,
+    };
+    const allOrdersWhere = {
+      ...baseWhere,
+      status: { notIn: NON_DRAFT_STATUSES },
     };
 
     const sevenDaysAgo = new Date();
@@ -174,7 +187,7 @@ const getCachedAnalyticsMetrics = unstable_cache(
       }),
       prisma.order.groupBy({
         by: ["source"],
-        where: baseWhere,
+        where: allOrdersWhere,
         _count: true,
       }),
       hubId && hubId !== "ALL"
