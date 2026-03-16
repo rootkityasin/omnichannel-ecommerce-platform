@@ -49,6 +49,7 @@ const PREVIEW_ITEMS: CartItem[] = [
 
 import {
   CartTexts,
+  DeliveryConfig,
   PaymentConfig,
   SiteConfig,
   CheckoutFormData,
@@ -58,12 +59,14 @@ import {
 interface CartClientProps {
   initialCartTexts: CartTexts | null;
   initialPaymentConfig: PaymentConfig | null;
+  initialDeliveryConfig: DeliveryConfig | null;
   initialSiteConfig: SiteConfig | null;
 }
 
 export function CartClient({
   initialCartTexts,
   initialPaymentConfig,
+  initialDeliveryConfig,
   initialSiteConfig,
 }: CartClientProps) {
   const { items, removeItem, addItem, clearCart, total, discount, coupon } =
@@ -112,7 +115,7 @@ export function CartClient({
   const discountAmount = isPreview ? 0 : discount();
   const discountedTotal = Math.max(0, subTotalAmount - discountAmount);
 
-  const deliveryFee = 60;
+  const deliveryFee = Number(initialDeliveryConfig?.defaultCharge) || 60;
   const taxRate = siteConfig?.taxPercentage || 0;
   const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
   const totalAmount = discountedTotal + deliveryFee + taxAmount;
@@ -179,7 +182,10 @@ export function CartClient({
       })),
       totalAmount: Math.round(totalAmount),
       orderNotes: Object.keys(formData)
-        .filter((k) => !["name", "phone", "area", "address", "transactionId"].includes(k))
+        .filter(
+          (k) =>
+            !["name", "phone", "area", "address", "transactionId"].includes(k),
+        )
         .map((k) => {
           const field = cartTexts?.fields?.find((f) => f.id === k);
           return field
@@ -189,9 +195,11 @@ export function CartClient({
         .join("\n"),
       couponCode: coupon?.code,
       discountAmount: Math.round(discountAmount),
-      paymentMethod: advanceAmount > 0 ? (initialPaymentConfig?.selfMfsType || "MFS") : "COD",
+      paymentMethod:
+        advanceAmount > 0 ? initialPaymentConfig?.selfMfsType || "MFS" : "COD",
       advancePaidAmount: Math.round(advanceAmount),
-      advancePaymentStatus: advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
+      advancePaymentStatus:
+        advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
       transactionId: formData.transactionId || "",
     };
 
@@ -243,24 +251,24 @@ export function CartClient({
 
   const previewCartTexts = cartTexts
     ? {
-      ...cartTexts,
-      emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
-      emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
-      browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
-      title: cartTexts.title || t.cartPage.title,
-      subtotal: cartTexts.subtotal || t.cartPage.subtotal,
-      deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
-      total: cartTexts.total || t.cartPage.total,
-      deliveryDetails:
-        cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
-      confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
-      successTitle: cartTexts.successTitle || t.cartPage.successTitle,
-      successMessage: cartTexts.successMessage || t.cartPage.successMessage,
-      backHome: cartTexts.backHome || t.cartPage.backHome,
-      emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
-      successImage: cartTexts.successImage || "/congrates_animation.gif",
-      fields: cartTexts.fields || [],
-    }
+        ...cartTexts,
+        emptyTitle: cartTexts.emptyTitle || t.cartPage.emptyTitle,
+        emptyMessage: cartTexts.emptyMessage || t.cartPage.emptyMessage,
+        browseMenu: cartTexts.browseMenu || t.cartPage.browseMenu,
+        title: cartTexts.title || t.cartPage.title,
+        subtotal: cartTexts.subtotal || t.cartPage.subtotal,
+        deliveryFee: cartTexts.deliveryFee || t.cartPage.deliveryFee,
+        total: cartTexts.total || t.cartPage.total,
+        deliveryDetails:
+          cartTexts.deliveryDetails || t.cartPage.deliveryDetails,
+        confirmOrder: cartTexts.confirmOrder || t.cartPage.confirmOrder,
+        successTitle: cartTexts.successTitle || t.cartPage.successTitle,
+        successMessage: cartTexts.successMessage || t.cartPage.successMessage,
+        backHome: cartTexts.backHome || t.cartPage.backHome,
+        emptyImage: cartTexts.emptyImage || "/empty_cart_animation.gif",
+        successImage: cartTexts.successImage || "/congrates_animation.gif",
+        fields: cartTexts.fields || [],
+      }
     : null;
   const activeCartTexts = isPreview ? previewCartTexts : cartTexts;
 
@@ -329,12 +337,12 @@ export function CartClient({
         </h2>
         {(!activeCartTexts ||
           activeCartTexts.emptyMessage !== activeCartTexts.emptyTitle) && (
-            <p
-              className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
-            >
-              {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
-            </p>
-          )}
+          <p
+            className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
+          >
+            {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
+          </p>
+        )}
 
         <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
           <Image
@@ -369,12 +377,12 @@ export function CartClient({
         </h2>
         {(!activeCartTexts ||
           activeCartTexts.emptyMessage !== activeCartTexts.emptyTitle) && (
-            <p
-              className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
-            >
-              {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
-            </p>
-          )}
+          <p
+            className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}
+          >
+            {activeCartTexts?.emptyMessage || t.cartPage.emptyMessage}
+          </p>
+        )}
 
         <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
           <Image
@@ -490,13 +498,13 @@ export function CartClient({
                             ৳{item.price} x{" "}
                             {settings.measurementUnit === "WEIGHT"
                               ? (() => {
-                                const g =
-                                  item.quantity *
-                                  (settings.weightUnitValue || 200);
-                                return g >= 1000
-                                  ? `${(g / 1000).toFixed(1)} kg`
-                                  : `${g} g`;
-                              })()
+                                  const g =
+                                    item.quantity *
+                                    (settings.weightUnitValue || 200);
+                                  return g >= 1000
+                                    ? `${(g / 1000).toFixed(1)} kg`
+                                    : `${g} g`;
+                                })()
                               : item.quantity}
                           </span>
                         )}
@@ -530,13 +538,13 @@ export function CartClient({
                           >
                             {settings.measurementUnit === "WEIGHT"
                               ? (() => {
-                                const grams =
-                                  item.quantity *
-                                  (settings.weightUnitValue || 200);
-                                return grams >= 1000
-                                  ? `${(grams / 1000).toFixed(1)} kg`
-                                  : `${grams} g`;
-                              })()
+                                  const grams =
+                                    item.quantity *
+                                    (settings.weightUnitValue || 200);
+                                  return grams >= 1000
+                                    ? `${(grams / 1000).toFixed(1)} kg`
+                                    : `${grams} g`;
+                                })()
                               : item.quantity}
                           </motion.span>
                           <motion.button
@@ -658,10 +666,11 @@ export function CartClient({
                     }
                   />
                   <div
-                    className={`flex items-center w-full bg-white rounded-lg border transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black ${formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
-                      ? "border-red-500 focus-within:ring-red-200"
-                      : "border-gray-300"
-                      }`}
+                    className={`flex items-center w-full bg-white rounded-lg border transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black ${
+                      formData.phone && !/^1[3-9]\d{8}$/.test(formData.phone)
+                        ? "border-red-500 focus-within:ring-red-200"
+                        : "border-gray-300"
+                    }`}
                   >
                     <div className="pl-3 pr-2 py-3 flex items-center justify-center border-r border-gray-200 bg-gray-50/50 rounded-l-lg">
                       <span className="text-gray-500 font-medium text-sm select-none font-body flex items-center gap-1">
@@ -730,20 +739,30 @@ export function CartClient({
                     <div className="space-y-3">
                       <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-blue-700 font-bold text-sm">Advance Required</span>
-                          <span className="text-blue-800 font-black font-heading">৳{advanceAmount}</span>
+                          <span className="text-blue-700 font-bold text-sm">
+                            Advance Required
+                          </span>
+                          <span className="text-blue-800 font-black font-heading">
+                            ৳{advanceAmount}
+                          </span>
                         </div>
                       </div>
 
                       <div className="bg-slate-50 border border-gray-200 p-4 rounded-xl space-y-3">
                         <div className="text-xs text-slate-700 leading-relaxed">
-                          {initialPaymentConfig?.selfMfsInstruction || `Send ৳${advanceAmount} to our ${initialPaymentConfig?.selfMfsType || 'bKash/Nagad'} number: ${initialPaymentConfig?.selfMfsPhone || '01XXXXXXXXX'}`}
+                          {initialPaymentConfig?.selfMfsInstruction ||
+                            `Send ৳${advanceAmount} to our ${initialPaymentConfig?.selfMfsType || "bKash/Nagad"} number: ${initialPaymentConfig?.selfMfsPhone || "01XXXXXXXXX"}`}
                         </div>
 
                         {initialPaymentConfig?.selfMfsPhone && (
                           <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-100">
-                            <span className="text-[10px] font-medium text-slate-500 uppercase">{initialPaymentConfig?.selfMfsType || 'MFS'} Number</span>
-                            <span className="font-bold text-slate-900 tracking-wider text-sm">{initialPaymentConfig.selfMfsPhone}</span>
+                            <span className="text-[10px] font-medium text-slate-500 uppercase">
+                              {initialPaymentConfig?.selfMfsType || "MFS"}{" "}
+                              Number
+                            </span>
+                            <span className="font-bold text-slate-900 tracking-wider text-sm">
+                              {initialPaymentConfig.selfMfsPhone}
+                            </span>
                           </div>
                         )}
 
@@ -754,7 +773,10 @@ export function CartClient({
                           className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm font-bold text-slate-900 placeholder:font-normal"
                           value={formData.transactionId || ""}
                           onChange={(e) =>
-                            setFormData({ ...formData, transactionId: e.target.value })
+                            setFormData({
+                              ...formData,
+                              transactionId: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -765,22 +787,35 @@ export function CartClient({
                     {remainingAmount > 0 ? (
                       <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm opacity-60">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-sm">৳</div>
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-sm">
+                            ৳
+                          </div>
                           <div>
-                            <p className="font-bold text-slate-900 text-xs">Cash on Delivery</p>
-                            <p className="text-[10px] text-slate-500 text-left">Remaining ৳{remainingAmount} on delivery</p>
+                            <p className="font-bold text-slate-900 text-xs">
+                              Cash on Delivery
+                            </p>
+                            <p className="text-[10px] text-slate-500 text-left">
+                              Remaining ৳{remainingAmount} on delivery
+                            </p>
                           </div>
                         </div>
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
                       </div>
                     ) : (
-                      initialPaymentConfig?.codEnabled && !initialPaymentConfig?.advancePaymentEnabled && (
+                      initialPaymentConfig?.codEnabled &&
+                      !initialPaymentConfig?.advancePaymentEnabled && (
                         <div className="flex items-center justify-between p-4 bg-white border-2 border-crab-red rounded-xl shadow-sm">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-sm">৳</div>
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-sm">
+                              ৳
+                            </div>
                             <div>
-                              <p className="font-bold text-slate-900 text-xs">Cash on Delivery</p>
-                              <p className="text-[10px] text-slate-500 text-left">Pay when you receive the order</p>
+                              <p className="font-bold text-slate-900 text-xs">
+                                Cash on Delivery
+                              </p>
+                              <p className="text-[10px] text-slate-500 text-left">
+                                Pay when you receive the order
+                              </p>
                             </div>
                           </div>
                           <div className="w-4 h-4 rounded-full bg-crab-red flex items-center justify-center">

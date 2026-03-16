@@ -64,6 +64,7 @@ import { FulfillmentBoard } from "@/components/admin/FulfillmentBoard";
 import { type AdminOrder } from "@/types/common";
 import { format } from "date-fns";
 import { getDeliveryConfig, getSiteConfig } from "@/app/actions/settings";
+import { validateCoupon } from "@/app/actions/coupon";
 import {
   createOrder as createOrderAction,
   printOrderInvoice,
@@ -103,6 +104,8 @@ export default function OrdersPage() {
     phone: "",
     address: "",
     deliveryCharge: 0,
+    couponCode: "",
+    discountAmount: 0,
   });
 
   // Product Selection State
@@ -312,6 +315,34 @@ export default function OrdersPage() {
     return Object.values(selectedProducts).reduce((sum, qty) => sum + qty, 0);
   };
 
+  const applyManualCoupon = async () => {
+    const code = newOrder.couponCode.trim();
+    if (!code) {
+      toast.error("Enter a promo code first");
+      return;
+    }
+
+    const subtotal = getSubtotal();
+    if (subtotal <= 0) {
+      toast.error("Select products before applying a promo code");
+      return;
+    }
+
+    const result = await validateCoupon(code, subtotal);
+    if (!result.success) {
+      setNewOrder((prev) => ({ ...prev, discountAmount: 0 }));
+      toast.error(result.error || "Invalid promo code");
+      return;
+    }
+
+    setNewOrder((prev) => ({
+      ...prev,
+      couponCode: result.code || code,
+      discountAmount: result.discount || 0,
+    }));
+    toast.success(`Promo applied: -৳${result.discount || 0}`);
+  };
+
   const loadProductsForModal = async () => {
     if (availableProducts.length === 0) {
       setIsProductsLoading(true);
@@ -360,7 +391,12 @@ export default function OrdersPage() {
       };
     });
 
-    const totalAmount = subtotal + Math.max(0, newOrder.deliveryCharge || 0);
+    const discountAmount = Math.min(
+      subtotal,
+      Math.max(0, newOrder.discountAmount || 0),
+    );
+    const totalAmount =
+      subtotal - discountAmount + Math.max(0, newOrder.deliveryCharge || 0);
 
     const res = await createOrderAction({
       customerName: newOrder.customer,
@@ -370,6 +406,8 @@ export default function OrdersPage() {
       totalAmount,
       items: orderItems,
       source: "MANUAL",
+      couponCode: newOrder.couponCode.trim() || undefined,
+      discountAmount,
     });
 
     if (res.success) {
@@ -382,6 +420,8 @@ export default function OrdersPage() {
         phone: "",
         address: "",
         deliveryCharge: newOrder.deliveryCharge || 0,
+        couponCode: "",
+        discountAmount: 0,
       });
       setSelectedProducts({});
     } else {
@@ -892,321 +932,370 @@ export default function OrdersPage() {
 
       {/* Modals omitted from code rendering text limit overhead but functional */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
-          <Card className="my-auto w-full max-w-lg animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
-            <div className="p-6 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-slate-800">
-                  Create Manual Order
-                </h2>
-                <button
-                  onClick={() => setIsAdding(false)}
-                  className="text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <form onSubmit={handleCreateOrder} className="space-y-4">
-                <div>
-                  <label htmlFor="new-customer" className="text-sm font-medium">
-                    Customer Name
-                  </label>
-                  <Input
-                    id="new-customer"
-                    value={newOrder.customer}
-                    onChange={(e) =>
-                      setNewOrder({ ...newOrder, customer: e.target.value })
-                    }
-                    required
-                  />
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-md">
+          <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
+            <Card className="my-auto w-full max-w-lg animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+              <div className="p-6 overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-slate-800">
+                    Create Manual Order
+                  </h2>
+                  <button
+                    onClick={() => setIsAdding(false)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <div>
-                  <label htmlFor="new-email" className="text-sm font-medium">
-                    Email (Optional)
-                  </label>
-                  <Input
-                    id="new-email"
-                    type="email"
-                    value={newOrder.email}
-                    onChange={(e) =>
-                      setNewOrder({ ...newOrder, email: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <label htmlFor="new-phone" className="text-sm font-medium">
-                    Phone
-                  </label>
-                  <Input
-                    id="new-phone"
-                    value={newOrder.phone}
-                    onChange={(e) =>
-                      setNewOrder({ ...newOrder, phone: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="new-address" className="text-sm font-medium">
-                    Delivery Address
-                  </label>
-                  <Textarea
-                    id="new-address"
-                    value={newOrder.address}
-                    onChange={(e) =>
-                      setNewOrder({ ...newOrder, address: e.target.value })
-                    }
-                    required
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="border rounded-md p-3 bg-slate-50">
-                  <div className="text-sm font-medium block mb-2">
-                    Select Products
-                  </div>
-                  <div className="max-h-[150px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                    {availableProducts.map((product) => (
-                      <div
-                        key={product.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <input
-                          type="checkbox"
-                          id={`prod-${product.id}`}
-                          checked={Boolean(selectedProducts[product.id])}
-                          onChange={(e) =>
-                            handleProductSelect(product.id, e.target.checked)
-                          }
-                          className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-                        />
-                        <label
-                          htmlFor={`prod-${product.id}`}
-                          className="text-sm flex-1 cursor-pointer flex justify-between"
-                        >
-                          <span className="truncate">{product.name}</span>
-                          <span className="text-slate-500">
-                            ৳{product.price}
-                          </span>
-                        </label>
-                        {selectedProducts[product.id] && (
-                          <Input
-                            type="number"
-                            min="1"
-                            value={selectedProducts[product.id]}
-                            onChange={(e) =>
-                              handleQuantityChange(
-                                product.id,
-                                Number.parseInt(e.target.value) || 1,
-                              )
-                            }
-                            className="w-16"
-                            onWheel={(e) => e.currentTarget.blur()}
-                          />
-                        )}
-                      </div>
-                    ))}
-                    {isProductsLoading && (
-                      <p className="text-xs text-slate-400">
-                        Loading product catalog...
-                      </p>
-                    )}
-                    {!isProductsLoading && availableProducts.length === 0 && (
-                      <p className="text-xs text-slate-400">
-                        No products available.
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleCreateOrder} className="space-y-4">
                   <div>
                     <label
-                      htmlFor="new-delivery"
+                      htmlFor="new-customer"
                       className="text-sm font-medium"
                     >
-                      Delivery Charge (৳)
+                      Customer Name
                     </label>
                     <Input
-                      id="new-delivery"
-                      type="number"
-                      min="0"
-                      value={newOrder.deliveryCharge}
+                      id="new-customer"
+                      value={newOrder.customer}
                       onChange={(e) =>
-                        setNewOrder({
-                          ...newOrder,
-                          deliveryCharge: Math.max(
-                            0,
-                            Number.parseInt(e.target.value) || 0,
-                          ),
-                        })
+                        setNewOrder({ ...newOrder, customer: e.target.value })
                       }
                       required
                     />
-                    <p className="mt-1 text-xs text-slate-500">
-                      Defaults from Delivery Settings. You can change it
-                      manually for this order.
-                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Items Qty</label>
+                    <label htmlFor="new-email" className="text-sm font-medium">
+                      Email (Optional)
+                    </label>
                     <Input
-                      value={getItemsCount()}
-                      readOnly
-                      className="bg-slate-50"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Subtotal (৳)</label>
-                    <Input
-                      value={getSubtotal()}
-                      readOnly
-                      className="bg-slate-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Total (৳)</label>
-                    <Input
-                      value={
-                        getSubtotal() +
-                        Math.max(0, newOrder.deliveryCharge || 0)
+                      id="new-email"
+                      type="email"
+                      value={newOrder.email}
+                      onChange={(e) =>
+                        setNewOrder({ ...newOrder, email: e.target.value })
                       }
-                      readOnly
-                      className="bg-slate-50"
                     />
                   </div>
-                </div>
+                  <div>
+                    <label htmlFor="new-phone" className="text-sm font-medium">
+                      Phone
+                    </label>
+                    <Input
+                      id="new-phone"
+                      value={newOrder.phone}
+                      onChange={(e) =>
+                        setNewOrder({ ...newOrder, phone: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="new-address"
+                      className="text-sm font-medium"
+                    >
+                      Delivery Address
+                    </label>
+                    <Textarea
+                      id="new-address"
+                      value={newOrder.address}
+                      onChange={(e) =>
+                        setNewOrder({ ...newOrder, address: e.target.value })
+                      }
+                      required
+                      className="mt-1"
+                    />
+                  </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                >
-                  Place Order
-                </Button>
-              </form>
-            </div>
-          </Card>
+                  <div className="border rounded-md p-3 bg-slate-50">
+                    <div className="text-sm font-medium block mb-2">
+                      Select Products
+                    </div>
+                    <div className="max-h-[150px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                      {availableProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`prod-${product.id}`}
+                            checked={Boolean(selectedProducts[product.id])}
+                            onChange={(e) =>
+                              handleProductSelect(product.id, e.target.checked)
+                            }
+                            className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                          />
+                          <label
+                            htmlFor={`prod-${product.id}`}
+                            className="text-sm flex-1 cursor-pointer flex justify-between"
+                          >
+                            <span className="truncate">{product.name}</span>
+                            <span className="text-slate-500">
+                              ৳{product.price}
+                            </span>
+                          </label>
+                          {selectedProducts[product.id] && (
+                            <Input
+                              type="number"
+                              min="1"
+                              value={selectedProducts[product.id]}
+                              onChange={(e) =>
+                                handleQuantityChange(
+                                  product.id,
+                                  Number.parseInt(e.target.value) || 1,
+                                )
+                              }
+                              className="w-16"
+                              onWheel={(e) => e.currentTarget.blur()}
+                            />
+                          )}
+                        </div>
+                      ))}
+                      {isProductsLoading && (
+                        <p className="text-xs text-slate-400">
+                          Loading product catalog...
+                        </p>
+                      )}
+                      {!isProductsLoading && availableProducts.length === 0 && (
+                        <p className="text-xs text-slate-400">
+                          No products available.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="new-coupon"
+                        className="text-sm font-medium"
+                      >
+                        Promo Code
+                      </label>
+                      <div className="mt-1 flex gap-2">
+                        <Input
+                          id="new-coupon"
+                          value={newOrder.couponCode}
+                          onChange={(e) =>
+                            setNewOrder({
+                              ...newOrder,
+                              couponCode: e.target.value.toUpperCase(),
+                              discountAmount: 0,
+                            })
+                          }
+                          placeholder="Enter code"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={applyManualCoupon}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="new-delivery"
+                        className="text-sm font-medium"
+                      >
+                        Delivery Charge (৳)
+                      </label>
+                      <Input
+                        id="new-delivery"
+                        type="number"
+                        min="0"
+                        value={newOrder.deliveryCharge}
+                        onChange={(e) =>
+                          setNewOrder({
+                            ...newOrder,
+                            deliveryCharge: Math.max(
+                              0,
+                              Number.parseInt(e.target.value) || 0,
+                            ),
+                          })
+                        }
+                        required
+                      />
+                      <p className="mt-1 text-xs text-slate-500">
+                        Defaults from Delivery Settings. You can change it
+                        manually for this order.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    <div>
+                      <label className="text-sm font-medium">
+                        Subtotal (৳)
+                      </label>
+                      <Input
+                        value={getSubtotal()}
+                        readOnly
+                        className="bg-slate-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">
+                        Discount (৳)
+                      </label>
+                      <Input
+                        value={Math.max(0, newOrder.discountAmount || 0)}
+                        readOnly
+                        className="bg-slate-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Total (৳)</label>
+                      <Input
+                        value={
+                          getSubtotal() +
+                          Math.max(0, newOrder.deliveryCharge || 0) -
+                          Math.max(0, newOrder.discountAmount || 0)
+                        }
+                        readOnly
+                        className="bg-slate-50"
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    Place Order
+                  </Button>
+                </form>
+              </div>
+            </Card>
+          </div>
         </div>
       )}
 
       {/* Edit Order Modal */}
       {editingId && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
-          {/* Form content identical to original */}
-          <Card className="my-auto w-full max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
-            <div className="p-6 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-slate-800">
-                  Edit Order {editingId}
-                </h2>
-                <button
-                  onClick={() => setEditingId(null)}
-                  className="text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-md">
+          <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
+            <Card className="my-auto w-full max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+              <div className="p-6 overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-slate-800">
+                    Edit Order {editingId}
+                  </h2>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <form onSubmit={handleUpdateOrder} className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="edit-customer"
+                      className="text-sm font-medium"
+                    >
+                      Customer Name
+                    </label>
+                    <Input
+                      id="edit-customer"
+                      value={editForm.customer}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, customer: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-phone" className="text-sm font-medium">
+                      Phone
+                    </label>
+                    <Input
+                      id="edit-phone"
+                      value={editForm.phone}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, phone: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="edit-price"
+                        className="text-sm font-medium"
+                      >
+                        Price (৳)
+                      </label>
+                      <Input
+                        id="edit-price"
+                        type="number"
+                        min="0"
+                        value={editForm.price}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            price: Math.max(
+                              0,
+                              Number.parseInt(e.target.value) || 0,
+                            ),
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="edit-items"
+                        className="text-sm font-medium"
+                      >
+                        Items Qty
+                      </label>
+                      <Input
+                        id="edit-items"
+                        type="number"
+                        min="1"
+                        value={editForm.items}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            items: Math.max(
+                              1,
+                              Number.parseInt(e.target.value) || 0,
+                            ),
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => {
+                        handleDelete(editingId);
+                        setEditingId(null);
+                      }}
+                    >
+                      Delete Order
+                    </Button>
+                    <Button
+                      type="submit"
+                      className={
+                        hasChanges
+                          ? "bg-orange-600 hover:bg-orange-700 text-white"
+                          : "bg-slate-900 text-white"
+                      }
+                    >
+                      Save Changes
+                    </Button>
+                  </div>
+                </form>
               </div>
-              <form onSubmit={handleUpdateOrder} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="edit-customer"
-                    className="text-sm font-medium"
-                  >
-                    Customer Name
-                  </label>
-                  <Input
-                    id="edit-customer"
-                    value={editForm.customer}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, customer: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="edit-phone" className="text-sm font-medium">
-                    Phone
-                  </label>
-                  <Input
-                    id="edit-phone"
-                    value={editForm.phone}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, phone: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="edit-price" className="text-sm font-medium">
-                      Price (৳)
-                    </label>
-                    <Input
-                      id="edit-price"
-                      type="number"
-                      min="0"
-                      value={editForm.price}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          price: Math.max(
-                            0,
-                            Number.parseInt(e.target.value) || 0,
-                          ),
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="edit-items" className="text-sm font-medium">
-                      Items Qty
-                    </label>
-                    <Input
-                      id="edit-items"
-                      type="number"
-                      min="1"
-                      value={editForm.items}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          items: Math.max(
-                            1,
-                            Number.parseInt(e.target.value) || 0,
-                          ),
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-2 justify-end pt-2">
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => {
-                      handleDelete(editingId);
-                      setEditingId(null);
-                    }}
-                  >
-                    Delete Order
-                  </Button>
-                  <Button
-                    type="submit"
-                    className={
-                      hasChanges
-                        ? "bg-orange-600 hover:bg-orange-700 text-white"
-                        : "bg-slate-900 text-white"
-                    }
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       )}
 

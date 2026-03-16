@@ -81,6 +81,11 @@ export async function getHomeSections(domain?: string) {
                 pieces: true,
                 servingSize: true,
                 weight: true,
+                comboItems: {
+                  include: {
+                    child: { select: { pieces: true, servingSize: true } },
+                  },
+                },
               },
             },
           },
@@ -124,6 +129,11 @@ export async function getHomeSections(domain?: string) {
                   pieces: true,
                   servingSize: true,
                   weight: true,
+                  comboItems: {
+                    include: {
+                      child: { select: { pieces: true, servingSize: true } },
+                    },
+                  },
                 },
               },
             },

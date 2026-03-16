@@ -35,6 +35,17 @@ type ProductDetail = {
   pieces?: number | null;
   servingSize?: number | null;
   sku?: string | null;
+  type?: "SINGLE" | "COMBO" | null;
+  isAvailable?: boolean | null;
+  comboItems?:
+    | {
+        quantity: number;
+        child?: {
+          pieces: number;
+          servingSize?: number;
+        };
+      }[]
+    | null;
 };
 
 function ProductImageCarousel({
@@ -245,8 +256,35 @@ export default function SmartLinkPage() {
     );
   };
 
-  const pieces = product.servingSize ?? 0;
-  const isOutOfStock = (product.pieces ?? 0) <= 0;
+  const pieces =
+    product.type === "COMBO"
+      ? (product.comboItems || []).reduce(
+          (sum, item) =>
+            sum +
+            Math.max(
+              0,
+              (item.child?.servingSize || 0) * Math.max(0, item.quantity || 0),
+            ),
+          0,
+        )
+      : (product.servingSize ?? 0);
+  const comboAvailableSets =
+    product.type === "COMBO"
+      ? (() => {
+          if (!product.comboItems || product.comboItems.length === 0) return 0;
+          const limits = product.comboItems.map((item) =>
+            Math.floor(
+              (item.child?.pieces || 0) / Math.max(1, item.quantity || 1),
+            ),
+          );
+          return limits.length > 0 ? Math.max(0, Math.min(...limits)) : 0;
+        })()
+      : 0;
+  const isOutOfStock =
+    product.isAvailable === false ||
+    (product.type === "COMBO"
+      ? comboAvailableSets <= 0
+      : (product.pieces ?? 0) <= 0);
   const imageList =
     product.images && product.images.length > 0
       ? product.images

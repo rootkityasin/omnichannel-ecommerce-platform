@@ -75,6 +75,14 @@ interface ProductModalProps {
     servingSize?: number;
     pieces?: number;
     isAvailable?: boolean;
+    type?: "SINGLE" | "COMBO";
+    comboItems?: {
+      quantity: number;
+      child?: {
+        pieces: number;
+        servingSize?: number;
+      };
+    }[];
   };
 }
 
@@ -86,9 +94,32 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     product.weightOptions?.[0] || "Standard",
   );
   const piecesInside = Number(product.servingSize || 0);
+  const comboPiecesInside = (product.comboItems || []).reduce(
+    (sum, item) =>
+      sum +
+      Math.max(
+        0,
+        (item.child?.servingSize || 0) * Math.max(0, item.quantity || 0),
+      ),
+    0,
+  );
+  const comboAvailableSets =
+    product.type === "COMBO"
+      ? (() => {
+          if (!product.comboItems || product.comboItems.length === 0) return 0;
+          const limits = product.comboItems.map((item) =>
+            Math.floor(
+              (item.child?.pieces || 0) / Math.max(1, item.quantity || 1),
+            ),
+          );
+          return limits.length > 0 ? Math.max(0, Math.min(...limits)) : 0;
+        })()
+      : 0;
   const isOutOfStock =
     product.isAvailable === false ||
-    (typeof product.pieces === "number" && product.pieces <= 0);
+    (product.type === "COMBO"
+      ? comboAvailableSets <= 0
+      : typeof product.pieces === "number" && product.pieces <= 0);
 
   // Gallery State
   // Gallery State
@@ -277,12 +308,14 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
             </>
           )}
 
-          {piecesInside > 0 && (
+          {(product.type === "COMBO" ? comboPiecesInside : piecesInside) >
+            0 && (
             <div className="absolute top-4 left-4 z-30">
               <div className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-crab-red animate-pulse" />
                 <span className="text-xs font-bold text-white">
-                  {piecesInside} pcs inside
+                  {product.type === "COMBO" ? comboPiecesInside : piecesInside}{" "}
+                  pcs inside
                 </span>
               </div>
             </div>

@@ -72,7 +72,7 @@ export async function getAdminProducts(domain?: string) {
         isAvailable: true,
         servingSize: true,
         comboItems: {
-          include: { child: { select: { pieces: true } } },
+          include: { child: { select: { pieces: true, servingSize: true } } },
         },
         sections: { select: { id: true } },
       },
@@ -160,7 +160,7 @@ export async function getPaginatedAdminProducts({
           isAvailable: true,
           servingSize: true,
           comboItems: {
-            include: { child: { select: { pieces: true } } },
+            include: { child: { select: { pieces: true, servingSize: true } } },
           },
           sections: { select: { id: true } },
         },
@@ -232,6 +232,9 @@ const getCachedProducts = unstable_cache(
         sku: true,
         isAvailable: true,
         servingSize: true,
+        comboItems: {
+          include: { child: { select: { pieces: true, servingSize: true } } },
+        },
         sections: {
           select: { slug: true },
         },

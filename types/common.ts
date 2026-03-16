@@ -19,6 +19,14 @@ export interface Product {
   description_bn?: string;
   pieces?: number;
   totalSold?: number;
+  type?: "SINGLE" | "COMBO";
+  comboItems?: {
+    quantity: number;
+    child?: {
+      pieces: number;
+      servingSize?: number;
+    };
+  }[];
   weightOptions?: string[];
   weight?: number;
   servingSize?: number;

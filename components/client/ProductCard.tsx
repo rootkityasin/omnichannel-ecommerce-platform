@@ -38,6 +38,8 @@ export const ProductCard = memo(function ProductCard({
   pieces,
   totalSold,
   weightOptions,
+  type,
+  comboItems,
   stage,
   isAvailable = true,
   servingSize,
@@ -133,13 +135,41 @@ export const ProductCard = memo(function ProductCard({
   const [showModal, setShowModal] = useState(false);
 
   const piecesInside = (() => {
+    if (type === "COMBO") {
+      const totalComboPieces = (comboItems || []).reduce(
+        (sum, item) =>
+          sum +
+          Math.max(
+            0,
+            (item.child?.servingSize || 0) * Math.max(0, item.quantity || 0),
+          ),
+        0,
+      );
+      return totalComboPieces > 0 ? totalComboPieces : null;
+    }
     const serving = Number(servingSize);
     if (Number.isFinite(serving) && serving > 0) return serving;
     return null;
   })();
 
+  const comboAvailableSets =
+    type === "COMBO"
+      ? (() => {
+          if (!comboItems || comboItems.length === 0) return 0;
+          const limits = comboItems.map((item) =>
+            Math.floor(
+              (item.child?.pieces || 0) / Math.max(1, item.quantity || 1),
+            ),
+          );
+          return limits.length > 0 ? Math.max(0, Math.min(...limits)) : 0;
+        })()
+      : null;
+
   const isOutOfStock =
-    isAvailable === false || (typeof pieces === "number" && pieces <= 0);
+    isAvailable === false ||
+    (type === "COMBO"
+      ? (comboAvailableSets ?? 0) <= 0
+      : typeof pieces === "number" && pieces <= 0);
 
   return (
     <>
@@ -276,6 +306,8 @@ export const ProductCard = memo(function ProductCard({
           servingSize,
           pieces,
           isAvailable,
+          type,
+          comboItems,
         }}
       />
     </>
