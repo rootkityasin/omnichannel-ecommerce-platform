@@ -332,8 +332,10 @@ export default function OrdersPage() {
     const phoneRegex = /^01[3-9]\d{8}$/;
     if (!newOrder.customer.trim())
       return toast.error("Customer name is required");
-    if (!newOrder.email.trim()) return toast.error("Email is required");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newOrder.email))
+    if (
+      newOrder.email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newOrder.email)
+    )
       return toast.error("Invalid email");
     if (!phoneRegex.test(newOrder.phone))
       return toast.error("Invalid phone number. Format: 01XXXXXXXXX");
@@ -890,9 +892,9 @@ export default function OrdersPage() {
 
       {/* Modals omitted from code rendering text limit overhead but functional */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
+          <Card className="my-auto w-full max-w-lg animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-slate-800">
                   Create Manual Order
@@ -920,7 +922,7 @@ export default function OrdersPage() {
                 </div>
                 <div>
                   <label htmlFor="new-email" className="text-sm font-medium">
-                    Email
+                    Email (Optional)
                   </label>
                   <Input
                     id="new-email"
@@ -929,7 +931,6 @@ export default function OrdersPage() {
                     onChange={(e) =>
                       setNewOrder({ ...newOrder, email: e.target.value })
                     }
-                    required
                   />
                 </div>
                 <div>
@@ -1042,6 +1043,10 @@ export default function OrdersPage() {
                       }
                       required
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                      Defaults from Delivery Settings. You can change it
+                      manually for this order.
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Items Qty</label>
@@ -1088,10 +1093,10 @@ export default function OrdersPage() {
 
       {/* Edit Order Modal */}
       {editingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
           {/* Form content identical to original */}
-          <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6">
+          <Card className="my-auto w-full max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-slate-800">
                   Edit Order {editingId}
