@@ -32,24 +32,6 @@ const PENDING_ORDER_STATUSES = [
 ] as const;
 const INCOMPLETE_STATUSES = ["Incomplete", "INCOMPLETE"] as const;
 
-function getDhakaTodayRange() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Dhaka",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-
-  const year = parts.find((part) => part.type === "year")?.value;
-  const month = parts.find((part) => part.type === "month")?.value;
-  const day = parts.find((part) => part.type === "day")?.value;
-
-  const start = new Date(`${year}-${month}-${day}T00:00:00+06:00`);
-  const end = new Date(`${year}-${month}-${day}T23:59:59.999+06:00`);
-
-  return { start, end };
-}
-
 async function restoreOrderStock(orderDbId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderDbId },
@@ -96,7 +78,21 @@ async function restoreOrderStock(orderDbId: string) {
 
 const getCachedOrderStats = unstable_cache(
   async (tenantId: string) => {
-    const { start, end } = getDhakaTodayRange();
+    const todayCountQuery = `
+      SELECT COUNT(*)::int AS count
+      FROM "Order"
+      WHERE "tenantId" = $1
+        AND "status" NOT IN ('Incomplete', 'INCOMPLETE')
+        AND ("createdAt" AT TIME ZONE 'Asia/Dhaka')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Dhaka')::date
+    `;
+
+    const todayCancelledQuery = `
+      SELECT COUNT(*)::int AS count
+      FROM "Order"
+      WHERE "tenantId" = $1
+        AND "status" = 'Cancelled'
+        AND ("createdAt" AT TIME ZONE 'Asia/Dhaka')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Dhaka')::date
+    `;
 
     const [statusCounts, todayAgg, todayCancelledAgg, totalSalesAgg] =
       await Promise.all([
@@ -105,22 +101,14 @@ const getCachedOrderStats = unstable_cache(
           where: { tenantId },
           _count: { id: true },
         }),
-        prisma.order.aggregate({
-          where: {
-            tenantId,
-            createdAt: { gte: start, lte: end },
-            status: { notIn: [...INCOMPLETE_STATUSES] },
-          },
-          _count: { id: true },
-        }),
-        prisma.order.aggregate({
-          where: {
-            tenantId,
-            createdAt: { gte: start, lte: end },
-            status: "Cancelled",
-          },
-          _count: { id: true },
-        }),
+        prisma.$queryRawUnsafe<Array<{ count: number }>>(
+          todayCountQuery,
+          tenantId,
+        ),
+        prisma.$queryRawUnsafe<Array<{ count: number }>>(
+          todayCancelledQuery,
+          tenantId,
+        ),
         prisma.order.aggregate({
           where: { tenantId, status: SALE_STATUS },
           _sum: { totalAmount: true },
@@ -137,8 +125,8 @@ const getCachedOrderStats = unstable_cache(
 
     return {
       statusCounts: statusMap,
-      todayCount: todayAgg._count.id,
-      todayCancelled: todayCancelledAgg._count.id,
+      todayCount: todayAgg[0]?.count || 0,
+      todayCancelled: todayCancelledAgg[0]?.count || 0,
       totalSales: totalSalesAgg._sum.totalAmount || 0,
     };
   },
