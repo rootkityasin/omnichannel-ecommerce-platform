@@ -696,7 +696,7 @@ export default function OrdersPage() {
           </form>
 
           {/* Date Filter (React Datepicker) */}
-          <div className="relative z-50">
+          <div className="relative z-30">
             <DatePicker
               selected={dateDate}
               onChange={(date: Date | null) => {
@@ -707,6 +707,7 @@ export default function OrdersPage() {
               maxDate={getBDDate()}
               placeholderText="Filter by Date"
               className="bg-white border border-gray-200 rounded-md px-3 py-2 text-sm w-[240px]"
+              popperClassName="admin-datepicker-popper"
               renderCustomHeader={({
                 date,
                 changeYear,

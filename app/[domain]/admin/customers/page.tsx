@@ -60,6 +60,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 type CustomerRow = {
   id: string;
@@ -479,7 +480,7 @@ export default function CustomersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-800">
             👥 Customers
@@ -488,23 +489,24 @@ export default function CustomersPage() {
             View and manage your customer base.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={
+                className={cn(
+                  "w-full sm:w-auto",
                   minSpent > 0 || minOrders > 0 || sortBy !== "newest"
                     ? "bg-orange-50 border-orange-200 text-orange-700"
-                    : ""
-                }
+                    : "",
+                )}
               >
                 <Filter className="w-4 h-4 mr-2" /> Filter{" "}
                 {(minSpent > 0 || minOrders > 0 || sortBy !== "newest") &&
                   "(Active)"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-[calc(100vw-2rem)] max-w-80">
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <h4 className="font-medium leading-none">Filter & Sort</h4>
@@ -561,7 +563,11 @@ export default function CustomersPage() {
               </div>
             </PopoverContent>
           </Popover>
-          <Button variant="outline" onClick={handleDownload}>
+          <Button
+            variant="outline"
+            onClick={handleDownload}
+            className="w-full sm:w-auto"
+          >
             <Download className="w-4 h-4 mr-2" /> Download CSV
           </Button>
           {(userRole === "TENANT_ADMIN" || userRole === "SUPER_ADMIN") && (
@@ -570,6 +576,7 @@ export default function CustomersPage() {
                 variant="outline"
                 onClick={() => setShowUploadGuide(true)}
                 disabled={isUploading}
+                className="w-full sm:w-auto"
               >
                 {isUploading ? (
                   <>
@@ -676,7 +683,7 @@ export default function CustomersPage() {
               setEditingId(null);
               setNewCustomer({ name: "", phone: "", email: "" });
             }}
-            className="bg-orange-600 hover:bg-orange-700 text-white"
+            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Customer
           </Button>
@@ -765,7 +772,7 @@ export default function CustomersPage() {
 
       <Card className="border-gray-100 shadow-sm">
         <div className="p-4 border-b border-gray-100">
-          <div className="relative max-w-sm">
+          <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
@@ -776,7 +783,107 @@ export default function CustomersPage() {
             />
           </div>
         </div>
-        <div className="overflow-x-auto custom-table-scrollbar">
+        <div className="space-y-3 p-4 md:hidden">
+          {filteredCustomers.map((customer) => (
+            <div
+              key={customer.id}
+              className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200 flex-shrink-0">
+                    {customer.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-slate-800 flex items-center gap-2 flex-wrap">
+                      <span className="truncate">{customer.name}</span>
+                      {customer.isGuest && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] h-4 px-1 py-0 border-slate-300 text-slate-500 font-normal"
+                        >
+                          Guest
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-slate-400 truncate">
+                      ID:{" "}
+                      {customer.id.startsWith("guest_")
+                        ? "Unregistered"
+                        : `#${customer.id}`}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {!customer.isGuest && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={() => handleEdit(customer)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => handleDelete(customer.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Phone className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">{customer.phone}</span>
+                </div>
+                {customer.email && (
+                  <div className="flex items-center gap-2 min-w-0 text-xs text-slate-500">
+                    <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">{customer.email}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Points
+                  </div>
+                  <div className="mt-1">
+                    <Badge
+                      variant="secondary"
+                      className="bg-orange-100 text-orange-700 hover:bg-orange-100"
+                    >
+                      {customer.points} pts
+                    </Badge>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                    History
+                  </div>
+                  <div className="mt-1 font-bold text-slate-800">
+                    ৳{customer.spent.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {customer.orders} Orders
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredCustomers.length === 0 && (
+            <div className="rounded-xl border border-slate-100 bg-white p-8 text-center text-slate-500 shadow-sm">
+              No customers found matching &quot;{search}&quot;.
+            </div>
+          )}
+        </div>
+        <div className="hidden md:block overflow-x-auto custom-table-scrollbar">
           <table className="w-full text-sm text-left min-w-[600px]">
             <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
               <tr>
