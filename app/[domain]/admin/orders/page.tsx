@@ -639,7 +639,7 @@ export default function OrdersPage() {
       onClick={() => isFilterOpen && setIsFilterOpen(false)}
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-800">
             🛍️ Orders
@@ -648,13 +648,13 @@ export default function OrdersPage() {
             Manage your kitchen flow here.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           {shopType === "RESTAURANT" && (
-            <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
+            <div className="flex bg-gray-100 p-1 rounded-lg w-full sm:w-auto">
               <button
                 onClick={() => setView("table")}
                 className={cn(
-                  "p-1.5 rounded-md transition-all",
+                  "flex-1 sm:flex-none p-1.5 rounded-md transition-all",
                   view === "table"
                     ? "bg-white shadow-sm text-slate-900"
                     : "text-slate-400",
@@ -665,7 +665,7 @@ export default function OrdersPage() {
               <button
                 onClick={() => setView("kanban")}
                 className={cn(
-                  "p-1.5 rounded-md transition-all",
+                  "flex-1 sm:flex-none p-1.5 rounded-md transition-all",
                   view === "kanban"
                     ? "bg-white shadow-sm text-slate-900"
                     : "text-slate-400",
@@ -678,7 +678,7 @@ export default function OrdersPage() {
 
           {/* Search */}
           <form
-            className="relative"
+            className="relative w-full sm:w-auto sm:flex-1 sm:max-w-[260px]"
             onSubmit={(e) => {
               e.preventDefault();
               setFilterSearch(searchInput);
@@ -689,14 +689,14 @@ export default function OrdersPage() {
             <Input
               type="search"
               placeholder="Search orders..."
-              className="pl-9 w-[180px] sm:w-[250px] bg-white text-xs sm:text-sm"
+              className="pl-9 w-full bg-white text-xs sm:text-sm"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </form>
 
           {/* Date Filter (React Datepicker) */}
-          <div className="relative z-30">
+          <div className="relative z-30 w-full sm:w-auto">
             <DatePicker
               selected={dateDate}
               onChange={(date: Date | null) => {
@@ -808,7 +808,7 @@ export default function OrdersPage() {
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-[240px] justify-start text-left font-normal bg-white",
+                    "w-full sm:w-[240px] justify-start text-left font-normal bg-white",
                     !dateDate && "text-muted-foreground",
                   )}
                 >
@@ -861,9 +861,10 @@ export default function OrdersPage() {
           </div>
 
           {/* Source Filter Dropdown */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Button
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsFilterOpen(!isFilterOpen);
@@ -875,7 +876,7 @@ export default function OrdersPage() {
             </Button>
 
             {isFilterOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-in fade-in zoom-in-95">
+              <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-in fade-in zoom-in-95">
                 <div className="px-3 py-2 text-xs font-semibold text-slate-500 bg-gray-50 border-b border-gray-100">
                   Filter by Source
                 </div>
@@ -911,7 +912,7 @@ export default function OrdersPage() {
                 ensureCreateOrderDefaults(),
               ]);
             }}
-            className="bg-orange-600 hover:bg-orange-700 text-white"
+            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white"
           >
             <Plus className="w-4 h-4 mr-2" /> Create
           </Button>
@@ -1409,8 +1410,159 @@ export default function OrdersPage() {
             </div>
 
             <TabsContent value={filterStatus} className="mt-4">
+              <div className="space-y-3 md:hidden">
+                {isLoading ? (
+                  <div className="rounded-xl border border-slate-100 bg-white p-6 text-center text-slate-500 shadow-sm">
+                    Loading orders...
+                  </div>
+                ) : orders.length > 0 ? (
+                  orders.map((order) => (
+                    <Card key={order.id} className="border-gray-100 shadow-sm">
+                      <CardContent className="p-4 space-y-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-slate-900 break-all">
+                                {order.id}
+                              </span>
+                              {isSuspect(order) && (
+                                <Badge className="bg-red-100 text-red-700 border-red-200">
+                                  Suspect
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {format(
+                                new Date(order.date),
+                                "MMM d, yyyy h:mm a",
+                              )}
+                            </p>
+                          </div>
+                          <Badge
+                            className={cn(
+                              "font-normal",
+                              getStatusColor(order.status),
+                            )}
+                          >
+                            {order.status}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                              Customer
+                            </div>
+                            <div className="font-medium text-slate-900 break-words">
+                              {order.customer}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {order.phone}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                              Source
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="mt-1 bg-slate-800 text-white hover:bg-slate-700"
+                            >
+                              {order.source === "WHATSAPP" && (
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                              )}
+                              {order.source}
+                            </Badge>
+                          </div>
+                          <div>
+                            <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                              Items
+                            </div>
+                            <div className="font-medium text-slate-900">
+                              {order.items}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                              Price
+                            </div>
+                            <div className="font-bold text-slate-900">
+                              ৳{order.price}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => handleEditClick(order)}
+                          >
+                            <Edit className="w-4 h-4 mr-2" /> Edit
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full"
+                            disabled={
+                              order.status !== "Ready" &&
+                              order.status !== "Invoice Printed"
+                            }
+                            onClick={() => handlePrint(order)}
+                          >
+                            <Printer className="w-4 h-4 mr-2" />
+                            {order.stockDeducted ? "Printed" : "Invoice"}
+                          </Button>
+
+                          <Select
+                            value={order.status}
+                            onValueChange={(status) =>
+                              handleStatusChange(order.id, status)
+                            }
+                          >
+                            <SelectTrigger className="w-full text-xs sm:text-sm">
+                              <SelectValue placeholder="Update Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getUpdateStatuses().map((status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => handleMarkAsFake(order)}
+                          >
+                            <Ban className="w-4 h-4 mr-2" /> Fake
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => setDeleteId(order.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-slate-100 bg-white p-8 text-center text-slate-500 shadow-sm">
+                    No orders found matching your filters.
+                  </div>
+                )}
+              </div>
               <div className="overflow-x-auto pb-4 rounded-lg border border-gray-100 bg-white shadow-sm custom-table-scrollbar">
-                <table className="w-full text-sm text-left min-w-[800px]">
+                <table className="hidden md:table w-full text-sm text-left min-w-[800px]">
                   <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
                     <tr>
                       <th className="p-4 w-10">
@@ -1620,7 +1772,10 @@ export default function OrdersPage() {
               </div>
 
               {/* Pagination Controls */}
-              <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
+              <div className="flex items-center justify-center md:justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
+                <div className="md:hidden text-xs text-slate-500">
+                  Page {page} of {Math.max(1, Math.ceil(totalOrders / limit))}
+                </div>
                 <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
