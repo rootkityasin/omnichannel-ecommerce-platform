@@ -17,7 +17,7 @@ export const config = {
      * 3. /_static (inside /public)
      * 4. all root files inside /public (e.g. /favicon.ico)
      */
-    "/((?!api/|_next/|_static/|images/|_vercel|[\\w-]+\\.\\w+|sitemap.xml|robots.txt).*)",
+    "/((?!api/|_next/|_static/|images/|_vercel).*)",
   ],
 };
 
@@ -53,6 +53,15 @@ export default async function middleware(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-pathname", url.pathname);
 
+  const isRootMetadataFile =
+    url.pathname === "/sitemap.xml" || url.pathname === "/robots.txt";
+  const isStaticRootFile =
+    /\.[a-z0-9]+$/i.test(url.pathname) && !isRootMetadataFile;
+
+  if (isStaticRootFile) {
+    return NextResponse.next();
+  }
+
   // Admin device-setup guard — must run BEFORE any rewrites
   const isAdminRoute = url.pathname.startsWith("/admin");
   const isDeviceSetup = url.pathname.includes("/admin/security/device-setup");
@@ -86,6 +95,10 @@ export default async function middleware(req: NextRequest) {
   }
 
   if (hostname === "localhost" || hostname === rootDomain) {
+    if (isRootMetadataFile) {
+      return NextResponse.next();
+    }
+
     if (isTenantMode) {
       return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
         request: { headers: requestHeaders },
@@ -96,6 +109,14 @@ export default async function middleware(req: NextRequest) {
       new URL(`/home${path === "/" ? "" : path}`, req.url),
       { request: { headers: requestHeaders } },
     );
+  }
+
+  if (isRootMetadataFile) {
+    return NextResponse.rewrite(new URL(`/${slug}${url.pathname}`, req.url), {
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
