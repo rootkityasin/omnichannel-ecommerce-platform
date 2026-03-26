@@ -94,11 +94,11 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  if (hostname === "localhost" || hostname === rootDomain) {
-    if (isRootMetadataFile) {
-      return NextResponse.next();
-    }
+  if (isRootMetadataFile) {
+    return NextResponse.next();
+  }
 
+  if (hostname === "localhost" || hostname === rootDomain) {
     if (isTenantMode) {
       return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
         request: { headers: requestHeaders },
@@ -109,14 +109,6 @@ export default async function middleware(req: NextRequest) {
       new URL(`/home${path === "/" ? "" : path}`, req.url),
       { request: { headers: requestHeaders } },
     );
-  }
-
-  if (isRootMetadataFile) {
-    return NextResponse.rewrite(new URL(`/${slug}${url.pathname}`, req.url), {
-      request: {
-        headers: requestHeaders,
-      },
-    });
   }
 
   return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
