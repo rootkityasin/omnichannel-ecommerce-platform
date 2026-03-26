@@ -22,13 +22,7 @@ export async function GET(request: Request) {
   const config = await getSiteConfig(domain);
   const baseUrl = config.canonicalUrl || `https://${domain}`;
 
-  const staticRoutes = [
-    "",
-    "/menu",
-    "/story",
-    "/account/login",
-    "/account/register",
-  ];
+  const staticRoutes = ["", "/menu", "/story"];
   const [products, categories] = await Promise.all([
     getProducts(domain),
     getCategories(domain),
