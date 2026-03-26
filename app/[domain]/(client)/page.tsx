@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getHeroSlides } from "@/app/actions/hero";
 import { getSiteConfig } from "@/app/actions/settings";
 import { getCategories } from "@/app/actions/category";
+import { getHomepageSeoCopy } from "@/app/actions/story";
 import { HomeClient } from "@/components/client/HomeClient";
 import { HomeSections } from "@/components/server/HomeSections";
 
@@ -11,14 +12,20 @@ export default async function HomePage({
   // Fetch TOP FOLD data instantly
   // We do NOT wait for sections here to allow instant FCP
   const { domain } = await params;
-  const [heroSlides, config, categories] = await Promise.all([
+  const [heroSlides, config, categories, categorySeoCopy] = await Promise.all([
     getHeroSlides(domain),
     getSiteConfig(domain),
     getCategories(domain),
+    getHomepageSeoCopy(),
   ]);
 
   return (
-    <HomeClient heroSlides={heroSlides} config={config} categories={categories}>
+    <HomeClient
+      heroSlides={heroSlides}
+      config={config}
+      categories={categories}
+      categorySeoCopy={categorySeoCopy}
+    >
       <Suspense fallback={<SectionsLoading />}>
         <HomeSections domain={domain} />
       </Suspense>

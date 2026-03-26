@@ -352,8 +352,12 @@ import { Category } from "@/types/common";
 
 export function CategoryNav({
   initialCategories = [],
+  topLabel = "Best Crab in BD",
+  introText = "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
 }: {
   initialCategories?: Category[];
+  topLabel?: string;
+  introText?: string;
 }) {
   const categories = initialCategories;
 
@@ -378,7 +382,7 @@ export function CategoryNav({
             transition={{ duration: 0.8 }}
           >
             <p className="mb-2 text-xs md:text-sm font-black uppercase tracking-[0.18em] md:tracking-[0.2em] text-crab-red drop-shadow-[0_1px_0_rgba(255,255,255,0.35)]">
-              Best Crab in BD
+              {topLabel}
             </p>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
               Our{" "}
@@ -396,8 +400,7 @@ export function CategoryNav({
             className="hidden md:block"
           >
             <p className="text-slate-500 font-medium max-w-xs text-right text-sm leading-relaxed">
-              Discover the best crab in BD with premium frozen ready-to-fry crab
-              in Bangladesh, crafted for rich flavor in just 5 minutes.
+              {introText}
             </p>
           </motion.div>
         </div>

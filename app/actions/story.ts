@@ -59,6 +59,38 @@ export async function getBlockedCustomers() {
   }
 }
 
+export async function getHomepageSeoCopy() {
+  try {
+    const section = await prisma.storySection.findUnique({
+      where: { type: "HOMEPAGE_SEO_COPY" },
+      select: { content: true },
+    });
+
+    const content = section?.content as {
+      topLabel?: unknown;
+      introText?: unknown;
+    } | null;
+
+    return {
+      topLabel:
+        typeof content?.topLabel === "string" && content.topLabel.trim()
+          ? content.topLabel
+          : "Best Crab in BD",
+      introText:
+        typeof content?.introText === "string" && content.introText.trim()
+          ? content.introText
+          : "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
+    };
+  } catch (error) {
+    console.error("Failed to fetch homepage SEO copy:", error);
+    return {
+      topLabel: "Best Crab in BD",
+      introText:
+        "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
+    };
+  }
+}
+
 export async function updateStorySection(
   type: string,
   content: Prisma.InputJsonValue,
