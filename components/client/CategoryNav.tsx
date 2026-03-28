@@ -352,8 +352,8 @@ import { Category } from "@/types/common";
 
 export function CategoryNav({
   initialCategories = [],
-  topLabel = "Best Crab in BD",
-  introText = "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
+  topLabel = "Crab Price in Dhaka",
+  introText = "Find premium crab meat in Dhaka with ready-to-fry frozen crab packs from CrabKhai, made for rich flavor and a quick 5-minute fry.",
 }: {
   initialCategories?: Category[];
   topLabel?: string;

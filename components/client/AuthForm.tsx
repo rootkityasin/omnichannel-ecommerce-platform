@@ -44,8 +44,7 @@ export function AuthForm() {
   }, [formData.contact]);
 
   const handleSocialLogin = (provider: "google" | "apple") => {
-    const origin = window.location.origin;
-    signIn(provider, { callbackUrl: `${origin}/account` });
+    signIn(provider, { callbackUrl: "/account" });
   };
 
   // Fix: Reset loading state if user comes back

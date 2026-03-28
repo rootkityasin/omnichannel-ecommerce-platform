@@ -33,6 +33,7 @@ const isLocal = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes("localhost");
 const useSecureCookies = process.env.NODE_ENV === "production" && !isLocal;
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 const hostPrefix = useSecureCookies ? "__Host-" : "";
+const authCookiePrefix = `${cookiePrefix}authjs`;
 
 /**
  * Helper to fetch user with retry logic for Accelerate stability
@@ -118,7 +119,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // Add Secure Cookie Configuration
   cookies: {
     sessionToken: {
-      name: `${cookiePrefix}next-auth.session-token`,
+      name: `${authCookiePrefix}.session-token`,
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -127,7 +128,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     callbackUrl: {
-      name: `${cookiePrefix}next-auth.callback-url`,
+      name: `${authCookiePrefix}.callback-url`,
       options: {
         sameSite: "lax",
         path: "/",
@@ -135,7 +136,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     csrfToken: {
-      name: `${hostPrefix}next-auth.csrf-token`,
+      name: `${hostPrefix}authjs.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    pkceCodeVerifier: {
+      name: `${authCookiePrefix}.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+        maxAge: 60 * 15,
+      },
+    },
+    state: {
+      name: `${authCookiePrefix}.state`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+        maxAge: 60 * 15,
+      },
+    },
+    nonce: {
+      name: `${authCookiePrefix}.nonce`,
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -166,9 +196,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!credentials?.phone || !credentials?.password) return null;
 
           const phoneInput = credentials.phone as string;
-          const ip = req?.headers?.get("x-forwarded-for") ||
-                     req?.headers?.get("x-real-ip") ||
-                     "unknown_ip";
+          const ip =
+            req?.headers?.get("x-forwarded-for") ||
+            req?.headers?.get("x-real-ip") ||
+            "unknown_ip";
 
           // --- Impersonation Logic ---
           if (phoneInput.startsWith("impersonate:")) {
@@ -225,7 +256,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Rate Limit Check - Protect the User Account (Phone/Email)
           const phone = credentials.phone as string;
           if (!(await checkRateLimit(`login_account:${phone}`, 5, 60 * 1000))) {
-            console.warn(`🛑 Account login rate limit exceeded for phone/email: ${phone}`);
+            console.warn(
+              `🛑 Account login rate limit exceeded for phone/email: ${phone}`,
+            );
             return null;
           }
 

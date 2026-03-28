@@ -75,18 +75,18 @@ export async function getHomepageSeoCopy() {
       topLabel:
         typeof content?.topLabel === "string" && content.topLabel.trim()
           ? content.topLabel
-          : "Best Crab in BD",
+          : "Crab Price in Dhaka",
       introText:
         typeof content?.introText === "string" && content.introText.trim()
           ? content.introText
-          : "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
+          : "Find premium crab meat in Dhaka with ready-to-fry frozen crab packs from CrabKhai, made for rich flavor and a quick 5-minute fry.",
     };
   } catch (error) {
     console.error("Failed to fetch homepage SEO copy:", error);
     return {
-      topLabel: "Best Crab in BD",
+      topLabel: "Crab Price in Dhaka",
       introText:
-        "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
+        "Find premium crab meat in Dhaka with ready-to-fry frozen crab packs from CrabKhai, made for rich flavor and a quick 5-minute fry.",
     };
   }
 }

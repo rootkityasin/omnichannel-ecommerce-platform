@@ -30,18 +30,19 @@ export async function generateMetadata({
   else if (config.ogImage) twitterImages = [config.ogImage];
 
   return {
-    title: config.shopName || "Store",
+    title: config.seoTitle || config.shopName || "Store",
     description: config.seoDescription,
     keywords: config.seoKeywords,
     openGraph: {
-      title: config.shopName || "Store",
+      title: config.ogTitle || config.seoTitle || config.shopName || "Store",
       description: config.ogDescription || config.seoDescription || undefined,
       images: config.ogImage ? [{ url: config.ogImage }] : undefined,
       type: "website",
     },
     twitter: {
       card: getTwitterCardType(config.twitterCard),
-      title: config.shopName || undefined,
+      title:
+        config.twitterTitle || config.seoTitle || config.shopName || undefined,
       description:
         config.twitterDescription || config.seoDescription || undefined,
       images: twitterImages,
@@ -129,7 +130,10 @@ fbq('track', 'PageView');`,
         secondaryColor={config?.secondaryColor}
       />
       <MetaPixel pixelId={config.metaPixelId} />
-      <div data-vaul-drawer-wrapper="" className="client-shell flex flex-col min-h-screen bg-white relative font-body">
+      <div
+        data-vaul-drawer-wrapper=""
+        className="client-shell flex flex-col min-h-screen bg-white relative font-body"
+      >
         <div className="md:hidden sticky top-0 z-50">
           <MobileHeader />
         </div>

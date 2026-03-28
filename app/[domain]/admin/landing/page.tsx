@@ -158,9 +158,9 @@ export default function LandingPage() {
   );
   const [saving, setSaving] = useState(false);
   const [seoCopy, setSeoCopy] = useState({
-    topLabel: "Best Crab in BD",
+    topLabel: "Crab Price in Dhaka",
     introText:
-      "Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh, crafted for rich flavor in just 5 minutes.",
+      "Find premium crab meat in Dhaka with ready-to-fry frozen crab packs from CrabKhai, made for rich flavor and a quick 5-minute fry.",
   });
   const [savingSeoCopy, setSavingSeoCopy] = useState(false);
 
@@ -336,7 +336,7 @@ export default function LandingPage() {
                     onChange={(e) =>
                       setSeoCopy({ ...seoCopy, topLabel: e.target.value })
                     }
-                    placeholder="Best Crab in BD"
+                    placeholder="Crab Price in Dhaka"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -346,7 +346,7 @@ export default function LandingPage() {
                     onChange={(e) =>
                       setSeoCopy({ ...seoCopy, introText: e.target.value })
                     }
-                    placeholder="Discover the best crab in BD with premium frozen ready-to-fry crab in Bangladesh..."
+                    placeholder="Find premium crab meat in Dhaka with ready-to-fry frozen crab packs from CrabKhai..."
                   />
                 </div>
               </div>
