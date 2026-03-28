@@ -39,7 +39,7 @@ import {
   deleteUser,
   getCurrentUserRole,
 } from "@/app/actions/user";
-import { fetchCustomers } from "./actions";
+import { fetchAccountCreatedUsers, fetchCustomers } from "./actions";
 import { toast } from "sonner";
 import readXlsxFile from "read-excel-file";
 import {
@@ -198,6 +198,9 @@ const parseSheetRows = (
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
+  const [accountCreatedUsers, setAccountCreatedUsers] = useState<CustomerRow[]>(
+    [],
+  );
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -227,8 +230,9 @@ export default function CustomersPage() {
       hasFetched.current = true;
 
       try {
-        const [users, role] = await Promise.all([
+        const [users, accountUsers, role] = await Promise.all([
           fetchCustomers(),
+          fetchAccountCreatedUsers(),
           getCurrentUserRole(),
         ]);
 
@@ -236,8 +240,8 @@ export default function CustomersPage() {
 
         setUserRole(role);
 
-        const formatted = users.map(mapCustomerRow);
-        setCustomers(formatted);
+        setCustomers(users.map(mapCustomerRow));
+        setAccountCreatedUsers(accountUsers.map(mapCustomerRow));
       } catch (error) {
         if (!isMounted.current) return;
         console.error("Failed to fetch initial data:", error);
@@ -250,8 +254,14 @@ export default function CustomersPage() {
   const [minSpent, setMinSpent] = useState(0);
   const [minOrders, setMinOrders] = useState(0);
   const [sortBy, setSortBy] = useState("newest");
+  const [activeTab, setActiveTab] = useState<"customers" | "accounts">(
+    "customers",
+  );
 
-  const filteredCustomers = customers
+  const visibleRows =
+    activeTab === "customers" ? customers : accountCreatedUsers;
+
+  const filteredCustomers = visibleRows
     .filter(
       (c) =>
         (c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -285,6 +295,15 @@ export default function CustomersPage() {
     setDeleteId(id);
   };
 
+  const refreshCustomerData = async () => {
+    const [orderedCustomers, createdUsers] = await Promise.all([
+      fetchCustomers(),
+      fetchAccountCreatedUsers(),
+    ]);
+    setCustomers(orderedCustomers.map(mapCustomerRow));
+    setAccountCreatedUsers(createdUsers.map(mapCustomerRow));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCustomer.name || !newCustomer.phone) return;
@@ -302,11 +321,7 @@ export default function CustomersPage() {
       // Update existing
       const res = await updateCustomer(editingId, newCustomer);
       if (res.success) {
-        setCustomers(
-          customers.map((c) =>
-            c.id === editingId ? { ...c, ...newCustomer } : c,
-          ),
-        );
+        await refreshCustomerData();
         toast.success("Customer updated successfully");
         setIsAdding(false);
         setNewCustomer({ name: "", phone: "", email: "" });
@@ -318,15 +333,7 @@ export default function CustomersPage() {
       // Add new
       const res = await createCustomer(newCustomer);
       if (res.success && res.user) {
-        const customer = {
-          id: res.user.id,
-          ...newCustomer,
-          orders: 0,
-          spent: 0,
-          points: res.user.points || 0,
-          createdAt: res.user.createdAt,
-        };
-        setCustomers([customer, ...customers]); // Prepend new customer
+        await refreshCustomerData();
         toast.success("Customer added successfully");
         setIsAdding(false);
         setNewCustomer({ name: "", phone: "", email: "" });
@@ -368,7 +375,7 @@ export default function CustomersPage() {
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `customers_SortedBy_${sortBy}_${new Date().toISOString().split("T")[0]}.csv`,
+      `${activeTab === "customers" ? "customers" : "account_created_users"}_SortedBy_${sortBy}_${new Date().toISOString().split("T")[0]}.csv`,
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -430,8 +437,12 @@ export default function CustomersPage() {
         toast.success(
           `Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`,
         );
-        const users = await fetchCustomers();
+        const [users, accountUsers] = await Promise.all([
+          fetchCustomers(),
+          fetchAccountCreatedUsers(),
+        ]);
         setCustomers(users.map(mapCustomerRow));
+        setAccountCreatedUsers(accountUsers.map(mapCustomerRow));
       } else {
         toast.error(result.error || "Import failed");
       }
@@ -466,7 +477,7 @@ export default function CustomersPage() {
                 if (deleteId) {
                   const res = await deleteUser(deleteId);
                   if (res.success) {
-                    setCustomers(customers.filter((c) => c.id !== deleteId));
+                    await refreshCustomerData();
                     toast.success("Customer removed successfully");
                   } else {
                     toast.error(res.error || "Failed to remove customer");
@@ -690,6 +701,35 @@ export default function CustomersPage() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 rounded-xl border border-slate-100 bg-white p-1 shadow-sm w-full sm:w-fit">
+        <Button
+          type="button"
+          variant={activeTab === "customers" ? "default" : "ghost"}
+          className={cn(
+            "flex-1 sm:flex-none",
+            activeTab === "customers"
+              ? "bg-orange-600 hover:bg-orange-700 text-white"
+              : "text-slate-600 hover:text-slate-900",
+          )}
+          onClick={() => setActiveTab("customers")}
+        >
+          Customers ({customers.length})
+        </Button>
+        <Button
+          type="button"
+          variant={activeTab === "accounts" ? "default" : "ghost"}
+          className={cn(
+            "flex-1 sm:flex-none",
+            activeTab === "accounts"
+              ? "bg-orange-600 hover:bg-orange-700 text-white"
+              : "text-slate-600 hover:text-slate-900",
+          )}
+          onClick={() => setActiveTab("accounts")}
+        >
+          Account Created Users ({accountCreatedUsers.length})
+        </Button>
+      </div>
+
       {/* Modal */}
       {isAdding && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
@@ -879,7 +919,11 @@ export default function CustomersPage() {
           ))}
           {filteredCustomers.length === 0 && (
             <div className="rounded-xl border border-slate-100 bg-white p-8 text-center text-slate-500 shadow-sm">
-              No customers found matching &quot;{search}&quot;.
+              No{" "}
+              {activeTab === "customers"
+                ? "customers"
+                : "account-created users"}{" "}
+              found matching &quot;{search}&quot;.
             </div>
           )}
         </div>
@@ -982,7 +1026,11 @@ export default function CustomersPage() {
               {filteredCustomers.length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-slate-500">
-                    No customers found matching &quot;{search}&quot;.
+                    No{" "}
+                    {activeTab === "customers"
+                      ? "customers"
+                      : "account-created users"}{" "}
+                    found matching &quot;{search}&quot;.
                   </td>
                 </tr>
               )}

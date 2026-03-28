@@ -262,7 +262,7 @@ function AccountProfileView({
   onLogout: () => void;
 }>) {
   return (
-    <div className="bg-gray-50 min-h-screen pb-20 md:pb-0 pt-16 md:pt-28">
+    <div className="bg-gray-50 min-h-screen pb-20 md:pb-0 pt-0 md:pt-28">
       <div className="max-w-4xl mx-auto px-4 md:px-0">
         <motion.div
           initial={{ y: -50, opacity: 0 }}

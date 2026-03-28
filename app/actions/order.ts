@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { logActionRequest } from "@/lib/actionLogger";
 import { randomUUID } from "node:crypto";
 import { unstable_cache, updateTag } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
 const SALE_STATUS = "Payment Received";
@@ -741,5 +742,91 @@ export async function getOrderStats() {
   } catch (error) {
     console.error("getOrderStats error:", error);
     return null;
+  }
+}
+
+export async function getMyOrders() {
+  try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!sessionUser?.id || !tenantId) return [];
+
+    const normalizedPhones = Array.from(
+      new Set(
+        [sessionUser.phone].filter(Boolean).flatMap((phone) => {
+          const raw = String(phone).trim();
+          const digits = raw.replace(/\D/g, "");
+          const local = digits.startsWith("88") ? digits.slice(2) : digits;
+          const plusLocal = local ? `+88${local}` : "";
+          return [raw, digits, local, plusLocal].filter(Boolean);
+        }),
+      ),
+    );
+
+    const whereClause: Prisma.OrderWhereInput = {
+      tenantId,
+      status: { notIn: [...INCOMPLETE_STATUSES] },
+      OR: [
+        ...(sessionUser.email
+          ? [
+              {
+                customerEmail: {
+                  equals: sessionUser.email,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+            ]
+          : []),
+        ...(normalizedPhones.length > 0
+          ? [{ customerPhone: { in: normalizedPhones } }]
+          : []),
+      ],
+    };
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      select: {
+        orderId: true,
+        status: true,
+        createdAt: true,
+        totalAmount: true,
+        items: {
+          select: {
+            id: true,
+            quantity: true,
+            price: true,
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return orders.map((order) => ({
+      id: order.orderId,
+      status: order.status,
+      createdAt: order.createdAt.toISOString(),
+      totalAmount: order.totalAmount,
+      items: order.items.map(
+        (item: {
+          id: string;
+          quantity: number;
+          price: number;
+          product: { name: string } | null;
+        }) => ({
+          id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          productName: item.product?.name || "Product",
+        }),
+      ),
+    }));
+  } catch (error) {
+    console.error("Failed to fetch my orders:", error);
+    return [];
   }
 }

@@ -533,17 +533,19 @@ const getCachedCustomersStats = unstable_cache(
       if (user.phone) processedPhones.add(user.phone);
 
       const stats = user.phone ? phoneMap.get(user.phone) : null;
-      mergedList.push({
-        id: user.id, // Real UUID
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        createdAt: user.createdAt,
-        points: user.points,
-        orders: stats?.count || 0,
-        spent: stats?.spent || 0,
-        isGuest: false,
-      });
+      if ((stats?.count || 0) > 0) {
+        mergedList.push({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          createdAt: user.createdAt,
+          points: user.points,
+          orders: stats?.count || 0,
+          spent: stats?.spent || 0,
+          isGuest: false,
+        });
+      }
     }
 
     // 6. Append remaining unregistered Guests from the Phone Map
@@ -586,6 +588,94 @@ export async function getCustomers() {
     return await getCachedCustomersStats(userRole, userTenantId);
   } catch (error) {
     console.error("getCustomers Error:", error);
+    return [];
+  }
+}
+
+const getCachedAccountCreatedUsers = unstable_cache(
+  async (
+    userRole: string | undefined,
+    userTenantId: string | null | undefined,
+  ) => {
+    const orderWhere: Prisma.OrderWhereInput = {};
+    if (userRole !== "SUPER_ADMIN" && userTenantId) {
+      orderWhere.tenantId = userTenantId;
+    }
+
+    const [orders, registeredUsers] = await Promise.all([
+      prisma.order.findMany({
+        where: orderWhere,
+        select: {
+          customerPhone: true,
+          customerEmail: true,
+        },
+      }),
+      prisma.user.findMany({
+        where: {
+          role: "USER",
+          ...(userRole !== "SUPER_ADMIN" && userTenantId
+            ? { tenantId: userTenantId }
+            : {}),
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          createdAt: true,
+          points: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    const orderedPhones = new Set(
+      orders.map((order) => order.customerPhone).filter(Boolean),
+    );
+    const orderedEmails = new Set(
+      orders.map((order) => order.customerEmail?.toLowerCase()).filter(Boolean),
+    );
+
+    return registeredUsers
+      .filter((user) => {
+        const hasPhoneOrder = user.phone
+          ? orderedPhones.has(user.phone)
+          : false;
+        const hasEmailOrder = user.email
+          ? orderedEmails.has(user.email.toLowerCase())
+          : false;
+        return !hasPhoneOrder && !hasEmailOrder;
+      })
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || "N/A",
+        orders: 0,
+        spent: 0,
+        points: user.points || 0,
+        createdAt: user.createdAt,
+        isGuest: false,
+      }));
+  },
+  ["account-created-users"],
+  { tags: ["customers", "orders"], revalidate: 3600 },
+);
+
+export async function getAccountCreatedUsers() {
+  await logActionRequest({ actionName: "getAccountCreatedUsers" });
+  const sessionUser = await getSessionUser();
+  const userRole = sessionUser?.role;
+  const userTenantId = sessionUser?.tenantId;
+
+  if (!hasAdminAccess(userRole)) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    return await getCachedAccountCreatedUsers(userRole, userTenantId);
+  } catch (error) {
+    console.error("getAccountCreatedUsers Error:", error);
     return [];
   }
 }

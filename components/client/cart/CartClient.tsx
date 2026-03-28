@@ -63,6 +63,55 @@ interface CartClientProps {
   initialSiteConfig: SiteConfig | null;
 }
 
+type SavedAddress = {
+  id: string;
+  tag: string;
+  area?: string;
+  address: string;
+  phone: string;
+  isDefault?: boolean;
+};
+
+function getInitialCheckoutData(): CheckoutFormData {
+  const empty = {
+    name: "",
+    phone: "",
+    email: "",
+    area: "",
+    address: "",
+    transactionId: "",
+  };
+
+  if (typeof window === "undefined") return empty;
+
+  try {
+    const storedUserRaw = localStorage.getItem("crabkhai_user");
+    const storedAddressesRaw = localStorage.getItem("crabkhai_addresses");
+
+    const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+    const storedAddresses: SavedAddress[] = storedAddressesRaw
+      ? JSON.parse(storedAddressesRaw)
+      : [];
+
+    const defaultAddress =
+      storedAddresses.find((address) => address.isDefault) ||
+      storedAddresses[0];
+
+    return {
+      name: storedUser?.name || "",
+      phone: String(storedUser?.phone || defaultAddress?.phone || "")
+        .replace(/^\+?88/, "")
+        .replace(/\D/g, ""),
+      email: storedUser?.email || "",
+      area: defaultAddress?.area || "",
+      address: defaultAddress?.address || storedUser?.address || "",
+      transactionId: "",
+    };
+  } catch {
+    return empty;
+  }
+}
+
 export function CartClient({
   initialCartTexts,
   initialPaymentConfig,
@@ -99,14 +148,18 @@ export function CartClient({
   // Form State (Default structure + dynamic)
 
   // Form State (Default structure + dynamic)
-  const [formData, setFormData] = useState<CheckoutFormData>({
-    name: "",
-    phone: "",
-    email: "",
-    area: "",
-    address: "",
-    transactionId: "",
-  });
+  const [formData, setFormData] = useState<CheckoutFormData>(() =>
+    isPreview
+      ? {
+          name: "",
+          phone: "",
+          email: "",
+          area: "",
+          address: "",
+          transactionId: "",
+        }
+      : getInitialCheckoutData(),
+  );
 
   // Tax Calculation
   const subTotalAmount = isPreview
