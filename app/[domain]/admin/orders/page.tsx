@@ -1481,6 +1481,26 @@ export default function OrdersPage() {
                             <div className="font-medium text-slate-900">
                               {order.items}
                             </div>
+                            {Array.isArray(order.itemDetails) &&
+                              order.itemDetails.length > 0 && (
+                                <div className="mt-1 space-y-1 text-xs text-slate-500">
+                                  {order.itemDetails
+                                    .slice(0, 3)
+                                    .map((item, idx) => (
+                                      <div
+                                        key={`${order.id}-item-${idx}`}
+                                        className="truncate"
+                                      >
+                                        {item.quantity}x {item.name}
+                                      </div>
+                                    ))}
+                                  {order.itemDetails.length > 3 && (
+                                    <div className="text-[11px] text-slate-400">
+                                      +{order.itemDetails.length - 3} more
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                           </div>
                           <div>
                             <div className="text-[11px] uppercase tracking-wide text-slate-400">
@@ -1648,8 +1668,30 @@ export default function OrdersPage() {
                               {order.phone}
                             </div>
                           </td>
-                          <td className="p-4 text-center font-medium bg-slate-50 rounded mx-auto w-fit">
-                            {order.items}
+                          <td className="p-4">
+                            <div className="inline-flex min-w-[54px] items-center justify-center rounded bg-slate-50 px-2 py-1 font-medium">
+                              {order.items}
+                            </div>
+                            {Array.isArray(order.itemDetails) &&
+                              order.itemDetails.length > 0 && (
+                                <div className="mt-2 space-y-1 text-xs text-slate-500 max-w-[180px]">
+                                  {order.itemDetails
+                                    .slice(0, 3)
+                                    .map((item, idx) => (
+                                      <div
+                                        key={`${order.id}-desktop-item-${idx}`}
+                                        className="truncate"
+                                      >
+                                        {item.quantity}x {item.name}
+                                      </div>
+                                    ))}
+                                  {order.itemDetails.length > 3 && (
+                                    <div className="text-[11px] text-slate-400">
+                                      +{order.itemDetails.length - 3} more
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                           </td>
                           <td className="p-4">
                             <Badge

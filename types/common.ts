@@ -64,6 +64,10 @@ export interface AdminOrder {
   customer: string;
   phone: string;
   items: number;
+  itemDetails?: {
+    name: string;
+    quantity: number;
+  }[];
   source: string;
   price: number;
   status: string;

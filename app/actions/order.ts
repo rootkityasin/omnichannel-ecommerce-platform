@@ -696,7 +696,16 @@ export async function getPaginatedAdminOrders(params: {
           source: true,
           hubId: true,
           stockDeducted: true,
-          items: { select: { quantity: true } },
+          items: {
+            select: {
+              quantity: true,
+              product: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
         },
       }),
       prisma.order.count({ where: whereClause }),
@@ -712,6 +721,10 @@ export async function getPaginatedAdminOrders(params: {
         phone: o.customerPhone,
         email: o.customerEmail || undefined,
         items: o.items.reduce((acc: number, item) => acc + item.quantity, 0),
+        itemDetails: o.items.map((item) => ({
+          name: item.product?.name || "Product",
+          quantity: item.quantity,
+        })),
         source: o.source,
         price: o.totalAmount,
         status: o.status,
