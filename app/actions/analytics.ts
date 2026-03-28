@@ -8,6 +8,15 @@ import { unstable_cache } from "next/cache";
 const getSessionUser = async () => (await auth())?.user;
 const SALE_STATUS = "Payment Received";
 const NON_DRAFT_STATUSES = ["Incomplete", "INCOMPLETE"];
+const SALES_TREND_STATUSES = [
+  "Placed",
+  "Confirmed",
+  "Ready",
+  "Invoice Printed",
+  "Delivered",
+  "Payment OnProcess",
+  "Payment Received",
+] as const;
 const PENDING_ORDER_STATUSES = [
   "Placed",
   "Confirmed",
@@ -61,6 +70,11 @@ const getCachedDashboardMetrics = unstable_cache(
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
       status: SALE_STATUS,
     };
+    const salesTrendWhere = {
+      tenantId,
+      ...(hubId && hubId !== "ALL" ? { hubId } : {}),
+      status: { in: SALES_TREND_STATUSES },
+    };
     const allOrdersWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
@@ -110,7 +124,7 @@ const getCachedDashboardMetrics = unstable_cache(
           ),
       prisma.order.findMany({
         where: {
-          ...saleWhere,
+          ...salesTrendWhere,
           createdAt: { gte: sevenDaysAgo },
         },
         select: {
@@ -155,6 +169,10 @@ const getCachedAnalyticsMetrics = unstable_cache(
     const validWhere = {
       ...baseWhere,
       status: SALE_STATUS,
+    };
+    const salesTrendWhere = {
+      ...baseWhere,
+      status: { in: SALES_TREND_STATUSES },
     };
     const allOrdersWhere = {
       ...baseWhere,
@@ -202,7 +220,7 @@ const getCachedAnalyticsMetrics = unstable_cache(
           ),
       prisma.order.findMany({
         where: {
-          ...validWhere,
+          ...salesTrendWhere,
           createdAt: { gte: sevenDaysAgo },
         },
         select: {
