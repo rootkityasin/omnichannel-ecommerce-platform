@@ -61,7 +61,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FulfillmentBoard } from "@/components/admin/FulfillmentBoard";
-import { type AdminOrder } from "@/types/common";
+import { type AdminOrder, type AdminOrderDetails } from "@/types/common";
 import { format } from "date-fns";
 import { getDeliveryConfig, getSiteConfig } from "@/app/actions/settings";
 import { validateCoupon } from "@/app/actions/coupon";
@@ -71,6 +71,7 @@ import {
   updateAdminOrder,
   deleteAdminOrder,
   getPaginatedAdminOrders,
+  getAdminOrderDetails,
   getOrderStats,
 } from "@/app/actions/order";
 import { getProducts } from "@/app/actions/product";
@@ -255,6 +256,10 @@ export default function OrdersPage() {
   const [view, setView] = useState<"table" | "kanban">("table");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrderDetails, setSelectedOrderDetails] =
+    useState<AdminOrderDetails | null>(null);
+  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
   // Edit State
@@ -283,6 +288,27 @@ export default function OrdersPage() {
     } else {
       toast.error(res.error || "Failed to update status");
     }
+  };
+
+  const openOrderDetails = async (order: AdminOrder) => {
+    setSelectedOrderId(order.dbId);
+    setIsDetailsLoading(true);
+    try {
+      const details = await getAdminOrderDetails(order.dbId);
+      setSelectedOrderDetails(details as AdminOrderDetails | null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load order details");
+      setSelectedOrderId(null);
+    } finally {
+      setIsDetailsLoading(false);
+    }
+  };
+
+  const closeOrderDetails = () => {
+    setSelectedOrderId(null);
+    setSelectedOrderDetails(null);
+    setIsDetailsLoading(false);
   };
 
   const handleProductSelect = (productId: string, checked: boolean) => {
@@ -1418,7 +1444,10 @@ export default function OrdersPage() {
                 ) : orders.length > 0 ? (
                   orders.map((order) => (
                     <Card key={order.id} className="border-gray-100 shadow-sm">
-                      <CardContent className="p-4 space-y-4">
+                      <CardContent
+                        className="p-4 space-y-4 cursor-pointer"
+                        onClick={() => openOrderDetails(order)}
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -1481,26 +1510,6 @@ export default function OrdersPage() {
                             <div className="font-medium text-slate-900">
                               {order.items}
                             </div>
-                            {Array.isArray(order.itemDetails) &&
-                              order.itemDetails.length > 0 && (
-                                <div className="mt-1 space-y-1 text-xs text-slate-500">
-                                  {order.itemDetails
-                                    .slice(0, 3)
-                                    .map((item, idx) => (
-                                      <div
-                                        key={`${order.id}-item-${idx}`}
-                                        className="truncate"
-                                      >
-                                        {item.quantity}x {item.name}
-                                      </div>
-                                    ))}
-                                  {order.itemDetails.length > 3 && (
-                                    <div className="text-[11px] text-slate-400">
-                                      +{order.itemDetails.length - 3} more
-                                    </div>
-                                  )}
-                                </div>
-                              )}
                           </div>
                           <div>
                             <div className="text-[11px] uppercase tracking-wide text-slate-400">
@@ -1517,7 +1526,10 @@ export default function OrdersPage() {
                             size="sm"
                             variant="outline"
                             className="w-full"
-                            onClick={() => handleEditClick(order)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(order);
+                            }}
                           >
                             <Edit className="w-4 h-4 mr-2" /> Edit
                           </Button>
@@ -1530,7 +1542,10 @@ export default function OrdersPage() {
                               order.status !== "Ready" &&
                               order.status !== "Invoice Printed"
                             }
-                            onClick={() => handlePrint(order)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePrint(order);
+                            }}
                           >
                             <Printer className="w-4 h-4 mr-2" />
                             {order.stockDeducted ? "Printed" : "Invoice"}
@@ -1558,7 +1573,10 @@ export default function OrdersPage() {
                             size="sm"
                             variant="outline"
                             className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                            onClick={() => handleMarkAsFake(order)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsFake(order);
+                            }}
                           >
                             <Ban className="w-4 h-4 mr-2" /> Fake
                           </Button>
@@ -1567,7 +1585,10 @@ export default function OrdersPage() {
                             size="sm"
                             variant="outline"
                             className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                            onClick={() => setDeleteId(order.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteId(order.id);
+                            }}
                           >
                             <Trash2 className="w-4 h-4 mr-2" /> Delete
                           </Button>
@@ -1621,11 +1642,12 @@ export default function OrdersPage() {
                         <tr
                           key={order.id}
                           className={cn(
-                            "hover:bg-gray-50/50",
+                            "hover:bg-gray-50/50 cursor-pointer",
                             isSuspect(order) && "bg-red-50/30",
                             selectedOrders.includes(order.id) &&
                               "bg-orange-50/50",
                           )}
+                          onClick={() => openOrderDetails(order)}
                         >
                           <td className="p-4 w-10">
                             <input
@@ -1672,26 +1694,6 @@ export default function OrdersPage() {
                             <div className="inline-flex min-w-[54px] items-center justify-center rounded bg-slate-50 px-2 py-1 font-medium">
                               {order.items}
                             </div>
-                            {Array.isArray(order.itemDetails) &&
-                              order.itemDetails.length > 0 && (
-                                <div className="mt-2 space-y-1 text-xs text-slate-500 max-w-[180px]">
-                                  {order.itemDetails
-                                    .slice(0, 3)
-                                    .map((item, idx) => (
-                                      <div
-                                        key={`${order.id}-desktop-item-${idx}`}
-                                        className="truncate"
-                                      >
-                                        {item.quantity}x {item.name}
-                                      </div>
-                                    ))}
-                                  {order.itemDetails.length > 3 && (
-                                    <div className="text-[11px] text-slate-400">
-                                      +{order.itemDetails.length - 3} more
-                                    </div>
-                                  )}
-                                </div>
-                              )}
                           </td>
                           <td className="p-4">
                             <Badge
@@ -1725,6 +1727,7 @@ export default function OrdersPage() {
                                     size="icon"
                                     variant="ghost"
                                     className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                                    onClick={(e) => e.stopPropagation()}
                                   >
                                     <MoreVertical className="w-4 h-4" />
                                   </Button>
@@ -1882,6 +1885,253 @@ export default function OrdersPage() {
           onDelete={setDeleteId}
           readOnly={!canManageOrders}
         />
+      )}
+
+      {selectedOrderId && (
+        <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md">
+          <div className="flex min-h-full items-start justify-center sm:items-center">
+            <Card className="h-full w-full rounded-none border-0 sm:h-auto sm:max-h-[90vh] sm:max-w-4xl sm:rounded-2xl sm:border sm:border-slate-200 overflow-hidden flex flex-col shadow-2xl">
+              <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-5 py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+                      Order Details
+                    </p>
+                    <h2 className="mt-1 text-lg font-bold text-slate-900">
+                      {selectedOrderDetails?.id || "Loading..."}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={closeOrderDetails}
+                    className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-4 sm:px-6">
+                {isDetailsLoading || !selectedOrderDetails ? (
+                  <div className="flex min-h-[40vh] items-center justify-center text-sm text-slate-500">
+                    Loading order details...
+                  </div>
+                ) : (
+                  <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div className="space-y-4">
+                      <Card className="border border-slate-200 shadow-sm">
+                        <CardContent className="p-4 space-y-3">
+                          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+                            Customer & Delivery
+                          </h3>
+                          <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-400">
+                                Customer
+                              </div>
+                              <div className="mt-1 font-medium text-slate-900">
+                                {selectedOrderDetails.customer}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-400">
+                                Phone
+                              </div>
+                              <div className="mt-1 font-medium text-slate-900">
+                                {selectedOrderDetails.phone}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-400">
+                                Email
+                              </div>
+                              <div className="mt-1 font-medium text-slate-900 break-all">
+                                {selectedOrderDetails.email || "N/A"}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-400">
+                                Area
+                              </div>
+                              <div className="mt-1 font-medium text-slate-900">
+                                {selectedOrderDetails.area || "N/A"}
+                              </div>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <div className="text-xs uppercase tracking-wide text-slate-400">
+                                Full Address
+                              </div>
+                              <div className="mt-1 rounded-xl bg-slate-50 p-3 font-medium text-slate-900 whitespace-pre-line">
+                                {selectedOrderDetails.address}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border border-slate-200 shadow-sm">
+                        <CardContent className="p-4 space-y-3">
+                          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+                            Ordered Items
+                          </h3>
+                          <div className="space-y-2">
+                            {selectedOrderDetails.items.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-white px-3 py-3 text-sm"
+                              >
+                                <div className="min-w-0">
+                                  <div className="font-medium text-slate-900 break-words">
+                                    {item.name}
+                                  </div>
+                                  <div className="text-xs text-slate-500">
+                                    Qty: {item.quantity}
+                                  </div>
+                                </div>
+                                <div className="font-bold text-slate-900">
+                                  ৳{item.price}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Card className="border border-slate-200 shadow-sm">
+                        <CardContent className="p-4 space-y-3 text-sm">
+                          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+                            Payment & Status
+                          </h3>
+                          <div className="grid gap-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">Status</span>
+                              <Badge
+                                className={cn(
+                                  "font-normal",
+                                  getStatusColor(selectedOrderDetails.status),
+                                )}
+                              >
+                                {selectedOrderDetails.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">Source</span>
+                              <Badge
+                                variant="secondary"
+                                className="bg-slate-800 text-white hover:bg-slate-700"
+                              >
+                                {selectedOrderDetails.source}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">
+                                Payment Method
+                              </span>
+                              <span className="font-medium text-slate-900">
+                                {selectedOrderDetails.paymentMethod || "COD"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">Coupon</span>
+                              <span className="font-medium text-slate-900">
+                                {selectedOrderDetails.couponCode || "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">Discount</span>
+                              <span className="font-medium text-slate-900">
+                                ৳{selectedOrderDetails.discountAmount || 0}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">
+                                Transaction ID
+                              </span>
+                              <span className="font-medium text-slate-900 break-all text-right">
+                                {selectedOrderDetails.transactionId || "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-slate-500">
+                                Invoice State
+                              </span>
+                              <span
+                                className={cn(
+                                  "font-medium",
+                                  selectedOrderDetails.stockDeducted
+                                    ? "text-green-600"
+                                    : "text-slate-900",
+                                )}
+                              >
+                                {selectedOrderDetails.stockDeducted
+                                  ? "Printed / Stock Deducted"
+                                  : "Not Printed"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                              <span className="text-slate-500">Total</span>
+                              <span className="text-lg font-black text-slate-900">
+                                ৳{selectedOrderDetails.price}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border border-slate-200 shadow-sm">
+                        <CardContent className="p-4 space-y-3">
+                          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+                            Quick Actions
+                          </h3>
+                          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                            <Button
+                              variant="outline"
+                              disabled={
+                                selectedOrderDetails.status !== "Ready" &&
+                                selectedOrderDetails.status !==
+                                  "Invoice Printed"
+                              }
+                              onClick={() =>
+                                handlePrint({
+                                  ...selectedOrderDetails,
+                                  items: selectedOrderDetails.items.reduce(
+                                    (sum, item) => sum + item.quantity,
+                                    0,
+                                  ),
+                                } as unknown as AdminOrder)
+                              }
+                            >
+                              <Printer className="mr-2 h-4 w-4" />
+                              {selectedOrderDetails.stockDeducted
+                                ? "Invoice Printed"
+                                : "Print Invoice"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                closeOrderDetails();
+                                handleEditClick({
+                                  ...selectedOrderDetails,
+                                  items: selectedOrderDetails.items.reduce(
+                                    (sum, item) => sum + item.quantity,
+                                    0,
+                                  ),
+                                } as unknown as AdminOrder);
+                              }}
+                            >
+                              <Edit className="mr-2 h-4 w-4" /> Edit Order
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
       )}
 
       {/* Modals Footer */}

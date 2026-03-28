@@ -78,6 +78,32 @@ export interface AdminOrder {
   [key: string]: unknown; // Allow extensibility
 }
 
+export interface AdminOrderDetails {
+  id: string;
+  dbId: string;
+  date: string;
+  customer: string;
+  phone: string;
+  email?: string;
+  address: string;
+  area?: string;
+  source: string;
+  price: number;
+  status: string;
+  stockDeducted: boolean;
+  paymentMethod?: string;
+  couponCode?: string;
+  discountAmount?: number;
+  transactionId?: string;
+  notes?: string;
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+}
+
 export interface StockProduct extends AdminProduct {
   category: { name: string };
   type: "SINGLE" | "COMBO";

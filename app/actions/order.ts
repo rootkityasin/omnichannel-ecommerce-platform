@@ -758,6 +758,94 @@ export async function getOrderStats() {
   }
 }
 
+export async function getAdminOrderDetails(orderDbId: string) {
+  try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return null;
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderDbId },
+      select: {
+        id: true,
+        orderId: true,
+        createdAt: true,
+        customerName: true,
+        customerPhone: true,
+        customerEmail: true,
+        customerAddress: true,
+        source: true,
+        totalAmount: true,
+        status: true,
+        stockDeducted: true,
+        paymentMethod: true,
+        couponCode: true,
+        discountAmount: true,
+        transactionId: true,
+        tenantId: true,
+        items: {
+          select: {
+            id: true,
+            quantity: true,
+            price: true,
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order || order.tenantId !== tenantId) return null;
+
+    const [addressPart, areaPart] = order.customerAddress
+      .split(",")
+      .map((value) => value.trim())
+      .reduce<[string, string | undefined]>(
+        (acc, part, index, arr) => {
+          if (index === arr.length - 1 && arr.length > 1) {
+            acc[1] = part;
+          } else {
+            acc[0] = acc[0] ? `${acc[0]}, ${part}` : part;
+          }
+          return acc;
+        },
+        ["", undefined],
+      );
+
+    return {
+      id: order.orderId,
+      dbId: order.id,
+      date: order.createdAt.toISOString(),
+      customer: order.customerName,
+      phone: order.customerPhone,
+      email: order.customerEmail || undefined,
+      address: addressPart || order.customerAddress,
+      area: areaPart,
+      source: order.source,
+      price: order.totalAmount,
+      status: order.status,
+      stockDeducted: order.stockDeducted,
+      paymentMethod: order.paymentMethod || undefined,
+      couponCode: order.couponCode || undefined,
+      discountAmount: order.discountAmount || 0,
+      transactionId: order.transactionId || undefined,
+      notes: undefined,
+      items: order.items.map((item) => ({
+        id: item.id,
+        name: item.product?.name || "Product",
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
+  } catch (error) {
+    console.error("Failed to fetch admin order details:", error);
+    return null;
+  }
+}
+
 export async function getMyOrders() {
   try {
     const sessionUser = await getSessionUser();
