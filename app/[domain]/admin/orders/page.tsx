@@ -138,24 +138,27 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedConfigRef = useRef(false);
 
-  // Fetch paginated orders only — stats are decoupled to prevent hammering DB on every filter change
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
       const dateStart = dateDate ? dateDate.toISOString() : undefined;
 
-      const ordersRes = await getPaginatedAdminOrders({
-        page,
-        limit,
-        search: filterSearch,
-        status: filterStatus,
-        source: filterSource,
-        dateStart,
-        dateEnd: undefined,
-      });
+      const [ordersRes, statsRes] = await Promise.all([
+        getPaginatedAdminOrders({
+          page,
+          limit,
+          search: filterSearch,
+          status: filterStatus,
+          source: filterSource,
+          dateStart,
+          dateEnd: undefined,
+        }),
+        getOrderStats(),
+      ]);
 
       setOrders(ordersRes.data as any);
       setTotalOrders(ordersRes.total);
+      if (statsRes) setStats(statsRes);
     } catch (err) {
       console.error(err);
       toast.error("Failed to fetch orders");
@@ -163,16 +166,6 @@ export default function OrdersPage() {
       setIsLoading(false);
     }
   }, [page, limit, filterSearch, filterStatus, filterSource, dateDate]);
-
-  // Stats are fetched separately — only on mount and after mutations
-  const refreshStats = useCallback(async () => {
-    try {
-      const statsRes = await getOrderStats();
-      if (statsRes) setStats(statsRes);
-    } catch (err) {
-      console.error("Failed to fetch stats", err);
-    }
-  }, []);
 
   const loadOrderPageConfig = useCallback(async () => {
     if (hasLoadedConfigRef.current) return;
@@ -216,10 +209,8 @@ export default function OrdersPage() {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Mount-only stats fetch; defer the rest to idle time
+  // Load page config lazily after the initial data fetch
   useEffect(() => {
-    refreshStats();
-
     const loadDeferred = () => {
       void loadOrderPageConfig();
     };
@@ -231,7 +222,7 @@ export default function OrdersPage() {
 
     const timer = setTimeout(loadDeferred, 1200);
     return () => clearTimeout(timer);
-  }, [loadOrderPageConfig, refreshStats]);
+  }, [loadOrderPageConfig]);
 
   const getBDDate = () => {
     const now = new Date();

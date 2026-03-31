@@ -6,6 +6,8 @@ import { getTenantByDomain } from "./tenant";
 import { unstable_cache } from "next/cache";
 
 const getSessionUser = async () => (await auth())?.user;
+const DHAKA_TIME_ZONE = "Asia/Dhaka";
+const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000;
 const SALE_STATUS = "Payment Received";
 const NON_DRAFT_STATUSES = ["Incomplete", "INCOMPLETE"];
 const SALES_TREND_STATUSES = [
@@ -39,28 +41,77 @@ async function resolveTenantId(domain?: string) {
   return tenantId;
 }
 
+function getDhakaDayStart(daysAgo = 0) {
+  const now = new Date();
+  const dhakaNow = new Date(now.getTime() + DHAKA_OFFSET_MS);
+
+  return new Date(
+    Date.UTC(
+      dhakaNow.getUTCFullYear(),
+      dhakaNow.getUTCMonth(),
+      dhakaNow.getUTCDate() - daysAgo,
+      0,
+      0,
+      0,
+      0,
+    ) - DHAKA_OFFSET_MS,
+  );
+}
+
+function formatDhakaDateKey(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: DHAKA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function formatDhakaWeekday(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: DHAKA_TIME_ZONE,
+    weekday: "short",
+  }).format(date);
+}
+
 function getRecentDaysSales(
   orders: Array<{ createdAt: Date; totalAmount: number }>,
 ) {
-  const salesByDay: Record<string, number> = {};
+  const salesByDay = new Map<string, { name: string; sales: number }>();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const label = d.toLocaleDateString("en-US", { weekday: "short" });
-    salesByDay[label] = 0;
+    const day = getDhakaDayStart(i);
+    salesByDay.set(formatDhakaDateKey(day), {
+      name: formatDhakaWeekday(day),
+      sales: 0,
+    });
   }
 
   orders.forEach((o) => {
-    const day = o.createdAt.toLocaleDateString("en-US", { weekday: "short" });
-    if (salesByDay[day] !== undefined) {
-      salesByDay[day] += o.totalAmount;
+    const key = formatDhakaDateKey(o.createdAt);
+    const entry = salesByDay.get(key);
+    if (entry) {
+      entry.sales += o.totalAmount;
     }
   });
 
-  return Object.keys(salesByDay).map((name) => ({
-    name,
-    sales: salesByDay[name],
-  }));
+  return Array.from(salesByDay.values());
+}
+
+async function getRecentDaysSalesFromDb(tenantId: string, hubId?: string) {
+  const orders = await prisma.order.findMany({
+    where: {
+      tenantId,
+      ...(hubId && hubId !== "ALL" ? { hubId } : {}),
+      status: { in: [...SALES_TREND_STATUSES] },
+      createdAt: { gte: getDhakaDayStart(6) },
+    },
+    select: {
+      createdAt: true,
+      totalAmount: true,
+    },
+  });
+
+  return getRecentDaysSales(orders);
 }
 
 const getCachedDashboardMetrics = unstable_cache(
@@ -70,20 +121,11 @@ const getCachedDashboardMetrics = unstable_cache(
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
       status: SALE_STATUS,
     };
-    const salesTrendWhere = {
-      tenantId,
-      ...(hubId && hubId !== "ALL" ? { hubId } : {}),
-      status: { in: SALES_TREND_STATUSES },
-    };
     const allOrdersWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
       status: { notIn: NON_DRAFT_STATUSES },
     };
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
 
     const distinctCustomerQuery =
       hubId && hubId !== "ALL"
@@ -95,7 +137,7 @@ const getCachedDashboardMetrics = unstable_cache(
       totalOrderCount,
       pendingCount,
       uniqueCustomerCount,
-      recentOrders,
+      trendData,
       topRecentOrders,
     ] = await Promise.all([
       prisma.order.aggregate({
@@ -122,17 +164,7 @@ const getCachedDashboardMetrics = unstable_cache(
             distinctCustomerQuery,
             tenantId,
           ),
-      prisma.order.findMany({
-        where: {
-          ...salesTrendWhere,
-          createdAt: { gte: sevenDaysAgo },
-        },
-        select: {
-          createdAt: true,
-          totalAmount: true,
-        },
-        orderBy: { createdAt: "asc" },
-      }),
+      getRecentDaysSalesFromDb(tenantId, hubId),
       prisma.order.findMany({
         where: allOrdersWhere,
         orderBy: { createdAt: "desc" },
@@ -152,7 +184,7 @@ const getCachedDashboardMetrics = unstable_cache(
       totalOrders: totalOrderCount || 0,
       pendingOrders: pendingCount,
       uniqueCustomers: Number(uniqueCustomerCount[0]?.count || 0),
-      trendData: getRecentDaysSales(recentOrders),
+      trendData,
       recentOrders: topRecentOrders,
     };
   },
@@ -170,18 +202,10 @@ const getCachedAnalyticsMetrics = unstable_cache(
       ...baseWhere,
       status: SALE_STATUS,
     };
-    const salesTrendWhere = {
-      ...baseWhere,
-      status: { in: SALES_TREND_STATUSES },
-    };
     const allOrdersWhere = {
       ...baseWhere,
       status: { notIn: NON_DRAFT_STATUSES },
     };
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
 
     const distinctCustomerQuery =
       hubId && hubId !== "ALL"
@@ -193,7 +217,7 @@ const getCachedAnalyticsMetrics = unstable_cache(
       cancelledCount,
       sourceGroups,
       uniqueCustomerCount,
-      recentOrders,
+      trendData,
     ] = await Promise.all([
       prisma.order.aggregate({
         _sum: { totalAmount: true },
@@ -218,17 +242,7 @@ const getCachedAnalyticsMetrics = unstable_cache(
             distinctCustomerQuery,
             tenantId,
           ),
-      prisma.order.findMany({
-        where: {
-          ...salesTrendWhere,
-          createdAt: { gte: sevenDaysAgo },
-        },
-        select: {
-          createdAt: true,
-          totalAmount: true,
-        },
-        orderBy: { createdAt: "asc" },
-      }),
+      getRecentDaysSalesFromDb(tenantId, hubId),
     ]);
 
     const totalRevenue = allTimeSales._sum.totalAmount || 0;
@@ -250,7 +264,7 @@ const getCachedAnalyticsMetrics = unstable_cache(
         name: g.source,
         value: g._count,
       })),
-      trendData: getRecentDaysSales(recentOrders),
+      trendData,
     };
   },
   ["analytics-metrics"],
