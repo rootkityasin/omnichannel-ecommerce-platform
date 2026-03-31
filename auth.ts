@@ -4,9 +4,13 @@ import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { type Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { authConfig } from "./auth.config";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { headers } from "next/headers";
+import { updateTag } from "next/cache";
+import { normalizeHost } from "@/lib/domain";
 
 export const runtime = "nodejs";
 
@@ -68,11 +72,62 @@ async function fetchUserWithRetry(userId: string) {
   return null;
 }
 
+async function resolveTenantFromRequestHost() {
+  try {
+    const reqHeaders = await headers();
+    const host =
+      reqHeaders.get("x-forwarded-host") || reqHeaders.get("host") || "";
+    const normalized = normalizeHost(host);
+    if (!normalized) return null;
+
+    const subdomain = normalized.split(".")[0];
+    return await prisma.tenant.findFirst({
+      where: {
+        OR: [
+          { slug: subdomain },
+          { customDomain: host },
+          { customDomain: normalized },
+          { slug: normalized },
+        ],
+      },
+      select: { id: true },
+    });
+  } catch (error) {
+    console.error("Failed to resolve tenant from OAuth request host:", error);
+    return null;
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   secret: process.env.AUTH_SECRET,
   callbacks: {
     ...authConfig.callbacks,
+    async signIn({ user, account }) {
+      if (
+        account?.provider &&
+        ["google", "apple"].includes(account.provider) &&
+        user?.id &&
+        !user.tenantId
+      ) {
+        const tenant = await resolveTenantFromRequestHost();
+        if (tenant?.id) {
+          const resolvedRole = (user.role || "USER") as Role;
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { tenantId: tenant.id, role: resolvedRole },
+          });
+          user.tenantId = tenant.id;
+          user.role = resolvedRole;
+        }
+      }
+
+      if (account?.provider && ["google", "apple"].includes(account.provider)) {
+        updateTag("customers");
+      }
+
+      return true;
+    },
     async jwt({ token, user }) {
       // 1. Initial Sign In - Copy user data to token
       if (user) {

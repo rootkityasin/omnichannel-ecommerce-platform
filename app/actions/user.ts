@@ -606,6 +606,8 @@ const getCachedAccountCreatedUsers = unstable_cache(
       prisma.order.findMany({
         where: orderWhere,
         select: {
+          totalAmount: true,
+          status: true,
           customerPhone: true,
           customerEmail: true,
         },
@@ -629,34 +631,61 @@ const getCachedAccountCreatedUsers = unstable_cache(
       }),
     ]);
 
-    const orderedPhones = new Set(
-      orders.map((order) => order.customerPhone).filter(Boolean),
-    );
-    const orderedEmails = new Set(
-      orders.map((order) => order.customerEmail?.toLowerCase()).filter(Boolean),
-    );
+    const orderStatsByPhone = new Map<
+      string,
+      { orders: number; spent: number }
+    >();
+    const orderStatsByEmail = new Map<
+      string,
+      { orders: number; spent: number }
+    >();
 
-    return registeredUsers
-      .filter((user) => {
-        const hasPhoneOrder = user.phone
-          ? orderedPhones.has(user.phone)
-          : false;
-        const hasEmailOrder = user.email
-          ? orderedEmails.has(user.email.toLowerCase())
-          : false;
-        return !hasPhoneOrder && !hasEmailOrder;
-      })
-      .map((user) => ({
+    for (const order of orders) {
+      const countAddition = order.status === "Cancelled" ? 0 : 1;
+      const spentAddition =
+        order.status === "Cancelled" ? 0 : order.totalAmount;
+
+      if (order.customerPhone) {
+        const phoneStats = orderStatsByPhone.get(order.customerPhone) || {
+          orders: 0,
+          spent: 0,
+        };
+        phoneStats.orders += countAddition;
+        phoneStats.spent += spentAddition;
+        orderStatsByPhone.set(order.customerPhone, phoneStats);
+      }
+
+      if (order.customerEmail) {
+        const emailKey = order.customerEmail.toLowerCase();
+        const emailStats = orderStatsByEmail.get(emailKey) || {
+          orders: 0,
+          spent: 0,
+        };
+        emailStats.orders += countAddition;
+        emailStats.spent += spentAddition;
+        orderStatsByEmail.set(emailKey, emailStats);
+      }
+    }
+
+    return registeredUsers.map((user) => {
+      const phoneStats = user.phone ? orderStatsByPhone.get(user.phone) : null;
+      const emailStats = user.email
+        ? orderStatsByEmail.get(user.email.toLowerCase())
+        : null;
+      const stats = phoneStats || emailStats;
+
+      return {
         id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone || "N/A",
-        orders: 0,
-        spent: 0,
+        orders: stats?.orders || 0,
+        spent: stats?.spent || 0,
         points: user.points || 0,
         createdAt: user.createdAt,
         isGuest: false,
-      }));
+      };
+    });
   },
   ["account-created-users"],
   { tags: ["customers", "orders"], revalidate: 3600 },
