@@ -1884,11 +1884,11 @@ export default function OrdersPage() {
             <Card className="h-full w-full rounded-none border-0 sm:h-auto sm:max-h-[90vh] sm:max-w-4xl sm:rounded-2xl sm:border sm:border-slate-200 overflow-hidden flex flex-col shadow-2xl">
               <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-5 py-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
                       Order Details
                     </p>
-                    <h2 className="mt-1 text-lg font-bold text-slate-900">
+                    <h2 className="mt-1 break-words text-lg font-bold text-slate-900">
                       {selectedOrderDetails?.id || "Loading..."}
                     </h2>
                   </div>
@@ -1968,7 +1968,7 @@ export default function OrdersPage() {
                             {selectedOrderDetails.items.map((item) => (
                               <div
                                 key={item.id}
-                                className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-white px-3 py-3 text-sm"
+                                className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                               >
                                 <div className="min-w-0">
                                   <div className="font-medium text-slate-900 break-words">
@@ -1978,7 +1978,7 @@ export default function OrdersPage() {
                                     Qty: {item.quantity}
                                   </div>
                                 </div>
-                                <div className="font-bold text-slate-900">
+                                <div className="w-full text-left font-bold text-slate-900 sm:w-auto sm:text-right">
                                   ৳{item.price}
                                 </div>
                               </div>
@@ -1995,7 +1995,7 @@ export default function OrdersPage() {
                             Payment & Status
                           </h3>
                           <div className="grid gap-3">
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">Status</span>
                               <Badge
                                 className={cn(
@@ -2006,7 +2006,7 @@ export default function OrdersPage() {
                                 {selectedOrderDetails.status}
                               </Badge>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">Source</span>
                               <Badge
                                 variant="secondary"
@@ -2015,41 +2015,41 @@ export default function OrdersPage() {
                                 {selectedOrderDetails.source}
                               </Badge>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">
                                 Payment Method
                               </span>
-                              <span className="font-medium text-slate-900">
+                              <span className="w-full font-medium text-slate-900 sm:w-auto sm:text-right">
                                 {selectedOrderDetails.paymentMethod || "COD"}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">Coupon</span>
-                              <span className="font-medium text-slate-900">
+                              <span className="w-full font-medium text-slate-900 break-all sm:w-auto sm:text-right">
                                 {selectedOrderDetails.couponCode || "N/A"}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">Discount</span>
-                              <span className="font-medium text-slate-900">
+                              <span className="w-full font-medium text-slate-900 sm:w-auto sm:text-right">
                                 ৳{selectedOrderDetails.discountAmount || 0}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">
                                 Transaction ID
                               </span>
-                              <span className="font-medium text-slate-900 break-all text-right">
+                              <span className="w-full font-medium text-slate-900 break-all sm:w-auto sm:text-right">
                                 {selectedOrderDetails.transactionId || "N/A"}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">
                                 Invoice State
                               </span>
                               <span
                                 className={cn(
-                                  "font-medium",
+                                  "w-full font-medium sm:w-auto sm:text-right",
                                   selectedOrderDetails.stockDeducted
                                     ? "text-green-600"
                                     : "text-slate-900",
@@ -2060,9 +2060,9 @@ export default function OrdersPage() {
                                   : "Not Printed"}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                            <div className="flex flex-col gap-1 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <span className="text-slate-500">Total</span>
-                              <span className="text-lg font-black text-slate-900">
+                              <span className="w-full text-lg font-black text-slate-900 sm:w-auto sm:text-right">
                                 ৳{selectedOrderDetails.price}
                               </span>
                             </div>
