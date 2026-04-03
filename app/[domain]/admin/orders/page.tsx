@@ -1548,10 +1548,13 @@ export default function OrdersPage() {
                               handleStatusChange(order.id, status)
                             }
                           >
-                            <SelectTrigger className="w-full text-xs sm:text-sm">
+                            <SelectTrigger
+                              className="w-full text-xs sm:text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <SelectValue placeholder="Update Status" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent onClick={(e) => e.stopPropagation()}>
                               {getUpdateStatuses().map((status) => (
                                 <SelectItem key={status} value={status}>
                                   {status}
@@ -1645,6 +1648,7 @@ export default function OrdersPage() {
                               type="checkbox"
                               className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                               checked={selectedOrders.includes(order.id)}
+                              onClick={(e) => e.stopPropagation()}
                               onChange={() => toggleOrderSelection(order.id)}
                             />
                           </td>
@@ -1726,6 +1730,7 @@ export default function OrdersPage() {
                                 <DropdownMenuContent
                                   align="end"
                                   className="w-[200px]"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                   <DropdownMenuSeparator />
@@ -1734,7 +1739,10 @@ export default function OrdersPage() {
                                       order.status !== "Ready" &&
                                       order.status !== "Invoice Printed"
                                     }
-                                    onClick={() => handlePrint(order)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePrint(order);
+                                    }}
                                     className={cn(
                                       order.stockDeducted && "text-green-600",
                                     )}
@@ -1746,17 +1754,26 @@ export default function OrdersPage() {
                                   </DropdownMenuItem>
 
                                   <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
                                       <Check className="w-4 h-4 mr-2" /> Update
                                       Status
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="w-[200px]">
+                                    <DropdownMenuSubContent
+                                      className="w-[200px]"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
                                       {getUpdateStatuses().map((status) => (
                                         <DropdownMenuItem
                                           key={status}
-                                          onClick={() =>
-                                            handleStatusChange(order.id, status)
-                                          }
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleStatusChange(
+                                              order.id,
+                                              status,
+                                            );
+                                          }}
                                         >
                                           {status}
                                           {order.status === status && (
@@ -1768,20 +1785,29 @@ export default function OrdersPage() {
                                   </DropdownMenuSub>
 
                                   <DropdownMenuItem
-                                    onClick={() => handleEditClick(order)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditClick(order);
+                                    }}
                                   >
                                     <Edit className="w-4 h-4 mr-2" /> Edit Order
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
-                                    onClick={() => handleMarkAsFake(order)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMarkAsFake(order);
+                                    }}
                                     className="text-red-600 focus:text-red-700 focus:bg-red-50"
                                   >
                                     <Ban className="w-4 h-4 mr-2" /> Mark as
                                     Fake
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => setDeleteId(order.id)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeleteId(order.id);
+                                    }}
                                     className="text-red-600 focus:text-red-700 focus:bg-red-50"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" /> Delete
