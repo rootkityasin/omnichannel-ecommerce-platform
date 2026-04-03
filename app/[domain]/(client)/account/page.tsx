@@ -74,6 +74,7 @@ export default function AccountPage() {
     image: "",
     points: 0,
     status: "Bronze",
+    memberSince: "",
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -110,6 +111,12 @@ export default function AccountPage() {
           image: dbUser?.image || session.user?.image || prev.image,
           points: dbUser?.points || 0, // Assume 0 if not found
           status: "Bronze", // Calculate based on points if needed
+          memberSince: dbUser?.createdAt
+            ? new Date(dbUser.createdAt).toLocaleString("en-US", {
+                month: "short",
+                year: "numeric",
+              })
+            : prev.memberSince,
         }));
       } else {
         // ONLY check local storage if NOT authenticated (Guest mode or hydration)
@@ -140,6 +147,7 @@ export default function AccountPage() {
         image: "",
         points: 0,
         status: "Bronze",
+        memberSince: "",
       });
 
       // 3. Sign Out from NextAuth
@@ -184,7 +192,7 @@ export default function AccountPage() {
         email: formData.email,
         address: formData.address,
         image: formData.image,
-        memberSince: "December 2025",
+        memberSince: formData.memberSince || "Recently Joined",
         points: 0,
       }
     : {
@@ -193,7 +201,7 @@ export default function AccountPage() {
         email: "",
         address: "",
         image: "",
-        memberSince: "December 2025",
+        memberSince: "Recently Joined",
         points: 0,
       };
 
@@ -244,7 +252,7 @@ function AccountProfileView({
     memberSince: string;
     points: number;
   };
-  formData: { points: number; status: string };
+  formData: { points: number; status: string; memberSince?: string };
   bodyFontClass: string;
   headingFontClass: string;
   t: {
@@ -318,7 +326,9 @@ function AccountProfileView({
                 className={`text-[10px] font-bold tracking-wide ${bodyFontClass}`}
               >
                 {t.profile.memberSince}{" "}
-                <span className="text-white/80 font-normal">Dec 2025</span>
+                <span className="text-white/80 font-normal">
+                  {user.memberSince}
+                </span>
               </span>
             </div>
           </div>
