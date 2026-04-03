@@ -4,7 +4,6 @@ import { HeroCarousel } from "@/components/client/HeroCarousel";
 import { CategoryNav } from "@/components/client/CategoryNav";
 import { ScrollMouse } from "@/components/shared/ScrollMouse";
 import { ResourcePrefetcher } from "@/components/client/ResourcePrefetcher";
-import { HomepageSoundButton } from "@/components/client/HomepageSoundButton";
 import { HeroSlide, SiteConfig, Category } from "@/types/common";
 import TrustFooter from "@/components/client/TrustFooter";
 interface HomeClientProps {
@@ -29,7 +28,6 @@ export function HomeClient({
     <main className="min-h-screen bg-slate-50 md:pb-0">
       {/* Background Prefetcher */}
       <ResourcePrefetcher />
-      <HomepageSoundButton />
 
       <HeroCarousel slides={heroSlides} />
 

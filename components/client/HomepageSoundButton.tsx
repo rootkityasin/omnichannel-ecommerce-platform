@@ -287,69 +287,103 @@ export function HomepageSoundButton() {
         }}
       >
         <DialogContent
-          className="max-w-[360px] rounded-[28px] border-white/20 bg-white/90 p-0 shadow-2xl backdrop-blur-xl"
+          className="max-w-[380px] overflow-hidden rounded-[32px] border border-white/30 bg-[rgba(226,241,255,0.14)] p-0 text-white shadow-[0_24px_90px_rgba(15,23,42,0.42)] backdrop-blur-3xl"
           onEscapeKeyDown={(event) => event.preventDefault()}
           onInteractOutside={(event) => event.preventDefault()}
         >
-          <div className="p-5">
-            <DialogHeader className="items-center text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg">
-                <Waves className="h-5 w-5" />
-              </div>
-              <DialogTitle className="text-xl font-black text-slate-900">
-                Homepage Sound
-              </DialogTitle>
-              <DialogDescription className="max-w-[260px] text-sm leading-relaxed text-slate-500">
-                Enable background music for a richer home page experience, or
-                keep it muted and decide later from the sound button.
-              </DialogDescription>
-            </DialogHeader>
+          <div className="relative overflow-hidden p-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(125,211,252,0.22),transparent_34%),linear-gradient(145deg,rgba(255,255,255,0.2),rgba(191,219,254,0.08))]" />
+            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-100/90 to-transparent" />
+            <div className="relative">
+              <DialogHeader className="items-center text-center">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/35 bg-[rgba(240,249,255,0.22)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_14px_34px_rgba(15,23,42,0.26)] backdrop-blur-2xl">
+                  <Waves className="h-6 w-6" />
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-[rgba(240,249,255,0.14)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.3em] text-cyan-50/90 backdrop-blur-2xl">
+                  Ambient Player
+                </div>
+                <DialogTitle className="mt-4 text-2xl font-black text-white">
+                  Let the store play
+                </DialogTitle>
+                <DialogDescription className="max-w-[280px] text-sm leading-relaxed text-slate-100/85">
+                  Turn on soft background music for the storefront, or keep it
+                  muted and control it anytime from the glass sound button.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="mt-5 grid gap-2 sm:grid-cols-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 rounded-2xl font-bold"
-                onClick={handleKeepMuted}
-              >
-                Keep Muted
-              </Button>
-              <Button
-                type="button"
-                className="h-11 rounded-2xl bg-slate-900 font-bold text-white hover:bg-slate-800"
-                onClick={() => {
-                  void handleEnableSound();
-                }}
-              >
-                Enable Sound
-              </Button>
+              <div className="mt-5 rounded-[26px] border border-white/20 bg-[rgba(15,23,42,0.12)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl">
+                <div className="flex items-start gap-3 rounded-[20px] border border-white/15 bg-[rgba(240,249,255,0.1)] px-4 py-3">
+                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(240,249,255,0.16)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
+                    <Volume2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">
+                      Saved controls
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-100/70">
+                      Your mute and volume settings will stay remembered across
+                      pages and future visits.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 rounded-2xl border-white/28 bg-[rgba(240,249,255,0.12)] font-bold text-white backdrop-blur-2xl hover:bg-[rgba(240,249,255,0.18)] hover:text-white"
+                  onClick={handleKeepMuted}
+                >
+                  Keep Muted
+                </Button>
+                <Button
+                  type="button"
+                  className="h-12 rounded-2xl border border-white/30 bg-[linear-gradient(135deg,rgba(255,255,255,0.26),rgba(186,230,253,0.2))] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_14px_28px_rgba(15,23,42,0.24)] backdrop-blur-2xl hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.34),rgba(186,230,253,0.24))]"
+                  onClick={() => {
+                    void handleEnableSound();
+                  }}
+                >
+                  Enable Sound
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <div className="pointer-events-none fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6">
-        <div className="group pointer-events-auto flex items-center justify-end gap-2">
+      <div className="pointer-events-none fixed bottom-32 right-4 z-40 md:bottom-8 md:right-6">
+        <div className="group pointer-events-auto flex items-end justify-end gap-3">
           <div
             className={cn(
-              "flex items-center overflow-hidden rounded-full border border-white/30 bg-white/80 shadow-[0_12px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-all duration-300",
+              "relative flex items-center overflow-hidden rounded-[28px] border border-white/28 bg-[rgba(255,255,255,0.14)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_18px_50px_rgba(15,23,42,0.24)] backdrop-blur-3xl transition-all duration-300",
               isExpanded
-                ? "max-w-[220px] opacity-100"
-                : "max-w-0 opacity-0 md:max-w-0 md:opacity-0 md:group-hover:max-w-[220px] md:group-hover:opacity-100",
+                ? "max-w-[260px] opacity-100"
+                : "max-w-0 opacity-0 md:max-w-0 md:opacity-0 md:group-hover:max-w-[260px] md:group-hover:opacity-100",
             )}
           >
-            <div className="min-w-[156px] px-3 py-2">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.42),transparent_32%),linear-gradient(135deg,rgba(255,255,255,0.16),rgba(255,255,255,0.06)),repeating-linear-gradient(135deg,rgba(255,255,255,0.08)_0_12px,rgba(255,255,255,0.02)_12px_24px),repeating-linear-gradient(45deg,rgba(255,255,255,0.06)_0_14px,transparent_14px_28px)]" />
+            <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent" />
+            <div className="relative min-w-[196px] px-4 py-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">
-                  Background Sound
+                <span className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-700/80">
+                  Ambient Sound
                 </span>
-                <span className="text-xs font-bold text-slate-500">
+                <span className="rounded-full border border-white/35 bg-[rgba(255,255,255,0.18)] px-2 py-0.5 text-[11px] font-bold text-slate-800/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                   {Math.round(volume * 100)}%
+                </span>
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-700/85">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/30 bg-[rgba(255,255,255,0.18)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                  <Waves className="h-3.5 w-3.5" />
+                </div>
+                <span>
+                  {isMuted ? "Muted" : "Playing across the storefront"}
                 </span>
               </div>
               <Slider
                 aria-label="Background sound volume"
-                className="mt-2"
+                className="mt-3"
                 min={0}
                 max={100}
                 step={1}
@@ -361,15 +395,17 @@ export function HomepageSoundButton() {
             </div>
           </div>
 
-          <div className="flex items-center rounded-full border border-white/30 bg-white/80 p-1 shadow-[0_12px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+          <div className="relative flex flex-col items-center rounded-[30px] border border-white/28 bg-[rgba(255,255,255,0.14)] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_18px_50px_rgba(15,23,42,0.24)] backdrop-blur-3xl">
+            <div className="pointer-events-none absolute inset-0 rounded-[30px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.34),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05)),repeating-linear-gradient(140deg,rgba(255,255,255,0.06)_0_12px,transparent_12px_24px)]" />
+            <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent" />
             <button
               type="button"
               onClick={() => {
                 void handleMuteToggle();
               }}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-white transition-colors hover:bg-slate-800"
+              className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/28 bg-[rgba(255,255,255,0.22)] text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] transition-colors hover:bg-[rgba(255,255,255,0.3)]"
               aria-label={
-                isMuted ? "Unmute homepage sound" : "Mute homepage sound"
+                isMuted ? "Unmute storefront sound" : "Mute storefront sound"
               }
               aria-pressed={!isMuted}
             >
@@ -378,7 +414,7 @@ export function HomepageSoundButton() {
             <button
               type="button"
               onClick={() => setIsExpanded((current) => !current)}
-              className="ml-1 flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 md:hidden"
+              className="relative mt-1 flex h-12 w-12 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-[rgba(255,255,255,0.24)]"
               aria-label={
                 isExpanded ? "Hide volume controls" : "Show volume controls"
               }

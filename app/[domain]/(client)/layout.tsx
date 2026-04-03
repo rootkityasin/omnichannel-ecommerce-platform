@@ -7,6 +7,7 @@ import { DesktopNavbar } from "@/components/client/DesktopNavbar";
 import { CartDrawer } from "@/components/client/CartDrawer";
 import { DynamicCheckout } from "@/components/client/DynamicCheckout";
 import { PromoModal } from "@/components/client/PromoModal";
+import { HomepageSoundButton } from "@/components/client/HomepageSoundButton";
 import { getActivePromo } from "@/app/actions/promo";
 import { Metadata } from "next";
 import { SettingsProvider } from "@/components/providers/SettingsProvider";
@@ -140,6 +141,7 @@ fbq('track', 'PageView');`,
         <DesktopNavbar />
         <CartDrawer />
         <DynamicCheckout />
+        <HomepageSoundButton />
         <main className="flex-1 w-full relative">
           <PageTransition>{children}</PageTransition>
         </main>
