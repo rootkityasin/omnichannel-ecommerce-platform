@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   Search,
   Filter,
@@ -60,7 +61,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { FulfillmentBoard } from "@/components/admin/FulfillmentBoard";
 import { type AdminOrder, type AdminOrderDetails } from "@/types/common";
 import { format } from "date-fns";
 import { getDeliveryConfig, getSiteConfig } from "@/app/actions/settings";
@@ -81,6 +81,21 @@ import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 
 type ProductOption = Awaited<ReturnType<typeof getProducts>>[number];
+
+const FulfillmentBoard = dynamic(
+  () =>
+    import("@/components/admin/FulfillmentBoard").then(
+      (mod) => mod.FulfillmentBoard,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+        Loading fulfillment board...
+      </div>
+    ),
+  },
+);
 
 export default function OrdersPage() {
   const { data: session } = useSession();

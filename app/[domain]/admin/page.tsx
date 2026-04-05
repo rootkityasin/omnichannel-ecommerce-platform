@@ -1,8 +1,6 @@
 import { getDashboardMetrics } from "@/app/actions/analytics";
 import DashboardClient from "./DashboardClient";
 
-export const dynamic = "force-dynamic";
-
 export default async function AdminDashboard({
   params,
 }: {
