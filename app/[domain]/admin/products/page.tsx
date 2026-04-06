@@ -81,6 +81,7 @@ import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 
 import { AdminProduct } from "@/types/common";
+import type { ProductFormState } from "@/components/admin/products/ProductFormModal";
 
 type LocalProduct = {
   id: string;
@@ -124,26 +125,19 @@ const ProductBoard = dynamic(
   },
 );
 
-type ProductFormState = {
-  name: string;
-  price: number | string;
-  sku: string;
-  image: string;
-  images: string[];
-  categoryId: string;
-  description: string;
-  nutrition: string;
-  cookingInstructions: string;
-  pointsReward: number | string;
-  weight: number | string;
-  servingSize: number | string;
-  pieces: number | string;
-  stage: string;
-  type: "SINGLE" | "COMBO";
-  descriptionSwap: boolean;
-  comboItems: { childId?: string; quantity: number }[];
-  sections: string[];
-};
+const ProductFormModal = dynamic(
+  () => import("@/components/admin/products/ProductFormModal"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="rounded-xl bg-white px-6 py-5 text-sm text-slate-500 shadow-xl">
+          Loading product form...
+        </div>
+      </div>
+    ),
+  },
+);
 
 export default function ProductsPage() {
   const { data: session } = useSession();
@@ -620,6 +614,7 @@ export default function ProductsPage() {
   const handleEdit = (product: AdminProduct | LocalProduct) => {
     const p = product as unknown as LocalProduct;
     const sections = p.sections || [];
+    void ensureSectionsLoaded();
     setNewProduct({
       name: p.name,
       price: p.price,
@@ -864,7 +859,19 @@ export default function ProductsPage() {
       </div>
 
       {/* Modal */}
-      {isAdding && (
+      <ProductFormModal
+        isOpen={isAdding}
+        editingId={editingId}
+        newProduct={newProduct}
+        setNewProduct={setNewProduct}
+        categories={categories}
+        sectionsList={sectionsList}
+        products={products}
+        config={config}
+        onClose={() => setIsAdding(false)}
+        onSubmit={handleSave}
+      />
+      {false && isAdding && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
           <Card className="my-auto w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
             <div className="p-6 overflow-y-auto">
