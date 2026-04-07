@@ -282,7 +282,10 @@ export function HomepageSoundButton() {
         onOpenChange={(open) => {
           if (open) {
             setShowConsentDialog(true);
+            return;
           }
+
+          handleKeepMuted();
         }}
       >
         <DialogContent
