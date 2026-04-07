@@ -28,6 +28,7 @@ type ProductMutationInput = {
 const getSessionUser = async () => (await auth())?.user;
 const toStringValue = (value: unknown, fallback = "") =>
   typeof value === "string" ? value : fallback;
+const isStorefrontVisibleStage = (stage: string) => stage === "Published";
 
 const isUniqueSkuError = (error: unknown) => {
   if (!error || typeof error !== "object") return false;
@@ -38,6 +39,15 @@ const isUniqueSkuError = (error: unknown) => {
 const getErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error && error.message) return error.message;
   return fallback;
+};
+
+const invalidateProductCaches = () => {
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/inventory");
+  revalidatePath("/", "layout");
+  updateTag("products");
+  updateTag("menu-data");
+  updateTag("home-sections");
 };
 
 export async function getAdminProducts(domain?: string) {
@@ -211,6 +221,7 @@ const getCachedProducts = unstable_cache(
       where: {
         tenantId: tenantId,
         isAvailable: true,
+        stage: { notIn: ["Draft", "Archived"] },
       },
       orderBy: { sku: "asc" },
       select: {
@@ -308,6 +319,8 @@ export async function createProduct(data: ProductMutationInput) {
     if (!data.categoryId)
       return { success: false, error: "Category is required" };
 
+    const stage = toStringValue(data.stage, "Draft");
+
     const product = await prisma.product.create({
       data: {
         tenantId,
@@ -320,7 +333,8 @@ export async function createProduct(data: ProductMutationInput) {
         pieces: Number.parseInt(String(data.pieces || 0), 10) || 0,
         weight: Number.parseInt(String(data.weight || 0), 10) || 0,
         servingSize: Number.parseInt(String(data.servingSize || 0), 10) || 0,
-        stage: data.stage,
+        stage,
+        isAvailable: isStorefrontVisibleStage(stage),
         categoryId: toStringValue(data.categoryId),
         images: data.images || [],
         type: data.type === "COMBO" ? "COMBO" : "SINGLE",
@@ -341,10 +355,7 @@ export async function createProduct(data: ProductMutationInput) {
             : undefined,
       },
     });
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/", "layout");
-    updateTag("products");
+    invalidateProductCaches();
     return { success: true, product };
   } catch (error) {
     console.error("Create Product Error:", error);
@@ -369,45 +380,55 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
     if (!existing || existing.tenantId !== tenantId)
       return { success: false, error: "Product not found" };
 
+    const updateData: Record<string, unknown> = {};
+
+    if (data.name !== undefined) updateData.name = toStringValue(data.name);
+    if (data.sku !== undefined) updateData.sku = toStringValue(data.sku);
+    if (data.price !== undefined)
+      updateData.price = Number.parseInt(String(data.price || 0), 10) || 0;
+    if (data.pieces !== undefined)
+      updateData.pieces = Number.parseInt(String(data.pieces || 0), 10) || 0;
+    if (data.servingSize !== undefined)
+      updateData.servingSize =
+        Number.parseInt(String(data.servingSize || 0), 10) || 0;
+    if (data.image !== undefined) updateData.image = data.image;
+    if (data.images !== undefined) updateData.images = data.images || [];
+    if (data.weight !== undefined)
+      updateData.weight = Number.parseInt(String(data.weight || 0), 10) || 0;
+    if (data.description !== undefined)
+      updateData.description = data.description;
+    if (data.descriptionSwap !== undefined)
+      updateData.descriptionSwap = data.descriptionSwap;
+    if (data.stage !== undefined) {
+      const stage = toStringValue(data.stage, "Draft");
+      updateData.stage = stage;
+      updateData.isAvailable = isStorefrontVisibleStage(stage);
+    }
+    if (data.sections !== undefined) {
+      updateData.sections = {
+        set: data.sections.map((sectionId: string) => ({ id: sectionId })),
+      };
+    }
+
+    if (data.type === "COMBO") {
+      updateData.type = "COMBO";
+      updateData.comboItems = {
+        deleteMany: {},
+        create: (data.comboItems || []).map((item) => ({
+          childId: item.childId,
+          quantity: Number.parseInt(String(item.quantity || 0), 10) || 0,
+        })),
+      };
+    } else if (data.type === "SINGLE") {
+      updateData.type = "SINGLE";
+      updateData.comboItems = { deleteMany: {} };
+    }
+
     await prisma.product.update({
       where: { id },
-      data: {
-        name: toStringValue(data.name),
-        sku: toStringValue(data.sku),
-        price: Number.parseInt(String(data.price || 0), 10) || 0,
-        pieces: Number.parseInt(String(data.pieces || 0), 10) || 0,
-        servingSize: Number.parseInt(String(data.servingSize || 0), 10) || 0,
-        image: data.image,
-        images: data.images || [],
-        weight: Number.parseInt(String(data.weight || 0), 10) || 0,
-        description: data.description,
-        descriptionSwap: data.descriptionSwap,
-        stage: data.stage,
-        type: data.type === "COMBO" ? "COMBO" : "SINGLE",
-        sections: data.sections
-          ? {
-              set: data.sections.map((id: string) => ({ id })),
-            }
-          : undefined,
-        comboItems:
-          data.type === "COMBO"
-            ? {
-                deleteMany: {},
-                create: (data.comboItems || []).map((item) => ({
-                  childId: item.childId,
-                  quantity:
-                    Number.parseInt(String(item.quantity || 0), 10) || 0,
-                })),
-              }
-            : {
-                deleteMany: {},
-              },
-      },
+      data: updateData,
     });
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/", "layout");
-    updateTag("products");
+    invalidateProductCaches();
     return { success: true };
   } catch (error) {
     console.error("Update Product Error:", error);
@@ -451,10 +472,7 @@ export async function deleteProduct(id: string) {
       prisma.product.delete({ where: { id } }),
     ]);
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/");
-    updateTag("products");
+    invalidateProductCaches();
     return { success: true };
   } catch (error) {
     console.error("Delete Product Error:", error);
@@ -497,10 +515,7 @@ export async function deleteArchivedProduct(id: string) {
       prisma.product.delete({ where: { id } }),
     ]);
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/");
-    updateTag("products");
+    invalidateProductCaches();
     return { success: true };
   } catch (error) {
     console.error("Delete Archived Product Error:", error);
@@ -532,10 +547,7 @@ export async function archiveProduct(id: string) {
       },
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/");
-    updateTag("products");
+    invalidateProductCaches();
     return { success: true };
   } catch (error) {
     console.error("Archive Product Error:", error);
@@ -567,10 +579,7 @@ export async function unarchiveProduct(id: string) {
       },
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/");
-    updateTag("products");
+    invalidateProductCaches();
     return { success: true };
   } catch (error) {
     console.error("Unarchive Product Error:", error);

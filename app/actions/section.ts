@@ -48,13 +48,27 @@ export async function getHomeSections(domain?: string) {
         if (domain && !tenant) return [];
 
         const productFilter = domain
-          ? { tenantId: tenant?.id || "__no_tenant__", isAvailable: true }
-          : { tenantId: null, isAvailable: true };
+          ? {
+              tenantId: tenant?.id || "__no_tenant__",
+              isAvailable: true,
+              stage: { notIn: ["Draft", "Archived"] },
+            }
+          : {
+              tenantId: null,
+              isAvailable: true,
+              stage: { notIn: ["Draft", "Archived"] },
+            };
 
         const sectionFilter = domain
           ? {
               isActive: true,
-              products: { some: { tenantId: tenant?.id || "__no_tenant__" } },
+              products: {
+                some: {
+                  tenantId: tenant?.id || "__no_tenant__",
+                  isAvailable: true,
+                  stage: { notIn: ["Draft", "Archived"] },
+                },
+              },
             }
           : { isActive: true };
 

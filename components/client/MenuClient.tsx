@@ -57,16 +57,22 @@ export function MenuClient({
     return typeof window !== "undefined" ? readMenuCache(cacheDomain) : null;
   }, [cacheDomain]);
   const isCacheValid = Boolean(cachedMenu);
-  const initialMenuProducts = isCacheValid
-    ? (cachedMenu?.products as any[]) || []
-    : menuProducts.length > 0 && menuDomain === cacheDomain
-      ? (menuProducts as any[])
-      : initialProducts || [];
-  const initialMenuCategories = isCacheValid
-    ? (cachedMenu?.categories as any[]) || []
-    : menuCategories.length > 0 && menuDomain === cacheDomain
-      ? (menuCategories as any[])
-      : initialCategories || [];
+  const hasServerMenuData =
+    Array.isArray(initialProducts) && Array.isArray(initialCategories);
+  const initialMenuProducts = hasServerMenuData
+    ? initialProducts || []
+    : isCacheValid
+      ? (cachedMenu?.products as any[]) || []
+      : menuProducts.length > 0 && menuDomain === cacheDomain
+        ? (menuProducts as any[])
+        : initialProducts || [];
+  const initialMenuCategories = hasServerMenuData
+    ? initialCategories || []
+    : isCacheValid
+      ? (cachedMenu?.categories as any[]) || []
+      : menuCategories.length > 0 && menuDomain === cacheDomain
+        ? (menuCategories as any[])
+        : initialCategories || [];
 
   const [clientProducts, setClientProducts] = useState(initialMenuProducts);
   const [clientCategories, setClientCategories] = useState(
@@ -81,7 +87,16 @@ export function MenuClient({
     if (hasInitialized.current) return;
     hasInitialized.current = true;
 
-    if (cachedMenu && isCacheValid) {
+    if (hasServerMenuData) {
+      const payload = {
+        domain: cacheDomain,
+        products: initialProducts,
+        categories: initialCategories,
+        timestamp: Date.now(),
+      };
+      writeMenuCache(payload);
+      setMenuCache(payload);
+    } else if (cachedMenu && isCacheValid) {
       setMenuCache({
         domain: cachedMenu.domain,
         products: cachedMenu.products as any[],
@@ -101,6 +116,7 @@ export function MenuClient({
   }, [
     cachedMenu,
     isCacheValid,
+    hasServerMenuData,
     initialProducts,
     initialCategories,
     cacheDomain,
