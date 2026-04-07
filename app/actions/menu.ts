@@ -14,7 +14,6 @@ const getCachedMenuData = unstable_cache(
         where: {
           tenantId: tenantId,
           isAvailable: true,
-          stage: { notIn: ["Draft", "Archived"] },
         },
         orderBy: { sku: "asc" },
         select: {

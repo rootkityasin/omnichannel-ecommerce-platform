@@ -28,7 +28,6 @@ type ProductMutationInput = {
 const getSessionUser = async () => (await auth())?.user;
 const toStringValue = (value: unknown, fallback = "") =>
   typeof value === "string" ? value : fallback;
-const isStorefrontVisibleStage = (stage: string) => stage === "Published";
 
 const isUniqueSkuError = (error: unknown) => {
   if (!error || typeof error !== "object") return false;
@@ -221,7 +220,6 @@ const getCachedProducts = unstable_cache(
       where: {
         tenantId: tenantId,
         isAvailable: true,
-        stage: { notIn: ["Draft", "Archived"] },
       },
       orderBy: { sku: "asc" },
       select: {
@@ -319,8 +317,6 @@ export async function createProduct(data: ProductMutationInput) {
     if (!data.categoryId)
       return { success: false, error: "Category is required" };
 
-    const stage = toStringValue(data.stage, "Draft");
-
     const product = await prisma.product.create({
       data: {
         tenantId,
@@ -333,8 +329,7 @@ export async function createProduct(data: ProductMutationInput) {
         pieces: Number.parseInt(String(data.pieces || 0), 10) || 0,
         weight: Number.parseInt(String(data.weight || 0), 10) || 0,
         servingSize: Number.parseInt(String(data.servingSize || 0), 10) || 0,
-        stage,
-        isAvailable: isStorefrontVisibleStage(stage),
+        stage: data.stage,
         categoryId: toStringValue(data.categoryId),
         images: data.images || [],
         type: data.type === "COMBO" ? "COMBO" : "SINGLE",
@@ -402,7 +397,6 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
     if (data.stage !== undefined) {
       const stage = toStringValue(data.stage, "Draft");
       updateData.stage = stage;
-      updateData.isAvailable = isStorefrontVisibleStage(stage);
     }
     if (data.sections !== undefined) {
       updateData.sections = {

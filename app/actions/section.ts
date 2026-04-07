@@ -51,12 +51,10 @@ export async function getHomeSections(domain?: string) {
           ? {
               tenantId: tenant?.id || "__no_tenant__",
               isAvailable: true,
-              stage: { notIn: ["Draft", "Archived"] },
             }
           : {
               tenantId: null,
               isAvailable: true,
-              stage: { notIn: ["Draft", "Archived"] },
             };
 
         const sectionFilter = domain
@@ -66,7 +64,6 @@ export async function getHomeSections(domain?: string) {
                 some: {
                   tenantId: tenant?.id || "__no_tenant__",
                   isAvailable: true,
-                  stage: { notIn: ["Draft", "Archived"] },
                 },
               },
             }
