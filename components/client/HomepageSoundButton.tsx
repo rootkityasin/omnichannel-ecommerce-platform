@@ -14,7 +14,6 @@ import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -305,10 +304,6 @@ export function HomepageSoundButton() {
                 <DialogTitle className="mt-4 text-2xl font-black text-white">
                   Let the store play
                 </DialogTitle>
-                <DialogDescription className="max-w-[280px] text-sm leading-relaxed text-slate-100/85">
-                  Turn on soft background music for the storefront, or keep it
-                  muted and control it anytime from the glass sound button.
-                </DialogDescription>
               </DialogHeader>
 
               <div className="mt-5 rounded-[26px] border border-white/20 bg-[rgba(15,23,42,0.12)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl">
@@ -331,20 +326,20 @@ export function HomepageSoundButton() {
               <div className="mt-5 grid gap-2">
                 <Button
                   type="button"
-                  variant="outline"
-                  className="h-12 rounded-2xl border-white/28 bg-[rgba(240,249,255,0.12)] font-bold text-white backdrop-blur-2xl hover:bg-[rgba(240,249,255,0.18)] hover:text-white"
-                  onClick={handleKeepMuted}
-                >
-                  Keep Muted
-                </Button>
-                <Button
-                  type="button"
                   className="h-12 rounded-2xl border border-white/30 bg-[linear-gradient(135deg,rgba(255,255,255,0.26),rgba(186,230,253,0.2))] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_14px_28px_rgba(15,23,42,0.24)] backdrop-blur-2xl hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.34),rgba(186,230,253,0.24))]"
                   onClick={() => {
                     void handleEnableSound();
                   }}
                 >
                   Enable Sound
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 rounded-2xl border-white/28 bg-[rgba(240,249,255,0.12)] font-bold text-white backdrop-blur-2xl hover:bg-[rgba(240,249,255,0.18)] hover:text-white"
+                  onClick={handleKeepMuted}
+                >
+                  Keep Muted
                 </Button>
               </div>
             </div>

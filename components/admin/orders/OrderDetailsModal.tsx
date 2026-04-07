@@ -27,10 +27,16 @@ export default function OrderDetailsModal({
   if (!selectedOrderId) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md">
-      <div className="flex min-h-full items-start justify-center sm:items-center">
-        <Card className="h-full w-full rounded-none border-0 sm:h-auto sm:max-h-[90vh] sm:max-w-4xl sm:rounded-2xl sm:border sm:border-slate-200 overflow-hidden flex flex-col shadow-2xl">
-          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-5 py-4">
+    <div
+      className="fixed inset-0 z-[110] bg-black/60 p-2 backdrop-blur-md sm:p-4"
+      onClick={closeOrderDetails}
+    >
+      <div className="flex h-full min-h-full items-start justify-center sm:items-center">
+        <Card
+          className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl sm:h-auto sm:max-h-[90vh] sm:max-w-4xl sm:rounded-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3 sm:px-5 sm:py-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
@@ -43,19 +49,20 @@ export default function OrderDetailsModal({
               <button
                 onClick={closeOrderDetails}
                 className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close order details"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-4 sm:px-6">
+          <div className="flex-1 overflow-y-auto overscroll-contain bg-slate-50 px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-4 sm:pb-4">
             {isDetailsLoading || !selectedOrderDetails ? (
               <div className="flex min-h-[40vh] items-center justify-center text-sm text-slate-500">
                 Loading order details...
               </div>
             ) : (
-              <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                 <div className="space-y-4">
                   <Card className="border border-slate-200 shadow-sm">
                     <CardContent className="p-4 space-y-3">
@@ -217,9 +224,10 @@ export default function OrderDetailsModal({
                       <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
                         Quick Actions
                       </h3>
-                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                      <div className="grid grid-cols-1 gap-2">
                         <Button
                           variant="outline"
+                          className="w-full"
                           onClick={() =>
                             handleEditFromDetails(selectedOrderDetails)
                           }
