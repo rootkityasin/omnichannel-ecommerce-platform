@@ -257,7 +257,6 @@ export function MenuClient({
       try {
         const response = await fetch(`/api/menu?${params.toString()}`, {
           signal: controller.signal,
-          cache: "no-store",
         });
         if (!response.ok) {
           return;

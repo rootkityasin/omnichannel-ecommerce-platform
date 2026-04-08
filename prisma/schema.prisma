@@ -77,6 +77,10 @@ model Product {
   @@index([tenantId, stage])
   @@index([tenantId, categoryId])
   @@index([tenantId, isAvailable])
+  @@index([tenantId, isAvailable, categoryId])
+  @@index([tenantId, isAvailable, type])
+  @@index([tenantId, isAvailable, createdAt])
+  @@index([tenantId, isAvailable, totalSold])
   @@index([categoryId])
   @@index([isAvailable])
 }

@@ -53,5 +53,13 @@ Keep storefront responsive for high concurrent reads (target: ~100 concurrent us
 - Note any cache invalidation/tag updates required.
 
 ## Update Log
+### 2026-04-08 (follow-up)
+- Removed client-side forced `no-store` from filtered menu fetch so API cache headers can be honored.
+- Added Product composite indexes for filtered menu query paths in `prisma/schema.prisma`:
+  - `[tenantId, isAvailable, categoryId]`
+  - `[tenantId, isAvailable, type]`
+  - `[tenantId, isAvailable, createdAt]`
+  - `[tenantId, isAvailable, totalSold]`
+
 ### 2026-04-08
 - Created this storefront performance changelog and documented cache/path optimizations including server-side filtering fallback.
