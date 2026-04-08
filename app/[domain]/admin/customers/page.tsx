@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,7 @@ import {
   deleteUser,
   getCurrentUserRole,
 } from "@/app/actions/user";
-import { fetchAccountCreatedUsers, fetchCustomers } from "./actions";
+import { fetchCustomerDatasets } from "./actions";
 import { toast } from "sonner";
 import readXlsxFile from "read-excel-file";
 import {
@@ -196,6 +196,34 @@ const parseSheetRows = (
   return parsed;
 };
 
+const hydrateCustomerDatasets = (data: {
+  customers: Array<{
+    id: string;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    orders?: number | null;
+    spent?: number | null;
+    points?: number | null;
+    createdAt: string | Date;
+    isGuest?: boolean;
+  }>;
+  accountCreatedUsers: Array<{
+    id: string;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    orders?: number | null;
+    spent?: number | null;
+    points?: number | null;
+    createdAt: string | Date;
+    isGuest?: boolean;
+  }>;
+}) => ({
+  customers: data.customers.map(mapCustomerRow),
+  accountCreatedUsers: data.accountCreatedUsers.map(mapCustomerRow),
+});
+
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [accountCreatedUsers, setAccountCreatedUsers] = useState<CustomerRow[]>(
@@ -230,18 +258,17 @@ export default function CustomersPage() {
       hasFetched.current = true;
 
       try {
-        const [users, accountUsers, role] = await Promise.all([
-          fetchCustomers(),
-          fetchAccountCreatedUsers(),
+        const [data, role] = await Promise.all([
+          fetchCustomerDatasets(),
           getCurrentUserRole(),
         ]);
 
         if (!isMounted.current) return;
 
         setUserRole(role);
-
-        setCustomers(users.map(mapCustomerRow));
-        setAccountCreatedUsers(accountUsers.map(mapCustomerRow));
+        const hydrated = hydrateCustomerDatasets(data);
+        setCustomers(hydrated.customers);
+        setAccountCreatedUsers(hydrated.accountCreatedUsers);
       } catch (error) {
         if (!isMounted.current) return;
         console.error("Failed to fetch initial data:", error);
@@ -258,28 +285,34 @@ export default function CustomersPage() {
     "customers",
   );
 
-  const visibleRows =
-    activeTab === "customers" ? customers : accountCreatedUsers;
+  const visibleRows = useMemo(
+    () => (activeTab === "customers" ? customers : accountCreatedUsers),
+    [activeTab, customers, accountCreatedUsers],
+  );
 
-  const filteredCustomers = visibleRows
-    .filter(
-      (c) =>
-        (c.name.toLowerCase().includes(search.toLowerCase()) ||
-          c.phone?.includes(search)) &&
-        c.spent >= minSpent &&
-        c.orders >= minOrders,
-    )
-    .sort((a, b) => {
-      if (sortBy === "spent_high") return b.spent - a.spent;
-      if (sortBy === "spent_low") return a.spent - b.spent;
-      if (sortBy === "orders_high") return b.orders - a.orders;
-      if (sortBy === "newest") {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      }
-      return 0;
-    });
+  const filteredCustomers = useMemo(() => {
+    const normalizedSearch = search.toLowerCase();
+
+    return visibleRows
+      .filter(
+        (c) =>
+          (c.name.toLowerCase().includes(normalizedSearch) ||
+            c.phone?.includes(search)) &&
+          c.spent >= minSpent &&
+          c.orders >= minOrders,
+      )
+      .sort((a, b) => {
+        if (sortBy === "spent_high") return b.spent - a.spent;
+        if (sortBy === "spent_low") return a.spent - b.spent;
+        if (sortBy === "orders_high") return b.orders - a.orders;
+        if (sortBy === "newest") {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        }
+        return 0;
+      });
+  }, [visibleRows, search, minSpent, minOrders, sortBy]);
 
   const handleEdit = (customer: CustomerRow) => {
     setNewCustomer({
@@ -296,12 +329,10 @@ export default function CustomersPage() {
   };
 
   const refreshCustomerData = async () => {
-    const [orderedCustomers, createdUsers] = await Promise.all([
-      fetchCustomers(),
-      fetchAccountCreatedUsers(),
-    ]);
-    setCustomers(orderedCustomers.map(mapCustomerRow));
-    setAccountCreatedUsers(createdUsers.map(mapCustomerRow));
+    const data = await fetchCustomerDatasets();
+    const hydrated = hydrateCustomerDatasets(data);
+    setCustomers(hydrated.customers);
+    setAccountCreatedUsers(hydrated.accountCreatedUsers);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -437,12 +468,10 @@ export default function CustomersPage() {
         toast.success(
           `Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`,
         );
-        const [users, accountUsers] = await Promise.all([
-          fetchCustomers(),
-          fetchAccountCreatedUsers(),
-        ]);
-        setCustomers(users.map(mapCustomerRow));
-        setAccountCreatedUsers(accountUsers.map(mapCustomerRow));
+        const data = await fetchCustomerDatasets();
+        const hydrated = hydrateCustomerDatasets(data);
+        setCustomers(hydrated.customers);
+        setAccountCreatedUsers(hydrated.accountCreatedUsers);
       } else {
         toast.error(result.error || "Import failed");
       }

@@ -54,6 +54,24 @@ function getDhakaDayUtcRange() {
   return { startUtc, endUtc };
 }
 
+function getDhakaDaysAgoUtc(daysAgo: number) {
+  const offsetMs = 6 * 60 * 60 * 1000;
+  const now = new Date();
+  const dhakaNow = new Date(now.getTime() + offsetMs);
+
+  return new Date(
+    Date.UTC(
+      dhakaNow.getUTCFullYear(),
+      dhakaNow.getUTCMonth(),
+      dhakaNow.getUTCDate() - daysAgo,
+      0,
+      0,
+      0,
+      0,
+    ) - offsetMs,
+  );
+}
+
 async function restoreOrderStock(orderDbId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderDbId },
@@ -101,12 +119,16 @@ async function restoreOrderStock(orderDbId: string) {
 const getCachedOrderStats = unstable_cache(
   async (tenantId: string) => {
     const { startUtc, endUtc } = getDhakaDayUtcRange();
+    const rollingWindowStart = getDhakaDaysAgoUtc(30);
 
     const [statusCounts, todayAgg, todayCancelledAgg, totalSalesAgg] =
       await Promise.all([
         prisma.order.groupBy({
           by: ["status"],
-          where: { tenantId },
+          where: {
+            tenantId,
+            status: { in: [...FINAL_ORDER_STATUSES] },
+          },
           _count: { id: true },
         }),
         prisma.order.count({
@@ -124,7 +146,11 @@ const getCachedOrderStats = unstable_cache(
           },
         }),
         prisma.order.aggregate({
-          where: { tenantId, status: SALE_STATUS },
+          where: {
+            tenantId,
+            status: SALE_STATUS,
+            createdAt: { gte: rollingWindowStart },
+          },
           _sum: { totalAmount: true },
         }),
       ]);
@@ -142,6 +168,7 @@ const getCachedOrderStats = unstable_cache(
       todayCount: todayAgg || 0,
       todayCancelled: todayCancelledAgg || 0,
       totalSales: totalSalesAgg._sum.totalAmount || 0,
+      salesWindow: "30d",
     };
   },
   ["order-stats"],
@@ -152,6 +179,7 @@ function invalidateOrderCaches() {
   updateTag("order-stats");
   updateTag("dashboard-metrics");
   updateTag("analytics-metrics");
+  updateTag("customers-stats");
 }
 
 type AdminOrderUpdateInput = {

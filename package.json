@@ -1,6 +1,6 @@
 {
   "name": "omnichannel-ecommerce-platform",
-  "version": "1.0.49",
+  "version": "1.0.55",
   "private": true,
   "repository": {
     "type": "git",
@@ -14,6 +14,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
+    "profile:vps": "bash scripts/profile-vps-hotspots.sh",
+    "profile:compare": "node scripts/compare-perf-summaries.js",
     "postinstall": "prisma generate && prisma generate --schema prisma/platform/schema.prisma",
     "benchmark": "node scripts/benchmark.js",
     "prepare": "husky"

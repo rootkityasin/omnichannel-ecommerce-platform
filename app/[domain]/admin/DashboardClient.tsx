@@ -43,6 +43,7 @@ export default function DashboardClient({
     uniqueCustomers,
     trendData,
     recentOrders,
+    windowLabel,
   } = metrics;
   const salesValues = trendData.map((d: any) => d.sales);
   const todaySales = salesValues[6] || 0;
@@ -65,7 +66,7 @@ export default function DashboardClient({
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
-          title="All Time Revenue"
+          title={`${windowLabel || "Last 30 Days"} Revenue`}
           value={`৳ ${totalRevenue.toLocaleString()}`}
           icon={CreditCard}
           trend={
@@ -76,17 +77,17 @@ export default function DashboardClient({
           trendColor={trendPercent >= 0 ? "text-green-500" : "text-red-500"}
         />
         <MetricCard
-          title="Total Orders"
+          title={`${windowLabel || "Last 30 Days"} Orders`}
           value={totalOrders.toLocaleString()}
           icon={ShoppingBag}
           trend={`${pendingOrders} Pending`}
           trendColor="text-orange-500"
         />
         <MetricCard
-          title="Unique Customers"
+          title={`${windowLabel || "Last 30 Days"} Customers`}
           value={uniqueCustomers.toLocaleString()}
           icon={Users}
-          trend="All Time"
+          trend={windowLabel || "Last 30 Days"}
           trendColor="text-blue-500"
         />
       </div>

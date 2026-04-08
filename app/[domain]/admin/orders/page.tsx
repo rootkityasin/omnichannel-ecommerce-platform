@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -232,19 +232,9 @@ export default function OrdersPage() {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Load page config lazily after the initial data fetch
+  // Load page config once to avoid delayed rerender churn.
   useEffect(() => {
-    const loadDeferred = () => {
-      void loadOrderPageConfig();
-    };
-
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(loadDeferred);
-      return () => window.cancelIdleCallback(idleId);
-    }
-
-    const timer = setTimeout(loadDeferred, 1200);
-    return () => clearTimeout(timer);
+    void loadOrderPageConfig();
   }, [loadOrderPageConfig]);
 
   const getBDDate = () => {
@@ -572,14 +562,32 @@ export default function OrdersPage() {
     );
   };
 
+  const runInChunks = async (
+    ids: string[],
+    worker: (id: string) => Promise<unknown>,
+    chunkSize = 8,
+  ) => {
+    let failed = 0;
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunk = ids.slice(i, i + chunkSize);
+      const results = await Promise.allSettled(chunk.map((id) => worker(id)));
+      failed += results.filter((r) => r.status === "rejected").length;
+    }
+    return { failed };
+  };
+
   const handleBulkOrderStatus = async (newStatus: string) => {
     try {
-      for (const id of selectedOrders) {
-        await updateAdminOrder(id, { status: newStatus });
-      }
-      toast.success(
-        `Bulk updated ${selectedOrders.length} orders to ${newStatus}`,
+      const { failed } = await runInChunks(selectedOrders, (id) =>
+        updateAdminOrder(id, { status: newStatus }),
       );
+      if (failed > 0) {
+        toast.error(`Bulk status update completed with ${failed} failures`);
+      } else {
+        toast.success(
+          `Bulk updated ${selectedOrders.length} orders to ${newStatus}`,
+        );
+      }
       setSelectedOrders([]);
       fetchOrders();
     } catch (err) {
@@ -591,10 +599,12 @@ export default function OrdersPage() {
   const handleBulkOrderDelete = async () => {
     if (!confirm(`Permanently delete ${selectedOrders.length} orders?`)) return;
     try {
-      for (const id of selectedOrders) {
-        await deleteAdminOrder(id);
+      const { failed } = await runInChunks(selectedOrders, deleteAdminOrder);
+      if (failed > 0) {
+        toast.error(`Bulk delete completed with ${failed} failures`);
+      } else {
+        toast.success(`Bulk deleted ${selectedOrders.length} orders`);
       }
-      toast.success(`Bulk deleted ${selectedOrders.length} orders`);
       setSelectedOrders([]);
       fetchOrders();
     } catch (err) {
@@ -603,9 +613,12 @@ export default function OrdersPage() {
     }
   };
 
+  const blockedPhonesSet = useMemo(() => new Set(blockedPhones), [blockedPhones]);
+  const blockedEmailsSet = useMemo(() => new Set(blockedEmails), [blockedEmails]);
+
   const isSuspect = (order: AdminOrder & { email?: string }) => {
-    const phoneMatch = order.phone && blockedPhones.includes(order.phone);
-    const emailMatch = order.email && blockedEmails.includes(order.email);
+    const phoneMatch = order.phone && blockedPhonesSet.has(order.phone);
+    const emailMatch = order.email && blockedEmailsSet.has(order.email);
     return phoneMatch || emailMatch;
   };
 
@@ -665,6 +678,17 @@ export default function OrdersPage() {
         return "bg-gray-100 text-gray-700";
     }
   };
+
+  const enrichedOrders = useMemo(
+    () =>
+      orders.map((order) => ({
+        ...order,
+        isSuspect: isSuspect(order),
+        formattedDate: format(new Date(order.date), "MMM d, yyyy h:mm a"),
+        statusClass: getStatusColor(order.status),
+      })),
+    [orders, blockedPhonesSet, blockedEmailsSet],
+  );
 
   const getStatusCountString = (
     statusKey: string,
@@ -1346,7 +1370,7 @@ export default function OrdersPage() {
         <SummaryCard
           label="Revenue"
           value={`৳ ${parseFloat(stats?.totalSales || 0).toLocaleString()}`}
-          subtext="Counted sales only"
+          subtext={`Counted sales only (${stats?.salesWindow || "all-time"})`}
         />
         <SummaryCard
           label="Pending Orders"
@@ -1463,8 +1487,8 @@ export default function OrdersPage() {
                   <div className="rounded-xl border border-slate-100 bg-white p-6 text-center text-slate-500 shadow-sm">
                     Loading orders...
                   </div>
-                ) : orders.length > 0 ? (
-                  orders.map((order) => (
+                ) : enrichedOrders.length > 0 ? (
+                  enrichedOrders.map((order) => (
                     <Card key={order.id} className="border-gray-100 shadow-sm">
                       <CardContent
                         className="p-4 space-y-4 cursor-pointer"
@@ -1476,24 +1500,18 @@ export default function OrdersPage() {
                               <span className="font-bold text-slate-900 break-all">
                                 {order.id}
                               </span>
-                              {isSuspect(order) && (
+                              {order.isSuspect && (
                                 <Badge className="bg-red-100 text-red-700 border-red-200">
                                   Suspect
                                 </Badge>
                               )}
                             </div>
                             <p className="mt-1 text-xs text-slate-500">
-                              {format(
-                                new Date(order.date),
-                                "MMM d, yyyy h:mm a",
-                              )}
+                              {order.formattedDate}
                             </p>
                           </div>
                           <Badge
-                            className={cn(
-                              "font-normal",
-                              getStatusColor(order.status),
-                            )}
+                            className={cn("font-normal", order.statusClass)}
                           >
                             {order.status}
                           </Badge>
@@ -1662,13 +1680,13 @@ export default function OrdersPage() {
                           Loading orders...
                         </td>
                       </tr>
-                    ) : orders.length > 0 ? (
-                      orders.map((order) => (
+                    ) : enrichedOrders.length > 0 ? (
+                      enrichedOrders.map((order) => (
                         <tr
                           key={order.id}
                           className={cn(
                             "hover:bg-gray-50/50 cursor-pointer",
-                            isSuspect(order) && "bg-red-50/30",
+                            order.isSuspect && "bg-red-50/30",
                             selectedOrders.includes(order.id) &&
                               "bg-orange-50/50",
                           )}
@@ -1685,7 +1703,7 @@ export default function OrdersPage() {
                           </td>
                           <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
                             {order.id}
-                            {isSuspect(order) && (
+                            {order.isSuspect && (
                               <div className="group relative">
                                 <AlertOctagon className="w-4 h-4 text-red-500 animate-pulse cursor-help" />
                                 <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-red-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
@@ -1695,7 +1713,7 @@ export default function OrdersPage() {
                             )}
                           </td>
                           <td className="p-4 text-slate-500">
-                            {format(new Date(order.date), "MMM d, yyyy h:mm a")}
+                            {order.formattedDate}
                           </td>
                           <td className="p-4">
                             <div className="font-medium text-slate-900 flex items-center gap-2">
@@ -1736,12 +1754,7 @@ export default function OrdersPage() {
                             ৳{order.price}
                           </td>
                           <td className="p-4">
-                            <Badge
-                              className={cn(
-                                "font-normal",
-                                getStatusColor(order.status),
-                              )}
-                            >
+                            <Badge className={cn("font-normal", order.statusClass)}>
                               {order.status}
                             </Badge>
                           </td>

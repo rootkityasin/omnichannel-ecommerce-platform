@@ -5,7 +5,7 @@ import { logActionRequest } from "@/lib/actionLogger";
 import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { randomBytes } from "crypto";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, updateTag, unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
@@ -23,6 +23,11 @@ const hasAdminAccess = (role?: string | null) =>
 
 const hasSuperTenantAccess = (role?: string | null) =>
   role === "SUPER_ADMIN" || role === "TENANT_ADMIN";
+
+function invalidateCustomerCaches() {
+  updateTag("customers");
+  updateTag("customers-stats");
+}
 
 export async function checkUserExists(phone: string) {
   if (!phone) return false;
@@ -206,7 +211,7 @@ export async function createUserWithRole(data: {
         password: hashedPassword,
       },
     });
-    updateTag("customers");
+    invalidateCustomerCaches();
     return { success: true, user };
   } catch (error) {
     console.error(error);
@@ -299,7 +304,7 @@ export async function updateUser(
         hubId: finalHubId,
       },
     });
-    updateTag("customers");
+    invalidateCustomerCaches();
     return { success: true, user };
   } catch (error) {
     return { success: false, error: "Failed to update user" };
@@ -337,7 +342,7 @@ export async function deleteUser(userId: string) {
 
     await prisma.user.delete({ where: { id: userId } });
     revalidatePath("/admin/customers");
-    updateTag("customers");
+    invalidateCustomerCaches();
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to delete" };
@@ -420,9 +425,7 @@ export async function getAllUsers() {
   }
 }
 
-import { unstable_cache } from "next/cache";
-
-const getCachedCustomersStats = unstable_cache(
+const getCachedCustomerDatasets = unstable_cache(
   async (
     userRole: string | undefined,
     userTenantId: string | null | undefined,
@@ -454,7 +457,7 @@ const getCachedCustomersStats = unstable_cache(
       );
     }
 
-    // 3. Build a map of phones -> { name, email, count, spent, firstSeen }
+    // 3. Build maps from orders in a single pass
     const phoneMap = new Map<
       string,
       {
@@ -466,41 +469,63 @@ const getCachedCustomersStats = unstable_cache(
         firstSeen: Date;
       }
     >();
+    const orderStatsByPhone = new Map<string, { orders: number; spent: number }>();
+    const orderStatsByEmail = new Map<string, { orders: number; spent: number }>();
 
     for (const order of orders) {
       const phone = order.customerPhone;
-      if (!phone) continue;
-
-      const existing = phoneMap.get(phone);
-
-      const isCancelled = order.status === "CANCELLED";
+      const isCancelled =
+        order.status === "CANCELLED" || order.status === "Cancelled";
       const spentAddition = isCancelled ? 0 : order.totalAmount;
       const countAddition = isCancelled ? 0 : 1;
 
-      if (!existing) {
-        phoneMap.set(phone, {
-          phone,
-          name: order.customerName || "Guest",
-          email: order.customerEmail || null,
-          count: countAddition,
-          spent: spentAddition,
-          firstSeen: order.createdAt,
-        });
-      } else {
-        existing.count += countAddition;
-        existing.spent += spentAddition;
-        // Keep the older date as firstSeen
-        if (order.createdAt < existing.firstSeen) {
-          existing.firstSeen = order.createdAt;
+      if (phone) {
+        const existing = phoneMap.get(phone);
+
+        if (!existing) {
+          phoneMap.set(phone, {
+            phone,
+            name: order.customerName || "Guest",
+            email: order.customerEmail || null,
+            count: countAddition,
+            spent: spentAddition,
+            firstSeen: order.createdAt,
+          });
+        } else {
+          existing.count += countAddition;
+          existing.spent += spentAddition;
+          // Keep the older date as firstSeen
+          if (order.createdAt < existing.firstSeen) {
+            existing.firstSeen = order.createdAt;
+          }
+          // Prefer a name if it was previously just "Guest"
+          if (existing.name === "Guest" && order.customerName) {
+            existing.name = order.customerName;
+          }
         }
-        // Prefer a name if it was previously just "Guest"
-        if (existing.name === "Guest" && order.customerName) {
-          existing.name = order.customerName;
-        }
+
+        const phoneStats = orderStatsByPhone.get(phone) || {
+          orders: 0,
+          spent: 0,
+        };
+        phoneStats.orders += countAddition;
+        phoneStats.spent += spentAddition;
+        orderStatsByPhone.set(phone, phoneStats);
+      }
+
+      if (order.customerEmail) {
+        const emailKey = order.customerEmail.toLowerCase();
+        const emailStats = orderStatsByEmail.get(emailKey) || {
+          orders: 0,
+          spent: 0,
+        };
+        emailStats.orders += countAddition;
+        emailStats.spent += spentAddition;
+        orderStatsByEmail.set(emailKey, emailStats);
       }
     }
 
-    // 4. Fetch registered 'USER' role accounts
+    // 4. Fetch registered 'USER' role accounts once
     const userWhere: Prisma.UserWhereInput = { role: "USER" };
     if (userRole !== "SUPER_ADMIN" && userTenantId) {
       userWhere.tenantId = userTenantId;
@@ -516,6 +541,7 @@ const getCachedCustomersStats = unstable_cache(
         createdAt: true,
         points: true,
       },
+      orderBy: { createdAt: "desc" },
     });
 
     if (process.env.PERF_LOG === "true") {
@@ -525,8 +551,8 @@ const getCachedCustomersStats = unstable_cache(
       );
     }
 
-    // 5. Merge Registered Users with the Phone Map
-    const mergedList: any[] = [];
+    // 5. Build merged customers list (registered users with orders + guests)
+    const customers: any[] = [];
     const processedPhones = new Set<string>();
 
     for (const user of registeredUsers) {
@@ -534,7 +560,7 @@ const getCachedCustomersStats = unstable_cache(
 
       const stats = user.phone ? phoneMap.get(user.phone) : null;
       if ((stats?.count || 0) > 0) {
-        mergedList.push({
+        customers.push({
           id: user.id,
           name: user.name,
           email: user.email,
@@ -548,14 +574,13 @@ const getCachedCustomersStats = unstable_cache(
       }
     }
 
-    // 6. Append remaining unregistered Guests from the Phone Map
     for (const [phone, guestData] of phoneMap.entries()) {
       if (!processedPhones.has(phone)) {
-        mergedList.push({
-          id: `guest_${phone}`, // Virtual ID to satisfy React keys
+        customers.push({
+          id: `guest_${phone}`,
           name: guestData.name,
           email: guestData.email,
-          phone: phone,
+          phone,
           createdAt: guestData.firstSeen,
           points: 0,
           orders: guestData.count,
@@ -565,109 +590,10 @@ const getCachedCustomersStats = unstable_cache(
       }
     }
 
-    // 7. Sort globally by newest created/first seen descending
-    mergedList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    customers.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    return mergedList;
-  },
-  ["customers-stats"],
-  { tags: ["customers", "orders"], revalidate: 3600 },
-);
-
-export async function getCustomers() {
-  await logActionRequest({ actionName: "getCustomers" });
-  const sessionUser = await getSessionUser();
-  const userRole = sessionUser?.role;
-  const userTenantId = sessionUser?.tenantId;
-
-  if (!hasAdminAccess(userRole)) {
-    throw new Error("Unauthorized");
-  }
-
-  try {
-    return await getCachedCustomersStats(userRole, userTenantId);
-  } catch (error) {
-    console.error("getCustomers Error:", error);
-    return [];
-  }
-}
-
-const getCachedAccountCreatedUsers = unstable_cache(
-  async (
-    userRole: string | undefined,
-    userTenantId: string | null | undefined,
-  ) => {
-    const orderWhere: Prisma.OrderWhereInput = {};
-    if (userRole !== "SUPER_ADMIN" && userTenantId) {
-      orderWhere.tenantId = userTenantId;
-    }
-
-    const [orders, registeredUsers] = await Promise.all([
-      prisma.order.findMany({
-        where: orderWhere,
-        select: {
-          totalAmount: true,
-          status: true,
-          customerPhone: true,
-          customerEmail: true,
-        },
-      }),
-      prisma.user.findMany({
-        where: {
-          role: "USER",
-          ...(userRole !== "SUPER_ADMIN" && userTenantId
-            ? { tenantId: userTenantId }
-            : {}),
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-          points: true,
-        },
-        orderBy: { createdAt: "desc" },
-      }),
-    ]);
-
-    const orderStatsByPhone = new Map<
-      string,
-      { orders: number; spent: number }
-    >();
-    const orderStatsByEmail = new Map<
-      string,
-      { orders: number; spent: number }
-    >();
-
-    for (const order of orders) {
-      const countAddition = order.status === "Cancelled" ? 0 : 1;
-      const spentAddition =
-        order.status === "Cancelled" ? 0 : order.totalAmount;
-
-      if (order.customerPhone) {
-        const phoneStats = orderStatsByPhone.get(order.customerPhone) || {
-          orders: 0,
-          spent: 0,
-        };
-        phoneStats.orders += countAddition;
-        phoneStats.spent += spentAddition;
-        orderStatsByPhone.set(order.customerPhone, phoneStats);
-      }
-
-      if (order.customerEmail) {
-        const emailKey = order.customerEmail.toLowerCase();
-        const emailStats = orderStatsByEmail.get(emailKey) || {
-          orders: 0,
-          spent: 0,
-        };
-        emailStats.orders += countAddition;
-        emailStats.spent += spentAddition;
-        orderStatsByEmail.set(emailKey, emailStats);
-      }
-    }
-
-    return registeredUsers.map((user) => {
+    // 6. Build account-created users list from same stats maps
+    const accountCreatedUsers = registeredUsers.map((user) => {
       const phoneStats = user.phone ? orderStatsByPhone.get(user.phone) : null;
       const emailStats = user.email
         ? orderStatsByEmail.get(user.email.toLowerCase())
@@ -686,10 +612,34 @@ const getCachedAccountCreatedUsers = unstable_cache(
         isGuest: false,
       };
     });
+
+    return {
+      customers,
+      accountCreatedUsers,
+    };
   },
-  ["account-created-users"],
-  { tags: ["customers", "orders"], revalidate: 3600 },
+  ["customers-datasets"],
+  { tags: ["customers", "customers-stats"], revalidate: 3600 },
 );
+
+export async function getCustomers() {
+  await logActionRequest({ actionName: "getCustomers" });
+  const sessionUser = await getSessionUser();
+  const userRole = sessionUser?.role;
+  const userTenantId = sessionUser?.tenantId;
+
+  if (!hasAdminAccess(userRole)) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const data = await getCachedCustomerDatasets(userRole, userTenantId);
+    return data.customers;
+  } catch (error) {
+    console.error("getCustomers Error:", error);
+    return [];
+  }
+}
 
 export async function getAccountCreatedUsers() {
   await logActionRequest({ actionName: "getAccountCreatedUsers" });
@@ -702,10 +652,29 @@ export async function getAccountCreatedUsers() {
   }
 
   try {
-    return await getCachedAccountCreatedUsers(userRole, userTenantId);
+    const data = await getCachedCustomerDatasets(userRole, userTenantId);
+    return data.accountCreatedUsers;
   } catch (error) {
     console.error("getAccountCreatedUsers Error:", error);
     return [];
+  }
+}
+
+export async function getCustomerDatasets() {
+  await logActionRequest({ actionName: "getCustomerDatasets" });
+  const sessionUser = await getSessionUser();
+  const userRole = sessionUser?.role;
+  const userTenantId = sessionUser?.tenantId;
+
+  if (!hasAdminAccess(userRole)) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    return await getCachedCustomerDatasets(userRole, userTenantId);
+  } catch (error) {
+    console.error("getCustomerDatasets Error:", error);
+    return { customers: [], accountCreatedUsers: [] };
   }
 }
 

@@ -58,6 +58,10 @@ function getDhakaDayStart(daysAgo = 0) {
   );
 }
 
+function getRollingWindowStart(days = 30) {
+  return getDhakaDayStart(days - 1);
+}
+
 function formatDhakaDateKey(date: Date) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: DHAKA_TIME_ZONE,
@@ -116,12 +120,21 @@ async function getRecentDaysSalesFromDb(tenantId: string, hubId?: string) {
 
 const getCachedDashboardMetrics = unstable_cache(
   async (tenantId: string, hubId?: string) => {
+    const windowStart = getRollingWindowStart(30);
+
     const saleWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
       status: SALE_STATUS,
+      createdAt: { gte: windowStart },
     };
     const allOrdersWhere = {
+      tenantId,
+      ...(hubId && hubId !== "ALL" ? { hubId } : {}),
+      status: { notIn: NON_DRAFT_STATUSES },
+      createdAt: { gte: windowStart },
+    };
+    const recentOrdersWhere = {
       tenantId,
       ...(hubId && hubId !== "ALL" ? { hubId } : {}),
       status: { notIn: NON_DRAFT_STATUSES },
@@ -129,8 +142,8 @@ const getCachedDashboardMetrics = unstable_cache(
 
     const distinctCustomerQuery =
       hubId && hubId !== "ALL"
-        ? 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1 AND "hubId" = $2'
-        : 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1';
+        ? 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1 AND "hubId" = $2 AND "createdAt" >= $3'
+        : 'SELECT COUNT(DISTINCT "customerPhone")::bigint AS count FROM "Order" WHERE "tenantId" = $1 AND "createdAt" >= $2';
 
     const [
       orderAggregations,
@@ -152,6 +165,7 @@ const getCachedDashboardMetrics = unstable_cache(
           tenantId,
           ...(hubId && hubId !== "ALL" ? { hubId } : {}),
           status: { in: PENDING_ORDER_STATUSES },
+          createdAt: { gte: windowStart },
         },
       }),
       hubId && hubId !== "ALL"
@@ -159,14 +173,16 @@ const getCachedDashboardMetrics = unstable_cache(
             distinctCustomerQuery,
             tenantId,
             hubId,
+            windowStart,
           )
         : prisma.$queryRawUnsafe<Array<{ count: bigint | number }>>(
             distinctCustomerQuery,
             tenantId,
+            windowStart,
           ),
       getRecentDaysSalesFromDb(tenantId, hubId),
       prisma.order.findMany({
-        where: allOrdersWhere,
+        where: recentOrdersWhere,
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {
@@ -186,6 +202,7 @@ const getCachedDashboardMetrics = unstable_cache(
       uniqueCustomers: Number(uniqueCustomerCount[0]?.count || 0),
       trendData,
       recentOrders: topRecentOrders,
+      windowLabel: "Last 30 Days",
     };
   },
   ["dashboard-metrics"],

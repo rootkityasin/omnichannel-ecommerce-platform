@@ -1,12 +1,7 @@
 "use server";
 
-import { getCustomers } from "@/app/actions/user";
-import { getAccountCreatedUsers } from "@/app/actions/user";
+import { getCustomerDatasets } from "@/app/actions/user";
 
-export async function fetchCustomers() {
-  return getCustomers();
-}
-
-export async function fetchAccountCreatedUsers() {
-  return getAccountCreatedUsers();
+export async function fetchCustomerDatasets() {
+  return getCustomerDatasets();
 }

@@ -13,10 +13,48 @@ Identify whether the spike comes from:
 ## Run on the VPS host
 
 ```bash
+export PGPASSWORD="your-db-password"
 bash scripts/profile-vps-hotspots.sh
 ```
 
+Alternative (no export needed):
+
+```bash
+bash scripts/profile-vps-hotspots.sh "your-db-password"
+```
+
+Or:
+
+```bash
+DB_PASSWORD="your-db-password" bash scripts/profile-vps-hotspots.sh
+```
+
+If no password is provided, the script will prompt you securely.
+
+Optional tuning for longer captures and custom output path:
+
+```bash
+export PGPASSWORD="your-db-password"
+SAMPLES=60 OUTPUT_DIR=./artifacts/perf bash scripts/profile-vps-hotspots.sh
+```
+
+Do not commit the database password into scripts or docs.
+
 Then immediately reproduce the problem in the admin panel for ~30 seconds.
+
+## Output artifacts
+
+Each run now writes timestamped artifacts:
+
+- Detailed log: `artifacts/perf/profile-YYYYMMDD-HHMMSS.log`
+- Auto summary: `artifacts/perf/profile-YYYYMMDD-HHMMSS.summary.txt`
+
+Summary includes:
+
+- Peak app container CPU
+- Peak DB container CPU
+- Peak proxy CPU
+- Top active query signatures during sampling
 
 ## What the script shows
 
@@ -34,6 +72,11 @@ Then immediately reproduce the problem in the admin panel for ~30 seconds.
   - main issue is Prisma/Postgres query cost
 - If Traefik spikes:
   - issue is mostly proxy/network level, not app code
+
+Additional host signals are now captured per sample:
+
+- load average
+- available memory (KB)
 
 ## Current baseline
 

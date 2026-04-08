@@ -8,6 +8,25 @@ const runtimeDatabaseUrl = process.env.PRISMA_DATABASE_URL;
 const fallbackDatabaseUrl = process.env.DATABASE_URL;
 const connectionString = runtimeDatabaseUrl || fallbackDatabaseUrl;
 
+const parsePositiveInt = (value: string | undefined, fallback: number) => {
+  if (!value) return fallback;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const poolMax = parsePositiveInt(process.env.PG_POOL_MAX, 10);
+const poolMin = parsePositiveInt(process.env.PG_POOL_MIN, 1);
+const poolIdleMs = parsePositiveInt(process.env.PG_POOL_IDLE_MS, 15_000);
+const poolConnectionTimeoutMs = parsePositiveInt(
+  process.env.PG_POOL_CONN_TIMEOUT_MS,
+  5_000,
+);
+const statementTimeoutMs = parsePositiveInt(
+  process.env.PG_STATEMENT_TIMEOUT_MS,
+  15_000,
+);
+const queryTimeoutMs = parsePositiveInt(process.env.PG_QUERY_TIMEOUT_MS, 20_000);
+
 const sanitizeDbUrl = (value?: string) => {
   if (!value) return "";
   try {
@@ -54,6 +73,12 @@ if (useAdapter) {
   })();
   const pool = new Pool({
     connectionString,
+    max: poolMax,
+    min: Math.min(poolMin, poolMax),
+    idleTimeoutMillis: poolIdleMs,
+    connectionTimeoutMillis: poolConnectionTimeoutMs,
+    statement_timeout: statementTimeoutMs,
+    query_timeout: queryTimeoutMs,
     ssl:
       process.env.NODE_ENV === "production"
         ? sslMode === "verify-full"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,14 +11,12 @@ import {
   Filter,
   Trash2,
   X,
-  Sparkles,
   MoreVertical,
   Copy,
   Share2,
   LayoutGrid,
   List,
   Edit,
-  Loader2,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -46,8 +44,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ImageUpload } from "@/components/admin/ImageUpload";
-import { Textarea } from "@/components/ui/textarea";
 import {
   getPaginatedAdminProducts,
   getProductById,
@@ -57,7 +53,6 @@ import {
   archiveProduct,
   unarchiveProduct,
   deleteArchivedProduct,
-  generateUniqueSku,
 } from "@/app/actions/product";
 import {
   AlertDialog,
@@ -348,6 +343,16 @@ export default function ProductsPage() {
     return true;
   });
 
+  const boardProducts = useMemo(
+    () =>
+      filteredProducts.map((p) => ({
+        ...p,
+        image: p.image || "",
+        stock: p.pieces > 0,
+      })),
+    [filteredProducts],
+  );
+
   const handleDelete = async (id: string) => {
     setDeleteId(id);
     setArchiveRequired(false);
@@ -449,6 +454,20 @@ export default function ProductsPage() {
     );
   };
 
+  const runInChunks = async (
+    ids: string[],
+    worker: (id: string) => Promise<unknown>,
+    chunkSize = 8,
+  ) => {
+    let failed = 0;
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunk = ids.slice(i, i + chunkSize);
+      const results = await Promise.allSettled(chunk.map((id) => worker(id)));
+      failed += results.filter((r) => r.status === "rejected").length;
+    }
+    return { failed };
+  };
+
   const handleBulkDelete = async () => {
     if (
       !confirm(
@@ -458,10 +477,12 @@ export default function ProductsPage() {
       return;
     setIsDeleting(true);
     try {
-      for (const id of selectedProducts) {
-        await deleteProduct(id);
+      const { failed } = await runInChunks(selectedProducts, deleteProduct);
+      if (failed > 0) {
+        toast.error(`Bulk delete completed with ${failed} failures`);
+      } else {
+        toast.success("Bulk delete successful");
       }
-      toast.success("Bulk delete successful");
       setSelectedProducts([]);
       fetchProducts();
     } catch (err) {
@@ -475,10 +496,14 @@ export default function ProductsPage() {
   const handleBulkMove = async (targetStage: string) => {
     setIsDeleting(true);
     try {
-      for (const id of selectedProducts) {
-        await updateProduct(id, { stage: targetStage });
+      const { failed } = await runInChunks(selectedProducts, (id) =>
+        updateProduct(id, { stage: targetStage }),
+      );
+      if (failed > 0) {
+        toast.error(`Bulk move completed with ${failed} failures`);
+      } else {
+        toast.success(`Bulk moved to ${targetStage}`);
       }
-      toast.success(`Bulk moved to ${targetStage}`);
       setSelectedProducts([]);
       fetchProducts();
     } catch (err) {
@@ -857,7 +882,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-
       {/* Modal */}
       <ProductFormModal
         isOpen={isAdding}
@@ -871,478 +895,6 @@ export default function ProductsPage() {
         onClose={() => setIsAdding(false)}
         onSubmit={handleSave}
       />
-      {false && isAdding && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
-          <Card className="my-auto w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
-            <div className="p-6 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-slate-800">
-                  {editingId ? "Edit Product" : "New Product"}
-                </h2>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setIsAdding(false)}
-                    className="text-slate-400 hover:text-slate-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-              <form onSubmit={handleSave} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">
-                    Product Name <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <Input
-                      value={newProduct.name}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setNewProduct((prev) => ({ ...prev, name: val }));
-                      }}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Type</label>
-                    <Select
-                      value={newProduct.type || "SINGLE"}
-                      onValueChange={(val) =>
-                        setNewProduct({
-                          ...newProduct,
-                          type: val as "SINGLE" | "COMBO",
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="SINGLE">Single Product</SelectItem>
-                        <SelectItem value="COMBO">Combo Package</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      Category <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      value={newProduct.categoryId}
-                      onValueChange={(val) =>
-                        setNewProduct({ ...newProduct, categoryId: val })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Sections Selection */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block text-slate-700">
-                    Display Sections
-                  </label>
-                  <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    {sectionsList.length === 0 ? (
-                      <p className="text-xs text-slate-400">
-                        No sections created yet.
-                      </p>
-                    ) : (
-                      sectionsList.map((sec) => (
-                        <div
-                          key={sec.id}
-                          onClick={() => {
-                            const current = newProduct.sections || [];
-                            const updated = current.includes(sec.id)
-                              ? current.filter((id) => id !== sec.id)
-                              : [...current, sec.id];
-                            setNewProduct({ ...newProduct, sections: updated });
-                          }}
-                          className={cn(
-                            "cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition-all select-none flex items-center gap-1",
-                            (newProduct.sections || []).includes(sec.id)
-                              ? "bg-orange-600 border-orange-600 text-white shadow-sm scale-105"
-                              : "bg-white border-slate-200 text-slate-500 hover:border-orange-300 hover:text-orange-600",
-                          )}
-                        >
-                          {sec.title}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Combo Builder */}
-                {newProduct.type === "COMBO" && (
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                    <label className="text-sm font-bold text-slate-700 block">
-                      Combo Contents
-                    </label>
-                    {newProduct.comboItems?.map((item, idx: number) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <Select
-                          value={item.childId}
-                          onValueChange={(val) => {
-                            const updated = [...(newProduct.comboItems || [])];
-                            updated[idx].childId = val;
-                            setNewProduct({
-                              ...newProduct,
-                              comboItems: updated,
-                            });
-                          }}
-                        >
-                          <SelectTrigger className="flex-1 text-xs h-8">
-                            <SelectValue placeholder="Select Product" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {products
-                              .filter((p) => p.type !== "COMBO")
-                              .map((p) => (
-                                <SelectItem key={p.id} value={p.id}>
-                                  {p.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          type="number"
-                          className="w-20 h-8 text-xs"
-                          placeholder="Qty"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const updated = [...(newProduct.comboItems || [])];
-                            updated[idx].quantity = Math.max(
-                              0,
-                              parseInt(e.target.value) || 0,
-                            );
-                            setNewProduct({
-                              ...newProduct,
-                              comboItems: updated,
-                            });
-                          }}
-                          min={0}
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-red-500"
-                          onClick={() => {
-                            const updated = newProduct.comboItems?.filter(
-                              (_, i) => i !== idx,
-                            );
-                            setNewProduct({
-                              ...newProduct,
-                              comboItems: updated,
-                            });
-                          }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="w-full text-xs border-dashed"
-                      onClick={() =>
-                        setNewProduct({
-                          ...newProduct,
-                          comboItems: [
-                            ...(newProduct.comboItems || []),
-                            { childId: "", quantity: 1 },
-                          ],
-                        })
-                      }
-                    >
-                      <Plus className="w-3 h-3 mr-1" /> Add Ingredient
-                    </Button>
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium">Description</label>
-                  </div>
-                  <Textarea
-                    value={newProduct.description}
-                    onChange={(e) =>
-                      setNewProduct({
-                        ...newProduct,
-                        description: e.target.value,
-                      })
-                    }
-                    placeholder="Product description..."
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">
-                      Price (৳) <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="number"
-                      value={newProduct.price}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          price:
-                            e.target.value === ""
-                              ? ""
-                              : Math.max(0, parseFloat(e.target.value)),
-                        })
-                      }
-                      required
-                      min={0}
-                      onWheel={(e) => e.currentTarget.blur()}
-                    />
-                  </div>
-                  {config.measurementUnit !== "PCS" && (
-                    <div>
-                      <label className="text-sm font-medium">
-                        {config.measurementUnit === "WEIGHT"
-                          ? "Unit Weight (g)"
-                          : "Unit Volume (ml)"}
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="e.g. 200"
-                        value={newProduct.weight}
-                        onChange={(e) =>
-                          setNewProduct({
-                            ...newProduct,
-                            weight:
-                              e.target.value === ""
-                                ? ""
-                                : Math.max(0, parseFloat(e.target.value)),
-                          })
-                        }
-                        min={0}
-                        onWheel={(e) => e.currentTarget.blur()}
-                      />
-                      <p className="text-[10px] text-slate-500">
-                        1 Unit = {newProduct.weight || 0}{" "}
-                        {config.measurementUnit === "WEIGHT" ? "g" : "ml"}
-                      </p>
-                    </div>
-                  )}
-                  {newProduct.type !== "COMBO" && (
-                    <div>
-                      <label className="text-sm font-medium">
-                        Pieces Inside
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="e.g. 2"
-                        value={newProduct.servingSize}
-                        onChange={(e) =>
-                          setNewProduct({
-                            ...newProduct,
-                            servingSize:
-                              e.target.value === ""
-                                ? ""
-                                : Math.max(0, parseInt(e.target.value)),
-                          })
-                        }
-                        min={0}
-                        className="mt-1"
-                        onWheel={(e) => e.currentTarget.blur()}
-                      />
-                    </div>
-                  )}
-                  {newProduct.type !== "COMBO" && (
-                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                      <label className="text-sm font-medium flex justify-between">
-                        <span>Stock Quantity</span>
-                        <span className="text-xs text-slate-500 font-normal">
-                          {(config.measurementUnit || "PCS") === "PCS"
-                            ? "(Pieces)"
-                            : `(Units of ${newProduct.weight || 0}${(config.measurementUnit || "PCS") === "WEIGHT" ? "g" : "ml"})`}
-                        </span>
-                      </label>
-
-                      {(config.measurementUnit || "PCS") === "PCS" ? (
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={newProduct.pieces}
-                          onChange={(e) =>
-                            setNewProduct({
-                              ...newProduct,
-                              pieces:
-                                e.target.value === ""
-                                  ? ""
-                                  : Math.max(0, parseFloat(e.target.value)),
-                            })
-                          }
-                          className="mt-1 bg-white"
-                          min={0}
-                          onWheel={(e) => e.currentTarget.blur()}
-                        />
-                      ) : (
-                        <>
-                          <div className="flex gap-2 mt-1">
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              // Calculate units from total pieces (weight). If weight is 0, treat as 1 to avoid /0 or *0 lock
-                              value={
-                                newProduct.pieces
-                                  ? Math.floor(
-                                      Number(newProduct.pieces) /
-                                        (Number(newProduct.weight) || 1),
-                                    )
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const val =
-                                  e.target.value === ""
-                                    ? ""
-                                    : Math.max(0, parseFloat(e.target.value));
-                                const units = Number(val) || 0;
-                                // Use weight or fallback to 1 so we can at least save the number of "units" effectively
-                                const unitWeight =
-                                  Number(newProduct.weight) || 1;
-                                setNewProduct({
-                                  ...newProduct,
-                                  pieces: val === "" ? "" : units * unitWeight,
-                                });
-                              }}
-                              className="bg-white"
-                              min={0}
-                              onWheel={(e) => e.currentTarget.blur()}
-                            />
-                            <div className="flex items-center text-xs text-slate-500 whitespace-nowrap px-2 bg-white border rounded">
-                              {(() => {
-                                const val = Number(newProduct.pieces || 0);
-                                const unit = config.measurementUnit || "PCS";
-                                if (unit === "WEIGHT" && val >= 1000) {
-                                  return `= ${(val / 1000).toFixed(1).replace(/\.0$/, "")} kg`;
-                                }
-                                if (unit === "VOLUME" && val >= 1000) {
-                                  return `= ${(val / 1000).toFixed(1).replace(/\.0$/, "")} L`;
-                                }
-                                return `= ${val} ${unit === "WEIGHT" ? "g" : "ml"}`;
-                              })()}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">
-                      Loyalty Points
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={newProduct.pointsReward}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          pointsReward:
-                            e.target.value === ""
-                              ? ""
-                              : Math.max(0, parseFloat(e.target.value)),
-                        })
-                      }
-                      min={0}
-                      onWheel={(e) => e.currentTarget.blur()}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      SKU <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Input
-                        value={newProduct.sku}
-                        onChange={(e) =>
-                          setNewProduct({ ...newProduct, sku: e.target.value })
-                        }
-                        placeholder="Unique SKU"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const res = await generateUniqueSku();
-                          if (res.success && res.sku) {
-                            setNewProduct({ ...newProduct, sku: res.sku });
-                            toast.success("Generated Unique SKU");
-                          } else {
-                            toast.error("Generation failed, try again");
-                          }
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-orange-600"
-                        title="Generate Unique SKU"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Main Image</label>
-                  <ImageUpload
-                    value={newProduct.image}
-                    onChange={(url) =>
-                      setNewProduct({ ...newProduct, image: url as string })
-                    }
-                    onRemove={() => setNewProduct({ ...newProduct, image: "" })}
-                    recommendedText="1600 x 2000 px (4:5 ratio) for full mobile storefront card"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Gallery Images</label>
-                  <ImageUpload
-                    value={newProduct.images || []}
-                    onChange={(urls) =>
-                      setNewProduct({ ...newProduct, images: urls as string[] })
-                    }
-                    onRemove={(url?: string) =>
-                      setNewProduct({
-                        ...newProduct,
-                        images: newProduct.images.filter((i) => i !== url),
-                      })
-                    }
-                    multiple={true}
-                    recommendedText="1600 x 2000 px (4:5 ratio) for full mobile storefront card"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                >
-                  {editingId ? "Update Product" : "Save Product"}
-                </Button>
-              </form>
-            </div>
-          </Card>
-        </div>
-      )}
-
       {/* Table view for GROCERY or when view is 'table' */}
       {view === "table" || config.shopType !== "RESTAURANT" ? (
         <Card className="border-none shadow-none bg-transparent">
@@ -1641,11 +1193,7 @@ export default function ProductsPage() {
         </Card>
       ) : (
         <ProductBoard
-          products={filteredProducts.map((p) => ({
-            ...p,
-            image: p.image || "",
-            stock: p.pieces > 0,
-          }))}
+          products={boardProducts}
           onMove={handleStageMove}
           onEdit={handleEdit}
           onDelete={handleDelete}
@@ -1698,7 +1246,6 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       {/* Bulk Action Bar */}
       {selectedProducts.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
