@@ -157,6 +157,7 @@ export function MenuClient({
   );
   const [serverFilteredTotal, setServerFilteredTotal] = useState(0);
   const [isServerFiltering, setIsServerFiltering] = useState(false);
+  const [serverResultKey, setServerResultKey] = useState("");
   const totalAvailableProducts =
     initialTotalProducts && initialTotalProducts > 0
       ? initialTotalProducts
@@ -164,6 +165,18 @@ export function MenuClient({
   const needsProgressiveLoading = totalAvailableProducts > clientProducts.length;
   const useServerFiltering =
     isMobile || needsProgressiveLoading || clientProducts.length >= SERVER_FILTER_THRESHOLD;
+
+  const serverQueryKey = useMemo(
+    () =>
+      JSON.stringify({
+        category: activeCategory || "all",
+        filter: activeFilter || "",
+        section: activeSection || "",
+        search: debouncedSearch || "",
+        limit: displayCount,
+      }),
+    [activeCategory, activeFilter, activeSection, debouncedSearch, displayCount],
+  );
 
   const categoriesList = useMemo(
     () => [
@@ -180,7 +193,7 @@ export function MenuClient({
 
   const filteredItems = useMemo(() => {
     if (useServerFiltering) {
-      return serverFilteredProducts;
+      return serverResultKey === serverQueryKey ? serverFilteredProducts : [];
     }
 
     const items = clientProducts.filter((item) => {
@@ -228,6 +241,8 @@ export function MenuClient({
     activeSection,
     useServerFiltering,
     serverFilteredProducts,
+    serverResultKey,
+    serverQueryKey,
   ]);
 
   const displayedProducts = useMemo(() => {
@@ -267,6 +282,11 @@ export function MenuClient({
 
     const loadFiltered = async () => {
       setIsServerFiltering(true);
+      // Prevent stale category/search results from flashing while new request is pending.
+      if (serverResultKey !== serverQueryKey) {
+        setServerFilteredProducts([]);
+        setServerFilteredTotal(0);
+      }
       try {
         const response = await fetch(`/api/menu?${params.toString()}`, {
           signal: controller.signal,
@@ -279,6 +299,7 @@ export function MenuClient({
         if (!controller.signal.aborted) {
           setServerFilteredProducts(payload.products || []);
           setServerFilteredTotal(payload.total || 0);
+          setServerResultKey(serverQueryKey);
         }
       } catch {
         // Ignore aborted fetch errors from rapid UI changes.
@@ -298,6 +319,8 @@ export function MenuClient({
     activeSection,
     debouncedSearch,
     displayCount,
+    serverQueryKey,
+    serverResultKey,
   ]);
 
   // Handle Load More on Scroll (mobile only)
@@ -377,7 +400,9 @@ export function MenuClient({
   }, [clientProducts, clientCategories, totalAvailableProducts, useServerFiltering]);
 
   const totalFilteredItems = useServerFiltering
-    ? serverFilteredTotal || totalAvailableProducts
+    ? serverResultKey === serverQueryKey
+      ? serverFilteredTotal || totalAvailableProducts
+      : 0
     : filteredItems.length;
 
   return (
