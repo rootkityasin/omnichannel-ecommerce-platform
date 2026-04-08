@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getFilteredMenuData, getMenuData } from "@/app/actions/menu";
+import {
+  getFilteredMenuData,
+  getMenuBootstrapData,
+  getMenuData,
+} from "@/app/actions/menu";
 import { normalizeHost } from "@/lib/domain";
 
 export async function GET(request: Request) {
@@ -12,6 +16,7 @@ export async function GET(request: Request) {
   const search = searchParams.get("search") || undefined;
   const limitParam = searchParams.get("limit");
   const offsetParam = searchParams.get("offset");
+  const bootstrap = searchParams.get("bootstrap") === "1";
   const limit = limitParam ? Number(limitParam) : undefined;
   const offset = offsetParam ? Number(offsetParam) : undefined;
 
@@ -24,6 +29,27 @@ export async function GET(request: Request) {
     Number.isFinite(offset);
 
   try {
+    if (bootstrap) {
+      const { products, categories, total, limit: bootstrapLimit } =
+        await getMenuBootstrapData(domain, Number.isFinite(limit) ? limit : 18);
+
+      return NextResponse.json(
+        {
+          products,
+          categories,
+          total,
+          limit: bootstrapLimit,
+          domain,
+          bootstrap: true,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+          },
+        },
+      );
+    }
+
     if (hasFilterParams) {
       const { products, total } = await getFilteredMenuData(domain, {
         category,

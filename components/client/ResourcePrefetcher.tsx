@@ -9,6 +9,9 @@ export function ResourcePrefetcher() {
   const menuCacheAt = useCartStore((state) => state.menuCacheAt);
 
   useEffect(() => {
+    const isMobile =
+      typeof window !== "undefined" ? window.innerWidth < 768 : false;
+
     const prefetchMenuData = async () => {
       if (typeof window === "undefined") return;
       if (menuCacheAt && Date.now() - menuCacheAt < 10 * 60 * 1000) return;
@@ -24,8 +27,9 @@ export function ResourcePrefetcher() {
         return;
       }
       try {
+        const bootstrapLimit = isMobile ? 18 : 24;
         const res = await fetch(
-          `/api/menu?domain=${encodeURIComponent(domain)}`,
+          `/api/menu?domain=${encodeURIComponent(domain)}&bootstrap=1&limit=${bootstrapLimit}`,
         );
         if (!res.ok) return;
         const data = await res.json();
@@ -43,7 +47,20 @@ export function ResourcePrefetcher() {
       }
     };
 
-    const menuTimer = setTimeout(prefetchMenuData, 2500);
+    const schedulePrefetch = () => {
+      if (typeof window === "undefined") return;
+      if ("requestIdleCallback" in window) {
+        // requestIdleCallback is ideal for mobile: warm cache without affecting first paint.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).requestIdleCallback(prefetchMenuData, {
+          timeout: isMobile ? 1200 : 2200,
+        });
+        return;
+      }
+      setTimeout(prefetchMenuData, isMobile ? 700 : 2500);
+    };
+
+    schedulePrefetch();
 
     // 2. Preload Heavy Assets (Images)
     const preloadAssets = () => {
@@ -68,7 +85,7 @@ export function ResourcePrefetcher() {
     }
 
     return () => {
-      clearTimeout(menuTimer);
+      // no-op cleanup: requestIdleCallback is intentionally fire-and-forget here
     };
   }, [menuCacheAt, setMenuCache]);
 

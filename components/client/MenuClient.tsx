@@ -38,11 +38,15 @@ interface MenuClientProps {
   initialProducts: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialCategories: any[];
+  initialTotalProducts?: number;
+  initialBootstrapLimit?: number;
 }
 
 export function MenuClient({
   initialProducts,
   initialCategories,
+  initialTotalProducts,
+  initialBootstrapLimit,
 }: MenuClientProps) {
   const SERVER_FILTER_THRESHOLD = 120;
   const router = useRouter();
@@ -144,14 +148,22 @@ export function MenuClient({
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const debouncedSearch = useDebounce(searchQuery, 400);
 
-  const [displayCount, setDisplayCount] = useState(12);
+  const [displayCount, setDisplayCount] = useState(
+    Math.max(12, initialBootstrapLimit ?? 12),
+  );
   const [isMobile, setIsMobile] = useState(false);
   const [serverFilteredProducts, setServerFilteredProducts] = useState<any[]>(
     [],
   );
   const [serverFilteredTotal, setServerFilteredTotal] = useState(0);
   const [isServerFiltering, setIsServerFiltering] = useState(false);
-  const useServerFiltering = clientProducts.length >= SERVER_FILTER_THRESHOLD;
+  const totalAvailableProducts =
+    initialTotalProducts && initialTotalProducts > 0
+      ? initialTotalProducts
+      : clientProducts.length;
+  const needsProgressiveLoading = totalAvailableProducts > clientProducts.length;
+  const useServerFiltering =
+    isMobile || needsProgressiveLoading || clientProducts.length >= SERVER_FILTER_THRESHOLD;
 
   const categoriesList = useMemo(
     () => [
@@ -238,6 +250,7 @@ export function MenuClient({
     const params = new URLSearchParams();
     params.set("domain", window.location.host);
     params.set("limit", String(displayCount));
+    params.set("offset", "0");
 
     if (activeCategory && activeCategory !== "all") {
       params.set("category", activeCategory);
@@ -343,7 +356,16 @@ export function MenuClient({
 
   // Calculate counts for sidebar
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: clientProducts.length };
+    const counts: Record<string, number> = { all: totalAvailableProducts };
+
+    if (useServerFiltering) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      clientCategories.forEach((c: any) => {
+        counts[c.id] = c?._count?.products || 0;
+      });
+      return counts;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clientCategories.forEach((c: any) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -352,10 +374,10 @@ export function MenuClient({
       ).length;
     });
     return counts;
-  }, [clientProducts, clientCategories]);
+  }, [clientProducts, clientCategories, totalAvailableProducts, useServerFiltering]);
 
   const totalFilteredItems = useServerFiltering
-    ? serverFilteredTotal
+    ? serverFilteredTotal || totalAvailableProducts
     : filteredItems.length;
 
   return (

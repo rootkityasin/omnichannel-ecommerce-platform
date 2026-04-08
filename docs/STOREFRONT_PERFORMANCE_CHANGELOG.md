@@ -53,6 +53,13 @@ Keep storefront responsive for high concurrent reads (target: ~100 concurrent us
 - Note any cache invalidation/tag updates required.
 
 ## Update Log
+### 2026-04-08 (homepage-first mobile pass)
+- Added shared home/menu card selector in `app/actions/menu.ts` and reused it from `app/actions/section.ts` so home and menu product cards use the same data contract.
+- Added `getMenuBootstrapData(domain, limit)` and switched menu page to bootstrap payload (smaller first render dataset + total count + categories).
+- Added `bootstrap=1` mode to menu API so homepage prefetch can warm a compact menu payload in the background.
+- Updated `ResourcePrefetcher` to start mobile warmup earlier using `requestIdleCallback` fallback timing and bootstrap menu endpoint.
+- Updated `MenuClient` to treat mobile and bootstrap-limited datasets as progressive/server-filter mode so extra full-menu items load incrementally.
+
 ### 2026-04-08 (follow-up)
 - Removed client-side forced `no-store` from filtered menu fetch so API cache headers can be honored.
 - Added Product composite indexes for filtered menu query paths in `prisma/schema.prisma`:

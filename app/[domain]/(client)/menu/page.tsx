@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getMenuData } from "@/app/actions/menu";
+import { getMenuBootstrapData } from "@/app/actions/menu";
 import { MenuClient } from "@/components/client/MenuClient";
 
 export default async function MenuPage({
@@ -8,8 +8,11 @@ export default async function MenuPage({
   params: Promise<{ domain: string }>;
 }) {
   const { domain } = await params;
-  // Fetch initial data on the server for instant load
-  const { products, categories } = await getMenuData(domain);
+  // Keep first load lightweight and let the client progressively fetch the rest.
+  const { products, categories, total, limit } = await getMenuBootstrapData(
+    domain,
+    18,
+  );
 
   return (
     <Suspense
@@ -25,6 +28,8 @@ export default async function MenuPage({
       <MenuClient
         initialProducts={JSON.parse(JSON.stringify(products))}
         initialCategories={JSON.parse(JSON.stringify(categories))}
+        initialTotalProducts={total}
+        initialBootstrapLimit={limit}
       />
     </Suspense>
   );

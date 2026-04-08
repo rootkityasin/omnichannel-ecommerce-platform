@@ -8,7 +8,7 @@ import { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
 
-const MENU_PRODUCT_SELECT = {
+export const CARD_PRODUCT_SELECT = {
   id: true,
   name: true,
   name_bn: true,
@@ -36,6 +36,8 @@ const MENU_PRODUCT_SELECT = {
     select: { slug: true },
   },
 };
+
+const MENU_PRODUCT_SELECT = CARD_PRODUCT_SELECT;
 
 type MenuFilterOptions = {
   category?: string;
@@ -104,6 +106,50 @@ export async function getMenuData(domain?: string) {
   } catch (error) {
     console.error("Get Menu Data Error:", error);
     return { products: [], categories: [] };
+  }
+}
+
+export async function getMenuBootstrapData(domain: string, limit = 18) {
+  try {
+    const tenantId = await resolveTenantId(domain);
+    if (!tenantId) {
+      return { products: [], categories: [], total: 0, limit: 0 };
+    }
+
+    const safeLimit = Math.min(Math.max(limit, 8), 48);
+
+    const [products, categories, total] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          tenantId,
+          isAvailable: true,
+        },
+        orderBy: { sku: "asc" },
+        take: safeLimit,
+        select: MENU_PRODUCT_SELECT,
+      }),
+      prisma.category.findMany({
+        where: {
+          tenantId,
+        },
+        include: {
+          _count: {
+            select: { products: true },
+          },
+        },
+      }),
+      prisma.product.count({
+        where: {
+          tenantId,
+          isAvailable: true,
+        },
+      }),
+    ]);
+
+    return { products, categories, total, limit: safeLimit };
+  } catch (error) {
+    console.error("Get Menu Bootstrap Data Error:", error);
+    return { products: [], categories: [], total: 0, limit: 0 };
   }
 }
 

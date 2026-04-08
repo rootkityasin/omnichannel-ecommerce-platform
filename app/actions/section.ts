@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
 import { getTenantByDomain } from "./tenant";
+import { CARD_PRODUCT_SELECT } from "./menu";
 
 export async function getSections(domain?: string) {
   try {
@@ -77,28 +78,7 @@ export async function getHomeSections(domain?: string) {
               where: productFilter,
               orderBy: { createdAt: "desc" },
               take: 12, // Limit to recent 12 products per section
-              select: {
-                id: true,
-                name: true,
-                price: true,
-                image: true,
-                images: true,
-                sku: true,
-                isAvailable: true,
-                type: true,
-                stage: true,
-                categoryId: true,
-                tenantId: true,
-                createdAt: true,
-                pieces: true,
-                servingSize: true,
-                weight: true,
-                comboItems: {
-                  include: {
-                    child: { select: { pieces: true, servingSize: true } },
-                  },
-                },
-              },
+              select: CARD_PRODUCT_SELECT,
             },
           },
         });
@@ -126,28 +106,7 @@ export async function getHomeSections(domain?: string) {
                 where: productFilter,
                 orderBy: { createdAt: "desc" },
                 take: 12,
-                select: {
-                  id: true,
-                  name: true,
-                  price: true,
-                  image: true,
-                  images: true,
-                  sku: true,
-                  isAvailable: true,
-                  type: true,
-                  stage: true,
-                  categoryId: true,
-                  tenantId: true,
-                  createdAt: true,
-                  pieces: true,
-                  servingSize: true,
-                  weight: true,
-                  comboItems: {
-                    include: {
-                      child: { select: { pieces: true, servingSize: true } },
-                    },
-                  },
-                },
+                select: CARD_PRODUCT_SELECT,
               },
             },
           });
