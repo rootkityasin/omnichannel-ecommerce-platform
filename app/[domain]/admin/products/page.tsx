@@ -162,7 +162,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const limit = 50;
+  const limit = 20;
 
   useEffect(() => {
     const handler = setTimeout(() => {

@@ -24,7 +24,7 @@ import {
   Printer, // Added
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAdmin } from "@/components/providers/AdminProvider";
 import { Button } from "@/components/ui/button";
 
@@ -33,6 +33,9 @@ import { useSession } from "next-auth/react";
 export function AdminSidebar() {
   const pathname = usePathname();
   const { isSidebarCollapsed, toggleSidebar } = useAdmin(); // Access setOrders if needed, or just specific context
+  const lastNavAtRef = useRef(0);
+  const NAV_THROTTLE_MS = 500;
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Auto-collapse on mobile
   useEffect(() => {
@@ -71,6 +74,20 @@ export function AdminSidebar() {
     };
     checkSize();
   }, []);
+
+  useEffect(() => {
+    if (isNavigating) {
+      setIsNavigating(false);
+    }
+    // pathname changes when route transition completes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isNavigating) return;
+    const timeout = setTimeout(() => setIsNavigating(false), 8000);
+    return () => clearTimeout(timeout);
+  }, [isNavigating]);
 
   const { data: session } = useSession();
   interface ExtendedUser {
@@ -322,7 +339,18 @@ export function AdminSidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => {
+                      onClick={(e) => {
+                        const now = Date.now();
+                        if (now - lastNavAtRef.current < NAV_THROTTLE_MS) {
+                          e.preventDefault();
+                          return;
+                        }
+                        lastNavAtRef.current = now;
+
+                        if (item.href !== pathname) {
+                          setIsNavigating(true);
+                        }
+
                         // Auto-close on mobile
                         if (window.innerWidth < 1024) {
                           toggleSidebar();
@@ -391,6 +419,17 @@ export function AdminSidebar() {
           )}
         </div>
       </aside>
+
+      {isNavigating && (
+        <div className="fixed inset-0 z-[70] bg-slate-900/25 backdrop-blur-[1px] pointer-events-none">
+          <div className="absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-white px-4 py-2 shadow-lg border border-slate-200 flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse" />
+            <span className="text-xs font-medium text-slate-700">
+              Loading section...
+            </span>
+          </div>
+        </div>
+      )}
     </>
   );
 }

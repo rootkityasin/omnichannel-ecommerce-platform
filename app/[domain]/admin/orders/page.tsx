@@ -152,7 +152,7 @@ export default function OrdersPage() {
   });
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(50);
+  const [limit] = useState(20);
   const [filterSearch, setFilterSearch] = useState("");
   const [searchInput, setSearchInput] = useState(""); // local input before submit
   const [filterSource, setFilterSource] = useState("all");
