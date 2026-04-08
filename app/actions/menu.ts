@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 import { getTenantByDomain } from "./tenant";
 import { auth } from "@/auth";
+import { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
 
@@ -120,7 +121,7 @@ export async function getFilteredMenuData(
     const offset = Math.max(options.offset ?? 0, 0);
     const search = options.search?.trim();
 
-    const where = {
+    const where: Prisma.ProductWhereInput = {
       tenantId,
       isAvailable: true,
       ...(options.category && options.category !== "all"
