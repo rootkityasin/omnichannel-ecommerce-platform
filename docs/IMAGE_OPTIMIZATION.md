@@ -1,73 +1,115 @@
-# Image Optimization Notes
+Universal Image Optimization Guide
+Last updated: 2026-04-09
 
-This project uses Cloudinary for image hosting and Next/Image for delivery.
-Use the helpers in `lib/cloudinary.ts` to keep transformations consistent.
+================================================================================
 
-## Why this matters
+WHAT THIS IS FOR
 
-- Faster LCP and lower data usage for mobile users.
-- Consistent crops across cards, hero, and thumbnails.
-- Minimal manual work when a single image is uploaded.
+Use this guide on any web project to keep image quality high while reducing
+load time, bandwidth, and browser CPU/memory pressure.
 
-## Canonical crops and sizes
+================================================================================
 
-These are the standard crops used across the UI.
+1. MAIN RULES (SIMPLE)
 
-### Product Cards (Home/Menu/Rails)
+  1. Always resize images to the size you actually render — not larger.
+  2. Always use a modern format with auto quality (e.g. f_auto, q_auto).
+  3. Use different presets for card, hero, and thumbnail views.
+  4. Use a low-quality placeholder (LQIP/blur) for better perceived speed.
+  5. Lazy-load any image that isn't critical to the first paint.
 
-- Crop: 4:5 portrait
-- Width: 480px
-- Transform: `c_fill,g_auto,ar_4:5,w_480,f_auto,q_auto:good`
-- LQIP: `c_fill,g_auto,ar_4:5,w_20,q_10,e_blur:200`
-- sizes: `(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 480px`
+================================================================================
 
-### Hero / Product Modal
+2. UNIVERSAL PRESETS
 
-- Crop: 16:9 wide
-- Width: 900px
-- Transform: `c_fill,g_auto,ar_16:9,w_900,f_auto,q_auto:good`
-- LQIP: `c_fill,g_auto,ar_16:9,w_20,q_10,e_blur:200`
-- sizes: `(max-width: 640px) 100vw, 900px`
+These three presets cover most e-commerce and content projects.
 
-### Thumbnails / Cart
+--------------------------------------------------------------------------------
+CARD IMAGE PRESET
+Use for: product cards, rails, list pages
 
-- Crop: 1:1 square
-- Width: 160px
-- Transform: `c_fill,g_auto,ar_1:1,w_160,f_auto,q_auto:good`
-- sizes: `(max-width: 640px) 25vw, 160px`
+  Aspect ratio:  4:5
+  Target width:  480px
+  Transform:     c_fill,g_auto,ar_4:5,w_480,f_auto,q_auto:good
+  LQIP:          c_fill,g_auto,ar_4:5,w_20,q_10,e_blur:200
+  Sizes attr:    (max-width: 640px) 90vw, (max-width: 1024px) 45vw, 480px
 
-## Helpers
+--------------------------------------------------------------------------------
+HERO / LARGE MEDIA PRESET
+Use for: hero banners, main gallery image, large modal media
 
-Use `buildCloudinaryUrl` and `buildCloudinaryLqip` from:
+  Aspect ratio:  16:9
+  Target width:  900px
+  Transform:     c_fill,g_auto,ar_16:9,w_900,f_auto,q_auto:good
+  LQIP:          c_fill,g_auto,ar_16:9,w_20,q_10,e_blur:200
+  Sizes attr:    (max-width: 640px) 100vw, 900px
 
-- `lib/cloudinary.ts`
+--------------------------------------------------------------------------------
+THUMBNAIL PRESET
+Use for: cart rows, gallery thumbs, mini cards
 
-These helpers insert the transform after `/upload/` in Cloudinary URLs and keep behavior consistent.
+  Aspect ratio:  1:1
+  Target width:  160px
+  Transform:     c_fill,g_auto,ar_1:1,w_160,f_auto,q_auto:good
+  Sizes attr:    (max-width: 640px) 25vw, 160px
 
-## Admin upload guidance
+================================================================================
 
-For product images, the admin UI recommends:
+3. UPLOAD STANDARDS (FOR CONTENT EDITORS)
 
-- `1600x2000 (4:5)` and to center the subject.
+Ask editors to always upload:
+  - Minimum 1600x2000px for product images
+  - Subject centered in the frame
+  - One clean source image per product — all variants are derived from this
 
-Rationale:
+Why this size works: it renders well in 4:5 card view, crops cleanly to 16:9
+and 1:1, and means you never need to maintain separate files per surface.
 
-- Works well for cards (4:5)
-- Still crops cleanly for hero (16:9) and thumbnails (1:1)
+================================================================================
 
-## Do not
+4. WHAT NOT TO DO
 
-- Do not store transformed URLs in the database.
-- Do not add multiple transformations to the same URL.
-- Avoid serving original images without `f_auto,q_auto` and a width.
+  - Do not store transformed URLs in the database — store only the original.
+  - Do not stack multiple transforms on the same URL string repeatedly.
+  - Do not serve raw original images directly in the UI.
+  - Do not use one preset for every surface.
 
-## Where to update
+================================================================================
 
-If you add new image surfaces, follow the same presets above.
-Common areas:
+5. RECOMMENDED IMPLEMENTATION PATTERN
 
-- `components/client/ProductCard.tsx`
-- `components/client/ProductModal.tsx`
-- `app/[domain]/(client)/buy/[productId]/page.tsx`
-- `components/client/cart/CartClient.tsx`
-- `components/client/CartDrawer.tsx`
+  1. Store only the original media URL in the database.
+  2. Build the transformed URL at render time using a helper function.
+  3. Use one helper for the normal image and a separate one for the LQIP.
+  4. Keep all preset names and constants defined in one place.
+
+In this repo, helper examples live in: lib/cloudinary.ts
+
+================================================================================
+
+6. CURRENT PROJECT MAPPING (REFERENCE)
+
+Surfaces where image presets are currently applied:
+
+  - components/client/ProductCard.tsx
+  - components/client/ProductModal.tsx
+  - app/[domain]/(client)/buy/[productId]/page.tsx
+  - components/client/cart/CartClient.tsx
+  - components/client/CartDrawer.tsx
+
+When adding a new image surface, pick one of the three presets above. Don't
+invent new dimensions from scratch.
+
+================================================================================
+
+7. QUICK VERIFICATION CHECKLIST
+
+  [ ] Card images use the card preset
+  [ ] Hero images use the hero preset
+  [ ] Thumbnails use the thumbnail preset
+  [ ] Non-critical images are lazy-loaded
+  [ ] LQIP/blur placeholders are enabled where needed
+  [ ] No transformed URLs are stored in the database
+  [ ] Network tab shows optimized sizes and modern formats (WebP/AVIF)
+
+If all boxes are checked, image delivery is in good shape for most projects.

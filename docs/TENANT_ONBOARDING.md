@@ -1,92 +1,98 @@
-# New Tenant Onboarding Requirements
+# Tenant Onboarding + Provisioning Workflow
 
-To set up a new shop on the platform, please provide the following details. This information is required to initialize your database, configure your storefront, and set up your isolated hosting instance.
+Single source of truth for onboarding new tenants from registration to production.
 
-## 1. Business Identity
+---
 
-- **Shop Name**: The official name of your business (e.g., "Blue Ribbon Textiles").
-- **Subdomain Slug**: A unique URL identifier (e.g., `blue-ribbon`). Your store will be reachable at `blue-ribbon.everywhere.com`.
-- **Custom Domain (Optional)**: If you own a domain (e.g., `www.blueribbon.com`), provide it so we can map it to your instance.
+## Part A: Information Checklist
 
-## 2. Admin Account (Owner)
+Gather before provisioning.
 
-- **Full Name**: Name of the primary shop administrator.
-- **Email Address**: Used for login and system notifications.
-- **Phone Number**: Required for secure login and SMS notifications.
-- **Initial Password**: A temporary secure password.
+**Business Identity:**
+- Shop Name (example: "Blue Ribbon Textiles")
+- Subdomain Slug (example: `blue-ribbon`)
+- Custom Domain (optional)
 
-## 3. Shop Configuration
+**Admin Account:**
+- Full Name, Email, Phone, Initial Password (temporary)
 
-- **Shop Type**:
-  - `RESTAURANT`: Enables kitchen Kanban boards and live order tracking.
-  - `GROCERY/RETAIL`: Standard retail order management.
-- **Measurement Unit**:
-  - `PCS`: Standard unit-based selling.
-  - `WEIGHT (Kg/Gm)`: Ideal for seafood or bulk goods.
-  - `VOLUME (Ltr/ml)`: Ideal for liquids.
-- **Tax Percentage**: Default tax to apply to all orders.
+**Shop Configuration:**
+- Shop Type (RESTAURANT | GROCERY/RETAIL)
+- Measurement Unit (PCS | WEIGHT | VOLUME)
+- Tax Percentage
 
-## 4. Branding & Contact
+**Branding:**
+- Logo (PNG/SVG), Primary Color, Secondary Color (hex)
+- Support Email, Phone, Store Address
 
-- **Logo**: A high-resolution PNG or SVG (Transparent background recommended).
-- **Brand Colors**:
-  - Primary Color (Hex code, e.g., `#E60000`)
-  - Secondary Color (Hex code, e.g., `#0F172A`)
-- **Public Contact Details**:
-  - Support Email (shown to customers)
-  - Support Phone
-  - Physical Address/Store Location
+**Plan & Technical:**
+- Plan selection (Silver/Gold/Platinum)
+- Database URL (if isolated deployment)
+- Cloudinary credentials (if needed)
 
-## 5. Choose a Service Plan
+**One-time setup charge: ৳6,000** (domain registration + hosting + DB provisioning)
 
-Select the tier that best fits your business scale. Our system provides 100% data isolation regardless of your chosen plan.
+---
 
-| Feature     | **Silver** (Starter) | **Gold** (Growth) | **Platinum** (Scale) |
-| :---------- | :------------------- | :---------------- | :------------------- |
-| **Pricing** | ৳1,000 / mo          | ৳2,500 / mo       | ৳5,000 / mo          |
+## Part B: Provisioning Steps (Control Plane → Production)
 
-> [!IMPORTANT]
-> **One-Time Setup Charge: ৳6,000**
->
-> A foundational fee required to provision your dedicated environment.
-> **What this covers:**
->
-> 1.  **Domain Name**: 1-year registration for your custom `.com` or `.com.bd` domain.
-> 2.  **Dedicated Hosting**: Configuration of your isolated server instance on our high-performance cloud.
-> 3.  **Database Provisioning**: Setup of your secure, isolated database to ensure data privacy.
->
-> **Why is this required?**
-> Unlike shared marketplaces, your shop gets its own dedicated resources to ensure speed, security, and brand independence. This one-time fee covers the actual infrastructure costs to get you started.
-> | **Staff Accounts** | 2 | 5 | 15 |
-> | **Product Limit** | 50 | 500 | **Unlimited** |
-> | **Order Limit** | 100 / month | 1,000 / month | **Unlimited** |
-> | **Analytics** | Basic | Advanced | **Real-time** |
-> | **Support** | Standard | Priority | **24/7 Dedicated** |
-> | **Custom Domain** | ❌ | ✅ | ✅ |
-> | **Multiple Hubs/Branches** | ❌ | ✅ | ✅ |
-> | **Email Marketing** | ❌ | ✅ | ✅ |
-> | **Payment Gateways** | ❌ | ✅ | ✅ |
-> | **IP Calling Integration** | ❌ | ❌ | ✅ |
-> | **Courier Integration** | ❌ | ❌ | ✅ |
+**Step 1 — Register in control-plane**
+- Open `http://app.localhost`
+- Create tenant record (name, slug, admin email, plan)
+- Local hosts: `127.0.0.1 app.localhost`, `127.0.0.1 <tenant-slug>.localhost`
 
-### Feature Breakdown
+**Step 2 — Create tenant database**
+- Provision dedicated PostgreSQL database
 
-- **Staff Accounts:** Number of unique administrative logins for your team.
-- **Custom Domain:** Connect your own `.com` or `.com.bd` domain (e.g., `shop.yourbrand.com`).
-- **Multiple Hubs:** Manage inventory and orders across different physical locations or warehouses.
-- **IP Calling:** Integrated VOIP services for direct customer communication from the dashboard.
-- **Courier Integration:** Automated delivery booking with partners like Pathao.
+**Step 3 — Validate migrations on clone**
+- Clone tenant DB to scratch (e.g., `tenant_db_clone`)
+- Run migrations on clone, then restore from backup
+- Verify no errors before production
 
-## 6. Technical Requirements (Multi-Instance)
+**Step 4 — Apply migrations to production**
+- Run migrations on real tenant DB only after clone validation passes
 
-If you are using a dedicated Vercel project for maximum isolation:
+**Step 5 — Seed tenant database**
+- Tenant record
+- Site config
+- Admin user  
+- Plan snapshot (copy from control-plane `PlanCatalog`)
 
-- **Database URL**: A dedicated PostgreSQL connection string.
-- **Cloudinary Credentials**: Cloud Name and a dedicated Upload Preset (allows your assets to be separate from other shops).
+Sample plan snapshot:
+```json
+{
+  "slug": "PLATINUM",
+  "name": "Platinum",
+  "price": 8000,
+  "features": ["Unlimited Orders", "24/7 Support"],
+  "limits": {"ordersPerMonth": "UNLIMITED", "users": "UNLIMITED"}
+}
+```
 
-## 7. Control-Plane Workflow (Local Only)
+**Step 6 — Deploy application**
+Environment variables:
+```env
+DEPLOYMENT_MODE=tenant
+SUPER_ADMIN_ENABLED=false
+DATABASE_URL=postgresql://...
+TENANT_PRIMARY_DOMAIN=your-tenant-domain.com
+```
 
-- Tenants are registered in the local Super Admin console at `app.localhost`.
-- The control-plane database stores tenant registry + centralized plans.
-- Provisioning exports a tenant snapshot for deployment.
-- Production tenant deployments never include Super Admin routes.
+**Step 7 — Configure DNS**
+- Point domain to tenant deployment
+- Verify root domain loads tenant storefront
+
+**Step 8 — Validate**
+- [ ] Admin login works
+- [ ] Storefront loads on tenant domain
+- [ ] Tenant data isolated (no cross-tenant leakage)
+- [ ] Super Admin routes blocked on production domain
+
+---
+
+## Reference Notes
+
+- **Super Admin:** Local-only (`app.localhost`), never exposed in production
+- **Control-plane:** Uses `PLATFORM_DATABASE_URL`
+- **Tenant production:** Set `DEPLOYMENT_MODE=tenant` + `SUPER_ADMIN_ENABLED=false`
+- **Plan data:** Centralized in control-plane, snapshotted into tenant DB at provisioning

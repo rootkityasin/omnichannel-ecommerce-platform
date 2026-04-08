@@ -90,7 +90,7 @@ erDiagram
 We use a **control-plane + tenant-only** model:
 
 - **Control plane**: local-only Super Admin with its own DB (`PLATFORM_DATABASE_URL`).
-- **Tenant production**: each tenant is deployed to its own domain with its own DB (`DATABASE_URL`).
+- **Tenant production**: tenant-facing app on custom domain, tenant-scoped data in tenant DB (`DATABASE_URL`), and edge caching in front of app routes/APIs.
 
 ```mermaid
 flowchart TD
@@ -107,8 +107,9 @@ PLATFORM_DATABASE_URL)]
 
     subgraph TenantProd[Tenant Production Deployment]
         TB[Browser] --> TD[tenant-domain.com]
-        TD --> APP[Tenant App
-DEPLOYMENT_MODE=tenant]
+        TD --> EDGE[Edge / CDN Cache]
+        EDGE --> APP[Tenant App
+    DEPLOYMENT_MODE=tenant]
         APP --> TDB[(Tenant DB
 DATABASE_URL)]
     end
@@ -121,23 +122,41 @@ DATABASE_URL)]
 
 ## 3. Data Isolation Flow
 
-All tenant production deployments are single-tenant. Each domain talks only to its own database. Local platform mode can host multiple tenants for development, but production is always tenant-only.
+All tenant production deployments are single-tenant. Each domain resolves to one tenant context, and data access is constrained by tenant identity.
+
+Current runtime behavior has two important storefront flows:
+
+1. Homepage top fold renders first, sections are fetched after paint via API.
+2. Menu uses bootstrap/filtered/full API modes depending on request params.
 
 ```mermaid
 sequenceDiagram
     participant Browser
     participant Middleware
-    participant ServerAction
+    participant App
+    participant API
     participant Database
 
     Browser->>Middleware: GET crabkhai.com
     Middleware->>Middleware: Resolve Hostname (crabkhai.com)
-    Middleware->>ServerAction: Rewrite to /[domain]
-    ServerAction->>Database: Query Tenant where customDomain = "crabkhai.com"
-    Database-->>ServerAction: Return Tenant Object (ID: 123)
-    ServerAction->>Database: Fetch Products where tenantId = 123
-    Database-->>ServerAction: Return Product List (Filtered)
-    ServerAction-->>Browser: Render Storefront (CrabKhai)
+    Middleware->>App: Rewrite to /[domain]
+    App->>Database: Resolve tenant by domain
+    Database-->>App: Tenant context
+    App-->>Browser: Render homepage top fold (hero/categories)
+    Browser->>API: GET /api/home-sections?domain=crabkhai.com
+    API->>Database: Fetch tenant-scoped sections/products
+    Database-->>API: Section payload
+    API-->>Browser: Hydrate homepage sections
+
+    Browser->>API: GET /api/menu?bootstrap=1&limit=18
+    API->>Database: Fetch compact bootstrap menu payload
+    Database-->>API: Bootstrap products + categories + total
+    API-->>Browser: Warm menu cache
+
+    Browser->>API: GET /api/menu?category=...&search=...
+    API->>Database: Fetch filtered tenant-scoped menu results
+    Database-->>API: Filtered payload
+    API-->>Browser: Update menu view
 ```
 
 ## 4. Cross-Tenant Security Architecture
@@ -186,19 +205,43 @@ In cases where Cloudinary is not configured, the system utilizes **Base64 Inline
 
 ## 6. Multi-Tenant Caching Strategy
 
-The platform uses Next.js **Data Cache** (`unstable_cache`) to ensure high performance without compromising data isolation.
+The platform uses layered caching to keep tenant data isolated while reducing repeated work.
 
-### Tenant-Scoped Tags
+### 6.1 Server data cache (`unstable_cache`)
 
-To prevent "Cache Injection" (where Tenant A sees cached data from Tenant B), all cache keys are tagged with the specific `tenantId`:
+Examples in current code:
 
-- **Implementation**: `tags: ['products', tenantId]`
-- **Isolation**: When a product is updated in the CrabKhai admin, we only invalidate tags for `['products', crabkhaiId]`. The cache for Textile remains untouched and secure.
+1. `getHomeSections` (`app/actions/section.ts`) with revalidate `60`.
+2. `getCachedMenuData` (`app/actions/menu.ts`) with revalidate `600`.
+3. `getCachedMenuBootstrapProducts` (`app/actions/menu.ts`) with revalidate `60`.
+4. `getCachedMenuBootstrapTotal` (`app/actions/menu.ts`) with revalidate `300`.
 
-### Revalidation Flow
+Tenant isolation is preserved by tenant-aware query filters and domain-to-tenant resolution, not by cross-tenant shared payload reuse.
 
-- **On-Demand**: Triggered via `revalidateTag()` when a specific resource (Order, Category, Product) is modified.
-- **Time-Based**: Fallback TTL (e.g., 3600s) ensures data eventually refreshes even if hardware signals fail.
+### 6.2 API cache headers
+
+Current API header behavior:
+
+1. `/api/menu` bootstrap: `public, s-maxage=60, stale-while-revalidate=300`
+2. `/api/menu` filtered: `public, s-maxage=30, stale-while-revalidate=120`
+3. `/api/menu` full: `public, s-maxage=60, stale-while-revalidate=600`
+4. `/api/home-sections`: `public, s-maxage=60, stale-while-revalidate=300`
+
+### 6.3 HTML route cache headers
+
+Configured in `next.config.ts`:
+
+1. `/`: `public, s-maxage=60, stale-while-revalidate=300`
+2. `/menu`: `public, s-maxage=60, stale-while-revalidate=300`
+
+### 6.4 Client warm cache
+
+`ResourcePrefetcher` warms menu bootstrap payload after page load + idle and stores it in session cache + Zustand for fast route transitions.
+
+### Revalidation policy
+
+1. On-demand invalidation is used where write actions update tags/paths.
+2. Time-based revalidation remains the fallback safety net.
 
 ---
 

@@ -1,105 +1,144 @@
-# Caching Overview
+Universal Caching Guide (CPU Spike Focus)
+Last updated: 2026-04-09
 
-This project uses a layered caching strategy across the app, client, and edge.
-The goal is fast first-load on mobile and instant Home -> Menu transitions.
+================================================================================
 
-## 1) App-level caching (Next.js)
+WHAT THIS IS FOR
 
-We cache the heavy data at the server with `unstable_cache`.
+Caching reduces CPU spikes by serving repeat traffic from cache instead of
+recomputing the same work on every request. This guide covers caching across
+four layers so that if one layer misses, another can still protect your CPU.
 
-Key locations:
+The four layers are:
+  1. App cache (server functions)
+  2. API cache headers
+  3. HTML/page cache headers
+  4. Client warm cache (for fast route transitions)
 
-- `app/actions/section.ts`: `getHomeSections` cached with `revalidate: 60`
-- `app/actions/product.ts`: `getProducts` cached with `revalidate: 3600`
-- `app/actions/menu.ts`: `getMenuData` cached with `revalidate: 600`
+================================================================================
 
-These caches reduce DB load and stabilize response times.
+LAYER 1 — APP CACHE (SERVER-SIDE)
 
-## 2) Client-side menu cache (mobile acceleration)
+Cache heavy database queries directly in your server code. In Next.js, for
+example, you can use unstable_cache for this.
 
-We prefetch menu data on Home and reuse it on Menu.
+Start with these three things:
+  - Home sections data
+  - Menu / bootstrap list data
+  - Expensive count() queries
 
-Flow:
+Why it helps: repeated reads get served from memory or edge cache instead of
+hitting the database fresh every time.
 
-1. Home loads and prefetches menu data in the background.
-2. The payload is stored in sessionStorage (10 minutes TTL).
-3. It is also stored in Zustand for instant reuse on navigation.
+================================================================================
 
-Key locations:
+LAYER 2 — API CACHE HEADERS
 
-- `components/client/ResourcePrefetcher.tsx`: prefetches `/menu` and `/api/menu`
-- `app/api/menu/route.ts`: returns cached menu payload
-- `app/actions/menu.ts`: `getMenuData` shared by `/menu` and `/api/menu`
-- `components/client/MenuClient.tsx`: uses cached data first
-- `lib/menuCache.ts`: sessionStorage TTL (10 minutes)
-- `lib/store.ts`: Zustand menu cache
+Add explicit Cache-Control headers on all read-only endpoints. A good default
+for hot API routes:
 
-## 3) Edge / browser caching (Cloudflare + Traefik)
+  Cache-Control: public, s-maxage=60, stale-while-revalidate=300
 
-We use cache headers and Cloudflare Cache Rules.
+Use shorter TTLs for highly dynamic endpoints and longer TTLs for stable ones.
 
-### Traefik headers (file provider)
+================================================================================
 
-Configured in `/etc/dokploy/traefik/dynamic/middlewares.yml`:
+LAYER 3 — HTML / PAGE CACHE HEADERS
 
-- `cache-html`: `s-maxage=60`, `stale-while-revalidate=600`
-- `cache-api`: `s-maxage=600`, `stale-while-revalidate=600`
-- `cache-static`: `max-age=31536000, immutable`
+For anonymous public pages like / and /menu, add page-level cache headers too.
 
-These middlewares are attached to the Crab Khai routers in Traefik.
+Why it helps: even if your API is cached, rendering the HTML page still burns
+CPU. Caching the HTML at the edge reduces how often your origin server has to
+render anything at all.
 
-### Cloudflare Cache Rules
+Do NOT cache private pages — admin, account, checkout, and auth routes should
+always bypass the cache.
 
-Applied in Cloudflare (Rules -> Cache Rules):
+================================================================================
 
-1. Static assets
+LAYER 4 — CLIENT WARM CACHE (UX BOOST)
 
-- Match: `/_next/static/*`
-- Cache: Everything
-- Edge TTL: 1 year
+After the homepage finishes loading, prefetch the next likely route's data in
+the background during idle time.
 
-2. Menu API
+Three rules to follow:
+  - Only prefetch after page load and browser idle — never block first paint.
+  - Keep a short client-side TTL (10 minutes is a reasonable default).
+  - Never let prefetch delay or interfere with the initial render.
 
-- Match: `/api/menu*`
-- Cache: Everything
-- Edge TTL: 10 minutes
+================================================================================
 
-3. Never cache private routes (Bypass)
+WHAT WE CACHE IN THIS PROJECT (CURRENT)
 
-- `/admin*`, `/cart*`, `/checkout*`, `/account*`, `/api/auth*`, `/api/track*`
+App-level:
+  - Home sections data        — revalidate every 60s
+  - Full menu data            — revalidate every 600s
+  - Bootstrap menu products   — revalidate every 60s
+  - Bootstrap menu count      — revalidate every 300s
 
-## 4) What is NOT cached
+API-level:
+  - /api/menu (full, filtered, bootstrap)  — explicit cache headers
+  - /api/home-sections                     — explicit cache headers
 
-- Admin pages, checkout, account pages
-- Auth APIs and tracking APIs
+HTML-level:
+  - /        — cache headers enabled
+  - /menu    — cache headers enabled
 
-## 5) How to verify
+Client-level:
+  - Menu cache stored in sessionStorage + Zustand
+  - Warmed from the homepage in background after load + idle
 
-Use curl to confirm caching headers and Cloudflare status:
+================================================================================
 
-```
-curl -I https://crabkhai.com/api/menu
-curl -I https://crabkhai.com/_next/static/chunks/<REAL_FILE>.js
-```
+WHAT SHOULD NOT BE CACHED
 
-Expected headers:
+Never cache these routes at the edge:
 
-- `Cache-Control` matches the rule
-- `cf-cache-status: HIT` after a second request
+  - /admin*
+  - /account*
+  - /checkout*
+  - /api/auth*
+  - Any user-specific or sensitive API
 
-## 6) TTL summary
+================================================================================
 
-- Home sections (server cache): 60s
-- Products list (server cache): 1h
-- Menu data (server cache): 10m
-- Menu API (edge cache): 10m
-- Static assets (edge cache): 1y
-- Client menu cache (sessionStorage/Zustand): 10m
+HOW TO VERIFY QUICKLY
 
-## 7) Menu route details
+Check response headers with curl:
 
-The `/menu` page uses a single cached payload:
+  curl -I https://your-domain.com/
+  curl -I https://your-domain.com/menu
+  curl -I "https://your-domain.com/api/menu?bootstrap=1&limit=18"
 
-- `app/actions/menu.ts` (`getMenuData`) returns `{ products, categories }`
-- `/menu` revalidate: 600s
-- `/api/menu` uses the same cached payload
+On Cloudflare, check the cf-cache-status header:
+  - First request will likely be MISS
+  - Subsequent requests should show HIT
+
+If you keep seeing MISS, review your cache rules and check for bypass conditions
+that might be overriding the headers.
+
+================================================================================
+
+CPU SPIKE TROUBLESHOOTING (SIMPLE)
+
+If CPU is still spiking after caching is set up, work through this list:
+
+  1. Confirm / and /menu have cache headers set correctly.
+  2. Confirm API responses are compact — bootstrap payloads should be small.
+  3. Confirm the edge cache is actually hitting (cf-cache-status: HIT).
+  4. Defer heavy homepage sections until after the first paint.
+  5. Scale app replicas and reduce DB pool size per replica accordingly.
+
+================================================================================
+
+REUSABLE CHECKLIST FOR ANY PROJECT
+
+  [ ] Add app-level cache for heavy read queries
+  [ ] Add API cache headers for public GET routes
+  [ ] Add HTML cache headers for public pages
+  [ ] Add background prefetch after load + idle
+  [ ] Exclude admin / auth / private routes from cache
+  [ ] Verify HIT/MISS behavior with curl
+  [ ] Re-test under load with the same command profile
+
+Done means: lower CPU, stable latency, and fewer timeouts under the same load.
