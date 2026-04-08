@@ -60,6 +60,11 @@ Keep storefront responsive for high concurrent reads (target: ~100 concurrent us
 - Updated `ResourcePrefetcher` to start mobile warmup earlier using `requestIdleCallback` fallback timing and bootstrap menu endpoint.
 - Updated `MenuClient` to treat mobile and bootstrap-limited datasets as progressive/server-filter mode so extra full-menu items load incrementally.
 
+### 2026-04-08 (bootstrap payload reduction)
+- Added lightweight bootstrap select in `app/actions/menu.ts` with only menu-card essentials (`id`, `name`, `name_bn`, `price`, `image`, `categoryId`, `isAvailable`).
+- Added cached bootstrap product query (`revalidate: 60`) and cached bootstrap total count (`revalidate: 300`) to reduce query pressure under concurrent load.
+- Kept full menu product shape for non-bootstrap paths so existing menu/detail behavior remains intact.
+
 ### 2026-04-08 (follow-up)
 - Removed client-side forced `no-store` from filtered menu fetch so API cache headers can be honored.
 - Added Product composite indexes for filtered menu query paths in `prisma/schema.prisma`:

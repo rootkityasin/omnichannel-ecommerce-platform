@@ -39,6 +39,16 @@ export const CARD_PRODUCT_SELECT = {
 
 const MENU_PRODUCT_SELECT = CARD_PRODUCT_SELECT;
 
+const MENU_BOOTSTRAP_PRODUCT_SELECT = {
+  id: true,
+  name: true,
+  name_bn: true,
+  price: true,
+  image: true,
+  categoryId: true,
+  isAvailable: true,
+};
+
 type MenuFilterOptions = {
   category?: string;
   filter?: string;
@@ -80,6 +90,35 @@ const getCachedMenuData = unstable_cache(
   { tags: ["menu-data", "products", "categories"], revalidate: 600 },
 );
 
+const getCachedMenuBootstrapProducts = unstable_cache(
+  async (tenantId: string, limit: number) => {
+    return prisma.product.findMany({
+      where: {
+        tenantId,
+        isAvailable: true,
+      },
+      orderBy: { sku: "asc" },
+      take: limit,
+      select: MENU_BOOTSTRAP_PRODUCT_SELECT,
+    });
+  },
+  ["menu-bootstrap-products"],
+  { tags: ["menu-data", "products"], revalidate: 60 },
+);
+
+const getCachedMenuBootstrapTotal = unstable_cache(
+  async (tenantId: string) => {
+    return prisma.product.count({
+      where: {
+        tenantId,
+        isAvailable: true,
+      },
+    });
+  },
+  ["menu-bootstrap-total"],
+  { tags: ["menu-data", "products"], revalidate: 300 },
+);
+
 async function resolveTenantId(domain?: string) {
   let tenantId: string | undefined;
 
@@ -119,15 +158,7 @@ export async function getMenuBootstrapData(domain: string, limit = 18) {
     const safeLimit = Math.min(Math.max(limit, 8), 48);
 
     const [products, categories, total] = await Promise.all([
-      prisma.product.findMany({
-        where: {
-          tenantId,
-          isAvailable: true,
-        },
-        orderBy: { sku: "asc" },
-        take: safeLimit,
-        select: MENU_PRODUCT_SELECT,
-      }),
+      getCachedMenuBootstrapProducts(tenantId, safeLimit),
       prisma.category.findMany({
         where: {
           tenantId,
@@ -138,12 +169,7 @@ export async function getMenuBootstrapData(domain: string, limit = 18) {
           },
         },
       }),
-      prisma.product.count({
-        where: {
-          tenantId,
-          isAvailable: true,
-        },
-      }),
+      getCachedMenuBootstrapTotal(tenantId),
     ]);
 
     return { products, categories, total, limit: safeLimit };
