@@ -14,19 +14,19 @@ Connection pool guardrails are now configurable in `lib/prisma.ts`.
 
 Environment variables:
 
-- `PG_POOL_MAX` (default `10`)
+- `PG_POOL_MAX` (default `8`)
 - `PG_POOL_MIN` (default `1`)
 - `PG_POOL_IDLE_MS` (default `15000`)
-- `PG_POOL_CONN_TIMEOUT_MS` (default `5000`)
-- `PG_STATEMENT_TIMEOUT_MS` (default `15000`)
-- `PG_QUERY_TIMEOUT_MS` (default `20000`)
+- `PG_POOL_CONN_TIMEOUT_MS` (default `3000`)
+- `PG_STATEMENT_TIMEOUT_MS` (default `12000`)
+- `PG_QUERY_TIMEOUT_MS` (default `15000`)
 
 Suggested starting values for KVM2:
 
-- `PG_POOL_MAX=6`
+- `PG_POOL_MAX=8`
 - `PG_POOL_MIN=1`
 - `PG_POOL_IDLE_MS=10000`
-- `PG_POOL_CONN_TIMEOUT_MS=4000`
+- `PG_POOL_CONN_TIMEOUT_MS=3000`
 - `PG_STATEMENT_TIMEOUT_MS=12000`
 - `PG_QUERY_TIMEOUT_MS=15000`
 

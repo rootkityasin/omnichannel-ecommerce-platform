@@ -44,6 +44,7 @@ export function MenuClient({
   initialProducts,
   initialCategories,
 }: MenuClientProps) {
+  const SERVER_FILTER_THRESHOLD = 120;
   const router = useRouter();
   const searchParams = useSearchParams();
   const setAllProducts = useCartStore((state) => state.setAllProducts);
@@ -145,6 +146,12 @@ export function MenuClient({
 
   const [displayCount, setDisplayCount] = useState(12);
   const [isMobile, setIsMobile] = useState(false);
+  const [serverFilteredProducts, setServerFilteredProducts] = useState<any[]>(
+    [],
+  );
+  const [serverFilteredTotal, setServerFilteredTotal] = useState(0);
+  const [isServerFiltering, setIsServerFiltering] = useState(false);
+  const useServerFiltering = clientProducts.length >= SERVER_FILTER_THRESHOLD;
 
   const categoriesList = useMemo(
     () => [
@@ -160,6 +167,10 @@ export function MenuClient({
   );
 
   const filteredItems = useMemo(() => {
+    if (useServerFiltering) {
+      return serverFilteredProducts;
+    }
+
     const items = clientProducts.filter((item) => {
       const matchesSearch = item.name
         .toLowerCase()
@@ -203,6 +214,8 @@ export function MenuClient({
     activeCategory,
     activeFilter,
     activeSection,
+    useServerFiltering,
+    serverFilteredProducts,
   ]);
 
   const displayedProducts = useMemo(() => {
@@ -215,6 +228,65 @@ export function MenuClient({
     window.addEventListener("resize", updateIsMobile);
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
+
+  useEffect(() => {
+    if (!useServerFiltering) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    params.set("domain", window.location.host);
+    params.set("limit", String(displayCount));
+
+    if (activeCategory && activeCategory !== "all") {
+      params.set("category", activeCategory);
+    }
+    if (activeFilter) {
+      params.set("filter", activeFilter);
+    }
+    if (activeSection) {
+      params.set("section", activeSection);
+    }
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    }
+
+    const loadFiltered = async () => {
+      setIsServerFiltering(true);
+      try {
+        const response = await fetch(`/api/menu?${params.toString()}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = await response.json();
+        if (!controller.signal.aborted) {
+          setServerFilteredProducts(payload.products || []);
+          setServerFilteredTotal(payload.total || 0);
+        }
+      } catch {
+        // Ignore aborted fetch errors from rapid UI changes.
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsServerFiltering(false);
+        }
+      }
+    };
+
+    loadFiltered();
+    return () => controller.abort();
+  }, [
+    useServerFiltering,
+    activeCategory,
+    activeFilter,
+    activeSection,
+    debouncedSearch,
+    displayCount,
+  ]);
 
   // Handle Load More on Scroll (mobile only)
   useEffect(() => {
@@ -282,6 +354,10 @@ export function MenuClient({
     });
     return counts;
   }, [clientProducts, clientCategories]);
+
+  const totalFilteredItems = useServerFiltering
+    ? serverFilteredTotal
+    : filteredItems.length;
 
   return (
     <div className="bg-slate-50 min-h-screen pt-0 pb-32">
@@ -439,10 +515,16 @@ export function MenuClient({
                 {categoriesList.find((c) => c.id === activeCategory)?.name ||
                   "All Items"}
                 <span className="ml-3 text-lg font-medium text-slate-400 font-body">
-                  ({filteredItems.length} items)
+                  ({totalFilteredItems} items)
                 </span>
               </h2>
             </div>
+
+            {isServerFiltering && (
+              <div className="mb-4 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500">
+                Refreshing menu results...
+              </div>
+            )}
 
             <AnimatePresence mode={isMobile ? "sync" : "wait"}>
               {displayedProducts.length > 0 ? (
@@ -522,10 +604,10 @@ export function MenuClient({
             </AnimatePresence>
 
             {/* Progress Indicator */}
-            {filteredItems.length > 0 && (
+            {totalFilteredItems > 0 && (
               <div className="mt-20 flex flex-col items-center gap-4">
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
-                  Showing {displayedProducts.length} of {filteredItems.length}{" "}
+                  Showing {displayedProducts.length} of {totalFilteredItems}{" "}
                   delicacies
                 </div>
                 {!isMobile && (
@@ -534,12 +616,12 @@ export function MenuClient({
                       className="h-full bg-crab-red"
                       initial={{ width: 0 }}
                       animate={{
-                        width: `${(displayedProducts.length / filteredItems.length) * 100}%`,
+                        width: `${(displayedProducts.length / totalFilteredItems) * 100}%`,
                       }}
                     />
                   </div>
                 )}
-                {displayCount < filteredItems.length && (
+                {displayCount < totalFilteredItems && (
                   <button
                     onClick={() =>
                       setDisplayCount((prev) => prev + (isMobile ? 8 : 12))
@@ -549,7 +631,7 @@ export function MenuClient({
                     Tap to Load More
                   </button>
                 )}
-                {displayCount >= filteredItems.length && (
+                {displayCount >= totalFilteredItems && (
                   <div className="mt-8 text-slate-300 font-serif italic text-sm">
                     ~ That&apos;s all for now ~
                   </div>

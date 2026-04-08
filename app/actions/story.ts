@@ -41,26 +41,8 @@ const getCachedBlockedCustomers = unstable_cache(
   { tags: ["story-sections", "story-blocked-customers"], revalidate: 300 },
 );
 
-export async function getStorySections() {
-  try {
-    return await getCachedStorySections();
-  } catch (error) {
-    console.error("Failed to fetch story sections:", error);
-    return [];
-  }
-}
-
-export async function getBlockedCustomers() {
-  try {
-    return await getCachedBlockedCustomers();
-  } catch (error) {
-    console.error("Failed to fetch blocked customers:", error);
-    return { phones: [], emails: [] };
-  }
-}
-
-export async function getHomepageSeoCopy() {
-  try {
+const getCachedHomepageSeoCopy = unstable_cache(
+  async () => {
     const section = await prisma.storySection.findUnique({
       where: { type: "HOMEPAGE_SEO_COPY" },
       select: { content: true },
@@ -81,6 +63,32 @@ export async function getHomepageSeoCopy() {
           ? content.introText
           : "Find premium crab meat in Dhaka with ready-to-fry frozen crab packs from CrabKhai, made for rich flavor and a quick 5-minute fry.",
     };
+  },
+  ["homepage-seo-copy"],
+  { tags: ["story-sections", "homepage-seo-copy"], revalidate: 300 },
+);
+
+export async function getStorySections() {
+  try {
+    return await getCachedStorySections();
+  } catch (error) {
+    console.error("Failed to fetch story sections:", error);
+    return [];
+  }
+}
+
+export async function getBlockedCustomers() {
+  try {
+    return await getCachedBlockedCustomers();
+  } catch (error) {
+    console.error("Failed to fetch blocked customers:", error);
+    return { phones: [], emails: [] };
+  }
+}
+
+export async function getHomepageSeoCopy() {
+  try {
+    return await getCachedHomepageSeoCopy();
   } catch (error) {
     console.error("Failed to fetch homepage SEO copy:", error);
     return {
@@ -107,6 +115,7 @@ export async function updateStorySection(
     revalidatePath("/[domain]", "page"); // Update domain logic if dynamic
     revalidateTag("story-sections", {});
     revalidateTag("story-blocked-customers", {});
+    revalidateTag("homepage-seo-copy", {});
     return { success: true };
   } catch (error) {
     console.error(`Failed to update story section ${type}:`, error);

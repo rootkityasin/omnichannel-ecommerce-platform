@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store";
 import { readMenuCache, writeMenuCache } from "@/lib/menuCache";
 
 export function ResourcePrefetcher() {
-  const router = useRouter();
   const setMenuCache = useCartStore((state) => state.setMenuCache);
   const menuCacheAt = useCartStore((state) => state.menuCacheAt);
 
@@ -72,7 +70,7 @@ export function ResourcePrefetcher() {
     return () => {
       clearTimeout(menuTimer);
     };
-  }, [menuCacheAt, router, setMenuCache]);
+  }, [menuCacheAt, setMenuCache]);
 
   return null; // This component handles side-effects only
 }

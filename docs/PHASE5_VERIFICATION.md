@@ -2,6 +2,13 @@
 
 Use this checklist after completing optimization phases.
 
+## Performance changelogs to maintain
+
+- docs/ADMIN_CPU_SPIKE_CHANGELOG.md
+- docs/STOREFRONT_PERFORMANCE_CHANGELOG.md
+
+Update these two files whenever a performance-related change is made, with date, changed files, expected impact, and verification evidence.
+
 ## 1) Build confidence checks
 
 - npm run lint
