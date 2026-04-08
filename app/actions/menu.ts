@@ -5,37 +5,9 @@ import { unstable_cache } from "next/cache";
 import { getTenantByDomain } from "./tenant";
 import { auth } from "@/auth";
 import { Prisma } from "@prisma/client";
+import { CARD_PRODUCT_SELECT } from "@/lib/menuProductSelect";
 
 const getSessionUser = async () => (await auth())?.user;
-
-export const CARD_PRODUCT_SELECT = {
-  id: true,
-  name: true,
-  name_bn: true,
-  price: true,
-  image: true,
-  images: true,
-  categoryId: true,
-  pieces: true,
-  weight: true,
-  totalSold: true,
-  type: true,
-  createdAt: true,
-  nutritionImage: true,
-  cookingImage: true,
-  stage: true,
-  sku: true,
-  isAvailable: true,
-  servingSize: true,
-  comboItems: {
-    include: {
-      child: { select: { pieces: true, servingSize: true } },
-    },
-  },
-  sections: {
-    select: { slug: true },
-  },
-};
 
 const MENU_PRODUCT_SELECT = CARD_PRODUCT_SELECT;
 

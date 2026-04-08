@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
 import { getTenantByDomain } from "./tenant";
-import { CARD_PRODUCT_SELECT } from "./menu";
+import { CARD_PRODUCT_SELECT } from "@/lib/menuProductSelect";
 
 export async function getSections(domain?: string) {
   try {
