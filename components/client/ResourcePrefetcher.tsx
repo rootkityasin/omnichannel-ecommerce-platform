@@ -49,18 +49,33 @@ export function ResourcePrefetcher() {
 
     const schedulePrefetch = () => {
       if (typeof window === "undefined") return;
-      if ("requestIdleCallback" in window) {
-        // requestIdleCallback is ideal for mobile: warm cache without affecting first paint.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).requestIdleCallback(prefetchMenuData, {
-          timeout: isMobile ? 1200 : 2200,
-        });
+      const run = () => {
+        if ("requestIdleCallback" in window) {
+          // requestIdleCallback is ideal for mobile: warm cache without affecting first paint.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).requestIdleCallback(prefetchMenuData, {
+            timeout: isMobile ? 2500 : 3200,
+          });
+          return;
+        }
+        setTimeout(prefetchMenuData, isMobile ? 1500 : 2800);
+      };
+
+      if (document.readyState === "complete") {
+        run();
         return;
       }
-      setTimeout(prefetchMenuData, isMobile ? 700 : 2500);
+
+      const onLoad = () => {
+        window.removeEventListener("load", onLoad);
+        run();
+      };
+
+      window.addEventListener("load", onLoad);
+      return () => window.removeEventListener("load", onLoad);
     };
 
-    schedulePrefetch();
+    const cleanup = schedulePrefetch();
 
     // 2. Preload Heavy Assets (Images)
     const preloadAssets = () => {
@@ -85,7 +100,7 @@ export function ResourcePrefetcher() {
     }
 
     return () => {
-      // no-op cleanup: requestIdleCallback is intentionally fire-and-forget here
+      if (typeof cleanup === "function") cleanup();
     };
   }, [menuCacheAt, setMenuCache]);
 

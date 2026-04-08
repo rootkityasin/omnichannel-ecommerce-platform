@@ -1,10 +1,8 @@
-import { Suspense } from "react";
 import { getHeroSlides } from "@/app/actions/hero";
 import { getSiteConfig } from "@/app/actions/settings";
 import { getCategories } from "@/app/actions/category";
 import { getHomepageSeoCopy } from "@/app/actions/story";
 import { HomeClient } from "@/components/client/HomeClient";
-import { HomeSections } from "@/components/server/HomeSections";
 
 export default async function HomePage({
   params,
@@ -21,35 +19,12 @@ export default async function HomePage({
 
   return (
     <HomeClient
+      domain={domain}
       heroSlides={heroSlides}
       config={config}
       categories={categories}
       categorySeoCopy={categorySeoCopy}
-    >
-      <Suspense fallback={<SectionsLoading />}>
-        <HomeSections domain={domain} />
-      </Suspense>
-    </HomeClient>
-  );
-}
-
-function SectionsLoading() {
-  return (
-    <div className="space-y-12 py-8">
-      {[1, 2].map((i) => (
-        <div key={i} className="container mx-auto px-4 space-y-4">
-          <div className="h-8 w-48 bg-slate-100 rounded-lg animate-pulse" />
-          <div className="flex gap-4 overflow-hidden">
-            {[1, 2, 3, 4].map((j) => (
-              <div
-                key={j}
-                className="w-[160px] h-[240px] bg-slate-100 rounded-xl flex-none animate-pulse"
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+    />
   );
 }
 

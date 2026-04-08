@@ -65,6 +65,11 @@ Keep storefront responsive for high concurrent reads (target: ~100 concurrent us
 - Added cached bootstrap product query (`revalidate: 60`) and cached bootstrap total count (`revalidate: 300`) to reduce query pressure under concurrent load.
 - Kept full menu product shape for non-bootstrap paths so existing menu/detail behavior remains intact.
 
+### 2026-04-08 (homepage defer path)
+- Moved homepage sections out of initial server render path; initial page now focuses on hero/categories first and loads sections after paint from API.
+- Added `GET /api/home-sections` with cache headers for client-side homepage sections hydration.
+- Delayed background menu warmup scheduling until page load + idle window to prevent competing with homepage first render on mobile.
+
 ### 2026-04-08 (follow-up)
 - Removed client-side forced `no-store` from filtered menu fetch so API cache headers can be honored.
 - Added Product composite indexes for filtered menu query paths in `prisma/schema.prisma`:
