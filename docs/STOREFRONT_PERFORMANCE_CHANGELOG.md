@@ -70,6 +70,9 @@ Keep storefront responsive for high concurrent reads (target: ~100 concurrent us
 - Added `GET /api/home-sections` with cache headers for client-side homepage sections hydration.
 - Delayed background menu warmup scheduling until page load + idle window to prevent competing with homepage first render on mobile.
 
+### 2026-04-08 (html edge caching)
+- Added explicit HTML cache headers for `/` and `/menu` in `next.config.ts` (`s-maxage=60`, `stale-while-revalidate=300`) so edge/CDN can absorb repeat page traffic and reduce origin CPU spikes.
+
 ### 2026-04-08 (follow-up)
 - Removed client-side forced `no-store` from filtered menu fetch so API cache headers can be honored.
 - Added Product composite indexes for filtered menu query paths in `prisma/schema.prisma`:
