@@ -50,7 +50,7 @@ Transfer the chosen backup to `/root/backup.dump` on the VPS.
 **Step 3 — Run restore command**
 ```bash
 docker run --rm --network dokploy-network -v /root/backup.dump:/backup.dump postgres:18 \
-  pg_restore --clean --if-exists -d "postgresql://crabkhai_user:ar0aengeil4sheeC@omnichannelecommerceplatform-crabkhaidb-cdnm87:5432/crabkhai?sslmode=disable" /backup.dump
+  pg_restore --clean --if-exists -d "postgresql://<db_user>:<db_password>@<db_host>:5432/<db_name>?sslmode=disable" /backup.dump
 ```
 
 **Step 4 — Redeploy application**

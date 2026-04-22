@@ -10,7 +10,6 @@ TS="$(date '+%Y%m%d-%H%M%S')"
 LOG_FILE="${OUTPUT_DIR}/profile-${TS}.log"
 SUMMARY_FILE="${OUTPUT_DIR}/profile-${TS}.summary.txt"
 PASSWORD_ARG="${1:-}"
-DEFAULT_DB_PASSWORD="ar0aengeil4sheeC"
 
 APP_CONTAINER=$(docker ps --format '{{.Names}}' | grep "^${APP_SERVICE_PREFIX}\." | head -n 1)
 DB_CONTAINER=$(docker ps --format '{{.Names}}' | grep "^${DB_SERVICE_PREFIX}\." | head -n 1)
@@ -38,8 +37,8 @@ else
 fi
 
 if [[ -z "${PGPASSWORD:-}" ]]; then
-  PGPASSWORD="${DEFAULT_DB_PASSWORD}"
-  echo "Using hardcoded default DB password fallback for profiling run."
+  echo "PostgreSQL password not provided. Set PGPASSWORD/DB_PASSWORD or pass it as argument." >&2
+  exit 1
 fi
 
 {

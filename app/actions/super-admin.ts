@@ -37,8 +37,16 @@ export async function createTenant(data: {
 }) {
   await checkSuperAdmin();
 
+  if (!data.password || data.password.trim().length < 12) {
+    return {
+      success: false,
+      error:
+        "Admin password is required and must be at least 12 characters.",
+    };
+  }
+
   try {
-    const hashedPassword = await hash(data.password || "password123", 12);
+    const hashedPassword = await hash(data.password.trim(), 12);
 
     // 1. Create Tenant
     const tenant = await platformPrisma.tenantRegistry.create({
