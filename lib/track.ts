@@ -26,8 +26,11 @@ const createEventId = () => {
 export const trackEvent = async ({ eventName, eventData, userData, eventId, dataLayerEventName }: TrackEventParams) => {
     try {
         const resolvedEventId = eventId || createEventId();
+        const eventDataWithoutEventId = { ...(eventData || {}) };
+        delete eventDataWithoutEventId.event_id;
+
         const mergedEventData = {
-            ...(eventData || {}),
+            ...eventDataWithoutEventId,
             event_id: resolvedEventId,
         };
 
@@ -39,7 +42,6 @@ export const trackEvent = async ({ eventName, eventData, userData, eventId, data
         windowWithDataLayer.dataLayer.push({
             event: dataLayerEventName || eventName,
             event_name: eventName,
-            event_id: resolvedEventId,
             ...mergedEventData,
         });
 
