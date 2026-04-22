@@ -32,6 +32,7 @@ interface CustomData {
 
 interface MetaEvent {
   event_name: string;
+  event_id?: string;
   event_time: number;
   action_source:
     | "website"
@@ -121,6 +122,8 @@ export async function trackMetaEvent(
 
   const payload: MetaEvent = {
     event_name: eventName,
+    event_id:
+      typeof customData?.event_id === "string" ? customData.event_id : undefined,
     event_time: Math.floor(Date.now() / 1000),
     action_source: "website",
     user_data: {

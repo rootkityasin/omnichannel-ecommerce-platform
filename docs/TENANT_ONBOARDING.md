@@ -30,6 +30,10 @@ Gather before provisioning.
 - Database URL (if isolated deployment)
 - Cloudinary credentials (if needed)
 
+**Tracking (Per Tenant):**
+- GTM Container ID (optional, unique per tenant, example: GTM-XXXXXXX)
+- Do not reuse crabkhai.com GTM container for other tenants
+
 **One-time setup charge: ৳6,000** (domain registration + hosting + DB provisioning)
 
 ---

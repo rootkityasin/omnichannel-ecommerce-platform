@@ -5,6 +5,8 @@
 interface TrackEventParams {
     eventName: string;
     eventData?: Record<string, unknown>;
+    eventId?: string;
+    dataLayerEventName?: string;
     userData?: {
         email?: string;
         phone?: string;
@@ -14,8 +16,33 @@ interface TrackEventParams {
     };
 }
 
-export const trackEvent = async ({ eventName, eventData, userData }: TrackEventParams) => {
+const createEventId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+export const trackEvent = async ({ eventName, eventData, userData, eventId, dataLayerEventName }: TrackEventParams) => {
     try {
+        const resolvedEventId = eventId || createEventId();
+        const mergedEventData = {
+            ...(eventData || {}),
+            event_id: resolvedEventId,
+        };
+
+        const windowWithDataLayer = window as typeof window & {
+            dataLayer?: Record<string, unknown>[];
+        };
+
+        windowWithDataLayer.dataLayer = windowWithDataLayer.dataLayer || [];
+        windowWithDataLayer.dataLayer.push({
+            event: dataLayerEventName || eventName,
+            event_name: eventName,
+            event_id: resolvedEventId,
+            ...mergedEventData,
+        });
+
         // Get Facebook cookies if they exist
         const getCookie = (name: string) => {
             const value = `; ${document.cookie}`;
@@ -34,7 +61,7 @@ export const trackEvent = async ({ eventName, eventData, userData }: TrackEventP
             },
             body: JSON.stringify({
                 eventName,
-                eventData,
+                eventData: mergedEventData,
                 userData: {
                     ...userData,
                     fbp,

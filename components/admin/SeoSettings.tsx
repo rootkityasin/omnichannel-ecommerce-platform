@@ -673,6 +673,31 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Google Tag Manager (Web)</CardTitle>
+                  <CardDescription>
+                    Tenant-specific GTM for this storefront only.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <label htmlFor="gtm-container-id" className="text-sm font-medium">
+                    GTM Container ID
+                  </label>
+                  <Input
+                    id="gtm-container-id"
+                    value={config.gtmContainerId || ""}
+                    onChange={(e) =>
+                      setConfig({ ...config, gtmContainerId: e.target.value })
+                    }
+                    placeholder="GTM-XXXXXXX or paste full GTM snippet"
+                  />
+                  <p className="text-xs text-slate-400">
+                    You can paste GTM ID or full script. We extract and save only GTM-XXXXXXX.
+                  </p>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

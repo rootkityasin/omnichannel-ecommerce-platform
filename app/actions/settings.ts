@@ -19,6 +19,14 @@ const getNumber = (value: unknown, fallback = 0) =>
   Number(value ?? fallback) || fallback;
 const getOptionalString = (value: unknown) =>
   typeof value === "string" ? value : undefined;
+const getGtmContainerId = (value: unknown) => {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const match = trimmed.match(/GTM-[A-Z0-9]+/i);
+  return match ? match[0].toUpperCase() : "";
+};
 
 // Internal cached function for public domain access
 const getPublicSiteConfig = unstable_cache(
@@ -58,6 +66,7 @@ const getPublicSiteConfig = unstable_cache(
       canonicalUrl: "",
       metaPixelId: "",
       metaAccessToken: "",
+      gtmContainerId: "",
       socialFacebook: "",
       socialInstagram: "",
       socialTwitter: "",
@@ -168,6 +177,7 @@ const getPublicSiteConfig = unstable_cache(
           sitelinks: true,
           metaPixelId: true,
           metaAccessToken: true,
+          gtmContainerId: true,
           socialFacebook: true,
           socialInstagram: true,
           socialTwitter: true,
@@ -256,6 +266,7 @@ export async function getAdminSiteConfig() {
     canonicalUrl: "",
     metaPixelId: "",
     metaAccessToken: "",
+    gtmContainerId: "",
     socialFacebook: "",
     socialInstagram: "",
     socialTwitter: "",
@@ -322,6 +333,7 @@ export async function getAdminSiteConfig() {
         sitelinks: true,
         metaPixelId: true,
         metaAccessToken: true,
+        gtmContainerId: true,
         socialFacebook: true,
         socialInstagram: true,
         socialTwitter: true,
@@ -478,6 +490,7 @@ export async function updateSiteConfig<T extends object>(data: T) {
       ...seoPayload, // Apply filtered SEO fields
       metaPixelId: getString(input.metaPixelId),
       metaAccessToken: getString(input.metaAccessToken),
+      gtmContainerId: getGtmContainerId(input.gtmContainerId),
       invoiceTheme: getString(input.invoiceTheme, "modern"),
       invoiceDetails: (typeof input.invoiceDetails === "object" &&
       input.invoiceDetails !== null
@@ -726,6 +739,7 @@ function getSeoPayload(
     "socialYoutube",
     "metaPixelId",
     "metaAccessToken",
+    "gtmContainerId",
   ];
 
   const seoPayload: Record<string, unknown> = {};

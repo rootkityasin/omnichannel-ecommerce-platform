@@ -222,6 +222,7 @@ export interface SiteConfig {
   // Meta Pixel
   metaPixelId?: string | null;
   metaAccessToken?: string | null;
+  gtmContainerId?: string | null;
 
   // Tenant / Domain
   customDomain?: string | null;

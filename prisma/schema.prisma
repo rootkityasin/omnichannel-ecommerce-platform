@@ -184,6 +184,7 @@ model SiteConfig {
   sitelinks              Json      @default("[]")
   metaPixelId            String?
   metaAccessToken        String?
+  gtmContainerId         String?
   socialFacebook         String?
   socialInstagram        String?
   socialTwitter          String?
