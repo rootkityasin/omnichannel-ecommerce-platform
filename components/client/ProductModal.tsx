@@ -138,14 +138,18 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
   const heroImage = galleryImages[currentImageIndex];
   const optimizedHeroImage = buildCloudinaryUrl(heroImage, {
     width: 900,
-    crop: "limit",
+    aspect: "4:5",
+    crop: "fill",
+    gravity: "auto",
   });
   const fullscreenImage = buildCloudinaryUrl(heroImage, {
     width: 1600,
     crop: "limit",
   });
   const heroLqip = buildCloudinaryLqip(heroImage, {
-    crop: "limit",
+    aspect: "4:5",
+    crop: "fill",
+    gravity: "auto",
   });
 
   React.useEffect(() => {
@@ -231,7 +235,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
         <DialogTitle className="sr-only">{product.name} Details</DialogTitle>
 
         {/* Hero Gallery Section */}
-        <div className="relative w-full aspect-video bg-slate-100 flex-shrink-0">
+        <div className="relative w-full aspect-[4/5] bg-slate-100 flex-shrink-0">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 z-[60] p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors backdrop-blur-md"
@@ -255,7 +259,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                   opacity: { duration: 0.2 },
                 }}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-contain cursor-zoom-in"
+                className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
                 onClick={() => setIsZoomed(true)}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/logo.svg";
