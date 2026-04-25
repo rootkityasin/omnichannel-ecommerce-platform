@@ -377,7 +377,10 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
             </p>
           </div>
 
-          <Tabs defaultValue="overview" className="w-full h-full flex flex-col">
+          <Tabs
+            defaultValue="overview"
+            className="w-full h-full flex flex-col min-h-0"
+          >
             <TabsList className="w-full justify-start rounded-none border-b bg-white p-0 h-auto shrink-0 z-20 relative px-6">
               <TabsTrigger
                 value="overview"
@@ -403,12 +406,12 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
               </TabsTrigger>
             </TabsList>
 
-            <div className="p-0 flex-1 bg-slate-50/50 overflow-hidden relative">
+            <div className="p-0 flex-1 min-h-0 bg-slate-50/50 overflow-hidden relative">
               <AnimatePresence mode="wait">
                 <TabsContent
                   key="overview"
                   value="overview"
-                  className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-4 md:p-6 pb-24 overflow-y-auto"
+                  className="mt-0 h-full space-y-4 focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain"
                 >
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -500,7 +503,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="cooking"
                   value="cooking"
-                  className="mt-0 space-y-3 focus-visible:ring-0 absolute inset-0 p-4 md:p-6 pb-24 overflow-y-auto"
+                  className="mt-0 h-full space-y-3 focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain"
                 >
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -619,7 +622,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="nutrition"
                   value="nutrition"
-                  className="mt-0 focus-visible:ring-0 absolute inset-0 p-4 md:p-6 pb-24 overflow-y-auto"
+                  className="mt-0 h-full focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain"
                 >
                   <motion.div
                     initial={{ opacity: 0, x: 10 }}
