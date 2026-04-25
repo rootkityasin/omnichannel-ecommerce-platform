@@ -138,7 +138,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
   const heroImage = galleryImages[currentImageIndex];
   const optimizedHeroImage = buildCloudinaryUrl(heroImage, {
     width: 900,
-    aspect: "4:5",
+    aspect: "16:9",
     crop: "fill",
     gravity: "auto",
   });
@@ -147,7 +147,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     crop: "limit",
   });
   const heroLqip = buildCloudinaryLqip(heroImage, {
-    aspect: "4:5",
+    aspect: "16:9",
     crop: "fill",
     gravity: "auto",
   });
@@ -259,7 +259,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                   opacity: { duration: 0.2 },
                 }}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-contain cursor-zoom-in"
+                className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
                 onClick={() => setIsZoomed(true)}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/logo.svg";
@@ -622,10 +622,10 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="nutrition"
                   value="nutrition"
-                  className="mt-0 h-full min-h-0 focus-visible:ring-0 p-4 md:p-6 pb-32 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
+                  className="mt-0 h-full min-h-0 focus-visible:ring-0 p-4 md:p-6 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
                 >
                   <motion.div
-                    className="min-h-full"
+                    className="min-h-full flex flex-col"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
@@ -740,6 +740,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                         );
                       })()}
                     </div>
+                    <div className="h-28 md:h-32 shrink-0" aria-hidden="true" />
                   </motion.div>
                 </TabsContent>
               </AnimatePresence>
