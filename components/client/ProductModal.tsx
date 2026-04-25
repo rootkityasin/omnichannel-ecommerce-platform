@@ -138,18 +138,14 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
   const heroImage = galleryImages[currentImageIndex];
   const optimizedHeroImage = buildCloudinaryUrl(heroImage, {
     width: 900,
-    aspect: "16:9",
-    crop: "fill",
-    gravity: "auto",
+    crop: "limit",
   });
   const fullscreenImage = buildCloudinaryUrl(heroImage, {
     width: 1600,
     crop: "limit",
   });
   const heroLqip = buildCloudinaryLqip(heroImage, {
-    aspect: "16:9",
-    crop: "fill",
-    gravity: "auto",
+    crop: "limit",
   });
 
   React.useEffect(() => {
@@ -259,7 +255,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                   opacity: { duration: 0.2 },
                 }}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+                className="absolute inset-0 w-full h-full object-contain cursor-zoom-in"
                 onClick={() => setIsZoomed(true)}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/logo.svg";
@@ -622,9 +618,10 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="nutrition"
                   value="nutrition"
-                  className="mt-0 h-full focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain"
+                  className="mt-0 h-full min-h-0 focus-visible:ring-0 p-4 md:p-6 pb-32 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
                 >
                   <motion.div
+                    className="min-h-full"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
