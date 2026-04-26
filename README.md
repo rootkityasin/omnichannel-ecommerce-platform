@@ -22,7 +22,7 @@ This project adheres to professional engineering standards, implementing control
 | **ISO 27001** | **A.14.2.8** (System Testing)     | Automated Security Unit Tests (`lib/rate-limit.test.ts`) |
 | **ISO 27001** | **A.12.6.1** (Vulnerability Mgmt) | ZAP Audit + Automated Dependency Scanning                |
 | **ISO 9001**  | **8.1** (Operational Planning)    | CI/CD Pipeline via GitHub Actions                        |
-| **ISO 9001**  | **7.5.3** (Documented Info)       | Full Compliance Documentation (`docs/ISO_COMPLIANCE.md`) |
+| **ISO 9001**  | **7.5.3** (Documented Info)       | ISO Checklist + Project Tracker (`docs/ISO_27001_CERTIFICATION_CHECKLIST.md`, `docs/ISO_27001_BUDGET_AND_TIMELINE.md`) |
 | **SOC 2**     | **A1.1** (Availability)           | Automated Health Monitoring (`/api/health`)              |
 | **GDPR**      | **Art. 25** (Privacy by Design)   | Data Minimization & Cookie Consent Architecture          |
 

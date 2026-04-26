@@ -1,5 +1,11 @@
 # Security Runbook 🛡️
 
+## 0. Governance References
+
+- Security ownership and escalation matrix: `docs/SECURITY_OWNERSHIP_AND_ESCALATION.md`
+- ISO 27001 project tracking: `docs/ISO_27001_BUDGET_AND_TIMELINE.md`
+- ISO 27001 master checklist: `docs/ISO_27001_CERTIFICATION_CHECKLIST.md`
+
 ## 1. Credential Rotation Policy
 
 ### When to Rotate

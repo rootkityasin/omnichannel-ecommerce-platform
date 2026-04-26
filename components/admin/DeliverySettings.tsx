@@ -412,7 +412,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
                                             {/* Dropdown list */}
                                             {openDistrict && (
-                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto popup-scrollbar">
                                                     {filteredDistricts.length === 0 ? (
                                                         <div className="px-4 py-3 text-sm text-slate-500 text-center">No district found.</div>
                                                     ) : (
@@ -459,7 +459,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
                                             {/* Upazila Dropdown list */}
                                             {openUpazila && (
-                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto popup-scrollbar">
                                                     {filteredUpazilas.length === 0 ? (
                                                         <div className="px-4 py-3 text-sm text-slate-500 text-center">No upazila found.</div>
                                                     ) : (

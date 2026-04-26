@@ -24,7 +24,7 @@ export function PolicyModal({
 }: PolicyModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto overscroll-contain bg-slate-950 text-slate-200 border border-white/10 shadow-2xl shadow-black ring-1 ring-white/10 p-0 rounded-xl">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto overscroll-contain popup-scrollbar bg-slate-950 text-slate-200 border border-white/10 shadow-2xl shadow-black ring-1 ring-white/10 p-0 rounded-xl">
         {/* Decorative Top Bar */}
         <div className="sticky top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-crab-red to-transparent z-50 opacity-80" />
 

@@ -789,7 +789,7 @@ export function GlobalCheckoutDrawer() {
           !open && (successOrder ? handleCloseSuccess() : closeCheckout())
         }
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto popup-scrollbar bg-white">
           {successOrder ? (
             <SuccessView
               cartTexts={cartTexts}
@@ -905,7 +905,7 @@ export function GlobalCheckoutDrawer() {
             </DrawerHeader>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6 pb-32">
+            <div className="flex-1 overflow-y-auto overscroll-contain popup-scrollbar p-6 space-y-6 pb-32">
               <OrderSummary
                 items={items}
                 subTotalAmount={subTotalAmount}

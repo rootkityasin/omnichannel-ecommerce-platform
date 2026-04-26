@@ -238,9 +238,9 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
         <div className="relative w-full aspect-video bg-slate-100 flex-shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-[60] p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors backdrop-blur-md"
+            className="absolute top-4 right-4 z-[60] flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 active:scale-95"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" strokeWidth={3} />
           </button>
 
           {/* Image Carousel with Swipe */}
@@ -411,7 +411,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="overview"
                   value="overview"
-                  className="mt-0 h-full space-y-4 focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain"
+                  className="mt-0 h-full space-y-4 focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain popup-scrollbar"
                 >
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -503,7 +503,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="cooking"
                   value="cooking"
-                  className="mt-0 h-full space-y-3 focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain"
+                  className="mt-0 h-full space-y-3 focus-visible:ring-0 p-4 md:p-6 pb-24 overflow-y-auto overscroll-contain popup-scrollbar"
                 >
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -622,7 +622,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <TabsContent
                   key="nutrition"
                   value="nutrition"
-                  className="mt-0 h-full min-h-0 focus-visible:ring-0 p-4 md:p-6 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
+                  className="mt-0 h-full min-h-0 focus-visible:ring-0 p-4 md:p-6 overflow-y-auto overscroll-y-contain popup-scrollbar [scrollbar-gutter:stable]"
                 >
                   <motion.div
                     className="min-h-full flex flex-col"

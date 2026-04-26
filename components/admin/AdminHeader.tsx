@@ -188,7 +188,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
               )}
             </div>
 
-            <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-1">
+            <div className="max-h-[400px] overflow-y-auto popup-scrollbar p-2 space-y-1">
               <AnimatePresence mode="popLayout">
                 {notifications.length === 0 ? (
                   <motion.div

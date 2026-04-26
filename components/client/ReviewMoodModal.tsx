@@ -203,8 +203,8 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
                                     <span className="text-xs font-bold ring-1 ring-black/20 rounded-full w-5 h-5 flex items-center justify-center text-black/40">i</span>
                                 </button>
 
-                                <button onClick={onClose} className="p-2 bg-black/5 hover:bg-black/10 rounded-full transition-colors z-20">
-                                    <X className="w-5 h-5 text-black/60" />
+                                <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 active:scale-95 z-20">
+                                    <X className="w-4 h-4" strokeWidth={3} />
                                 </button>
                             </div>
 
@@ -252,7 +252,7 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
                                                 </div>
 
                                                 {/* List */}
-                                                <div className="overflow-y-auto p-1">
+                                                <div className="overflow-y-auto popup-scrollbar p-1">
                                                     {/* General Option */}
                                                     <button
                                                         onClick={() => {

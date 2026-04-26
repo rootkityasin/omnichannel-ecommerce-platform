@@ -48,15 +48,15 @@ export default function OrderDetailsModal({
               </div>
               <button
                 onClick={closeOrderDetails}
-                className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 hover:shadow-red-500/40 active:scale-95"
                 aria-label="Close order details"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" strokeWidth={3} />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto overscroll-contain bg-slate-50 px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-4 sm:pb-4">
+          <div className="flex-1 overflow-y-auto overscroll-contain popup-scrollbar bg-slate-50 px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-4 sm:pb-4">
             {isDetailsLoading || !selectedOrderDetails ? (
               <div className="flex min-h-[40vh] items-center justify-center text-sm text-slate-500">
                 Loading order details...

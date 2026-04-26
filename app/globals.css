@@ -190,7 +190,7 @@
   }
 }
 
-/* Custom Scrollbar */
+/* ─── Global Scrollbar (Subtle) ─── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -201,15 +201,15 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #f1f5f9;
-  border-radius: 4px;
+  background: #e2e8f0;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #e2e8f0;
+  background: #cbd5e1;
 }
 
-/* Hide scrollbar for sidebar when collapsed if needed */
+/* Hide scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -219,10 +219,37 @@
   scrollbar-width: none;
 }
 
-/* Specific Table Scrollbar for better visibility */
+/* ─── Premium Popup / Modal Scrollbar ─── */
+.popup-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.popup-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f87171 0%, #fb923c 100%);
+  border-radius: 999px;
+}
+
+.popup-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ef4444 0%, #f97316 100%);
+}
+
+.popup-scrollbar::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #dc2626 0%, #ea580c 100%);
+}
+
+/* Firefox support for popup scrollbar */
+.popup-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #f87171 transparent;
+}
+
+/* ─── Table Scrollbar ─── */
 .custom-table-scrollbar::-webkit-scrollbar {
   height: 8px;
-  /* Horizontal scrollbar height */
 }
 
 .custom-table-scrollbar::-webkit-scrollbar-track {
@@ -231,13 +258,29 @@
 
 .custom-table-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.1);
-  /* Visible but subtle */
-  border-radius: 4px;
+  border-radius: 999px;
 }
 
 .custom-table-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.4);
-  /* Darker on interaction */
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Alias for legacy usage */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f87171 0%, #fb923c 100%);
+  border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ef4444 0%, #f97316 100%);
 }
 
 /* --- Global Animations --- */

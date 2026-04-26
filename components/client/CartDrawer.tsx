@@ -232,14 +232,14 @@ export function CartDrawer() {
           </div>
           <button
             onClick={closeCart}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-red-500"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 active:scale-95"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" strokeWidth={3} />
           </button>
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto popup-scrollbar p-5 space-y-4 bg-slate-50/50">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-4">
               <div className="w-full max-w-[240px] aspect-square mb-6 flex items-center justify-center relative">

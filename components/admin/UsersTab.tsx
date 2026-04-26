@@ -499,7 +499,7 @@ export function UsersTab() {
       {/* Add/Edit User Modal */}
       {isAdding && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <Card className="w-full max-w-2xl mx-4 bg-white shadow-2xl rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto">
+          <Card className="w-full max-w-2xl mx-4 bg-white shadow-2xl rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto popup-scrollbar">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h2 className="text-lg font-bold text-gray-900">
                 {editingId ? "Edit User Details" : "New User Details"}
@@ -509,9 +509,9 @@ export function UsersTab() {
                   setIsAdding(false);
                   setEditingId(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 hover:shadow-red-500/40 active:scale-95"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" strokeWidth={3} />
               </button>
             </div>
             <div className="p-6">
@@ -698,9 +698,9 @@ export function UsersTab() {
               </div>
               <button
                 onClick={() => setPermissionModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 hover:shadow-red-500/40 active:scale-95"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" strokeWidth={3} />
               </button>
             </div>
             <div className="p-6">
@@ -768,9 +768,9 @@ export function UsersTab() {
                   setResetPassModalOpen(false);
                   setUserToReset(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 hover:shadow-red-500/40 active:scale-95"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" strokeWidth={3} />
               </button>
             </div>
             <div className="p-6">

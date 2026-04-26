@@ -747,7 +747,7 @@ export function StoryEditor() {
               <h3 className="text-lg font-bold mb-4">Signature Products</h3>
               <div className="space-y-4">
                 <Label>Select Products to Feature (Click to toggle)</Label>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto p-4 border rounded-lg">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto popup-scrollbar p-4 border rounded-lg">
                   {availableProducts.map((p) => {
                     const isSelected = productsSection.productIds?.includes(
                       p.id,
@@ -850,7 +850,7 @@ export function StoryEditor() {
               </div>
               <div
                 id="story-preview-container"
-                className="h-full overflow-y-auto custom-scrollbar"
+                className="h-full overflow-y-auto popup-scrollbar"
                 style={
                   siteConfig?.primaryColor
                     ? ({

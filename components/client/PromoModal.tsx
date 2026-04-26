@@ -65,9 +65,9 @@ export function PromoModal({ promo }: PromoModalProps) {
           {/* Close */}
           <button
             onClick={handleClose}
-            className="absolute top-3 right-3 z-30 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors"
+            className="absolute top-3 right-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 active:scale-95"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" strokeWidth={3} />
           </button>
 
           {/* Image Block */}
@@ -142,9 +142,9 @@ export function PromoModal({ promo }: PromoModalProps) {
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className={`absolute top-4 right-4 p-2 ${isDarkMode ? "bg-white/10 hover:bg-white/20 text-white border-white/10" : "bg-black/5 hover:bg-black/10 text-slate-800 border-black/10"} backdrop-blur-md rounded-full transition-colors z-30 border`}
+          className="absolute top-4 right-4 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 active:scale-95"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" strokeWidth={3} />
         </button>
 
         {/* Content Overlay */}

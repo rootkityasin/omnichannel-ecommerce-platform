@@ -90,7 +90,7 @@ export function SignalDataCell({ data, eventName }: SignalDataCellProps) {
 
                         <div className="relative">
                             <div className="absolute top-0 left-0 w-full h-full bg-slate-50/50 rounded-xl -z-10" />
-                            <pre className="p-6 text-sm font-mono text-slate-700 overflow-auto max-h-[60vh] custom-scrollbar selection:bg-blue-100 italic leading-relaxed">
+                            <pre className="p-6 text-sm font-mono text-slate-700 overflow-auto max-h-[60vh] popup-scrollbar selection:bg-blue-100 italic leading-relaxed">
                                 <code>{jsonString}</code>
                             </pre>
                         </div>
