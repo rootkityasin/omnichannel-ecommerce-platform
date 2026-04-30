@@ -151,7 +151,7 @@
 
   /* Admin dropdowns / popovers — Radix Portals render at <body> level, OUTSIDE .admin-shell */
   [data-radix-popper-content-wrapper] {
-    z-index: 50 !important;
+    z-index: 1100 !important;
   }
 }
 

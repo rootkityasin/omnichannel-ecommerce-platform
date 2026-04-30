@@ -84,7 +84,7 @@ export default function ProductFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden bg-black/50 backdrop-blur-sm p-4 sm:items-center">
+    <div className="fixed inset-0 z-[1000] flex items-start justify-center overflow-hidden bg-black/60 backdrop-blur-md p-4 sm:items-center">
       <Card className="my-auto w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
         <div className="p-6 overflow-y-auto popup-scrollbar">
           <div className="flex justify-between items-center mb-4">

@@ -368,7 +368,7 @@ export default function CategoriesPage() {
           </div>
 
           {isModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
+            <div className="fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-md p-4 sm:items-center">
               <Card className="my-auto w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="font-bold">
