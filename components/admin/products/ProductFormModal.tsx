@@ -18,6 +18,7 @@ import { Sparkles, X } from "lucide-react";
 import { generateUniqueSku } from "@/app/actions/product";
 import ComboBuilder from "./ComboBuilder";
 import { toast } from "sonner";
+import ModalPortal from "@/components/ui/ModalPortal";
 
 export type ProductFormState = {
   name: string;
@@ -84,21 +85,22 @@ export default function ProductFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-start justify-center overflow-hidden bg-black/60 backdrop-blur-md p-4 sm:items-center">
-      <Card className="my-auto w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
-        <div className="p-6 overflow-y-auto popup-scrollbar">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-800">
-              {editingId ? "Edit Product" : "New Product"}
-            </h2>
-            <button
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 hover:shadow-red-500/40 active:scale-95"
-            >
-              <X className="w-4 h-4" strokeWidth={3} />
-            </button>
-          </div>
-          <form onSubmit={onSubmit} className="space-y-4">
+    <ModalPortal>
+      <div className="fixed -inset-px z-[60000] flex items-start justify-center overflow-hidden bg-black/80 backdrop-blur-lg backdrop-brightness-50 p-4 sm:items-center">
+        <Card className="my-auto w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+          <div className="p-6 overflow-y-auto popup-scrollbar">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-slate-800">
+                {editingId ? "Edit Product" : "New Product"}
+              </h2>
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:bg-red-600 hover:scale-110 hover:shadow-red-500/40 active:scale-95"
+              >
+                <X className="w-4 h-4" strokeWidth={3} />
+              </button>
+            </div>
+            <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium">
                 Product Name <span className="text-red-500">*</span>
@@ -460,9 +462,10 @@ export default function ProductFormModal({
             >
               {editingId ? "Update Product" : "Save Product"}
             </Button>
-          </form>
-        </div>
-      </Card>
-    </div>
+            </form>
+          </div>
+        </Card>
+      </div>
+    </ModalPortal>
   );
 }

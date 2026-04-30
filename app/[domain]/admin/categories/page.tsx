@@ -76,6 +76,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getCategoryStyle } from "@/components/client/CategoryNav";
+import ModalPortal from "@/components/ui/ModalPortal";
 
 const ICON_OPTIONS = [
   // --- Base & Utility ---
@@ -368,17 +369,18 @@ export default function CategoriesPage() {
           </div>
 
           {isModalOpen && (
-            <div className="fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-md p-4 sm:items-center">
-              <Card className="my-auto w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="font-bold">
-                    {editingId ? "Edit Category" : "Add Category"}
-                  </h2>
-                  <button onClick={closeModal}>
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <ModalPortal>
+              <div className="fixed -inset-px z-[60000] flex items-start justify-center overflow-y-auto bg-black/80 backdrop-blur-lg backdrop-brightness-50 p-4 sm:items-center">
+                <Card className="my-auto w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold">
+                      {editingId ? "Edit Category" : "Add Category"}
+                    </h2>
+                    <button onClick={closeModal}>
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <form onSubmit={handleSubmit} className="space-y-4">
                   <Input
                     placeholder="Category Name (e.g. Meal)"
                     value={newItemName}
@@ -467,9 +469,10 @@ export default function CategoriesPage() {
                   <Button type="submit" className="w-full bg-orange-600">
                     {editingId ? "Update Category" : "Create Category"}
                   </Button>
-                </form>
-              </Card>
-            </div>
+                  </form>
+                </Card>
+              </div>
+            </ModalPortal>
           )}
 
           <Card className="p-0 overflow-hidden">
