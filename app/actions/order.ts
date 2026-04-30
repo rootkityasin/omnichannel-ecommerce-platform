@@ -9,15 +9,7 @@ import { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
 const SALE_STATUS = "Payment Received";
-const COUNTED_SALES_STATUSES = [
-  "Placed",
-  "Confirmed",
-  "Ready",
-  "Invoice Printed",
-  "Delivered",
-  "Payment Received",
-  "Payment OnProcess",
-] as const;
+const COUNTED_SALES_STATUSES = ["Payment Received"] as const;
 const RESTOCK_STATUSES = ["Returned", "Cancelled"] as const;
 const FINAL_ORDER_STATUSES = [
   "Placed",
