@@ -394,6 +394,8 @@ export async function updateProduct(id: string, data: ProductMutationInput) {
       updateData.description = data.description;
     if (data.descriptionSwap !== undefined)
       updateData.descriptionSwap = data.descriptionSwap;
+    if (data.categoryId !== undefined)
+      updateData.categoryId = toStringValue(data.categoryId);
     if (data.stage !== undefined) {
       const stage = toStringValue(data.stage, "Draft");
       updateData.stage = stage;
