@@ -1505,6 +1505,17 @@ export default function OrdersPage() {
                                   Suspect
                                 </Badge>
                               )}
+                              {order.isRepeat && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-blue-50 text-blue-600 border-blue-200 gap-1 h-5 px-1.5"
+                                >
+                                  <RotateCcw className="w-3 h-3" />
+                                  <span className="text-[10px]">
+                                    {order.orderCount}x
+                                  </span>
+                                </Badge>
+                              )}
                             </div>
                             <p className="mt-1 text-xs text-slate-500">
                               {order.formattedDate}

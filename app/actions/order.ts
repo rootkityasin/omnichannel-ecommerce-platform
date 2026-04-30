@@ -9,6 +9,15 @@ import { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
 const SALE_STATUS = "Payment Received";
+const COUNTED_SALES_STATUSES = [
+  "Placed",
+  "Confirmed",
+  "Ready",
+  "Invoice Printed",
+  "Delivered",
+  "Payment Received",
+  "Payment OnProcess",
+] as const;
 const RESTOCK_STATUSES = ["Returned", "Cancelled"] as const;
 const FINAL_ORDER_STATUSES = [
   "Placed",
@@ -148,7 +157,7 @@ const getCachedOrderStats = unstable_cache(
         prisma.order.aggregate({
           where: {
             tenantId,
-            status: SALE_STATUS,
+            status: { in: [...COUNTED_SALES_STATUSES] },
             createdAt: { gte: rollingWindowStart },
           },
           _sum: { totalAmount: true },
@@ -752,6 +761,36 @@ export async function getPaginatedAdminOrders(params: {
       prisma.order.count({ where: whereClause }),
     ]);
 
+    const phoneList = Array.from(
+      new Set(
+        orders
+          .map((order) => order.customerPhone)
+          .filter((phone): phone is string => Boolean(phone)),
+      ),
+    );
+
+    let phoneCounts: Record<string, number> = {};
+    if (phoneList.length > 0) {
+      const grouped = await prisma.order.groupBy({
+        by: ["customerPhone"],
+        where: {
+          tenantId,
+          customerPhone: { in: phoneList },
+          status: { notIn: [...INCOMPLETE_STATUSES] },
+        },
+        _count: { id: true },
+      });
+
+      phoneCounts = grouped.reduce(
+        (acc, curr) => {
+          if (!curr.customerPhone) return acc;
+          acc[curr.customerPhone] = curr._count.id;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+    }
+
     // Format like getAdminOrders did
     const mapped = orders
       .map((o) => ({
@@ -770,8 +809,8 @@ export async function getPaginatedAdminOrders(params: {
         price: o.totalAmount,
         status: o.status,
         hubId: o.hubId,
-        isRepeat: false,
-        orderCount: 1,
+        isRepeat: (phoneCounts[o.customerPhone] || 1) > 1,
+        orderCount: Math.max(1, phoneCounts[o.customerPhone] || 0),
         stockDeducted: o.stockDeducted,
       }))
       .sort((a, b) => {
