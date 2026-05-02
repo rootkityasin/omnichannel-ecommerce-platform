@@ -303,10 +303,15 @@ export async function createOrder(data: {
     if (data.couponCode) {
       // We use updateMany or try/catch to avoid error if coupon deleted/invalid race condition
       // But since we just validated effectively, update is fine.
-      // Using prisma.coupon.update requires ID or unique field. Code is unique.
+      // Coupon uniqueness is per (tenantId, code).
       try {
         await prisma.coupon.update({
-          where: { code: data.couponCode },
+          where: {
+            tenantId_code: {
+              tenantId,
+              code: data.couponCode,
+            },
+          },
           data: { usedCount: { increment: 1 } },
         });
       } catch (e) {
