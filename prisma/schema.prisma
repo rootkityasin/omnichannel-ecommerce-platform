@@ -322,7 +322,7 @@ model Expense {
 model Coupon {
   id             String       @id @default(cuid())
   tenantId       String?
-  code           String       @unique
+  code           String
   productId      String?
   discountType   DiscountType @default(FIXED)
   discountValue  Int
@@ -336,6 +336,7 @@ model Coupon {
   tenant         Tenant?      @relation(fields: [tenantId], references: [id])
   product        Product?     @relation("CouponProduct", fields: [productId], references: [id])
 
+  @@unique([tenantId, code])
   @@index([tenantId])
   @@index([code])
   @@index([productId])

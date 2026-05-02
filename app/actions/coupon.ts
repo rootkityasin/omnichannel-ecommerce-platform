@@ -22,6 +22,13 @@ type CouponPayload = {
 const normalizeDiscountType = (value: string): DiscountType =>
   value === "PERCENTAGE" ? "PERCENTAGE" : "FIXED";
 
+/** Coupon schema stores monetary amounts as Int; round UI decimals safely. */
+const toCouponInt = (value: number | string | undefined | null, fallback = 0) => {
+  const n = Number(value);
+  if (Number.isNaN(n)) return fallback;
+  return Math.round(n);
+};
+
 export async function createCoupon(data: CouponPayload) {
   try {
     const session = await auth();
@@ -59,11 +66,16 @@ export async function createCoupon(data: CouponPayload) {
         code: data.code,
         productId,
         discountType: normalizeDiscountType(data.discountType),
-        discountValue: Number(data.discountValue),
-        minOrderAmount: Number(data.minOrderAmount),
+        discountValue: toCouponInt(data.discountValue),
+        minOrderAmount: toCouponInt(data.minOrderAmount),
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
         isActive: data.isActive ?? true,
-        usageLimit: data.usageLimit ? Number(data.usageLimit) : null,
+        usageLimit:
+          data.usageLimit !== undefined &&
+          data.usageLimit !== null &&
+          String(data.usageLimit).trim() !== ""
+            ? toCouponInt(data.usageLimit)
+            : null,
       },
     });
 
@@ -107,15 +119,6 @@ export async function deleteCoupon(id: string) {
 
 export async function updateCoupon(id: string, data: CouponPayload) {
   try {
-    // Check availability if code changed
-    const existing = await prisma.coupon.findUnique({
-      where: { code: data.code },
-    });
-
-    if (existing && existing.id !== id) {
-      return { success: false, error: "Coupon code already exists" };
-    }
-
     const currentCoupon = await prisma.coupon.findUnique({
       where: { id },
       select: { tenantId: true },
@@ -123,6 +126,18 @@ export async function updateCoupon(id: string, data: CouponPayload) {
 
     if (!currentCoupon) {
       return { success: false, error: "Coupon not found" };
+    }
+
+    const duplicate = await prisma.coupon.findFirst({
+      where: {
+        tenantId: currentCoupon.tenantId,
+        code: data.code,
+        NOT: { id },
+      },
+    });
+
+    if (duplicate) {
+      return { success: false, error: "Coupon code already exists" };
     }
 
     let productId: string | null = null;
@@ -147,10 +162,15 @@ export async function updateCoupon(id: string, data: CouponPayload) {
         code: data.code,
         productId,
         discountType: normalizeDiscountType(data.discountType),
-        discountValue: Number(data.discountValue),
-        minOrderAmount: Number(data.minOrderAmount),
+        discountValue: toCouponInt(data.discountValue),
+        minOrderAmount: toCouponInt(data.minOrderAmount),
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-        usageLimit: data.usageLimit ? Number(data.usageLimit) : null,
+        usageLimit:
+          data.usageLimit !== undefined &&
+          data.usageLimit !== null &&
+          String(data.usageLimit).trim() !== ""
+            ? toCouponInt(data.usageLimit)
+            : null,
       },
     });
 
