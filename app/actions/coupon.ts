@@ -16,6 +16,7 @@ type CouponPayload = {
   expiresAt?: string | Date | null;
   isActive?: boolean;
   usageLimit?: number | string | null;
+  productId?: string | null;
 };
 
 const normalizeDiscountType = (value: string): DiscountType =>
@@ -26,6 +27,20 @@ export async function createCoupon(data: CouponPayload) {
     const session = await auth();
     const tenantId = session?.user?.tenantId;
     if (!tenantId) return { success: false, error: "Unauthorized" };
+
+    let productId: string | null = null;
+    if (data.productId) {
+      const product = await prisma.product.findFirst({
+        where: { id: data.productId, tenantId },
+        select: { id: true },
+      });
+
+      if (!product) {
+        return { success: false, error: "Invalid product selection" };
+      }
+
+      productId = product.id;
+    }
 
     const existing = await prisma.coupon.findFirst({
       where: {
@@ -42,6 +57,7 @@ export async function createCoupon(data: CouponPayload) {
       data: {
         tenantId,
         code: data.code,
+        productId,
         discountType: normalizeDiscountType(data.discountType),
         discountValue: Number(data.discountValue),
         minOrderAmount: Number(data.minOrderAmount),
@@ -68,6 +84,11 @@ export async function getCoupons() {
     return await prisma.coupon.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
+      include: {
+        product: {
+          select: { id: true, name: true },
+        },
+      },
     });
   } catch {
     return [];
@@ -95,10 +116,36 @@ export async function updateCoupon(id: string, data: CouponPayload) {
       return { success: false, error: "Coupon code already exists" };
     }
 
+    const currentCoupon = await prisma.coupon.findUnique({
+      where: { id },
+      select: { tenantId: true },
+    });
+
+    if (!currentCoupon) {
+      return { success: false, error: "Coupon not found" };
+    }
+
+    let productId: string | null = null;
+    if (data.productId) {
+      if (currentCoupon.tenantId) {
+        const product = await prisma.product.findFirst({
+          where: { id: data.productId, tenantId: currentCoupon.tenantId },
+          select: { id: true },
+        });
+
+        if (!product) {
+          return { success: false, error: "Invalid product selection" };
+        }
+      }
+
+      productId = data.productId;
+    }
+
     const coupon = await prisma.coupon.update({
       where: { id },
       data: {
         code: data.code,
+        productId,
         discountType: normalizeDiscountType(data.discountType),
         discountValue: Number(data.discountValue),
         minOrderAmount: Number(data.minOrderAmount),
@@ -119,6 +166,7 @@ export async function validateCoupon(
   code: string,
   cartTotal: number,
   tenantId?: string,
+  items?: { productId: string; quantity: number; price: number }[],
 ) {
   try {
     if (!tenantId) {
@@ -134,6 +182,11 @@ export async function validateCoupon(
       where: {
         code,
         tenantId,
+      },
+      include: {
+        product: {
+          select: { id: true, name: true },
+        },
       },
     });
 
@@ -153,7 +206,33 @@ export async function validateCoupon(
       return { success: false, error: "Coupon usage limit reached" };
     }
 
-    if (cartTotal < coupon.minOrderAmount) {
+    const resolvedCartTotal = items?.length
+      ? items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      : cartTotal;
+
+    let eligibleTotal = resolvedCartTotal;
+    if (coupon.productId) {
+      if (!items?.length) {
+        return {
+          success: false,
+          error: "Coupon requires a specific product in the cart",
+        };
+      }
+
+      eligibleTotal = items
+        .filter((item) => item.productId === coupon.productId)
+        .reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      if (eligibleTotal <= 0) {
+        return {
+          success: false,
+          error: `Coupon applies only to ${coupon.product?.name || "the selected product"}`,
+        };
+      }
+    }
+
+    const minOrderBasis = coupon.productId ? eligibleTotal : resolvedCartTotal;
+    if (minOrderBasis < coupon.minOrderAmount) {
       return {
         success: false,
         error: `Minimum order amount is ${coupon.minOrderAmount}`,
@@ -162,15 +241,16 @@ export async function validateCoupon(
 
     // Calculate discount
     let discount = 0;
+    const discountBase = coupon.productId ? eligibleTotal : resolvedCartTotal;
     if (coupon.discountType === "PERCENTAGE") {
-      discount = Math.floor((cartTotal * coupon.discountValue) / 100);
+      discount = Math.floor((discountBase * coupon.discountValue) / 100);
     } else {
       discount = coupon.discountValue;
     }
 
     // Cap discount at total amount? usually yes
-    if (discount > cartTotal) {
-      discount = cartTotal;
+    if (discount > discountBase) {
+      discount = discountBase;
     }
 
     return {
@@ -179,6 +259,8 @@ export async function validateCoupon(
       value: coupon.discountValue, // Raw value for store
       code: coupon.code,
       type: coupon.discountType,
+      productId: coupon.productId || null,
+      productName: coupon.product?.name || null,
     };
   } catch (error) {
     console.error("Validate coupon error:", error);

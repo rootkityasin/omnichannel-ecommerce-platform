@@ -8,7 +8,7 @@ import { Loader2, Ticket, X } from 'lucide-react';
 import { useSettings } from '@/components/providers/SettingsProvider';
 
 export function CouponSection() {
-    const { coupon, applyCoupon, removeCoupon, total } = useCartStore();
+    const { coupon, applyCoupon, removeCoupon, total, items } = useCartStore();
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -23,12 +23,23 @@ export function CouponSection() {
             // Ideally 'settings' has it.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tenantId = (settings as any)?.tenantId;
-            const result = await validateCoupon(code, total(), tenantId);
+            const result = await validateCoupon(
+                code,
+                total(),
+                tenantId,
+                items.map((item) => ({
+                    productId: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            );
             if (result.success && result.code) { // Check for code existence to satisfy type checker if needed, mainly result.success is enough
                 applyCoupon({
                     code: result.code!,
                     type: result.type as 'PERCENTAGE' | 'FIXED', // Ensure type matches literal
-                    value: result.value as number
+                    value: result.value as number,
+                    productId: result.productId as string | null,
+                    productName: result.productName as string | null
                 });
                 // Note: validateCoupon returns 'discount' as the calculated value?
                 // Wait, store expects 'value' to be the coupon's intrinsic value (e.g. 10% or 100tk).
@@ -69,7 +80,7 @@ export function CouponSection() {
                     <div>
                         <p className="text-sm font-bold text-green-700 uppercase tracking-wide">{coupon.code}</p>
                         <p className="text-xs text-green-600">
-                            Applied
+                            {coupon.productName ? `Applies to ${coupon.productName}` : "Applied"}
                         </p>
                     </div>
                 </div>

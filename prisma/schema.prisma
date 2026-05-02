@@ -67,6 +67,7 @@ model Product {
   inventory       Inventory[]
   modifiers       Modifier[]
   orderItems      OrderItem[]
+  coupons         Coupon[]         @relation("CouponProduct")
   category        Category         @relation(fields: [categoryId], references: [id])
   tenant          Tenant?          @relation(fields: [tenantId], references: [id])
   reviews         Review[]
@@ -322,6 +323,7 @@ model Coupon {
   id             String       @id @default(cuid())
   tenantId       String?
   code           String       @unique
+  productId      String?
   discountType   DiscountType @default(FIXED)
   discountValue  Int
   minOrderAmount Int          @default(0)
@@ -332,9 +334,11 @@ model Coupon {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   tenant         Tenant?      @relation(fields: [tenantId], references: [id])
+  product        Product?     @relation("CouponProduct", fields: [productId], references: [id])
 
   @@index([tenantId])
   @@index([code])
+  @@index([productId])
 }
 
 model Order {

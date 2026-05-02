@@ -366,7 +366,16 @@ export default function OrdersPage() {
       return;
     }
 
-    const result = await validateCoupon(code, subtotal);
+    const couponItems = Object.entries(selectedProducts).map(([id, qty]) => {
+      const product = availableProducts.find((prod) => prod.id === id);
+      return {
+        productId: id,
+        quantity: qty,
+        price: product?.price || 0,
+      };
+    });
+
+    const result = await validateCoupon(code, subtotal, undefined, couponItems);
     if (!result.success) {
       setNewOrder((prev) => ({ ...prev, discountAmount: 0 }));
       toast.error(result.error || "Invalid promo code");

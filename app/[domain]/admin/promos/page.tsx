@@ -44,6 +44,7 @@ import {
   updateCoupon,
   toggleCouponStatus,
 } from "@/app/actions/coupon";
+import { getAdminProducts } from "@/app/actions/product";
 import {
   Select,
   SelectContent,
@@ -77,6 +78,9 @@ export default function PromoPage() {
 
   // Coupons
   const [coupons, setCoupons] = useState<CouponItem[]>([]);
+  const [couponProducts, setCouponProducts] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isAddingCoupon, setIsAddingCoupon] = useState(false);
   const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
   const [newCoupon, setNewCoupon] = useState({
@@ -86,13 +90,21 @@ export default function PromoPage() {
     minOrderAmount: "",
     expiresAt: "",
     usageLimit: "",
+    productId: "",
   });
 
   // --- EFFECTS ---
   async function refreshData() {
-    const [pData, cData] = await Promise.all([getPromos(), getCoupons()]);
+    const [pData, cData, prodData] = await Promise.all([
+      getPromos(),
+      getCoupons(),
+      getAdminProducts(),
+    ]);
     setPromoCards(pData);
     setCoupons(cData);
+    setCouponProducts(
+      prodData.map((product) => ({ id: product.id, name: product.name })),
+    );
     setLoading(false);
   }
 
@@ -244,6 +256,7 @@ export default function PromoPage() {
         minOrderAmount: "",
         expiresAt: "",
         usageLimit: "",
+        productId: "",
       });
       refreshData();
     } else {
@@ -261,6 +274,7 @@ export default function PromoPage() {
         ? new Date(coupon.expiresAt).toISOString().split("T")[0]
         : "",
       usageLimit: coupon.usageLimit ? String(coupon.usageLimit) : "",
+      productId: coupon.productId || "",
     });
     setEditingCouponId(coupon.id);
     setIsAddingCoupon(true);
@@ -477,6 +491,7 @@ export default function PromoPage() {
                   minOrderAmount: "",
                   expiresAt: "",
                   usageLimit: "",
+                  productId: "",
                 });
                 setIsAddingCoupon(true);
               }}
@@ -510,6 +525,11 @@ export default function PromoPage() {
                   <p className="text-xs text-slate-500 mb-4 font-medium">
                     Min. Order: ৳{coupon.minOrderAmount}
                   </p>
+                  {coupon.product && (
+                    <p className="text-xs text-slate-500 mb-2 font-medium">
+                      Applies to: {coupon.product.name}
+                    </p>
+                  )}
 
                   <div className="bg-white p-3 rounded-lg border border-orange-100 flex justify-between items-center shadow-sm group-hover:shadow-md transition-shadow">
                     <code className="font-mono font-bold text-orange-600 text-lg tracking-widest">
@@ -696,6 +716,31 @@ export default function PromoPage() {
                     }
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Applies To Product</Label>
+                <Select
+                  value={newCoupon.productId || "all"}
+                  onValueChange={(val) =>
+                    setNewCoupon({
+                      ...newCoupon,
+                      productId: val === "all" ? "" : val,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All products" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All products</SelectItem>
+                    {couponProducts.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        {product.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

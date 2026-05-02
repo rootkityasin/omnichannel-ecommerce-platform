@@ -23,11 +23,19 @@ interface CartState {
   removeItem: (itemId: string) => void;
   clearCart: () => void;
 
-  coupon: { code: string; type: "PERCENTAGE" | "FIXED"; value: number } | null;
+  coupon: {
+    code: string;
+    type: "PERCENTAGE" | "FIXED";
+    value: number;
+    productId?: string | null;
+    productName?: string | null;
+  } | null;
   applyCoupon: (coupon: {
     code: string;
     type: "PERCENTAGE" | "FIXED";
     value: number;
+    productId?: string | null;
+    productName?: string | null;
   }) => void;
   removeCoupon: () => void;
 
@@ -112,15 +120,23 @@ export const useCartStore = create<CartState>()(
       removeCoupon: () => set({ coupon: null }),
 
       discount: () => {
-        const { coupon, total } = get();
+        const { coupon, total, items } = get();
         if (!coupon) return 0;
 
         const subTotal = total();
+        const eligibleSubtotal = coupon.productId
+          ? items
+              .filter((item) => item.id === coupon.productId)
+              .reduce((sum, item) => sum + item.price * item.quantity, 0)
+          : subTotal;
+
+        if (coupon.productId && eligibleSubtotal <= 0) return 0;
+
         if (coupon.type === "PERCENTAGE") {
-          return Math.floor((subTotal * coupon.value) / 100);
-        } else {
-          return Math.min(coupon.value, subTotal);
+          return Math.floor((eligibleSubtotal * coupon.value) / 100);
         }
+
+        return Math.min(coupon.value, eligibleSubtotal);
       },
 
       finalTotal: () => {
