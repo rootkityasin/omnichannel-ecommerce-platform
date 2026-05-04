@@ -302,7 +302,7 @@ export function CartDrawer() {
                   <div className="flex justify-between items-start gap-2">
                     <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-tight">
                       {item.name}
-                      <span className="ml-1 text-xs font-semibold text-gray-900">
+                      <span className="ml-1 text-xs font-semibold text-gray-900 inline-flex whitespace-nowrap">
                         (
                         {settings.measurementUnit === "WEIGHT"
                           ? (() => {
