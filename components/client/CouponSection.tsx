@@ -113,7 +113,7 @@ export function CouponSection() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="PROMO CODE"
-                className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all uppercase placeholder:normal-case font-mono"
+                className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all uppercase placeholder:normal-case font-mono"
                 disabled={loading}
                 autoFocus
             />

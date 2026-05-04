@@ -324,7 +324,7 @@ export function AdminSidebar() {
         {/* Hub Selector removed as per request */}
 
         {/* Menu */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-6">
           {menuGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="px-3">
               {group.label !== "Main" && !isSidebarCollapsed && (
