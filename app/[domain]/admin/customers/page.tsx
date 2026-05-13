@@ -761,7 +761,7 @@ export default function CustomersPage() {
 
       {/* Modal */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:items-center">
+        <div className="fixed -inset-px z-[60000] flex items-start justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-lg backdrop-brightness-50 sm:items-center">
           <Card className="my-auto w-full max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
             <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-4">

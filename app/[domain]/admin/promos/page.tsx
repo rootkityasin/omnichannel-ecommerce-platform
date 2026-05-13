@@ -604,7 +604,7 @@ export default function PromoPage() {
 
       {/* --- ADD COUPON MODAL --- */}
       {isAddingCoupon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg backdrop-brightness-50 animate-in fade-in duration-200">
           <Card className="w-full max-w-sm animate-in zoom-in-95 duration-200 p-6 shadow-2xl border-none">
             <div className="flex justify-between items-center mb-5">
               <div>
@@ -775,7 +775,7 @@ export default function PromoPage() {
 
       {/* --- ADD POPUP MODAL (Kept same as before but ensured integration) --- */}
       {isAddingCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg backdrop-brightness-50 animate-in fade-in duration-200">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 p-0 shadow-2xl border-none">
             <div className="sticky top-0 z-10 bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center">
               <div>

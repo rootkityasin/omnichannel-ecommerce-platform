@@ -424,7 +424,7 @@ export default function LandingPage() {
 
       {/* Edit Modal */}
       {isEditing && currentSlide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-lg backdrop-brightness-50">
           <Card className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-200 p-0 overflow-hidden shadow-2xl">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h2 className="text-xl font-bold text-slate-800">

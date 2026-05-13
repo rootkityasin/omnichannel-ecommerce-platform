@@ -63,6 +63,7 @@ export interface AdminOrder {
   date: string;
   customer: string;
   phone: string;
+  address?: string;
   items: number;
   itemDetails?: {
     name: string;

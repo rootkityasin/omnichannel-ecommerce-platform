@@ -28,7 +28,7 @@ export default function OrderDetailsModal({
 
   return (
     <div
-      className="fixed inset-0 z-[110] bg-black/60 p-2 backdrop-blur-md sm:p-4"
+      className="fixed -inset-px z-[60000] bg-black/80 p-2 backdrop-blur-lg backdrop-brightness-50 sm:p-4"
       onClick={closeOrderDetails}
     >
       <div className="flex h-full min-h-full items-start justify-center sm:items-center">

@@ -498,7 +498,7 @@ export function UsersTab() {
 
       {/* Add/Edit User Modal */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 backdrop-blur-lg backdrop-brightness-50">
           <Card className="w-full max-w-2xl mx-4 bg-white shadow-2xl rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto popup-scrollbar">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h2 className="text-lg font-bold text-gray-900">
@@ -677,7 +677,7 @@ export function UsersTab() {
 
       {/* Dedicated Permission Modal */}
       {permissionModalOpen && selectedUserForPerms && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 backdrop-blur-lg backdrop-brightness-50">
           <Card className="w-full max-w-md mx-4 bg-white shadow-2xl rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <div>
@@ -754,7 +754,7 @@ export function UsersTab() {
 
       {/* Password Reset Modal */}
       {resetPassModalOpen && userToReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 backdrop-blur-lg backdrop-brightness-50">
           <Card className="w-full max-w-sm mx-4 bg-white shadow-2xl rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <div>

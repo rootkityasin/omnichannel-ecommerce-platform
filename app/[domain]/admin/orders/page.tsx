@@ -272,6 +272,7 @@ export default function OrdersPage() {
   const [editForm, setEditForm] = useState({
     customer: "",
     phone: "",
+    address: "",
     price: 0,
     items: 1,
   });
@@ -319,6 +320,7 @@ export default function OrdersPage() {
     closeOrderDetails();
     handleEditClick({
       ...order,
+      address: [order.address, order.area].filter(Boolean).join(", "),
       items: order.items.reduce((sum, item) => sum + item.quantity, 0),
     } as unknown as AdminOrder);
   };
@@ -481,6 +483,7 @@ export default function OrdersPage() {
     const form = {
       customer: order.customer,
       phone: order.phone,
+      address: order.address || "",
       price: order.price,
       items: order.items,
     };
@@ -494,6 +497,8 @@ export default function OrdersPage() {
     const phoneRegex = /^01[3-9]\d{8}$/;
     if (!phoneRegex.test(editForm.phone))
       return toast.error("Invalid phone number");
+    if (!editForm.address.trim())
+      return toast.error("Delivery address is required");
     if (editForm.price <= 0 || editForm.items <= 0)
       return toast.error("Price and quantity > 0");
 
@@ -1002,7 +1007,7 @@ export default function OrdersPage() {
 
       {/* Modals omitted from code rendering text limit overhead but functional */}
       {isAdding && (
-        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-md">
+        <div className="fixed -inset-px z-[60000] overflow-y-auto bg-black/80 backdrop-blur-lg backdrop-brightness-50">
           <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
             <Card className="my-auto w-full max-w-lg animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
               <div className="p-6 overflow-y-auto">
@@ -1245,7 +1250,7 @@ export default function OrdersPage() {
 
       {/* Edit Order Modal */}
       {editingId && (
-        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-md">
+        <div className="fixed -inset-px z-[60000] overflow-y-auto bg-black/80 backdrop-blur-lg backdrop-brightness-50">
           <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
             <Card className="my-auto w-full max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
               <div className="p-6 overflow-y-auto">
@@ -1287,6 +1292,23 @@ export default function OrdersPage() {
                       onChange={(e) =>
                         setEditForm({ ...editForm, phone: e.target.value })
                       }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="edit-address"
+                      className="text-sm font-medium"
+                    >
+                      Delivery Address
+                    </label>
+                    <Textarea
+                      id="edit-address"
+                      value={editForm.address}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, address: e.target.value })
+                      }
+                      rows={3}
                       required
                     />
                   </div>

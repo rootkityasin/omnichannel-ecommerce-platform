@@ -451,7 +451,7 @@ function FolderPicker({
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/0 p-4 font-sans">
+        <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 p-4 font-sans backdrop-blur-lg backdrop-brightness-50">
             <Card className="w-full max-w-xl h-[500px] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-200 ring-1 ring-slate-200 bg-white">
                 <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-lg">
                     <h3 className="font-bold flex items-center gap-2 text-slate-800">

@@ -125,7 +125,7 @@ const ProductFormModal = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="fixed -inset-px z-[60000] flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg backdrop-brightness-50">
         <div className="rounded-xl bg-white px-6 py-5 text-sm text-slate-500 shadow-xl">
           Loading product form...
         </div>

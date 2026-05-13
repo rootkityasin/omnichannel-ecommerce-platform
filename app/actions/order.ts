@@ -187,6 +187,7 @@ type AdminOrderUpdateInput = {
   customer?: string;
   phone?: string;
   email?: string;
+  address?: string;
   price?: number;
   status?: string;
 };
@@ -441,6 +442,7 @@ export async function getAdminOrders() {
         customerName: true,
         customerPhone: true,
         customerEmail: true,
+        customerAddress: true,
         totalAmount: true,
         status: true,
         source: true,
@@ -476,6 +478,7 @@ export async function getAdminOrders() {
       customer: o.customerName,
       phone: o.customerPhone,
       email: o.customerEmail || undefined,
+      address: o.customerAddress,
       items: o.items.reduce((acc: number, item) => acc + item.quantity, 0),
       source: o.source,
       price: o.totalAmount,
@@ -535,6 +538,7 @@ export async function updateAdminOrder(
         customerName: updates.customer,
         customerPhone: updates.phone,
         customerEmail: updates.email,
+        customerAddress: updates.address,
         totalAmount: updates.price,
         status: updates.status,
         // Add other fields as needed
@@ -738,6 +742,7 @@ export async function getPaginatedAdminOrders(params: {
           customerName: true,
           customerPhone: true,
           customerEmail: true,
+          customerAddress: true,
           totalAmount: true,
           status: true,
           source: true,
@@ -797,6 +802,7 @@ export async function getPaginatedAdminOrders(params: {
         customer: o.customerName,
         phone: o.customerPhone,
         email: o.customerEmail || undefined,
+        address: o.customerAddress,
         items: o.items.reduce((acc: number, item) => acc + item.quantity, 0),
         itemDetails: o.items.map((item) => ({
           name: item.product?.name || "Product",
