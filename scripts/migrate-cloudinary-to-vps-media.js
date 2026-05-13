@@ -206,6 +206,17 @@ const migrateJson = async (value, resource) => {
   let changed = false;
   const visit = async (node) => {
     if (typeof node === "string") {
+      const trimmed = node.trim();
+      if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+        try {
+          const parsed = JSON.parse(node);
+          const migrated = await visit(parsed);
+          if (migrated !== parsed) changed = true;
+          return JSON.stringify(migrated);
+        } catch {
+          // Not all strings that start like JSON are valid JSON. Treat them as plain strings.
+        }
+      }
       const migrated = await migrateUrl(node, resource);
       if (migrated !== node) changed = true;
       return migrated;
