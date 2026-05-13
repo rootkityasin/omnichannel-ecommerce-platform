@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-const { PrismaClient } = require("@prisma/client");
-const { PrismaPg } = require("@prisma/adapter-pg");
 const { randomUUID } = require("crypto");
 const { mkdir, writeFile } = require("fs/promises");
 const path = require("path");
@@ -30,7 +28,6 @@ const pool = new Pool({
         : true
       : { rejectUnauthorized: false },
 });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 const dryRun = process.argv.includes("--dry-run");
 const mediaRoot = path.resolve(process.env.MEDIA_ROOT || "/data/media");
 const publicPath = (process.env.MEDIA_PUBLIC_PATH || "/media").replace(/\/$/, "");
@@ -80,12 +77,36 @@ const sanitizeRelativePath = (value) =>
     .join("/") || "uploads";
 
 const loadTenantSlugs = async () => {
-  const tenants = await prisma.tenant.findMany({ select: { id: true, slug: true } });
+  const tenants = await selectRows("Tenant", ["id", "slug"]);
   for (const tenant of tenants) tenantSlugs.set(tenant.id, tenant.slug);
 };
 
 const tenantPrefix = (tenantId) =>
   tenantId ? `tenants/${sanitizeSegment(tenantSlugs.get(tenantId) || tenantId)}` : "global";
+
+const quoteIdentifier = (value) => `"${String(value).replace(/"/g, '""')}"`;
+
+const selectRows = async (table, columns) => {
+  const columnSql = columns.map(quoteIdentifier).join(", ");
+  const result = await pool.query(`SELECT ${columnSql} FROM ${quoteIdentifier(table)}`);
+  return result.rows;
+};
+
+const updateById = async (table, id, data, casts = {}) => {
+  const keys = Object.keys(data);
+  if (keys.length === 0) return;
+  const assignments = keys
+    .map((key, index) => {
+      const cast = casts[key] ? `::${casts[key]}` : "";
+      return `${quoteIdentifier(key)} = $${index + 2}${cast}`;
+    })
+    .join(", ");
+  const values = keys.map((key) => data[key]);
+  await pool.query(
+    `UPDATE ${quoteIdentifier(table)} SET ${assignments} WHERE "id" = $1`,
+    [id, ...values],
+  );
+};
 
 const createOutputDirectory = async (resource) => {
   const now = new Date();
@@ -201,17 +222,22 @@ const migrateJson = async (value, resource) => {
   return { value: migrated, changed };
 };
 
-const updateRecord = async (model, id, data) => {
+const updateRecord = async (table, id, data, casts = {}) => {
   if (Object.keys(data).length === 0) return;
-  report.updatedRecords.push({ model, id, data });
+  report.updatedRecords.push({ table, id, data });
   if (dryRun) return;
-  await prisma[model].update({ where: { id }, data });
+  await updateById(table, id, data, casts);
 };
 
 const migrateProducts = async () => {
-  const products = await prisma.product.findMany({
-    select: { id: true, tenantId: true, image: true, images: true, cookingImage: true, nutritionImage: true },
-  });
+  const products = await selectRows("Product", [
+    "id",
+    "tenantId",
+    "image",
+    "images",
+    "cookingImage",
+    "nutritionImage",
+  ]);
   for (const product of products) {
     const data = {};
     const prefix = tenantPrefix(product.tenantId);
@@ -221,18 +247,16 @@ const migrateProducts = async () => {
     }
     const images = await migrateStringArray(product.images, `${prefix}/products/gallery`);
     if (images.changed) data.images = images.value;
-    await updateRecord("product", product.id, data);
+    await updateRecord("Product", product.id, data, { images: "text[]" });
   }
 };
 
-const migrateSimpleStringFields = async (model, fields, resource, options = {}) => {
-  const records = await prisma[model].findMany({
-    select: {
-      id: true,
-      ...(options.tenantScoped ? { tenantId: true } : {}),
-      ...Object.fromEntries(fields.map((f) => [f, true])),
-    },
-  });
+const migrateSimpleStringFields = async (table, fields, resource, options = {}) => {
+  const records = await selectRows(table, [
+    "id",
+    ...(options.tenantScoped ? ["tenantId"] : []),
+    ...fields,
+  ]);
   for (const record of records) {
     const data = {};
     const prefix = options.tenantScoped ? tenantPrefix(record.tenantId) : "global";
@@ -240,22 +264,29 @@ const migrateSimpleStringFields = async (model, fields, resource, options = {}) 
       const migrated = await migrateUrl(record[field], `${prefix}/${resource}/${field}`);
       if (migrated !== record[field]) data[field] = migrated;
     }
-    await updateRecord(model, record.id, data);
+    await updateRecord(table, record.id, data);
   }
 };
 
 const migrateReviewImages = async () => {
-  const reviews = await prisma.review.findMany({ select: { id: true, images: true } });
+  const reviews = await selectRows("Review", ["id", "images"]);
   for (const review of reviews) {
     const images = await migrateStringArray(review.images, "reviews");
-    await updateRecord("review", review.id, images.changed ? { images: images.value } : {});
+    await updateRecord("Review", review.id, images.changed ? { images: images.value } : {}, {
+      images: "text[]",
+    });
   }
 };
 
 const migrateSiteConfigs = async () => {
-  const configs = await prisma.siteConfig.findMany({
-    select: { id: true, tenantId: true, logoUrl: true, ogImage: true, twitterImage: true, certificates: true },
-  });
+  const configs = await selectRows("SiteConfig", [
+    "id",
+    "tenantId",
+    "logoUrl",
+    "ogImage",
+    "twitterImage",
+    "certificates",
+  ]);
   for (const config of configs) {
     const data = {};
     const prefix = tenantPrefix(config.tenantId);
@@ -265,15 +296,17 @@ const migrateSiteConfigs = async () => {
     }
     const certificates = await migrateJson(config.certificates, `${prefix}/site-config/certificates`);
     if (certificates.changed) data.certificates = certificates.value;
-    await updateRecord("siteConfig", config.id, data);
+    await updateRecord("SiteConfig", config.id, data, { certificates: "jsonb" });
   }
 };
 
 const migrateStorySections = async () => {
-  const sections = await prisma.storySection.findMany({ select: { id: true, content: true } });
+  const sections = await selectRows("StorySection", ["id", "content"]);
   for (const section of sections) {
     const content = await migrateJson(section.content, "story");
-    await updateRecord("storySection", section.id, content.changed ? { content: content.value } : {});
+    await updateRecord("StorySection", section.id, content.changed ? { content: content.value } : {}, {
+      content: "jsonb",
+    });
   }
 };
 
@@ -281,10 +314,15 @@ async function main() {
   console.log(`${dryRun ? "Dry-running" : "Running"} Cloudinary media migration...`);
   await loadTenantSlugs();
   await migrateProducts();
-  await migrateSimpleStringFields("promoCard", ["imageUrl"], "promos", { tenantScoped: true });
-  await migrateSimpleStringFields("heroSlide", ["imageUrl"], "hero-slides");
-  await migrateSimpleStringFields("user", ["image"], "users", { tenantScoped: true });
-  await migrateSimpleStringFields("paymentConfig", ["bkashLogo", "nagadLogo", "selfMfsQrCode"], "payment-config", { tenantScoped: true });
+  await migrateSimpleStringFields("PromoCard", ["imageUrl"], "promos", { tenantScoped: true });
+  await migrateSimpleStringFields("HeroSlide", ["imageUrl"], "hero-slides");
+  await migrateSimpleStringFields("User", ["image"], "users", { tenantScoped: true });
+  await migrateSimpleStringFields(
+    "PaymentConfig",
+    ["bkashLogo", "nagadLogo", "selfMfsQrCode"],
+    "payment-config",
+    { tenantScoped: true },
+  );
   await migrateReviewImages();
   await migrateSiteConfigs();
   await migrateStorySections();
@@ -300,6 +338,5 @@ main()
     process.exitCode = 1;
   })
   .finally(async () => {
-    await prisma.$disconnect();
     await pool.end();
   });
