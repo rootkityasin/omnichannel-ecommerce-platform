@@ -31,7 +31,9 @@ const pool = new Pool({
 const dryRun = process.argv.includes("--dry-run");
 const mediaRoot = path.resolve(process.env.MEDIA_ROOT || "/data/media");
 const publicPath = (process.env.MEDIA_PUBLIC_PATH || "/media").replace(/\/$/, "");
-const reportPath = path.resolve(process.cwd(), "media-migration-report.json");
+const reportPath = path.resolve(
+  process.env.MEDIA_MIGRATION_REPORT_PATH || "/tmp/media-migration-report.json",
+);
 const urlMap = new Map();
 const tenantSlugs = new Map();
 
@@ -101,7 +103,9 @@ const updateById = async (table, id, data, casts = {}) => {
       return `${quoteIdentifier(key)} = $${index + 2}${cast}`;
     })
     .join(", ");
-  const values = keys.map((key) => data[key]);
+  const values = keys.map((key) =>
+    casts[key] === "json" || casts[key] === "jsonb" ? JSON.stringify(data[key]) : data[key],
+  );
   await pool.query(
     `UPDATE ${quoteIdentifier(table)} SET ${assignments} WHERE "id" = $1`,
     [id, ...values],
