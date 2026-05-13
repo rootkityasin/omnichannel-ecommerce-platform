@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-require("dotenv/config");
 const { PrismaClient } = require("@prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
 const { randomUUID } = require("crypto");
