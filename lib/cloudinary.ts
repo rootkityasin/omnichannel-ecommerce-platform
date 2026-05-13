@@ -1,4 +1,5 @@
 const CLOUDINARY_HOST = "res.cloudinary.com";
+const LOCAL_MEDIA_PREFIX = "/media/";
 
 type CloudinaryOptions = {
   width?: number;
@@ -36,11 +37,28 @@ const injectTransform = (url: string, transform: string) => {
   return `${before}/upload/${transform}/${after}`;
 };
 
+const isLocalMediaUrl = (url: string) => url.startsWith(LOCAL_MEDIA_PREFIX);
+
+const replaceLocalVariant = (url: string, variant: string) => {
+  if (!isLocalMediaUrl(url)) return url;
+  return url.replace(/\/[^/]+\.webp(?:\?.*)?$/, `/${variant}`);
+};
+
+const selectLocalVariant = (options: CloudinaryOptions) => {
+  if ((options.width || 0) >= 1400 || options.crop === "limit") return "full.webp";
+  if ((options.width || 0) <= 200) return "thumb.webp";
+  if (options.aspect === "16:9" || (options.width || 0) >= 800) return "hero.webp";
+  if (options.aspect === "4:5" || (options.width || 0) >= 360) return "card.webp";
+  return "original.webp";
+};
+
 export const buildCloudinaryUrl = (
   url: string | null | undefined,
   options: CloudinaryOptions,
 ) => {
-  if (!url || !isCloudinaryUrl(url)) return url || "";
+  if (!url) return "";
+  if (isLocalMediaUrl(url)) return replaceLocalVariant(url, selectLocalVariant(options));
+  if (!isCloudinaryUrl(url)) return url;
   const parts = [
     options.format || "f_auto",
     options.quality || "q_auto:good",
@@ -57,7 +75,9 @@ export const buildCloudinaryLqip = (
   url: string | null | undefined,
   options: LqipOptions,
 ) => {
-  if (!url || !isCloudinaryUrl(url)) return "";
+  if (!url) return "";
+  if (isLocalMediaUrl(url)) return replaceLocalVariant(url, "lqip.webp");
+  if (!isCloudinaryUrl(url)) return "";
   const parts = [
     "f_auto",
     "q_10",

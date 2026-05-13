@@ -45,6 +45,9 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+# Persistent uploads live here. Mount a Dokploy volume at /data/media in production.
+RUN mkdir -p /data/media && chown -R nextjs:nodejs /data/media
+
 # Copy public assets
 COPY --from=builder /app/public ./public
 
@@ -59,6 +62,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 # Copy prisma config for migrations
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.js ./
+# Copy production media migration script for one-time Cloudinary migrations
+RUN mkdir -p scripts && chown nextjs:nodejs scripts
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/migrate-cloudinary-to-vps-media.js ./scripts/migrate-cloudinary-to-vps-media.js
 
 USER nextjs
 

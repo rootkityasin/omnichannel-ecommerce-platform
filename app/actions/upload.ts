@@ -1,58 +1,50 @@
-'use server';
+"use server";
+
+import { storeMediaBuffer } from "@/lib/server-media";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/avif",
+  "image/gif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
 
 export async function uploadToCloudinary(formData: FormData) {
-    try {
-        const file = formData.get('file') as File;
-        if (!file) {
-            return { success: false, error: "No file provided" };
-        }
+  try {
+    const file = formData.get("file") as File | null;
+    const resource = String(formData.get("resource") || "uploads");
 
-        // Access environment variables securely on the server
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.replace(/['"]/g, '').trim();
-        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET?.replace(/['"]/g, '').trim();
-
-        console.log("Debug Upload Env:", { cloudName: cloudName || 'MISSING', preset: uploadPreset || 'MISSING' });
-
-        if (!cloudName || !uploadPreset) {
-            return { success: false, error: "Cloudinary configuration missing on server" };
-        }
-
-        // We need to send a new FormData to Cloudinary
-        // Note: standard fetch in Node/Next 15+ handles FormData objects from 'next/server' if we pass body directly,
-        // BUT passing the *incoming* FormData directly might be tricky due to boundary headers.
-        // It's safer to reconstruct it.
-        const uploadData = new FormData();
-        uploadData.append('file', file);
-        uploadData.append('upload_preset', uploadPreset);
-        uploadData.append('folder', 'crab-khai');
-
-        const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-            {
-                method: 'POST',
-                body: uploadData,
-                // cache: 'no-store' // implied by POST usually, but good to be explicit or let fetch handle it
-            }
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            let errorMessage = "Upload failed";
-            try {
-                const json = JSON.parse(errorText);
-                errorMessage = json.error?.message || errorMessage;
-            } catch (e) {
-                errorMessage = errorText;
-            }
-            console.error("Cloudinary Upload Error (Server):", errorMessage);
-            return { success: false, error: "Cloudinary Error: " + errorMessage };
-        }
-
-        const data = await response.json();
-        return { success: true, url: data.secure_url };
-
-    } catch (error) {
-        console.error("Server Upload Error:", error);
-        return { success: false, error: "Server upload failed: " + String(error) };
+    if (!file) {
+      return { success: false, error: "No file provided" };
     }
+
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      return { success: false, error: "Only image uploads are allowed" };
+    }
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return { success: false, error: "Image is too large. Max size is 10MB" };
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const session = await auth();
+    const tenantId = session?.user?.tenantId;
+    const tenant = tenantId
+      ? await prisma.tenant.findUnique({
+          where: { id: tenantId },
+          select: { slug: true },
+        })
+      : null;
+    const tenantPrefix = tenant?.slug ? `tenants/${tenant.slug}` : "global";
+    const url = await storeMediaBuffer(buffer, `${tenantPrefix}/${resource}`);
+
+    return { success: true, url };
+  } catch (error) {
+    console.error("VPS media upload error:", error);
+    return { success: false, error: "Media upload failed" };
+  }
 }

@@ -96,12 +96,7 @@ export function ImageUpload({
     } catch (error) {
       console.error("Upload Error:", error);
       toast.error(`Upload failed: ${String(error)}`);
-      // Fallback to local base64 if upload fails (optional, good for offline dev)
-      return await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(originalFile);
-      });
+      return null;
     }
   };
 

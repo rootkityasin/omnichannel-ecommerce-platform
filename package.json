@@ -1,6 +1,6 @@
 {
   "name": "omnichannel-ecommerce-platform",
-  "version": "1.0.88",
+  "version": "1.0.90",
   "private": true,
   "repository": {
     "type": "git",
@@ -14,6 +14,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
+    "media:migrate:dry": "node scripts/migrate-cloudinary-to-vps-media.js --dry-run",
+    "media:migrate": "node scripts/migrate-cloudinary-to-vps-media.js",
     "profile:vps": "bash scripts/profile-vps-hotspots.sh",
     "profile:compare": "node scripts/compare-perf-summaries.js",
     "postinstall": "prisma generate && prisma generate --schema prisma/platform/schema.prisma",
@@ -66,6 +68,7 @@
     "read-excel-file": "^6.0.3",
     "recharts": "^3.6.0",
     "rehype-raw": "^7.0.0",
+    "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",

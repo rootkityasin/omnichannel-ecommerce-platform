@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
   },
 
   // Optimize server actions
-  serverExternalPackages: ["@prisma/client", "pg"],
+  serverExternalPackages: ["@prisma/client", "pg", "sharp"],
 
   // Disable X-Powered-By header
   poweredByHeader: false,
