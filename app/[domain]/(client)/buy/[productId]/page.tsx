@@ -308,9 +308,9 @@ export default function SmartLinkPage() {
                 {/* Glass Pieces Tag */}
                 {pieces > 0 && (
                   <div className="absolute top-4 right-4 z-20">
-                    <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2 group-hover:scale-105 transition-transform">
+                    <div className="px-4 py-2 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200/50 shadow-md flex items-center gap-2 group-hover:scale-105 transition-all">
                       <span className="w-2 h-2 rounded-full bg-crab-red animate-pulse" />
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-slate-800">
                         {pieces} pcs inside
                       </span>
                     </div>

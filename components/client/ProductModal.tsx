@@ -311,9 +311,9 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
           {(product.type === "COMBO" ? comboPiecesInside : piecesInside) >
             0 && (
             <div className="absolute top-4 left-4 z-30">
-              <div className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2">
+              <div className="px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200/50 shadow-md flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-crab-red animate-pulse" />
-                <span className="text-xs font-bold text-white">
+                <span className="text-xs font-bold text-slate-800">
                   {product.type === "COMBO" ? comboPiecesInside : piecesInside}{" "}
                   pcs inside
                 </span>
