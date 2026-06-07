@@ -62,10 +62,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 # Copy prisma config for migrations
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.js ./
-# Copy production media migration script for one-time Cloudinary migrations
-RUN mkdir -p scripts && chown nextjs:nodejs scripts
-COPY --from=builder --chown=nextjs:nodejs /app/scripts/migrate-cloudinary-to-vps-media.js ./scripts/migrate-cloudinary-to-vps-media.js
-
 USER nextjs
 
 EXPOSE 3003

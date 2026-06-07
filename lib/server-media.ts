@@ -3,7 +3,10 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 
-const DEFAULT_MEDIA_ROOT = "/data/media";
+const DEFAULT_MEDIA_ROOT =
+  process.env.NODE_ENV === "production"
+    ? "/data/media"
+    : path.join(process.cwd(), "public", "media");
 const DEFAULT_MEDIA_PUBLIC_PATH = "/media";
 
 export const MEDIA_VARIANTS = {
