@@ -31,7 +31,7 @@ import {
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/SettingsProvider";
-import { buildCloudinaryLqip, buildCloudinaryUrl } from "@/lib/cloudinary";
+import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
 
 const AnimatedCounter = ({ value }: { value: string | number }) => {
   const numericValue =
@@ -136,17 +136,17 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
   const uniqueImages = Array.from(new Set(rawImages));
   const galleryImages = uniqueImages.length > 0 ? uniqueImages : ["/logo.svg"];
   const heroImage = galleryImages[currentImageIndex];
-  const optimizedHeroImage = buildCloudinaryUrl(heroImage, {
+  const optimizedHeroImage = buildMediaUrl(heroImage, {
     width: 900,
     aspect: "16:9",
     crop: "fill",
     gravity: "auto",
   });
-  const fullscreenImage = buildCloudinaryUrl(heroImage, {
+  const fullscreenImage = buildMediaUrl(heroImage, {
     width: 1600,
     crop: "limit",
   });
-  const heroLqip = buildCloudinaryLqip(heroImage, {
+  const heroLqip = buildMediaLqip(heroImage, {
     aspect: "16:9",
     crop: "fill",
     gravity: "auto",

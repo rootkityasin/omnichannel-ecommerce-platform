@@ -6,7 +6,7 @@ import { UploadCloud, X, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { uploadToCloudinary } from "@/app/actions/upload";
+import { uploadMedia } from "@/app/actions/upload";
 import Image from "next/image";
 
 interface ImageUploadProps {
@@ -86,7 +86,7 @@ export function ImageUpload({
       formData.append("file", file);
 
       // Use Server Action for secure upload
-      const result = await uploadToCloudinary(formData);
+      const result = await uploadMedia(formData);
 
       if (!result.success) {
         throw new Error(result.error || "Upload failed");

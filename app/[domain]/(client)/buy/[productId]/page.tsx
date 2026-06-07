@@ -11,7 +11,7 @@ import { getProduct } from "@/app/actions/product";
 import { getProductReviews } from "@/app/actions/review";
 import { ProductReviews } from "@/components/client/ProductReviews";
 import { cn } from "@/lib/utils";
-import { buildCloudinaryLqip, buildCloudinaryUrl } from "@/lib/cloudinary";
+import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
 import useEmblaCarousel from "embla-carousel-react";
 
 type Review = {
@@ -71,7 +71,7 @@ function ProductImageCarousel({
     return { src, key: `${src}-${nextCount}` };
   });
   const heroImage = keyedImages[selectedIndex]?.src || images[0];
-  const heroLqip = buildCloudinaryLqip(heroImage, {
+  const heroLqip = buildMediaLqip(heroImage, {
     aspect: "16:9",
     crop: "fill",
     gravity: "auto",
@@ -92,7 +92,7 @@ function ProductImageCarousel({
             className="flex-[0_0_100%] min-w-0 h-full relative"
           >
             <Image
-              src={buildCloudinaryUrl(imageItem.src, {
+              src={buildMediaUrl(imageItem.src, {
                 width: 900,
                 aspect: "16:9",
                 crop: "fill",

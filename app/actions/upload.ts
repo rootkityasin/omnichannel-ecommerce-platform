@@ -13,7 +13,7 @@ const ALLOWED_IMAGE_TYPES = new Set([
   "image/webp",
 ]);
 
-export async function uploadToCloudinary(formData: FormData) {
+export async function uploadMedia(formData: FormData) {
   try {
     const file = formData.get("file") as File | null;
     const resource = String(formData.get("resource") || "uploads");
@@ -44,7 +44,7 @@ export async function uploadToCloudinary(formData: FormData) {
 
     return { success: true, url };
   } catch (error) {
-    console.error("VPS media upload error:", error);
+    console.error("Media upload error:", error);
     return { success: false, error: "Media upload failed" };
   }
 }

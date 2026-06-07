@@ -186,20 +186,22 @@ This ensures that even if a user manually changes an ID in a request, the query 
 
 ---
 
-## 5. Asset & Media Isolation (Cloudinary)
+## 5. Asset & Media Isolation (VPS Media Storage)
 
-To maintain privacy and organizational clarity, the platform uses **Folder Partitioning** for all uploaded media assets.
+To maintain privacy and organizational clarity, the platform uses **Folder Partitioning** for all uploaded media assets, stored directly on the VPS filesystem.
 
 ### Dynamic Folder Routing
 
-When an image is uploaded (via `ImageUpload.tsx` or `MediaUpload.tsx`), the system routes it to a specific Cloudinary folder based on the tenant's identifier:
+When an image is uploaded (via `ImageUpload.tsx`), the system processes it through Sharp (server-side) and stores optimized variants on disk under `/data/media/`:
 
-- **Structure**: `platform_uploads/[tenant_slug]/[resource_type]/`
-- **Isolation**: Each tenant has a dedicated "sandbox" within Cloudinary. This prevents asset naming collisions and allows for tenant-specific storage reporting or bulk-deletion.
+- **Structure**: `/data/media/tenants/[tenant_slug]/[resource_type]/[year]/[month]/[uuid]/`
+- **Variants**: Each upload generates 6 WebP variants — `original.webp`, `card.webp`, `hero.webp`, `full.webp`, `thumb.webp`, `lqip.webp`.
+- **Isolation**: Each tenant has a dedicated directory tree. This prevents asset naming collisions and allows for tenant-specific storage reporting or bulk-deletion.
+- **Serving**: Images are served via the `/media/[...path]` API route with immutable cache headers (`max-age=31536000`).
 
-### Fallback Data URLs
+### Legacy Cloudinary Backward Compatibility
 
-In cases where Cloudinary is not configured, the system utilizes **Base64 Inline Storage**. While not recommended for high-volume use, it maintains 100% tenant isolation as the data strings are stored directly in the tenant-scoped database records.
+The client-side media helper (`lib/media.ts`) detects legacy Cloudinary URLs still stored in the database and applies Cloudinary transformations for those. For VPS-hosted images (URLs starting with `/media/`), it rewrites the URL to the appropriate pre-generated variant.
 
 ---
 

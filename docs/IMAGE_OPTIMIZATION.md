@@ -83,7 +83,7 @@ and 1:1, and means you never need to maintain separate files per surface.
   3. Use one helper for the normal image and a separate one for the LQIP.
   4. Keep all preset names and constants defined in one place.
 
-In this repo, helper examples live in: lib/cloudinary.ts
+In this repo, helper examples live in: lib/media.ts
 
 ================================================================================
 

@@ -28,7 +28,7 @@ Gather before provisioning.
 **Plan & Technical:**
 - Plan selection (Silver/Gold/Platinum)
 - Database URL (if isolated deployment)
-- Cloudinary credentials (if needed)
+- Media volume mount path (default: `/data/media`, auto-provisioned by Docker)
 
 **Tracking (Per Tenant):**
 - GTM Container ID (optional, unique per tenant, example: GTM-XXXXXXX)

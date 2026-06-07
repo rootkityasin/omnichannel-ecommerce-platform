@@ -24,7 +24,7 @@ import { CartRecommendations } from "@/components/client/CartRecommendations";
 import { createOrder } from "@/app/actions/order";
 import { toast } from "sonner";
 import { useSettings } from "@/components/providers/SettingsProvider";
-import { buildCloudinaryUrl } from "@/lib/cloudinary";
+import { buildMediaUrl } from "@/lib/media";
 import {
   Select,
   SelectContent,
@@ -513,7 +513,7 @@ export function CartClient({
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 relative border border-gray-100">
                     {item.image ? (
                       <Image
-                        src={buildCloudinaryUrl(item.image, {
+                        src={buildMediaUrl(item.image, {
                           width: 160,
                           aspect: "1:1",
                           crop: "fill",

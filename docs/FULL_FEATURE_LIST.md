@@ -27,7 +27,7 @@ These features represent the advanced engineering standards implemented in the p
 
 ### 1.3 Image & Asset Optimization
 
-- **Cloudinary Integration**: Automated transformation pipeline (WebP/AVIF conversion).
+- **VPS Media Pipeline**: Server-side Sharp processing with 6 pre-generated WebP variants per upload (original, card, hero, full, thumb, LQIP).
 - **Canonical Crops**: Dynamic resizing for Product Cards (4:5), Hero (16:9), and Thumbnails (1:1).
 - **Lazy Loading & LQIP**: Low-Quality Image Placeholders (LQIP) with blur effects for faster perceived performance.
 
@@ -77,7 +77,7 @@ Adherence to high-security standards (inspired by ISO 27001).
 ## 4. Strategic Integrations
 
 - **LabsMail**: Automated lead export and campaign synchronization.
-- **Cloudinary**: Centralized, tenant-scoped media storage.
+- **VPS Media Storage**: Self-hosted, tenant-scoped media storage on persistent Docker volume (`/data/media`).
 - **Prisma Accelerate**: Distributed data acceleration and pooling.
 
 ---

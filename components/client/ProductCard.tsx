@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { ProductModal } from "./ProductModal";
 import { trackEvent } from "@/lib/track";
-import { buildCloudinaryLqip, buildCloudinaryUrl } from "@/lib/cloudinary";
+import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
 
 import { Product } from "@/types/common";
 
@@ -52,13 +52,13 @@ export const ProductCard = memo(function ProductCard({
 
   // Active image state for gallery
   const [activeImage, setActiveImage] = useState(image);
-  const optimizedActiveImage = buildCloudinaryUrl(activeImage, {
+  const optimizedActiveImage = buildMediaUrl(activeImage, {
     width: 480,
     aspect: "4:5",
     crop: "fill",
     gravity: "auto",
   });
-  const lqipImage = buildCloudinaryLqip(activeImage, {
+  const lqipImage = buildMediaLqip(activeImage, {
     aspect: "4:5",
     crop: "fill",
     gravity: "auto",

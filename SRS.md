@@ -128,12 +128,12 @@ sequenceDiagram
 | **ORM** | Prisma & Accelerate | Type-safety, Caching, Pooling |
 | **Auth** | NextAuth.js v5 | Standardized, Secure |
 | **Styling** | TailwindCSS + Shadcn/UI | Rapid development, Accessibility |
-| **Media** | Cloudinary | Auto-optimization (WebP), Tenant Folders |
+| **Media** | VPS + Sharp | Self-hosted media with auto-optimization (WebP variants), Tenant Folders |
 
 ---
 
 ## 6. Deployment Strategy
-*   **Platform**: Vercel
+*   **Platform**: Dokploy (Docker on VPS)
 *   **CI/CD**: Git-based deployments.
 *   **Environment Variables**: Strict separation of secrets (Database URL, API Keys).
 
