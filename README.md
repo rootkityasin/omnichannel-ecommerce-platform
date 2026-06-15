@@ -162,4 +162,4 @@ Please refer to the documentation in the `docs/` directory for coding standards 
 
 ---
 
-_Maintained by 90sX Engineering Team_
+_Maintained by Threadiv Engineering Team_
