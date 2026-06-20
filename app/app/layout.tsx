@@ -16,12 +16,12 @@ export default async function SuperAdminLayout({
   const pathname = headersList.get("x-pathname") || "";
 
   // If not logged in and not on login page, redirect to login
-  if (!session && pathname !== "/login") {
+  if (!session?.user && pathname !== "/login") {
     redirect("/login");
   }
 
   // If logged in, ensure role is SUPER_ADMIN
-  if (session && session.user.role !== "SUPER_ADMIN") {
+  if (session?.user && session.user.role !== "SUPER_ADMIN") {
     // You might want a "Forbidden" page, or just redirect to home
     // For now, let's redirect to login (or show an error component if you prefer)
     // But to avoid loops if they are logged in as something else, we might need a distinct error page.

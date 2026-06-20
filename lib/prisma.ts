@@ -64,13 +64,16 @@ const useAdapter =
 
 let adapter;
 if (useAdapter) {
-  const sslMode = (() => {
+  const dbUrl = (() => {
     try {
-      return new URL(connectionString).searchParams.get("sslmode");
+      return new URL(connectionString);
     } catch {
       return null;
     }
   })();
+  const sslMode = dbUrl?.searchParams.get("sslmode");
+  const isLocalDb =
+    dbUrl && ["localhost", "127.0.0.1", "::1"].includes(dbUrl.hostname);
   const pool = new Pool({
     connectionString,
     max: poolMax,
@@ -80,11 +83,13 @@ if (useAdapter) {
     statement_timeout: statementTimeoutMs,
     query_timeout: queryTimeoutMs,
     ssl:
-      process.env.NODE_ENV === "production"
-        ? sslMode === "verify-full"
-          ? { rejectUnauthorized: true }
-          : true
-        : { rejectUnauthorized: false },
+      sslMode === "disable" || isLocalDb
+        ? false
+        : sslMode === "require"
+          ? { rejectUnauthorized: false }
+          : sslMode === "verify-full"
+            ? { rejectUnauthorized: true }
+            : process.env.NODE_ENV === "production",
   });
   adapter = new PrismaPg(pool);
 }

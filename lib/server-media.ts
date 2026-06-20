@@ -1,13 +1,10 @@
 import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { writeFile } from "fs/promises";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import sharp from "sharp";
 
-const DEFAULT_MEDIA_ROOT =
-  process.env.NODE_ENV === "production"
-    ? "/data/media"
-    : path.join(process.cwd(), "public", "media");
-const DEFAULT_MEDIA_PUBLIC_PATH = "/media";
+const DEFAULT_RUSTFS_REGION = "us-east-1";
+const CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 export const MEDIA_VARIANTS = {
   original: "original.webp",
@@ -22,9 +19,11 @@ export type MediaVariant = keyof typeof MEDIA_VARIANTS;
 
 type StoredMedia = {
   mediaId: string;
-  directory: string;
+  keyPrefix: string;
   publicUrl: string;
 };
+
+let s3Client: S3Client | null = null;
 
 const sanitizeSegment = (value: string) =>
   value
@@ -40,28 +39,57 @@ const sanitizeRelativePath = (value: string) =>
     .filter(Boolean)
     .join("/") || "uploads";
 
-export const getMediaRoot = () =>
-  path.resolve(process.env.MEDIA_ROOT || DEFAULT_MEDIA_ROOT);
+const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "");
 
-export const getMediaPublicPath = () =>
-  (process.env.MEDIA_PUBLIC_PATH || DEFAULT_MEDIA_PUBLIC_PATH).replace(/\/$/, "");
+const getRequiredEnv = (key: string) => {
+  const value = process.env[key];
+  if (!value) throw new Error(`${key} is required for RustFS media storage.`);
+  return value;
+};
 
-export const createMediaDirectory = async (resource = "uploads") => {
+const getRustfsEndpoint = () => getRequiredEnv("RUSTFS_ENDPOINT").replace(/\/$/, "");
+
+export const getRustfsBucket = () => getRequiredEnv("RUSTFS_BUCKET");
+
+export const getRustfsPublicBaseUrl = () =>
+  (process.env.RUSTFS_PUBLIC_URL || `${getRustfsEndpoint()}/${getRustfsBucket()}`).replace(
+    /\/$/,
+    "",
+  );
+
+export const getRustfsPublicUrl = (key: string) =>
+  `${getRustfsPublicBaseUrl()}/${trimSlashes(key)}`;
+
+const getS3Client = () => {
+  if (s3Client) return s3Client;
+
+  s3Client = new S3Client({
+    endpoint: getRustfsEndpoint(),
+    region: process.env.RUSTFS_REGION || DEFAULT_RUSTFS_REGION,
+    forcePathStyle: true,
+    credentials: {
+      accessKeyId: getRequiredEnv("RUSTFS_ACCESS_KEY"),
+      secretAccessKey: getRequiredEnv("RUSTFS_SECRET_KEY"),
+    },
+  });
+
+  return s3Client;
+};
+
+export const createMediaObjectPrefix = async (resource = "uploads") => {
   const now = new Date();
   const mediaId = randomUUID();
-  const relativeDirectory = path.posix.join(
+  const keyPrefix = [
     sanitizeRelativePath(resource),
     String(now.getUTCFullYear()),
     String(now.getUTCMonth() + 1).padStart(2, "0"),
     mediaId,
-  );
-  const directory = path.join(getMediaRoot(), ...relativeDirectory.split("/"));
-  await mkdir(directory, { recursive: true });
+  ].join("/");
 
   return {
     mediaId,
-    directory,
-    publicUrl: `${getMediaPublicPath()}/${relativeDirectory}/${MEDIA_VARIANTS.original}`,
+    keyPrefix,
+    publicUrl: getRustfsPublicUrl(`${keyPrefix}/${MEDIA_VARIANTS.original}`),
   } satisfies StoredMedia;
 };
 
@@ -74,50 +102,68 @@ const fitCover = (width: number, height: number) => ({
 
 export const generateMediaVariants = async (
   input: Buffer,
-  outputDirectory: string,
+  keyPrefix: string,
 ) => {
-  await mkdir(outputDirectory, { recursive: true });
-
   const base = sharp(input, { failOn: "none" }).rotate();
-
-  await Promise.all([
+  const variants = await Promise.all([
     base
       .clone()
       .resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true })
       .webp({ quality: 86 })
-      .toFile(path.join(outputDirectory, MEDIA_VARIANTS.original)),
+      .toBuffer()
+      .then((body) => ({ filename: MEDIA_VARIANTS.original, body })),
     base
       .clone()
       .resize(fitCover(480, 600))
       .webp({ quality: 78 })
-      .toFile(path.join(outputDirectory, MEDIA_VARIANTS.card)),
+      .toBuffer()
+      .then((body) => ({ filename: MEDIA_VARIANTS.card, body })),
     base
       .clone()
       .resize(fitCover(900, 506))
       .webp({ quality: 80 })
-      .toFile(path.join(outputDirectory, MEDIA_VARIANTS.hero)),
+      .toBuffer()
+      .then((body) => ({ filename: MEDIA_VARIANTS.hero, body })),
     base
       .clone()
       .resize({ width: 1600, fit: "inside", withoutEnlargement: true })
       .webp({ quality: 82 })
-      .toFile(path.join(outputDirectory, MEDIA_VARIANTS.full)),
+      .toBuffer()
+      .then((body) => ({ filename: MEDIA_VARIANTS.full, body })),
     base
       .clone()
       .resize(fitCover(160, 160))
       .webp({ quality: 74 })
-      .toFile(path.join(outputDirectory, MEDIA_VARIANTS.thumb)),
+      .toBuffer()
+      .then((body) => ({ filename: MEDIA_VARIANTS.thumb, body })),
     base
       .clone()
       .resize(fitCover(20, 25))
       .blur(8)
       .webp({ quality: 28 })
-      .toFile(path.join(outputDirectory, MEDIA_VARIANTS.lqip)),
+      .toBuffer()
+      .then((body) => ({ filename: MEDIA_VARIANTS.lqip, body })),
   ]);
+
+  await Promise.all(
+    variants.map(({ filename, body }) =>
+      getS3Client().send(
+        new PutObjectCommand({
+          Bucket: getRustfsBucket(),
+          Key: `${keyPrefix}/${filename}`,
+          Body: body,
+          ACL: "public-read",
+          ContentType: "image/webp",
+          CacheControl: CACHE_CONTROL,
+        }),
+      ),
+    ),
+  );
 };
 
 export const storeMediaBuffer = async (input: Buffer, resource = "uploads") => {
-  const media = await createMediaDirectory(resource);
-  await generateMediaVariants(input, media.directory);
+  const media = await createMediaObjectPrefix(resource);
+  await generateMediaVariants(input, media.keyPrefix);
   return media.publicUrl;
 };
 

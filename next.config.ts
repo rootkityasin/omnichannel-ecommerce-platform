@@ -1,6 +1,30 @@
 import type { NextConfig } from "next";
 import pkg from "./package.json" with { type: "json" };
 
+const rustfsUrl = process.env.RUSTFS_PUBLIC_URL || process.env.RUSTFS_ENDPOINT;
+const rustfsImageSource = (() => {
+  if (!rustfsUrl) return null;
+  try {
+    const parsed = new URL(rustfsUrl);
+    return `${parsed.protocol}//${parsed.hostname}`;
+  } catch {
+    return null;
+  }
+})();
+
+const rustfsRemotePattern = (() => {
+  if (!rustfsUrl) return null;
+  try {
+    const parsed = new URL(rustfsUrl);
+    return {
+      protocol: parsed.protocol.replace(":", "") as "http" | "https",
+      hostname: parsed.hostname,
+    };
+  } catch {
+    return null;
+  }
+})();
+
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || pkg.version,
@@ -33,6 +57,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" }, // Google avatars
       { protocol: "https", hostname: "www.transparenttextures.com" },
       { protocol: "https", hostname: "api.dicebear.com" },
+      ...(rustfsRemotePattern ? [rustfsRemotePattern] : []),
     ],
     // Reduce image sizes for faster load
     deviceSizes: [640, 750, 828, 1080, 1200],
@@ -53,7 +78,7 @@ const nextConfig: NextConfig = {
   },
 
   // Optimize server actions
-  serverExternalPackages: ["@prisma/client", "pg", "sharp"],
+  serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "pg", "sharp"],
 
   // Disable X-Powered-By header
   poweredByHeader: false,
@@ -88,7 +113,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.facebook.net https://*.facebook.com https://*.fbcdn.net https://static.cloudflareinsights.com https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://www.transparenttextures.com https://api.dicebear.com https://grainy-gradients.vercel.app",
+              `img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://www.transparenttextures.com https://api.dicebear.com https://grainy-gradients.vercel.app${rustfsImageSource ? ` ${rustfsImageSource}` : ""}`,
               "font-src 'self' https://fonts.gstatic.com data:",
               "connect-src 'self' https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://cloudflareinsights.com ws://localhost:* wss://localhost:*",
               "frame-src 'self' https://*.facebook.com",

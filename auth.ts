@@ -100,6 +100,8 @@ async function resolveTenantFromRequestHost() {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  basePath: "/api/auth",
+  trustHost: true,
   secret: process.env.AUTH_SECRET,
   callbacks: {
     ...authConfig.callbacks,

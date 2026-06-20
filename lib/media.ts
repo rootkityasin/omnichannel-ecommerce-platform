@@ -1,5 +1,7 @@
 const LEGACY_CLOUDINARY_HOST = "res.cloudinary.com";
 const LOCAL_MEDIA_PREFIX = "/media/";
+const MEDIA_VARIANT_PATTERN =
+  /\/(?:original|card|hero|full|thumb|lqip)\.webp(\?.*)?$/;
 
 type MediaOptions = {
   width?: number;
@@ -39,10 +41,10 @@ const injectTransform = (url: string, transform: string) => {
 
 const isLocalMediaUrl = (url: string) => url.startsWith(LOCAL_MEDIA_PREFIX);
 
-const replaceLocalVariant = (url: string, variant: string) => {
-  if (!isLocalMediaUrl(url)) return url;
-  return url.replace(/\/[^/]+\.webp(?:\?.*)?$/, `/${variant}`);
-};
+const isVariantMediaUrl = (url: string) => MEDIA_VARIANT_PATTERN.test(url);
+
+const replaceMediaVariant = (url: string, variant: string) =>
+  url.replace(MEDIA_VARIANT_PATTERN, `/${variant}$1`);
 
 const selectLocalVariant = (options: MediaOptions) => {
   if ((options.width || 0) >= 1400 || options.crop === "limit") return "full.webp";
@@ -57,7 +59,9 @@ export const buildMediaUrl = (
   options: MediaOptions,
 ) => {
   if (!url) return "";
-  if (isLocalMediaUrl(url)) return replaceLocalVariant(url, selectLocalVariant(options));
+  if (isLocalMediaUrl(url) || isVariantMediaUrl(url)) {
+    return replaceMediaVariant(url, selectLocalVariant(options));
+  }
   if (!isLegacyCloudinaryUrl(url)) return url;
   const parts = [
     options.format || "f_auto",
@@ -76,7 +80,9 @@ export const buildMediaLqip = (
   options: LqipOptions,
 ) => {
   if (!url) return "";
-  if (isLocalMediaUrl(url)) return replaceLocalVariant(url, "lqip.webp");
+  if (isLocalMediaUrl(url) || isVariantMediaUrl(url)) {
+    return replaceMediaVariant(url, "lqip.webp");
+  }
   if (!isLegacyCloudinaryUrl(url)) return "";
   const parts = [
     "f_auto",

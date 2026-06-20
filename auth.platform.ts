@@ -8,6 +8,8 @@ import { platformPrisma } from "@/lib/platformPrisma";
 export const runtime = "nodejs";
 
 export const { handlers: platformHandlers, auth: platformAuth } = NextAuth({
+  basePath: "/api/platform-auth",
+  trustHost: true,
   secret: process.env.PLATFORM_AUTH_SECRET,
   pages: {
     signIn: "/app/login",
