@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { uploadMedia } from "@/app/actions/upload";
 import Image from "next/image";
+import { buildMediaUrl } from "@/lib/media";
 
 interface ImageUploadProps {
   value?: string | string[];
@@ -167,7 +168,12 @@ export function ImageUpload({
               )}
             >
               <Image
-                src={url}
+                src={buildMediaUrl(url, {
+                  width: multiple ? 480 : 900,
+                  aspect: multiple ? "1:1" : "16:9",
+                  crop: "fill",
+                  gravity: "auto",
+                })}
                 alt="Uploaded"
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"

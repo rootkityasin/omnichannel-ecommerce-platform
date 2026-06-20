@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 import { ReviewMoodModal } from '@/components/client/ReviewMoodModal';
+import { buildMediaUrl } from '@/lib/media';
 
 interface ReviewProps {
     data: {
@@ -42,7 +43,12 @@ export function ReviewSection({ data }: ReviewProps) {
                 >
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-800">
                         <img
-                            src={featuredImage || "https://placehold.co/800x400/1e293b/FFF?text=No+Featured+Image"}
+                            src={buildMediaUrl(featuredImage, {
+                                width: 900,
+                                aspect: "16:9",
+                                crop: "fit",
+                                gravity: "auto",
+                            }) || "https://placehold.co/800x400/1e293b/FFF?text=No+Featured+Image"}
                             alt="A heartfelt note from our team"
                             className="w-full h-auto object-contain"
                         />
@@ -62,7 +68,12 @@ export function ReviewSection({ data }: ReviewProps) {
                             className="group relative aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-800"
                         >
                             <img
-                                src={item.src || "https://placehold.co/400x600/1e293b/FFF?text=No+Image"}
+                                src={buildMediaUrl(item.src, {
+                                    width: 480,
+                                    aspect: "9:16",
+                                    crop: "fill",
+                                    gravity: "auto",
+                                }) || "https://placehold.co/400x600/1e293b/FFF?text=No+Image"}
                                 alt={item.alt}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />

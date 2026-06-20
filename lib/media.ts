@@ -1,5 +1,8 @@
 const LEGACY_CLOUDINARY_HOST = "res.cloudinary.com";
 const LOCAL_MEDIA_PREFIX = "/media/";
+const RUSTFS_PUBLIC_BASE_URL = (
+  process.env.NEXT_PUBLIC_RUSTFS_PUBLIC_BASE_URL || ""
+).replace(/\/$/, "");
 const MEDIA_VARIANT_PATTERN =
   /\/(?:original|card|hero|full|thumb|lqip)\.webp(\?.*)?$/;
 
@@ -43,6 +46,30 @@ const isLocalMediaUrl = (url: string) => url.startsWith(LOCAL_MEDIA_PREFIX);
 
 const isVariantMediaUrl = (url: string) => MEDIA_VARIANT_PATTERN.test(url);
 
+export const normalizeMediaUrl = (url: string | null | undefined) => {
+  if (!url) return "";
+  if (isLocalMediaUrl(url)) return url;
+  if (RUSTFS_PUBLIC_BASE_URL && url.startsWith(`${RUSTFS_PUBLIC_BASE_URL}/`)) {
+    return `${LOCAL_MEDIA_PREFIX}${url.slice(RUSTFS_PUBLIC_BASE_URL.length + 1)}`;
+  }
+
+  try {
+    const parsed = new URL(url);
+    const pathWithSearch = `${parsed.pathname}${parsed.search}`;
+    if (!isVariantMediaUrl(pathWithSearch)) return url;
+
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    const keyStart = segments.findIndex(
+      (segment) => segment === "tenants" || segment === "global",
+    );
+    if (keyStart === -1) return url;
+
+    return `${LOCAL_MEDIA_PREFIX}${segments.slice(keyStart).join("/")}${parsed.search}`;
+  } catch {
+    return url;
+  }
+};
+
 const replaceMediaVariant = (url: string, variant: string) =>
   url.replace(MEDIA_VARIANT_PATTERN, `/${variant}$1`);
 
@@ -59,10 +86,11 @@ export const buildMediaUrl = (
   options: MediaOptions,
 ) => {
   if (!url) return "";
-  if (isLocalMediaUrl(url) || isVariantMediaUrl(url)) {
-    return replaceMediaVariant(url, selectLocalVariant(options));
+  const mediaUrl = normalizeMediaUrl(url);
+  if (isLocalMediaUrl(mediaUrl) || isVariantMediaUrl(mediaUrl)) {
+    return replaceMediaVariant(mediaUrl, selectLocalVariant(options));
   }
-  if (!isLegacyCloudinaryUrl(url)) return url;
+  if (!isLegacyCloudinaryUrl(mediaUrl)) return mediaUrl;
   const parts = [
     options.format || "f_auto",
     options.quality || "q_auto:good",
@@ -72,7 +100,7 @@ export const buildMediaUrl = (
     options.width ? `w_${options.width}` : null,
   ].filter(Boolean);
   const transform = parts.join(",");
-  return injectTransform(url, transform);
+  return injectTransform(mediaUrl, transform);
 };
 
 export const buildMediaLqip = (
@@ -80,10 +108,11 @@ export const buildMediaLqip = (
   options: LqipOptions,
 ) => {
   if (!url) return "";
-  if (isLocalMediaUrl(url) || isVariantMediaUrl(url)) {
-    return replaceMediaVariant(url, "lqip.webp");
+  const mediaUrl = normalizeMediaUrl(url);
+  if (isLocalMediaUrl(mediaUrl) || isVariantMediaUrl(mediaUrl)) {
+    return replaceMediaVariant(mediaUrl, "lqip.webp");
   }
-  if (!isLegacyCloudinaryUrl(url)) return "";
+  if (!isLegacyCloudinaryUrl(mediaUrl)) return "";
   const parts = [
     "f_auto",
     "q_10",
@@ -94,5 +123,5 @@ export const buildMediaLqip = (
     "w_20",
   ].filter(Boolean);
   const transform = parts.join(",");
-  return injectTransform(url, transform);
+  return injectTransform(mediaUrl, transform);
 };

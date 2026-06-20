@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Clock, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { buildMediaUrl } from "@/lib/media";
 
 interface PromoData {
   id: string;
@@ -55,6 +56,12 @@ export function PromoModal({ promo }: PromoModalProps) {
 
   const isDarkMode = promo.style === "DARK";
   const isWhiteCard = promo.style === "WHITE";
+  const promoImageUrl = buildMediaUrl(promo.imageUrl, {
+    width: 900,
+    aspect: "16:9",
+    crop: "fill",
+    gravity: "auto",
+  });
 
   // ── WHITE CARD STYLE ──────────────────────────────────────────────────────
   // Legacy first popup design: structured card layout with image on top, text below.
@@ -71,10 +78,10 @@ export function PromoModal({ promo }: PromoModalProps) {
           </button>
 
           {/* Image Block */}
-          {promo.imageUrl && (
+          {promoImageUrl && (
             <div className="w-full h-48 overflow-hidden bg-slate-100">
               <img
-                src={promo.imageUrl}
+                src={promoImageUrl}
                 alt={promo.title || "Promotion"}
                 className="w-full h-full object-cover"
               />
@@ -127,9 +134,9 @@ export function PromoModal({ promo }: PromoModalProps) {
         className={`relative w-full max-w-sm h-[340px] ${isDarkMode ? "bg-gray-900" : "bg-white"} rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 group`}
       >
         {/* Full Background Image */}
-        {promo.imageUrl && (
+        {promoImageUrl && (
           <img
-            src={promo.imageUrl}
+            src={promoImageUrl}
             alt={promo.title || "Promotion"}
             className="absolute inset-0 w-full h-full object-cover opacity-90"
           />

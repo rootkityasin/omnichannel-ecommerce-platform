@@ -63,6 +63,11 @@ export const ProductCard = memo(function ProductCard({
     crop: "fill",
     gravity: "auto",
   });
+  const thumbActiveImage = buildMediaUrl(activeImage, {
+    width: 160,
+    crop: "fill",
+    gravity: "auto",
+  });
 
   // Reset active image if prop changes
   useEffect(() => {
@@ -84,7 +89,7 @@ export const ProductCard = memo(function ProductCard({
     // Trigger Fly Animation
     if (imageRef.current) {
       const rect = imageRef.current.getBoundingClientRect();
-      triggerFly(activeImage, {
+      triggerFly(thumbActiveImage || activeImage, {
         top: rect.top,
         left: rect.left,
         width: rect.width,
@@ -95,7 +100,7 @@ export const ProductCard = memo(function ProductCard({
     // Add to Store
     const priceNum =
       typeof price === "string" ? Number(price.replace(/[^0-9.]/g, "")) : price;
-    addItem({ id, name, price: priceNum, image: activeImage, quantity: 1 });
+    addItem({ id, name, price: priceNum, image: thumbActiveImage || activeImage, quantity: 1 });
 
     // Server-Side Tracking: AddToCart
     trackEvent({
@@ -114,7 +119,7 @@ export const ProductCard = memo(function ProductCard({
         <div className="flex items-center gap-4 w-full bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/20">
           <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
             <img
-              src={activeImage}
+              src={thumbActiveImage || activeImage}
               alt={name}
               className="h-full w-full object-cover"
             />
@@ -241,7 +246,11 @@ export const ProductCard = memo(function ProductCard({
                   className={`w-10 h-10 rounded-md overflow-hidden border-2 shadow-sm transition-all ${activeImage === img ? "border-crab-red scale-110" : "border-white/80 hover:border-white"}`}
                 >
                   <img
-                    src={img}
+                    src={buildMediaUrl(img, {
+                      width: 160,
+                      crop: "fill",
+                      gravity: "auto",
+                    })}
                     alt={`View ${idx}`}
                     className="w-full h-full object-cover"
                   />

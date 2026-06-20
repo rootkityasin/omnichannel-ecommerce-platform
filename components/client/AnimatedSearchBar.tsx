@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { buildMediaUrl } from "@/lib/media";
 import { useLanguageStore } from "@/lib/languageStore";
 import { translations } from "@/lib/translations";
 
@@ -189,7 +190,11 @@ export function AnimatedSearchBar({
                     onClick={() => performSearch(item.name)}
                   >
                     <img
-                      src={item.image}
+                      src={buildMediaUrl(item.image, {
+                        width: 160,
+                        crop: "fill",
+                        gravity: "auto",
+                      })}
                       alt={item.name}
                       className="w-8 h-8 rounded object-cover bg-gray-100"
                     />

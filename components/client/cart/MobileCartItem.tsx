@@ -3,6 +3,7 @@
 import { Minus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { CartItem } from "@/lib/store";
+import { buildMediaUrl } from "@/lib/media";
 
 interface CartSettings {
   measurementUnit?: string;
@@ -35,7 +36,11 @@ export function MobileCartItem({
       <div className="w-20 h-20 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden border border-slate-100">
         {item.image ? (
           <img
-            src={item.image}
+            src={buildMediaUrl(item.image, {
+              width: 160,
+              crop: "fill",
+              gravity: "auto",
+            })}
             alt={item.name}
             className="w-full h-full object-cover"
           />

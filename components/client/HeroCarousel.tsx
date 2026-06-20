@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useLanguageStore } from "@/lib/languageStore";
 import { translations } from "@/lib/translations";
 import { HeroSlide } from "@/types/common";
+import { buildMediaUrl } from "@/lib/media";
 
 export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
   // Memoize plugins to prevent re-initialization on every render
@@ -85,7 +86,12 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
                 }}
               >
                 <NextImage
-                  src={slide.imageUrl}
+                  src={buildMediaUrl(slide.imageUrl, {
+                    width: 1600,
+                    aspect: "16:9",
+                    crop: "fill",
+                    gravity: "auto",
+                  })}
                   alt={slide.title}
                   fill
                   className="object-cover"

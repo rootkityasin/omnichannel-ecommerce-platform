@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 import pkg from "./package.json" with { type: "json" };
 
 const rustfsUrl = process.env.RUSTFS_PUBLIC_URL || process.env.RUSTFS_ENDPOINT;
+const rustfsPublicBaseUrl = (() => {
+  if (process.env.RUSTFS_PUBLIC_URL) return process.env.RUSTFS_PUBLIC_URL.replace(/\/$/, "");
+  if (!process.env.RUSTFS_ENDPOINT || !process.env.RUSTFS_BUCKET) return "";
+  return `${process.env.RUSTFS_ENDPOINT.replace(/\/$/, "")}/${process.env.RUSTFS_BUCKET}`;
+})();
 const rustfsImageSource = (() => {
   if (!rustfsUrl) return null;
   try {
@@ -28,6 +33,7 @@ const rustfsRemotePattern = (() => {
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || pkg.version,
+    NEXT_PUBLIC_RUSTFS_PUBLIC_BASE_URL: rustfsPublicBaseUrl,
   },
   // Enable standalone output for Docker deployment
   output: "standalone",

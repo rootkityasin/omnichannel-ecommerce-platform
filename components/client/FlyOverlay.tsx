@@ -1,8 +1,8 @@
 'use client';
 
 import { useAnimationStore } from "@/lib/animationStore";
+import { normalizeMediaUrl } from "@/lib/media";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
 
 export function FlyOverlay() {
     const { flyingItems, targetRect, removeFlyItem } = useAnimationStore();
@@ -29,7 +29,7 @@ function FlyItem({ item, targetRect, onComplete }: { item: any, targetRect: any,
 
     return (
         <motion.img
-            src={item.image}
+            src={normalizeMediaUrl(item.image)}
             initial={{
                 position: 'absolute',
                 top: item.startRect.top,

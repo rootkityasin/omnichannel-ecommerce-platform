@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { buildMediaUrl } from "@/lib/media";
 
 interface Product {
   id: string;
@@ -54,7 +55,12 @@ export function StoryProducts({ data, products }: StoryProductsProps) {
               <div className="aspect-square relative overflow-hidden bg-slate-800">
                 {product.image ? (
                   <img
-                    src={product.image}
+                    src={buildMediaUrl(product.image, {
+                      width: 480,
+                      aspect: "1:1",
+                      crop: "fill",
+                      gravity: "auto",
+                    })}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />

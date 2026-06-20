@@ -5,6 +5,7 @@ import sharp from "sharp";
 
 const DEFAULT_RUSTFS_REGION = "us-east-1";
 const CACHE_CONTROL = "public, max-age=31536000, immutable";
+const MEDIA_PUBLIC_PATH = "/media";
 
 export const MEDIA_VARIANTS = {
   original: "original.webp",
@@ -60,7 +61,10 @@ export const getRustfsPublicBaseUrl = () =>
 export const getRustfsPublicUrl = (key: string) =>
   `${getRustfsPublicBaseUrl()}/${trimSlashes(key)}`;
 
-const getS3Client = () => {
+export const getMediaPublicUrl = (key: string) =>
+  `${MEDIA_PUBLIC_PATH}/${trimSlashes(key)}`;
+
+export const getS3Client = () => {
   if (s3Client) return s3Client;
 
   s3Client = new S3Client({
@@ -89,7 +93,7 @@ export const createMediaObjectPrefix = async (resource = "uploads") => {
   return {
     mediaId,
     keyPrefix,
-    publicUrl: getRustfsPublicUrl(`${keyPrefix}/${MEDIA_VARIANTS.original}`),
+    publicUrl: getMediaPublicUrl(`${keyPrefix}/${MEDIA_VARIANTS.original}`),
   } satisfies StoredMedia;
 };
 
