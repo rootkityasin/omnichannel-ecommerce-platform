@@ -6,6 +6,12 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+ARG DATABASE_URL=postgresql://build:build@localhost:5432/build
+ARG NEXT_PUBLIC_ROOT_DOMAIN=localhost:3000
+
+ENV DATABASE_URL=${DATABASE_URL}
+ENV NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN}
+
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 # Copy prisma directory for postinstall generation
@@ -25,8 +31,8 @@ COPY . .
 # ENV NEXT_TELEMETRY_DISABLED=1
 
 # Add arguments for build time variables
-ARG DATABASE_URL
-ARG NEXT_PUBLIC_ROOT_DOMAIN
+ARG DATABASE_URL=postgresql://build:build@localhost:5432/build
+ARG NEXT_PUBLIC_ROOT_DOMAIN=localhost:3000
 
 # Pass them as environment variables during build
 ENV DATABASE_URL=${DATABASE_URL}
