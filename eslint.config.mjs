@@ -25,7 +25,12 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "scripts/*.js",
     "check_db.js",
-    "parse_lint.js"
+    "parse_lint.js",
+    "scratch/**",
+    "backups/**",
+    "check-migrations.js",
+    "db-check.js",
+    "test-prisma.js"
   ]),
 ]);
 

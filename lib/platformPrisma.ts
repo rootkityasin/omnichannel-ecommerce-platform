@@ -66,7 +66,7 @@ const createClient = () => {
 
   if (useAdapter && adapter) {
     prismaOptions.adapter = adapter;
-  } else {
+  } else if (runtimeDatabaseUrl.startsWith("prisma://")) {
     prismaOptions.accelerateUrl = runtimeDatabaseUrl;
   }
 

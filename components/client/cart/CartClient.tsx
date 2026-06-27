@@ -25,6 +25,7 @@ import { createOrder } from "@/app/actions/order";
 import { toast } from "sonner";
 import { useSettings } from "@/components/providers/SettingsProvider";
 import { buildMediaUrl } from "@/lib/media";
+import { formatQuantity } from "@/lib/format";
 import {
   Select,
   SelectContent,
@@ -550,14 +551,7 @@ export function CartClient({
                           <span className="text-xs text-gray-400 font-heading">
                             ৳{item.price} x{" "}
                             {settings.measurementUnit === "WEIGHT"
-                              ? (() => {
-                                  const g =
-                                    item.quantity *
-                                    (settings.weightUnitValue || 200);
-                                  return g >= 1000
-                                    ? `${(g / 1000).toFixed(1)} kg`
-                                    : `${g} g`;
-                                })()
+                              ? formatQuantity(item.quantity, settings, item.weight)
                               : item.quantity}
                           </span>
                         )}
@@ -590,14 +584,7 @@ export function CartClient({
                             className="text-sm font-bold min-w-[3rem] text-center text-slate-900"
                           >
                             {settings.measurementUnit === "WEIGHT"
-                              ? (() => {
-                                  const grams =
-                                    item.quantity *
-                                    (settings.weightUnitValue || 200);
-                                  return grams >= 1000
-                                    ? `${(grams / 1000).toFixed(1)} kg`
-                                    : `${grams} g`;
-                                })()
+                              ? formatQuantity(item.quantity, settings, item.weight)
                               : item.quantity}
                           </motion.span>
                           <motion.button

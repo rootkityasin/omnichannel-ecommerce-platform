@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { headers } from "next/headers";
 
 /**
  * Server-side tracking utility for Meta Conversions API (CAPI) and Internal Logging
@@ -69,6 +70,41 @@ export async function trackMetaEvent(
   customData?: CustomData,
   sourceUrl?: string,
 ) {
+  let headersList;
+  try {
+    headersList = await headers();
+  } catch (e) {
+    // Dynamic headers not available (e.g. static compilation/build time)
+  }
+
+  const resolvedIp =
+    userData.clientIpAddress ||
+    headersList?.get("x-forwarded-for")?.split(",")[0] ||
+    "127.0.0.1";
+  const resolvedUA = userData.userAgent || headersList?.get("user-agent") || "";
+
+  // Parse cookies for fbc and fbp if not provided
+  let resolvedFbc = userData.fbc;
+  let resolvedFbp = userData.fbp;
+  if (headersList && (!resolvedFbc || !resolvedFbp)) {
+    try {
+      const cookieHeader = headersList.get("cookie") || "";
+      const cookiesMap: Record<string, string> = {};
+      cookieHeader.split(";").forEach((cookie) => {
+        const parts = cookie.trim().split("=");
+        if (parts.length >= 2) {
+          const key = parts[0];
+          const val = parts.slice(1).join("=");
+          cookiesMap[key] = val;
+        }
+      });
+      if (!resolvedFbc) resolvedFbc = cookiesMap["_fbc"];
+      if (!resolvedFbp) resolvedFbp = cookiesMap["_fbp"];
+    } catch (cookieError) {
+      console.warn("Failed to parse cookies for server tracking", cookieError);
+    }
+  }
+
   // 1. Internal Logging (Save Raw Data to Database)
   try {
     await prisma.trackingEvent.create({
@@ -79,12 +115,18 @@ export async function trackMetaEvent(
         customerEmail: userData.email,
         customerArea: userData.area,
         customerCity: userData.city,
-        ipAddress: userData.clientIpAddress,
-        userAgent: userData.userAgent,
+        ipAddress: resolvedIp,
+        userAgent: resolvedUA,
         sourceUrl: sourceUrl,
         eventData: (customData || {}) as unknown as Prisma.InputJsonValue,
         rawPayload: {
-          userData,
+          userData: {
+            ...userData,
+            clientIpAddress: resolvedIp,
+            userAgent: resolvedUA,
+            fbc: resolvedFbc,
+            fbp: resolvedFbp,
+          },
           customData,
         } as unknown as Prisma.InputJsonValue,
       },
@@ -127,14 +169,15 @@ export async function trackMetaEvent(
     event_time: Math.floor(Date.now() / 1000),
     action_source: "website",
     user_data: {
-      client_ip_address: userData.clientIpAddress,
-      client_user_agent: userData.userAgent,
-      fbc: userData.fbc,
-      fbp: userData.fbp,
+      client_ip_address: resolvedIp,
+      client_user_agent: resolvedUA,
+      fbc: resolvedFbc,
+      fbp: resolvedFbp,
     },
     custom_data: customData,
     event_source_url: sourceUrl || process.env.NEXT_PUBLIC_BASE_URL,
   };
+
 
   // Add Hashed User Data for Meta Matching
   if (userData.email) payload.user_data.em = [hashData(userData.email)];

@@ -1,29 +1,33 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const { PrismaClient } = require("@prisma/platform-client");
+require('dotenv').config();
 const bcrypt = require("bcryptjs");
-const prisma = new PrismaClient();
+const { PrismaClient } = require("@prisma/platform-client");
 
 async function main() {
-  const hashedPassword = await bcrypt.hash("123456", 10);
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.PLATFORM_DATABASE_URL
+      }
+    }
+  });
+  
+  const hashedPassword = await bcrypt.hash("threadiv", 10);
 
-  const admin = await prisma.user.create({
-    data: {
-      name: "Super Admin",
-      phone: "01804221161",
-      email: "admin@platform.local", // Platform control-plane user
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@threadiv.com" },
+    update: { password: hashedPassword },
+    create: {
+      name: "Platform Admin",
+      phone: "00000000000",
+      email: "admin@threadiv.com",
       password: hashedPassword,
       role: "SUPER_ADMIN",
+      isActive: true,
     },
   });
 
-  console.log("Created Admin:", admin);
+  console.log("Created/Updated Admin:", admin);
+  await prisma.$disconnect();
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().catch(console.error);

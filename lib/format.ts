@@ -6,6 +6,7 @@ interface QuantitySettings {
 export function formatQuantity(
   quantity: number,
   settings: QuantitySettings | null | undefined,
+  customWeight?: number,
 ): string {
   if (!settings) return quantity.toString();
 
@@ -16,11 +17,13 @@ export function formatQuantity(
   }
 
   // Weight Logic
-  const unitValue = settings.weightUnitValue || 200; // Default 200g
+  const unitValue = customWeight || settings.weightUnitValue || 200; // Default 200g
   const totalGrams = quantity * unitValue;
 
   if (totalGrams >= 1000) {
-    return `${(totalGrams / 1000).toFixed(1)} kg`;
+    // If exact integer kg, show without decimal places, e.g. 1 kg instead of 1.0 kg
+    const kg = totalGrams / 1000;
+    return kg % 1 === 0 ? `${kg} kg` : `${kg.toFixed(1)} kg`;
   }
   return `${totalGrams} g`;
 }

@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { logActionRequest } from "@/lib/actionLogger";
+import { trackMetaEvent } from "@/lib/serverTracking";
 import { randomUUID } from "node:crypto";
 import { unstable_cache, updateTag } from "next/cache";
+import { headers } from "next/headers";
 import { Prisma } from "@prisma/client";
 
 const getSessionUser = async () => (await auth())?.user;
@@ -321,6 +323,33 @@ export async function createOrder(data: {
       }
     }
 
+    // Server-Side Tracking: Purchase
+    try {
+      const originHeader = (await headers()).get("origin") || "";
+      const refererHeader = (await headers()).get("referer") || "";
+      const sourceUrl = refererHeader || originHeader || undefined;
+
+      await trackMetaEvent(
+        "Purchase",
+        {
+          name: data.customerName,
+          phone: data.customerPhone,
+          email: data.customerEmail,
+        },
+        {
+          content_ids: data.items.map((i) => i.productId),
+          contents: data.items.map((i) => ({ id: i.productId, quantity: i.quantity })),
+          num_items: data.items.length,
+          value: data.totalAmount,
+          currency: "BDT",
+          order_id: order.orderId,
+        },
+        sourceUrl
+      );
+    } catch (trackErr) {
+      console.error("Purchase Server-Side Tracking Error:", trackErr);
+    }
+
     invalidateOrderCaches();
     return { success: true, orderId: order.orderId };
   } catch (error) {
@@ -358,6 +387,8 @@ export async function upsertIncompleteOrder(data: {
 
     if (!tenantId) return { success: false, error: "Missing Tenant" };
 
+    let resolvedOrderId = data.draftOrderId;
+
     if (data.draftOrderId) {
       const existing = await prisma.order.findUnique({
         where: { orderId: data.draftOrderId },
@@ -385,35 +416,66 @@ export async function upsertIncompleteOrder(data: {
             },
           },
         });
-        return { success: true, orderId: data.draftOrderId };
+      } else {
+        resolvedOrderId = undefined;
       }
     }
 
-    const newOrderId = `ORD-${randomUUID().substring(0, 8).toUpperCase()}`;
-    await prisma.order.create({
-      data: {
-        tenantId,
-        orderId: newOrderId,
-        status: "INCOMPLETE",
-        customerName: data.customerName,
-        customerPhone: data.customerPhone,
-        customerEmail: data.customerEmail,
-        customerAddress: data.customerAddress,
-        totalAmount: data.totalAmount,
-        couponCode: data.couponCode,
-        discountAmount: data.discountAmount,
-        source: "WEB",
-        items: {
-          create: data.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
+    if (!resolvedOrderId) {
+      const newOrderId = `ORD-${randomUUID().substring(0, 8).toUpperCase()}`;
+      await prisma.order.create({
+        data: {
+          tenantId,
+          orderId: newOrderId,
+          status: "INCOMPLETE",
+          customerName: data.customerName,
+          customerPhone: data.customerPhone,
+          customerEmail: data.customerEmail,
+          customerAddress: data.customerAddress,
+          totalAmount: data.totalAmount,
+          couponCode: data.couponCode,
+          discountAmount: data.discountAmount,
+          source: "WEB",
+          items: {
+            create: data.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
         },
-      },
-    });
+      });
+      resolvedOrderId = newOrderId;
+    }
 
-    return { success: true, orderId: newOrderId };
+    // Server-Side Tracking: InitiateCheckout
+    try {
+      const originHeader = (await headers()).get("origin") || "";
+      const refererHeader = (await headers()).get("referer") || "";
+      const sourceUrl = refererHeader || originHeader || undefined;
+
+      await trackMetaEvent(
+        "InitiateCheckout",
+        {
+          name: data.customerName,
+          phone: data.customerPhone,
+          email: data.customerEmail,
+        },
+        {
+          content_ids: data.items.map((i) => i.productId),
+          contents: data.items.map((i) => ({ id: i.productId, quantity: i.quantity })),
+          num_items: data.items.length,
+          value: data.totalAmount,
+          currency: "BDT",
+          order_id: resolvedOrderId,
+        },
+        sourceUrl
+      );
+    } catch (trackErr) {
+      console.error("InitiateCheckout Server-Side Tracking Error:", trackErr);
+    }
+
+    return { success: true, orderId: resolvedOrderId };
   } catch (error) {
     console.error("Failed to upsert incomplete order:", error);
     return { success: false, error: "Failed to sync checkout state" };

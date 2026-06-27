@@ -78,7 +78,7 @@ export function AdminProvider({ children, initialUser, initialData }: {
         contactPhone: "+880 1804 221 161",
         contactEmail: "crabkhaibangladesh@gmail.com",
         contactAddress: "195 Green Road, Dhaka",
-        shopName: "Crab & Khai",
+        shopName: "Crab Khai",
         logoUrl: "/logo.svg",
         measurementUnit: "PCS",
         allergensText: "Crustaceans",

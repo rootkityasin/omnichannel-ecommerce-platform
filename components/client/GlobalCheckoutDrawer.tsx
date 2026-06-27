@@ -633,6 +633,7 @@ export function GlobalCheckoutDrawer() {
           value: totalAmount,
           currency: "BDT",
         },
+        browserOnly: true,
       });
     }
   }, [checkoutOpen]);
@@ -754,6 +755,7 @@ export function GlobalCheckoutDrawer() {
           area: formData.area,
           city: "Dhaka",
         },
+        browserOnly: true,
       });
 
       toast.success("Order placed successfully!");

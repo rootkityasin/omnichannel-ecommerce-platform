@@ -32,14 +32,12 @@ export default async function middleware(req: NextRequest) {
   const url = req.nextUrl;
 
   const rootDomain = getRootDomain();
+  const normalizedRootDomain = normalizeHost(rootDomain);
 
   // Get hostname (e.g. crabkhai.com)
   const rawHostHeader =
     req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
-  const normalizedHost = normalizeHost(
-    rawHostHeader.replace(".localhost:3000", `.${rootDomain}`),
-  );
-  const hostname = normalizedHost;
+  const hostname = normalizeHost(rawHostHeader);
   const slug = getSlug(hostname);
 
   const searchParams = req.nextUrl.searchParams.toString();
@@ -73,7 +71,8 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  const isAppHost = hostname === `app.${rootDomain}`;
+  const isAppHost =
+    hostname === `app.${normalizedRootDomain}` || hostname === "app.localhost";
 
   if (isTenantMode && (isAppHost || url.pathname.startsWith("/app"))) {
     return NextResponse.rewrite(new URL("/not-found", req.url), {
@@ -98,9 +97,20 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (hostname === "localhost" || hostname === rootDomain) {
+  if (hostname === "localhost" || hostname === normalizedRootDomain) {
     if (isTenantMode) {
       return NextResponse.rewrite(new URL(`/${slug}${path}`, req.url), {
+        request: { headers: requestHeaders },
+      });
+    }
+
+    if (isPlatformMode && url.pathname.startsWith("/app")) {
+      if (!isSuperAdminEnabled) {
+        return NextResponse.rewrite(new URL("/not-found", req.url), {
+          request: { headers: requestHeaders },
+        });
+      }
+      return NextResponse.rewrite(new URL(path, req.url), {
         request: { headers: requestHeaders },
       });
     }

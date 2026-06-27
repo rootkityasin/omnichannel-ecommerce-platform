@@ -1,5 +1,5 @@
 # Software Requirements Specification (SRS)
-**Project Name:** Crab & Khai - Omnichannel E-Commerce Platform
+**Project Name:** Crab Khai - Omnichannel E-Commerce Platform
 **Version:** 2.0.0
 **Last Updated:** 2026-01-31
 
@@ -8,7 +8,7 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-The purpose of this document is to define the software requirements for the **Crab & Khai** platform, a high-performance, multi-tenant e-commerce solution. It outlines the architectural design, functional capabilities, security protocols, and performance standards required to support multiple storefronts (tenants) from a single code base.
+The purpose of this document is to define the software requirements for the **Crab Khai** platform, a high-performance, multi-tenant e-commerce solution. It outlines the architectural design, functional capabilities, security protocols, and performance standards required to support multiple storefronts (tenants) from a single code base.
 
 ### 1.2 Scope
 The system is a "Multi-Instance" e-commerce application built on Next.js 15. It encompasses:

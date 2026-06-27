@@ -178,12 +178,32 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
         ? Number(product.price.replace(/[^0-9.]/g, ""))
         : product.price;
 
+    const parseWeightFromString = (str: string): number | null => {
+      const normalized = str.toLowerCase().replace(/\s+/g, "");
+      const kgMatch = normalized.match(/^([\d.]+)(?:kg)$/);
+      if (kgMatch) {
+        return parseFloat(kgMatch[1]) * 1000;
+      }
+      const gMatch = normalized.match(/^([\d.]+)(?:g|gm|gram|grams)$/);
+      if (gMatch) {
+        return parseFloat(gMatch[1]);
+      }
+      return null;
+    };
+
+    const resolvedWeight =
+      parseWeightFromString(selectedVariant) ||
+      (product.weight ? Number(product.weight) : undefined) ||
+      settings.weightUnitValue ||
+      200;
+
     addItem({
       id: product.id,
       name: `${product.name} - ${selectedVariant}`,
       price: priceNum,
       image: product.image,
       quantity: quantity,
+      weight: resolvedWeight,
     });
     toast.success(`Added ${quantity} x ${selectedVariant} to cart!`);
     onClose();

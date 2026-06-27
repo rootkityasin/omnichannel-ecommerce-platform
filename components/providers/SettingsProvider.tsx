@@ -34,7 +34,7 @@ const defaultSettings = {
   contactPhone: "",
   contactEmail: "",
   contactAddress: "",
-  shopName: "Crab & Khai",
+  shopName: "Crab Khai",
   logoUrl: "/logo.svg",
   measurementUnit: "PCS",
   allergensText: "",

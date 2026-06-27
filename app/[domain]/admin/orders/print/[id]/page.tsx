@@ -221,7 +221,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                                         <img src={config.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
                                     ) : (
                                         <h2 className="text-2xl font-black italic tracking-tighter" style={{ color: config?.primaryColor || '#000' }}>
-                                            {config?.shopName || 'CRAB & KHAI'}
+                                            {config?.shopName || 'CRAB KHAI'}
                                         </h2>
                                     )}
                                     <div>
@@ -232,7 +232,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
                                 {invoicePrefs.showSeller && (
                                     <div className="text-right flex flex-col gap-1">
-                                        <h3 className="font-bold text-slate-900">{config?.shopName || 'Crab & Khai'}</h3>
+                                        <h3 className="font-bold text-slate-900">{config?.shopName || 'Crab Khai'}</h3>
                                         <p className="text-sm text-slate-500">{config?.contactAddress || '195 Green Road, Dhaka'}</p>
                                         <p className="text-sm text-slate-500">{config?.contactPhone || '+880 1804 221 161'}</p>
                                         <p className="text-sm text-slate-500">{config?.contactEmail || 'crabkhaibangladesh@gmail.com'}</p>
@@ -363,7 +363,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                         )}
                     </div>
                     <div className="mt-20 text-center border-t border-slate-50 pt-8 opacity-50">
-                        <p className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.3em]">Thank you for choosing {config?.shopName || 'CRAB & KHAI'}</p>
+                        <p className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.3em]">Thank you for choosing {config?.shopName || 'CRAB KHAI'}</p>
                         <p className="text-[10px] text-slate-400 mt-2">Driven by Excellence • Sustainable Sourcing • Quality Guaranteed</p>
                     </div>
                 </div>

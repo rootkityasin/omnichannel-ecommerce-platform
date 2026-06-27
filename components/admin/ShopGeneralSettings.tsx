@@ -147,7 +147,7 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
                             <Input
                                 value={config.shopName}
                                 onChange={(e) => setConfig({ ...config, shopName: e.target.value })}
-                                placeholder="e.g. Crab & Khai"
+                                placeholder="e.g. Crab Khai"
                             />
                         </div>
                         <div className="space-y-2">

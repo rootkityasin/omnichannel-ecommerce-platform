@@ -7,10 +7,16 @@ import { platformPrisma } from "@/lib/platformPrisma";
 
 export const runtime = "nodejs";
 
+const isLocal = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes("localhost");
+const useSecureCookies = 
+  process.env.NODE_ENV === "production" && 
+  !isLocal &&
+  process.env.NEXTAUTH_URL?.startsWith("https://");
+
 export const { handlers: platformHandlers, auth: platformAuth } = NextAuth({
   basePath: "/api/platform-auth",
   trustHost: true,
-  secret: process.env.PLATFORM_AUTH_SECRET,
+  secret: process.env.PLATFORM_AUTH_SECRET || process.env.AUTH_SECRET,
   pages: {
     signIn: "/app/login",
   },
@@ -23,7 +29,7 @@ export const { handlers: platformHandlers, auth: platformAuth } = NextAuth({
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: useSecureCookies,
       },
     },
     csrfToken: {
@@ -32,7 +38,7 @@ export const { handlers: platformHandlers, auth: platformAuth } = NextAuth({
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: useSecureCookies,
       },
     },
     callbackUrl: {
@@ -40,7 +46,7 @@ export const { handlers: platformHandlers, auth: platformAuth } = NextAuth({
       options: {
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: useSecureCookies,
       },
     },
   },

@@ -194,7 +194,7 @@ export function EditCompanyModal({
                     onChange={(e) =>
                       setFormData({ ...formData, shopName: e.target.value })
                     }
-                    placeholder="e.g. Crab & Khai"
+                    placeholder="e.g. Crab Khai"
                     className="bg-white text-slate-900 border-slate-300"
                   />
                 </div>

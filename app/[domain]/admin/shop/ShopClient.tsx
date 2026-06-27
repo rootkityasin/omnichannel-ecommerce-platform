@@ -268,7 +268,7 @@ function PolicySettings() {
             if (!res.privacyPolicy) {
                 res.privacyPolicy = `**Your Privacy Matters to Us**
 
-At **Crab & Khai**, we believe building trust is just as important as delivering premium seafood. We want to be transparent about how we handle your information.
+At **Crab Khai**, we believe building trust is just as important as delivering premium seafood. We want to be transparent about how we handle your information.
 
 **What We Collect & Why**
 When you place an order, we ask for your name, phone number, and delivery address. This isn't just data to us—it's the bridge that allows us to deliver fresh, quality products directly to your kitchen.

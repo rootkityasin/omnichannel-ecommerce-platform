@@ -11,7 +11,10 @@ export default function SessionProvider({
   const basePath = useMemo(() => {
     if (typeof window === "undefined") return "/api/auth";
     const host = window.location.host;
-    return host.startsWith("app.") ? "/api/platform-auth" : "/api/auth";
+    const pathname = window.location.pathname;
+    return host.startsWith("app.") || pathname.startsWith("/app")
+      ? "/api/platform-auth"
+      : "/api/auth";
   }, []);
 
   return (

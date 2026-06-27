@@ -4,6 +4,7 @@ import { Minus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { CartItem } from "@/lib/store";
 import { buildMediaUrl } from "@/lib/media";
+import { formatQuantity } from "@/lib/format";
 
 interface CartSettings {
   measurementUnit?: string;
@@ -59,10 +60,7 @@ export function MobileCartItem({
           </h3>
           <p className="font-body text-xs text-slate-800 mt-1 font-semibold">
             {settings.measurementUnit === "WEIGHT"
-              ? (() => {
-                const g = item.quantity * (settings.weightUnitValue || 200);
-                return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
-              })()
+              ? formatQuantity(item.quantity, settings, item.weight)
               : `${item.quantity} units`}
           </p>
         </div>
@@ -94,10 +92,7 @@ export function MobileCartItem({
               className="text-xs font-bold min-w-[3rem] text-center font-heading text-slate-900"
             >
               {settings.measurementUnit === "WEIGHT"
-                ? (() => {
-                  const g = item.quantity * (settings.weightUnitValue || 200);
-                  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
-                })()
+                ? formatQuantity(item.quantity, settings, item.weight)
                 : item.quantity}
             </motion.span>
 

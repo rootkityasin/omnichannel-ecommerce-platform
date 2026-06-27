@@ -100,7 +100,7 @@ export const ProductCard = memo(function ProductCard({
     // Add to Store
     const priceNum =
       typeof price === "string" ? Number(price.replace(/[^0-9.]/g, "")) : price;
-    addItem({ id, name, price: priceNum, image: thumbActiveImage || activeImage, quantity: 1 });
+    addItem({ id, name, price: priceNum, image: thumbActiveImage || activeImage, quantity: 1, weight: weight ? Number(weight) : undefined });
 
     // Server-Side Tracking: AddToCart
     trackEvent({

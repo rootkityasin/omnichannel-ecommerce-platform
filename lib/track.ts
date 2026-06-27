@@ -14,6 +14,7 @@ interface TrackEventParams {
         area?: string;
         city?: string;
     };
+    browserOnly?: boolean;
 }
 
 const createEventId = () => {
@@ -23,7 +24,7 @@ const createEventId = () => {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-export const trackEvent = async ({ eventName, eventData, userData, eventId, dataLayerEventName }: TrackEventParams) => {
+export const trackEvent = async ({ eventName, eventData, userData, eventId, dataLayerEventName, browserOnly }: TrackEventParams) => {
     try {
         const resolvedEventId = eventId || createEventId();
         const eventDataWithoutEventId = { ...(eventData || {}) };
@@ -44,6 +45,10 @@ export const trackEvent = async ({ eventName, eventData, userData, eventId, data
             event_name: eventName,
             ...mergedEventData,
         });
+
+        if (browserOnly) {
+            return { success: true, browserOnly: true };
+        }
 
         // Get Facebook cookies if they exist
         const getCookie = (name: string) => {

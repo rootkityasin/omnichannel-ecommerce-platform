@@ -8,6 +8,7 @@ export interface CartItem {
   quantity: number;
   image?: string;
   modifiers?: string; // e.g., "Spice: Naga"
+  weight?: number;
 }
 
 interface CartState {

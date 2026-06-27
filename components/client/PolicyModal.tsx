@@ -58,7 +58,7 @@ export function PolicyModal({
             <div className="flex justify-center items-center gap-2 opacity-60">
               <div className="w-1.5 h-1.5 rounded-full bg-crab-red" />
               <p className="text-[10px] text-gray-500 font-serif italic tracking-widest uppercase">
-                Crab & Khai Quality Assurance
+                Crab Khai Quality Assurance
               </p>
               <div className="w-1.5 h-1.5 rounded-full bg-crab-red" />
             </div>
