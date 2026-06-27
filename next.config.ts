@@ -121,7 +121,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               `img-src 'self' blob: data: https://*.easykoro.com https://images.unsplash.com https://lh3.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://www.transparenttextures.com https://api.dicebear.com https://grainy-gradients.vercel.app https://www.googletagmanager.com https://*.google-analytics.com https://*.g.doubleclick.net${rustfsImageSource ? ` ${rustfsImageSource}` : ""}`,
               "font-src 'self' https://fonts.gstatic.com data:",
-              "connect-src 'self' https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://cloudflareinsights.com ws://localhost:* wss://localhost:* https://*.on.aws https://*.a.run.app https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.google.com",
+              "connect-src 'self' https://*.facebook.com https://*.fbcdn.net https://*.facebook.net https://cloudflareinsights.com ws://localhost:* wss://localhost:* https://*.on.aws https://*.a.run.app https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.google.com properties:",
               "frame-src 'self' https://*.facebook.com https://www.googletagmanager.com",
               "base-uri 'self'",
               "form-action 'self' https://www.facebook.com https://*.facebook.com",
