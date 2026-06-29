@@ -734,13 +734,16 @@ export async function getPaginatedAdminOrders(params: {
   source?: string;
   dateStart?: string; // ISO string
   dateEnd?: string; // ISO string
+  area?: string;
+  paymentMethod?: string;
+  hubId?: string;
 }) {
   try {
     const sessionUser = await getSessionUser();
     const tenantId = sessionUser?.tenantId;
     if (!tenantId) return { data: [], total: 0 };
 
-    const { page, limit, search, status, source, dateStart, dateEnd } = params;
+    const { page, limit, search, status, source, dateStart, dateEnd, area, paymentMethod, hubId } = params;
     const skip = (page - 1) * limit;
 
     const whereClause: any = { tenantId };
@@ -776,6 +779,21 @@ export async function getPaginatedAdminOrders(params: {
 
     if (source && source !== "all") {
       whereClause.source = source;
+    }
+
+    if (area && area !== "all") {
+      whereClause.customerAddress = {
+        contains: area,
+        mode: "insensitive",
+      };
+    }
+
+    if (paymentMethod && paymentMethod !== "all") {
+      whereClause.paymentMethod = paymentMethod;
+    }
+
+    if (hubId && hubId !== "all") {
+      whereClause.hubId = hubId;
     }
 
     if (dateStart) {
@@ -1073,6 +1091,143 @@ export async function getMyOrders() {
     }));
   } catch (error) {
     console.error("Failed to fetch my orders:", error);
+    return [];
+  }
+}
+
+export async function getHubs() {
+  try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return [];
+
+    return await prisma.hub.findMany({
+      where: { tenantId },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  } catch (error) {
+    console.error("getHubs error:", error);
+    return [];
+  }
+}
+
+export async function getAdminOrdersForExport(params: {
+  search?: string;
+  status?: string;
+  source?: string;
+  dateStart?: string;
+  dateEnd?: string;
+  area?: string;
+  paymentMethod?: string;
+  hubId?: string;
+}) {
+  try {
+    const sessionUser = await getSessionUser();
+    const tenantId = sessionUser?.tenantId;
+    if (!tenantId) return [];
+
+    const { search, status, source, dateStart, dateEnd, area, paymentMethod, hubId } = params;
+
+    const whereClause: any = { tenantId };
+
+    if (search) {
+      whereClause.OR = [
+        { customerName: { contains: search, mode: "insensitive" } },
+        { customerPhone: { contains: search } },
+        { orderId: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (status && status !== "all") {
+      if (status === "Ready") {
+        whereClause.status = {
+          in: ["Ready", "Invoice Printed"],
+        };
+      } else if (status === "Incomplete") {
+        whereClause.status = { in: [...INCOMPLETE_STATUSES] };
+      } else {
+        whereClause.status = status;
+      }
+    } else {
+      whereClause.status = {
+        in: FINAL_ORDER_STATUSES.filter(
+          (statusValue) => !INCOMPLETE_STATUSES.includes(statusValue as never),
+        ),
+      };
+    }
+
+    if (source && source !== "all") {
+      whereClause.source = source;
+    }
+
+    if (area && area !== "all") {
+      whereClause.customerAddress = {
+        contains: area,
+        mode: "insensitive",
+      };
+    }
+
+    if (paymentMethod && paymentMethod !== "all") {
+      whereClause.paymentMethod = paymentMethod;
+    }
+
+    if (hubId && hubId !== "all") {
+      whereClause.hubId = hubId;
+    }
+
+    if (dateStart) {
+      const start = new Date(dateStart);
+      start.setHours(0, 0, 0, 0);
+      whereClause.createdAt = { ...whereClause.createdAt, gte: start };
+    }
+
+    if (dateEnd || dateStart) {
+      const end = dateEnd ? new Date(dateEnd) : new Date(dateStart!);
+      end.setHours(23, 59, 59, 999);
+      whereClause.createdAt = { ...whereClause.createdAt, lte: end };
+    }
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      select: {
+        orderId: true,
+        createdAt: true,
+        customerName: true,
+        customerPhone: true,
+        customerEmail: true,
+        customerAddress: true,
+        totalAmount: true,
+        status: true,
+        source: true,
+        paymentMethod: true,
+        couponCode: true,
+        discountAmount: true,
+        hub: {
+          select: {
+            name: true,
+          },
+        },
+        items: {
+          select: {
+            quantity: true,
+            price: true,
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return orders;
+  } catch (error) {
+    console.error("Export Admin Orders Error:", error);
     return [];
   }
 }

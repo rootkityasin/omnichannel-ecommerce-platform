@@ -21,7 +21,10 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +76,8 @@ import {
   getPaginatedAdminOrders,
   getAdminOrderDetails,
   getOrderStats,
+  getHubs,
+  getAdminOrdersForExport,
 } from "@/app/actions/order";
 import { getProducts } from "@/app/actions/product";
 import { getBlockedCustomers, updateStorySection } from "@/app/actions/story";
@@ -161,6 +166,21 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedConfigRef = useRef(false);
 
+  // Advanced filters and export state
+  const [filterArea, setFilterArea] = useState("all");
+  const [filterPaymentMethod, setFilterPaymentMethod] = useState("all");
+  const [filterHub, setFilterHub] = useState("all");
+  const [hubs, setHubs] = useState<{ id: string; name: string }[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    async function loadHubs() {
+      const hubsList = await getHubs();
+      setHubs(hubsList);
+    }
+    void loadHubs();
+  }, []);
+
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -175,6 +195,9 @@ export default function OrdersPage() {
           source: filterSource,
           dateStart,
           dateEnd: undefined,
+          area: filterArea,
+          paymentMethod: filterPaymentMethod,
+          hubId: filterHub,
         }),
         getOrderStats(),
       ]);
@@ -188,7 +211,7 @@ export default function OrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, filterSearch, filterStatus, filterSource, dateDate]);
+  }, [page, limit, filterSearch, filterStatus, filterSource, dateDate, filterArea, filterPaymentMethod, filterHub]);
 
   const loadOrderPageConfig = useCallback(async () => {
     if (hasLoadedConfigRef.current) return;
@@ -236,6 +259,91 @@ export default function OrdersPage() {
   useEffect(() => {
     void loadOrderPageConfig();
   }, [loadOrderPageConfig]);
+
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    const toastId = toast.loading("Fetching data and generating Excel...");
+    try {
+      const dateStart = dateDate ? dateDate.toISOString() : undefined;
+      const orders = await getAdminOrdersForExport({
+        search: filterSearch,
+        status: filterStatus,
+        source: filterSource,
+        dateStart,
+        dateEnd: undefined,
+        area: filterArea,
+        paymentMethod: filterPaymentMethod,
+        hubId: filterHub,
+      });
+
+      if (!orders || orders.length === 0) {
+        toast.error("No orders found to export", { id: toastId });
+        setIsExporting(false);
+        return;
+      }
+
+      const rows = orders.map((o) => {
+        // Parse area and address
+        let addressPart = o.customerAddress || "";
+        let areaPart = "";
+        if (addressPart.includes(",")) {
+          const parts = addressPart.split(",").map((v) => v.trim());
+          if (parts.length > 1) {
+            areaPart = parts[parts.length - 1];
+            addressPart = parts.slice(0, -1).join(", ");
+          }
+        }
+
+        return {
+          "Order ID": o.orderId,
+          "Date": format(new Date(o.createdAt), "yyyy-MM-dd HH:mm:ss"),
+          "Customer Name": o.customerName,
+          "Phone": o.customerPhone,
+          "Email": o.customerEmail || "",
+          "Address": addressPart,
+          "Area": areaPart,
+          "Payment Method": o.paymentMethod || "COD",
+          "Hub": o.hub?.name || "None",
+          "Coupon Code": o.couponCode || "",
+          "Discount Amount": o.discountAmount || 0,
+          "Total Amount": o.totalAmount,
+          "Status": o.status,
+          "Source": o.source,
+          "Items": o.items
+            .map((item) => `${item.product?.name || "Product"} (x${item.quantity})`)
+            .join(", "),
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+
+      // Auto-fit columns
+      const maxLengths = Object.keys(rows[0] || {}).reduce((acc: Record<string, number>, key) => {
+        acc[key] = Math.max(
+          key.length,
+          ...rows.map((row: any) => String(row[key as keyof typeof row] ?? "").length)
+        );
+        return acc;
+      }, {});
+      worksheet["!cols"] = Object.keys(maxLengths).map((key) => ({
+        wch: Math.min(Math.max(maxLengths[key] + 2, 10), 50),
+      }));
+
+      XLSX.writeFile(
+        workbook,
+        `orders_export_${format(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`
+      );
+
+      toast.success(`Exported ${orders.length} orders successfully`, { id: toastId });
+    } catch (error) {
+      console.error("Failed to export orders:", error);
+      toast.error("Failed to export orders to Excel", { id: toastId });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const getBDDate = () => {
     const now = new Date();
@@ -990,6 +1098,89 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
+
+          {/* Area Filter */}
+          <Select
+            value={filterArea}
+            onValueChange={(val) => {
+              setFilterArea(val);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[130px] h-9 text-xs font-medium border-gray-200 bg-white hover:bg-gray-50 focus:ring-1 focus:ring-orange-500/20">
+              <SelectValue placeholder="Area" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Areas</SelectItem>
+              <SelectItem value="Dhaka">Dhaka</SelectItem>
+              <SelectItem value="Barisal">Barisal</SelectItem>
+              <SelectItem value="Chittagong">Chittagong</SelectItem>
+              <SelectItem value="Khulna">Khulna</SelectItem>
+              <SelectItem value="Rajshahi">Rajshahi</SelectItem>
+              <SelectItem value="Sylhet">Sylhet</SelectItem>
+              <SelectItem value="Rangpur">Rangpur</SelectItem>
+              <SelectItem value="Mymensingh">Mymensingh</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Payment Method Filter */}
+          <Select
+            value={filterPaymentMethod}
+            onValueChange={(val) => {
+              setFilterPaymentMethod(val);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[140px] h-9 text-xs font-medium border-gray-200 bg-white hover:bg-gray-50 focus:ring-1 focus:ring-orange-500/20">
+              <SelectValue placeholder="Payment Method" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payments</SelectItem>
+              <SelectItem value="COD">COD</SelectItem>
+              <SelectItem value="bkash">bKash</SelectItem>
+              <SelectItem value="nagad">Nagad</SelectItem>
+              <SelectItem value="card">Card</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Hub Filter */}
+          {hubs.length > 0 && (
+            <Select
+              value={filterHub}
+              onValueChange={(val) => {
+                setFilterHub(val);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[130px] h-9 text-xs font-medium border-gray-200 bg-white hover:bg-gray-50 focus:ring-1 focus:ring-orange-500/20">
+                <SelectValue placeholder="Hub" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Hubs</SelectItem>
+                {hubs.map((hub) => (
+                  <SelectItem key={hub.id} value={hub.id}>
+                    {hub.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Export to Excel */}
+          <Button
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="w-full sm:w-auto border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 h-9 text-xs font-medium flex items-center gap-1.5 focus:ring-1 focus:ring-emerald-500/20 disabled:opacity-50"
+          >
+            {isExporting ? (
+              <span className="animate-spin mr-1 h-3.5 w-3.5 border-2 border-emerald-600 border-t-transparent rounded-full" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            )}
+            {isExporting ? "Exporting..." : "Export Excel"}
+          </Button>
+
           <Button
             onClick={() => {
               setIsAdding(true);
