@@ -20,7 +20,7 @@ interface ExtendedUser extends Omit<User, "role"> {
   role?: string;
   phone?: string;
 }
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -502,6 +502,7 @@ export function GlobalCheckoutDrawer() {
   } = useCartStore();
   const [isAnimating, setIsAnimating] = useState(false);
   const [draftOrderId, setDraftOrderId] = useState<string | null>(null);
+  const checkoutEventIdRef = useRef<string | null>(null);
   const { settings } = useSettings();
 
   const { language } = useLanguageStore();
@@ -624,8 +625,15 @@ export function GlobalCheckoutDrawer() {
   // Track InitiateCheckout when drawer opens
   useEffect(() => {
     if (checkoutOpen && items.length > 0) {
+      const eventId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      
+      checkoutEventIdRef.current = eventId;
+
       trackEvent({
         eventName: "InitiateCheckout",
+        eventId: eventId,
         eventData: {
           content_ids: items.map((i) => i.id),
           contents: items.map((i) => ({ id: i.id, quantity: i.quantity })),
@@ -635,6 +643,8 @@ export function GlobalCheckoutDrawer() {
         },
         browserOnly: true,
       });
+    } else if (!checkoutOpen) {
+      checkoutEventIdRef.current = null;
     }
   }, [checkoutOpen]);
 
@@ -664,6 +674,7 @@ export function GlobalCheckoutDrawer() {
         totalAmount: totalAmount,
         couponCode: coupon?.code,
         discountAmount: Math.round(discountAmount),
+        eventId: checkoutEventIdRef.current || undefined,
       };
 
       const res = await upsertIncompleteOrder(orderData);
@@ -711,6 +722,10 @@ export function GlobalCheckoutDrawer() {
       return;
     }
 
+    const purchaseEventId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
     const orderData = {
       draftOrderId: draftOrderId || undefined,
       tenantId: settings?.tenantId,
@@ -732,6 +747,7 @@ export function GlobalCheckoutDrawer() {
       advancePaymentStatus:
         advanceAmount > 0 ? "PENDING_VERIFICATION" : "NOT_REQUIRED",
       transactionId: formData.transactionId || "",
+      eventId: purchaseEventId,
     };
 
     const res = await createOrder(orderData);
@@ -740,6 +756,7 @@ export function GlobalCheckoutDrawer() {
       // Server-Side Tracking: Purchase
       trackEvent({
         eventName: "Purchase",
+        eventId: purchaseEventId,
         eventData: {
           content_ids: items.map((i) => i.id),
           contents: items.map((i) => ({ id: i.id, quantity: i.quantity })),

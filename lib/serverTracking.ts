@@ -178,6 +178,12 @@ export async function trackMetaEvent(
     event_source_url: sourceUrl || process.env.NEXT_PUBLIC_BASE_URL,
   };
 
+  // Add test_event_code for real-time testing in Meta Events Manager
+  const testCode = process.env.META_TEST_EVENT_CODE || process.env.NEXT_PUBLIC_META_TEST_EVENT_CODE;
+  if (testCode) {
+    (payload as any).test_event_code = testCode;
+  }
+
 
   // Add Hashed User Data for Meta Matching
   if (userData.email) payload.user_data.em = [hashData(userData.email)];

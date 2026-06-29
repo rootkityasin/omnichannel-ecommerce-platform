@@ -210,6 +210,7 @@ export async function createOrder(data: {
   advancePaidAmount?: number;
   advancePaymentStatus?: string;
   transactionId?: string;
+  eventId?: string;
 }) {
   // Bot check removed
 
@@ -343,6 +344,7 @@ export async function createOrder(data: {
           value: data.totalAmount,
           currency: "BDT",
           order_id: order.orderId,
+          event_id: data.eventId,
         },
         sourceUrl
       );
@@ -378,6 +380,7 @@ export async function upsertIncompleteOrder(data: {
   couponCode?: string;
   discountAmount?: number;
   tenantId?: string;
+  eventId?: string;
 }) {
   try {
     await logActionRequest({ actionName: "upsertIncompleteOrder" });
@@ -468,6 +471,7 @@ export async function upsertIncompleteOrder(data: {
           value: data.totalAmount,
           currency: "BDT",
           order_id: resolvedOrderId,
+          event_id: data.eventId,
         },
         sourceUrl
       );

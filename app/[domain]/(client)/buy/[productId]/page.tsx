@@ -11,6 +11,7 @@ import { getProduct } from "@/app/actions/product";
 import { getProductReviews } from "@/app/actions/review";
 import { ProductReviews } from "@/components/client/ProductReviews";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/track";
 import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -202,14 +203,38 @@ export default function SmartLinkPage() {
             getProductReviews(productId),
           ]);
 
-          if (productData) setProduct(productData);
+          if (productData) {
+            setProduct(productData);
+            trackEvent({
+              eventName: "ViewContent",
+              eventData: {
+                content_name: productData.name,
+                content_ids: [productData.id],
+                content_type: "product",
+                value: productData.price,
+                currency: "BDT",
+              },
+            });
+          }
           setReviews(reviewsData || []);
         } catch (error) {
           console.error("Failed to load product data:", error);
           const productOnly = await getProduct(productId, domain).catch(
             () => null,
           );
-          if (productOnly) setProduct(productOnly);
+          if (productOnly) {
+            setProduct(productOnly);
+            trackEvent({
+              eventName: "ViewContent",
+              eventData: {
+                content_name: productOnly.name,
+                content_ids: [productOnly.id],
+                content_type: "product",
+                value: productOnly.price,
+                currency: "BDT",
+              },
+            });
+          }
           setReviews([]);
         }
       }
@@ -249,6 +274,18 @@ export default function SmartLinkPage() {
   }
 
   const handleWhatsAppOrder = () => {
+    void trackEvent({
+      eventName: "InitiateCheckout",
+      eventData: {
+        content_name: product.name,
+        content_ids: [product.id],
+        content_type: "product",
+        value: product.price,
+        currency: "BDT",
+        checkout_option: "WhatsApp",
+      },
+    });
+
     const text = `Hi, I want to order *${product.name}* (Price: ৳${product.price}). Please confirm.`;
     globalThis.open(
       `https://wa.me/8801804221161?text=${encodeURIComponent(text)}`,

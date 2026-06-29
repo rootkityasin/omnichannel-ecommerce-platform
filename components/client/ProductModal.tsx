@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/track";
 import {
   motion,
   AnimatePresence,
@@ -204,6 +205,18 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
       image: product.image,
       quantity: quantity,
       weight: resolvedWeight,
+    });
+
+    // Server-Side Tracking: AddToCart
+    trackEvent({
+      eventName: "AddToCart",
+      eventData: {
+        content_name: `${product.name} - ${selectedVariant}`,
+        content_ids: [product.id],
+        content_type: "product",
+        value: priceNum * quantity,
+        currency: "BDT",
+      },
     });
     toast.success(`Added ${quantity} x ${selectedVariant} to cart!`);
     onClose();
