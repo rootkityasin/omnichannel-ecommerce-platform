@@ -666,10 +666,6 @@ export function SeoSettings({ initialConfig }: SeoProps) {
                       type="password"
                       placeholder="EAA..."
                     />
-                    <p className="text-xs text-slate-400">
-                      Required for server-side event tracking (Purchase,
-                      ViewContent).
-                    </p>
                   </div>
                 </CardContent>
               </Card>

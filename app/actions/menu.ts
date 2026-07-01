@@ -11,15 +11,7 @@ const getSessionUser = async () => (await auth())?.user;
 
 const MENU_PRODUCT_SELECT = CARD_PRODUCT_SELECT;
 
-const MENU_BOOTSTRAP_PRODUCT_SELECT = {
-  id: true,
-  name: true,
-  name_bn: true,
-  price: true,
-  image: true,
-  categoryId: true,
-  isAvailable: true,
-};
+const MENU_BOOTSTRAP_PRODUCT_SELECT = CARD_PRODUCT_SELECT;
 
 type MenuFilterOptions = {
   category?: string;
