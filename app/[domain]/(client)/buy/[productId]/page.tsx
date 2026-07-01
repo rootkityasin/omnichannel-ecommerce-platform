@@ -483,12 +483,13 @@ export default function SmartLinkPage() {
               </div>
 
               <div className="prose prose-slate prose-lg text-slate-600 leading-relaxed mb-8">
-                <p>{product.description}</p>
+                {product.description && (
+                  <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                )}
               </div>
             </div>
 
             <Card className="bg-white border-none shadow-xl shadow-crab-red/5 rounded-2xl overflow-hidden">
-              <div className="p-1 bg-gradient-to-r from-crab-red via-crab-red/70 to-crab-red opacity-20" />
               <CardContent className="p-6 md:p-8 space-y-6">
                 <div className="p-4 bg-green-50/50 rounded-xl border border-green-100 flex gap-3 text-green-800">
                   <span className="text-xl">⚡</span>
