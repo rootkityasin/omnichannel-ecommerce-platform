@@ -75,13 +75,6 @@ function ProductImageCarousel({
     imageCounts.set(src, nextCount);
     return { src, key: `${src}-${nextCount}` };
   });
-  const heroImage = keyedImages[selectedIndex]?.src || images[0];
-  const heroLqip = buildMediaLqip(heroImage, {
-    aspect: "16:9",
-    crop: "fill",
-    gravity: "auto",
-  });
-
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();
 
@@ -99,16 +92,11 @@ function ProductImageCarousel({
             <Image
               src={buildMediaUrl(imageItem.src, {
                 width: 900,
-                aspect: "16:9",
-                crop: "fill",
-                gravity: "auto",
               })}
               alt={`${name} view ${index + 1}`}
               fill
-              className="object-cover select-none"
+              className="object-contain select-none"
               sizes="(max-width: 640px) 100vw, 900px"
-              placeholder={heroLqip ? "blur" : undefined}
-              blurDataURL={heroLqip || undefined}
               onDragStart={(e) => e.preventDefault()}
             />
           </div>
