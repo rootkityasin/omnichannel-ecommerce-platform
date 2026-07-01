@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track";
 import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
 import useEmblaCarousel from "embla-carousel-react";
+import { useCartStore } from "@/lib/store";
+import Link from "next/link";
 
 type Review = {
   id: string;
@@ -38,6 +40,8 @@ type ProductDetail = {
   sku?: string | null;
   type?: "SINGLE" | "COMBO" | null;
   isAvailable?: boolean | null;
+  weight?: number | null;
+  weightOptions?: string[] | null;
   comboItems?:
     | {
         quantity: number;
@@ -187,6 +191,8 @@ export default function SmartLinkPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewerCount] = useState(() => Math.floor(Math.random() * 15) + 5);
+  const addItem = useCartStore((state) => state.addItem);
+  const openCheckout = useCartStore((state) => state.openCheckout);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -293,6 +299,30 @@ export default function SmartLinkPage() {
     );
   };
 
+  const handleCheckoutNow = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image || undefined,
+      quantity: 1,
+      weight: product.weight ? Number(product.weight) : undefined,
+    });
+
+    trackEvent({
+      eventName: "AddToCart",
+      eventData: {
+        content_name: product.name,
+        content_ids: [product.id],
+        content_type: "product",
+        value: product.price,
+        currency: "BDT",
+      },
+    });
+
+    openCheckout();
+  };
+
   const pieces =
     product.type === "COMBO"
       ? (product.comboItems || []).reduce(
@@ -328,11 +358,11 @@ export default function SmartLinkPage() {
       : [product.image || "/placeholder.png"];
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8]">
+    <div className="min-h-screen bg-transparent">
       {/* Desktop Background Elements */}
       <div className="fixed inset-0 pointer-events-none hidden md:block">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-50/50 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/30 rounded-full blur-3xl -z-10" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-crab-red/5 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-crab-red/5 rounded-full blur-3xl -z-10" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-12 relative z-10">
@@ -402,6 +432,25 @@ export default function SmartLinkPage() {
           {/* Right Column: Details & Actions */}
           <div className="flex flex-col space-y-8 md:pt-4">
             <div>
+              <Link
+                href="/menu"
+                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-crab-red transition-colors mb-4"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Back to Menu
+              </Link>
               <div className="flex items-center gap-3 mb-4">
                 <Badge
                   variant="outline"
@@ -426,7 +475,7 @@ export default function SmartLinkPage() {
               </h1>
 
               <div className="flex flex-col gap-1 mb-6 relative z-50">
-                <div className="flex items-center gap-2 text-sm font-bold text-orange-700 bg-white w-fit px-3 py-1.5 rounded-full border border-orange-200 shadow-md">
+                <div className="flex items-center gap-2 text-sm font-bold text-crab-red bg-white w-fit px-3 py-1.5 rounded-full border border-crab-red/20 shadow-md">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
@@ -450,21 +499,46 @@ export default function SmartLinkPage() {
               </div>
             </div>
 
-            {/* Action Area */}
-            <Card className="bg-white border-none shadow-xl shadow-orange-500/5 rounded-2xl overflow-hidden">
-              <div className="p-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 opacity-20" />
+            <Card className="bg-white border-none shadow-xl shadow-crab-red/5 rounded-2xl overflow-hidden">
+              <div className="p-1 bg-gradient-to-r from-crab-red via-crab-red/70 to-crab-red opacity-20" />
               <CardContent className="p-6 md:p-8 space-y-6">
-                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 flex gap-3 text-blue-800">
+                <div className="p-4 bg-green-50/50 rounded-xl border border-green-100 flex gap-3 text-green-800">
                   <span className="text-xl">⚡</span>
                   <div>
                     <p className="font-bold text-sm">Instant WhatsApp Order</p>
-                    <p className="text-xs text-blue-600/80">
+                    <p className="text-xs text-green-600/80">
                       No account required • Fast confirmation
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-4">
+                  <Button
+                    onClick={handleCheckoutNow}
+                    disabled={isOutOfStock}
+                    className={cn(
+                      "w-full h-14 font-bold text-lg rounded-xl transition-all",
+                      isOutOfStock
+                        ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                        : "bg-crab-red hover:bg-crab-red/90 text-white shadow-lg hover:shadow-crab-red/30 transform hover:-translate-y-0.5",
+                    )}
+                  >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                      />
+                    </svg>
+                    {isOutOfStock ? "Out of Stock" : "Checkout Now (Order Online)"}
+                  </Button>
+
                   <Button
                     onClick={handleWhatsAppOrder}
                     disabled={isOutOfStock}
