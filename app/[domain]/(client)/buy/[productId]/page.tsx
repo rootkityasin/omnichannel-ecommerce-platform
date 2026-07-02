@@ -7,9 +7,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getProduct } from "@/app/actions/product";
+import { getProduct, getProducts } from "@/app/actions/product";
 import { getProductReviews } from "@/app/actions/review";
 import { ProductReviews } from "@/components/client/ProductReviews";
+import { ProductCard } from "@/components/client/ProductCard";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track";
 import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
@@ -181,6 +182,7 @@ export default function SmartLinkPage() {
   const [viewerCount] = useState(() => Math.floor(Math.random() * 15) + 5);
   const addItem = useCartStore((state) => state.addItem);
   const openCheckout = useCartStore((state) => state.openCheckout);
+  const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -209,6 +211,13 @@ export default function SmartLinkPage() {
                 currency: "BDT",
               },
             });
+            const allProducts = await getProducts(domain);
+            if (allProducts && allProducts.length > 0) {
+              const suggestions = allProducts
+                .filter((p: any) => p.id !== productData.id && p.isAvailable !== false)
+                .slice(0, 4);
+              setSuggestedProducts(suggestions);
+            }
           }
           setReviews(reviewsData || []);
         } catch (error) {
@@ -228,6 +237,13 @@ export default function SmartLinkPage() {
                 currency: "BDT",
               },
             });
+            const allProducts = await getProducts(domain).catch(() => []);
+            if (allProducts && allProducts.length > 0) {
+              const suggestions = allProducts
+                .filter((p: any) => p.id !== productOnly.id && p.isAvailable !== false)
+                .slice(0, 4);
+              setSuggestedProducts(suggestions);
+            }
           }
           setReviews([]);
         }
@@ -573,6 +589,35 @@ export default function SmartLinkPage() {
 
         {/* Reviews Section */}
         <ProductReviews productId={product.id} reviews={reviews} />
+
+        {/* Suggested Products Section */}
+        {suggestedProducts.length > 0 && (
+          <div className="mt-16 md:mt-24 border-t border-slate-100 pt-16">
+            <h2 className="text-2xl md:text-3xl font-heading font-black text-slate-900 mb-8">
+              You May Also Like
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {suggestedProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  id={p.id}
+                  name={p.name}
+                  name_bn={p.name_bn}
+                  price={p.price}
+                  price_bn={p.price_bn}
+                  image={p.image || "/placeholder.png"}
+                  images={p.images || []}
+                  weight={p.weight}
+                  isAvailable={p.isAvailable}
+                  pieces={p.pieces}
+                  type={p.type}
+                  comboItems={p.comboItems}
+                  servingSize={p.servingSize}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
