@@ -80,23 +80,21 @@ function ProductImageCarousel({
 
   return (
     <div
-      className="relative w-full h-full group overflow-hidden"
+      className="relative w-full group overflow-hidden"
       ref={emblaRef}
     >
-      <div className="flex h-full touch-pan-y">
+      <div className="flex touch-pan-y items-center">
         {keyedImages.map((imageItem, index) => (
           <div
             key={imageItem.key}
-            className="flex-[0_0_100%] min-w-0 h-full relative"
+            className="flex-[0_0_100%] min-w-0 relative flex items-center justify-center"
           >
-            <Image
+            <img
               src={buildMediaUrl(imageItem.src, {
                 width: 900,
               })}
               alt={`${name} view ${index + 1}`}
-              fill
-              className="object-contain select-none"
-              sizes="(max-width: 640px) 100vw, 900px"
+              className="w-full h-auto object-contain select-none max-h-[80vh] md:max-h-[60vh] rounded-[2rem]"
               onDragStart={(e) => e.preventDefault()}
             />
           </div>
@@ -374,7 +372,7 @@ export default function SmartLinkPage() {
           {/* Left Column: Imagery (Sticky on Desktop) */}
           <div className="relative md:sticky md:top-24">
             <Card className="border-0 shadow-none bg-transparent md:bg-white md:shadow-2xl md:rounded-[2rem] overflow-hidden md:border-4 md:border-white">
-              <div className="aspect-square relative bg-gray-100 group overflow-hidden">
+              <div className="relative bg-gray-50 group overflow-hidden rounded-[2rem] flex items-center justify-center w-full">
                 {/* Glass Pieces Tag */}
                 {pieces > 0 && (
                   <div className="absolute top-4 right-4 z-20">
