@@ -5,12 +5,11 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight, MessageCircle, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProduct, getProducts } from "@/app/actions/product";
 import { getProductReviews } from "@/app/actions/review";
 import { ProductReviews } from "@/components/client/ProductReviews";
-import { ProductCard } from "@/components/client/ProductCard";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track";
 import { buildMediaLqip, buildMediaUrl } from "@/lib/media";
@@ -178,11 +177,11 @@ export default function SmartLinkPage() {
   const params = useParams();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [suggestions, setSuggestions] = useState<ProductDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewerCount] = useState(() => Math.floor(Math.random() * 15) + 5);
   const addItem = useCartStore((state) => state.addItem);
   const openCheckout = useCartStore((state) => state.openCheckout);
-  const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -194,9 +193,10 @@ export default function SmartLinkPage() {
         : params.domain;
       if (productId) {
         try {
-          const [productData, reviewsData] = await Promise.all([
+          const [productData, reviewsData, allProds] = await Promise.all([
             getProduct(productId, domain),
             getProductReviews(productId),
+            getProducts(domain).catch(() => []),
           ]);
 
           if (productData) {
@@ -211,12 +211,11 @@ export default function SmartLinkPage() {
                 currency: "BDT",
               },
             });
-            const allProducts = await getProducts(domain);
-            if (allProducts && allProducts.length > 0) {
-              const suggestions = allProducts
-                .filter((p: any) => p.id !== productData.id && p.isAvailable !== false)
+            if (allProds) {
+              const filtered = allProds
+                .filter((p) => p.id !== productData.id && p.isAvailable !== false)
                 .slice(0, 4);
-              setSuggestedProducts(suggestions);
+              setSuggestions(filtered as unknown as ProductDetail[]);
             }
           }
           setReviews(reviewsData || []);
@@ -237,12 +236,12 @@ export default function SmartLinkPage() {
                 currency: "BDT",
               },
             });
-            const allProducts = await getProducts(domain).catch(() => []);
-            if (allProducts && allProducts.length > 0) {
-              const suggestions = allProducts
-                .filter((p: any) => p.id !== productOnly.id && p.isAvailable !== false)
+            const allProds = await getProducts(domain).catch(() => []);
+            if (allProds) {
+              const filtered = allProds
+                .filter((p) => p.id !== productOnly.id && p.isAvailable !== false)
                 .slice(0, 4);
-              setSuggestedProducts(suggestions);
+              setSuggestions(filtered as unknown as ProductDetail[]);
             }
           }
           setReviews([]);
@@ -251,7 +250,7 @@ export default function SmartLinkPage() {
       setLoading(false);
     };
     loadProduct();
-  }, [params.productId]);
+  }, [params.productId, params.domain]);
 
   if (loading) {
     return (
@@ -479,13 +478,13 @@ export default function SmartLinkPage() {
               </h1>
 
               <div className="flex flex-col gap-1 mb-6 relative z-50">
-                <div className="flex items-center gap-2 text-sm font-bold text-crab-red bg-white w-fit px-3 py-1.5 rounded-full border border-crab-red/20 shadow-md">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-white w-fit px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                   </span>
-                  <span className="text-xs sm:text-sm">
-                    🔥 {viewerCount} people are looking at this!
+                  <span>
+                    {viewerCount} people viewing this item
                   </span>
                 </div>
                 <div className="flex items-baseline gap-4 mt-2">
@@ -510,12 +509,12 @@ export default function SmartLinkPage() {
 
             <Card className="bg-white border-none shadow-xl shadow-crab-red/5 rounded-2xl overflow-hidden">
               <CardContent className="p-6 md:p-8 space-y-6">
-                <div className="p-4 bg-green-50/50 rounded-xl border border-green-100 flex gap-3 text-green-800">
-                  <span className="text-xl">⚡</span>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex gap-3 text-slate-700 items-start">
+                  <ShieldCheck className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold text-sm">Instant WhatsApp Order</p>
-                    <p className="text-xs text-green-600/80">
-                      No account required • Fast confirmation
+                    <p className="font-bold text-sm text-slate-900">Secure Order Process</p>
+                    <p className="text-xs text-slate-500 leading-normal">
+                      No registration required • Quick order placement and delivery tracking
                     </p>
                   </div>
                 </div>
@@ -587,37 +586,52 @@ export default function SmartLinkPage() {
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <ProductReviews productId={product.id} reviews={reviews} />
-
-        {/* Suggested Products Section */}
-        {suggestedProducts.length > 0 && (
-          <div className="mt-16 md:mt-24 border-t border-slate-100 pt-16">
+        {/* Related Products / Suggestions Section */}
+        {suggestions.length > 0 && (
+          <div className="mt-16 border-t border-slate-100 pt-16">
             <h2 className="text-2xl md:text-3xl font-heading font-black text-slate-900 mb-8">
-              You May Also Like
+              Customers Also Ordered
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {suggestedProducts.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  id={p.id}
-                  name={p.name}
-                  name_bn={p.name_bn}
-                  price={p.price}
-                  price_bn={p.price_bn}
-                  image={p.image || "/placeholder.png"}
-                  images={p.images || []}
-                  weight={p.weight}
-                  isAvailable={p.isAvailable}
-                  pieces={p.pieces}
-                  type={p.type}
-                  comboItems={p.comboItems}
-                  servingSize={p.servingSize}
-                />
+              {suggestions.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/buy/${item.id}`}
+                  className="group bg-white rounded-2xl border border-slate-100 hover:border-crab-red/20 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden"
+                >
+                  <div className="aspect-square relative bg-slate-50 overflow-hidden">
+                    <Image
+                      src={buildMediaUrl(item.image || "/placeholder.png", { width: 300 })}
+                      alt={item.name}
+                      fill
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-300 select-none"
+                    />
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-800 line-clamp-2 group-hover:text-crab-red transition-colors min-h-[40px]">
+                        {item.name}
+                      </h3>
+                      {item.weight && (
+                        <p className="text-xs text-slate-400 font-medium mt-1">
+                          {item.weight}g
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-baseline justify-between mt-4">
+                      <span className="font-black text-crab-red text-base md:text-lg">
+                        ৳{item.price}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
         )}
+
+        {/* Reviews Section */}
+        <ProductReviews productId={product.id} reviews={reviews} />
       </div>
     </div>
   );
