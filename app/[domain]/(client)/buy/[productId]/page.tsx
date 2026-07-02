@@ -484,7 +484,10 @@ export default function SmartLinkPage() {
 
               <div className="prose prose-slate prose-lg text-slate-600 leading-relaxed mb-8">
                 {product.description && (
-                  <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                  <div
+                    className="whitespace-pre-line"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
                 )}
               </div>
             </div>
