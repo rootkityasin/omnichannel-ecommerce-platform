@@ -128,6 +128,8 @@ export function HomepageSoundButton() {
       nextMuted = storedMuted;
     }
 
+    const isBuyPage = window.location.pathname.includes("/buy/");
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsent(storedConsent);
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -135,7 +137,7 @@ export function HomepageSoundButton() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMuted(nextMuted);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShowConsentDialog(!storedConsent);
+    setShowConsentDialog(!storedConsent && !isBuyPage);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
 
