@@ -29,6 +29,11 @@ export function PromoModal({ promo }: PromoModalProps) {
   useEffect(() => {
     if (!promo?.isActive) return;
 
+    // Suppress modal on product buy landing pages
+    if (typeof window !== "undefined" && window.location.pathname.includes("/buy/")) {
+      return;
+    }
+
     const seenPromoId = localStorage.getItem("seenPromoId");
     if (seenPromoId !== promo.id) {
       const timer = setTimeout(() => {

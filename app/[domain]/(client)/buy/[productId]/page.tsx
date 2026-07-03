@@ -4,8 +4,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, MessageCircle, ShieldCheck } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProduct, getProducts } from "@/app/actions/product";
 import { getProductReviews } from "@/app/actions/review";
@@ -366,7 +365,7 @@ export default function SmartLinkPage() {
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-crab-red/5 rounded-full blur-3xl -z-10" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-12 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-8 pb-4 md:py-12 relative z-10">
         {/* Desktop: Split Layout / Mobile: Stacked */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
           {/* Left Column: Imagery (Sticky on Desktop) */}
@@ -433,43 +432,6 @@ export default function SmartLinkPage() {
           {/* Right Column: Details & Actions */}
           <div className="flex flex-col space-y-8 md:pt-4">
             <div>
-              <Link
-                href="/menu"
-                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-crab-red transition-colors mb-4"
-              >
-                <svg
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-                Back to Menu
-              </Link>
-              <div className="flex items-center gap-3 mb-4">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "rounded-full px-4 py-1 text-xs uppercase tracking-widest",
-                    isOutOfStock
-                      ? "border-red-200 text-red-600 bg-red-50"
-                      : "border-slate-300 text-slate-500",
-                  )}
-                >
-                  {isOutOfStock ? "Out of Stock" : "Premium Selection"}
-                </Badge>
-                {product.sku && (
-                  <span className="text-xs text-slate-400 font-mono">
-                    SKU: {product.sku}
-                  </span>
-                )}
-              </div>
 
               <h1 className="text-3xl md:text-5xl font-heading font-black text-slate-900 leading-tight mb-4">
                 {product.name}
@@ -507,15 +469,6 @@ export default function SmartLinkPage() {
 
             <Card className="bg-white border-none shadow-xl shadow-crab-red/5 rounded-2xl overflow-hidden">
               <CardContent className="p-6 md:p-8 space-y-6">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex gap-3 text-slate-700 items-start">
-                  <ShieldCheck className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-bold text-sm text-slate-900">Secure Order Process</p>
-                    <p className="text-xs text-slate-500 leading-normal">
-                      No registration required • Quick order placement and delivery tracking
-                    </p>
-                  </div>
-                </div>
 
                 <div className="flex flex-col gap-4">
                   <Button
