@@ -245,282 +245,268 @@ export default function KhaiKhaiClient({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30">
-      {/* Decorative Ornaments */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-crab-red/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 left-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#0c3620] py-6 px-4 md:px-0 font-bangla flex flex-col items-center">
+      {/* Decorative Ornaments / Background Image Overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(47,123,61,0.25)_0%,rgba(12,54,32,1)_100%)] pointer-events-none" />
 
-      {/* Hero Header Section */}
-      <div className="max-w-6xl mx-auto px-4 pt-12 pb-8 text-center relative z-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-crab-red/10 border border-crab-red/20 text-crab-red text-sm font-black mb-6 animate-pulse">
-          <Star className="w-4 h-4 fill-current" />
-          <span>১০০% খাঁটি ও ঐতিহ্যবাহী মিষ্টি</span>
+      {/* Main Container mimicking standard mobile viewport layout */}
+      <div className="w-full max-w-[380px] flex flex-col items-stretch justify-center relative z-10 space-y-6">
+        
+        {/* Title Block (Figma 1:1720) */}
+        <div className="w-full text-center pb-2">
+          <h1 className="text-[24px] font-bold leading-[36px] text-white">
+            নিজস্ব ফ্যাক্টরিতে তৈরি &quot;খাই খাই বাকেট&quot;,<br />
+            সারা বাংলাদেশে হোম ডেলিভারি দেওয়া হয়!!
+          </h1>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-tight max-w-4xl mx-auto mb-6">
-          খাঁটি ও সুস্বাদু <span className="text-crab-red">&quot;খাই খাই বাকেট&quot;</span>
-          <br className="hidden md:inline" /> সারা বাংলাদেশে দ্রুত হোম ডেলিভারি!
-        </h1>
+        {/* Subtitle Block (Figma 1:1726) */}
+        <div className="w-full text-center pb-3">
+          <p className="text-[20px] font-semibold leading-[30px] text-white/95">
+            গঞ্জের মিষ্টি কোয়ালিটি খাই খাই বাকেট, প্রতিটি পিসে<br />
+            দুধ এবং ক্ষীর এর স্বাদ!
+          </p>
+        </div>
 
-        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8">
-          আমাদের নিজস্ব ফ্যাক্টরিতে তৈরি প্রিমিয়াম খাই খাই বাকেট। প্রতিটি কামড়ে খাঁটি ক্ষীর, মালাই ও দুধের অপূর্ব সংমিশ্রণ যা আপনার মিষ্টির স্বাদকে নতুন মাত্রা দেবে!
-        </p>
-
-        <div className="flex justify-center gap-4 mb-12">
-          <Button
+        {/* Call to Action Button (Figma 1:1732) */}
+        <div className="w-full flex justify-center pb-2">
+          <button
+            type="button"
             onClick={() => {
               const el = document.getElementById("order-form-section");
               el?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="px-8 h-14 bg-crab-red hover:bg-crab-red/90 text-white text-lg font-extrabold rounded-2xl shadow-xl shadow-crab-red/20 transform hover:-translate-y-0.5 transition-all"
+            className="bg-[#0c3620] hover:bg-[#0c3620]/80 text-white font-bold text-[22px] rounded-[5px] w-[201.8px] h-[53px] flex items-center justify-center gap-2 border border-white/20 transition-all shadow-lg active:scale-95"
           >
-            অর্ডার করুন <ShoppingBag className="ml-2 w-5 h-5" />
-          </Button>
+            <span>🛒</span>
+            অর্ডার করুন!
+          </button>
         </div>
-      </div>
 
-      {/* Gallery & Details Section */}
-      <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-        {/* Left: Product Image Showcase */}
-        <div className="space-y-6">
-          <Card className="overflow-hidden border-0 shadow-xl rounded-3xl bg-slate-50 flex items-center justify-center p-6 min-h-[300px] md:min-h-[450px]">
-            {/* Displaying Khai Khai Bucket text since we do not have an image path */}
-            <div className="text-center p-8 space-y-4">
-              <div className="text-8xl">🍨</div>
-              <h3 className="text-2xl font-black text-crab-red">খাই খাই বাকেট</h3>
-              <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">PREMIUM SWEETS BUCKET</p>
-            </div>
-          </Card>
-
-          {/* Core Trust Badges */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center shadow-sm">
-              <div className="w-10 h-10 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">✓</div>
-              <p className="text-xs font-black text-slate-800">১০০% স্বাস্থ্যসম্মত</p>
-            </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center shadow-sm">
-              <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">✓</div>
-              <p className="text-xs font-black text-slate-800">খাঁটি গরুর দুধ</p>
-            </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center shadow-sm">
-              <div className="w-10 h-10 bg-crab-red/10 text-crab-red rounded-full flex items-center justify-center mx-auto mb-2 font-bold">✓</div>
-              <p className="text-xs font-black text-slate-800">নিজস্ব উৎপাদন</p>
+        {/* Image Showcase Box (Figma 1:1738) */}
+        <div className="w-full bg-[#2f7b3d] p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#094c15]">
+          <div className="bg-[#0c3620] border border-white p-[5px] rounded-[8px] overflow-hidden">
+            <div className="bg-gradient-to-br from-amber-500/10 to-rose-500/10 aspect-[325/365] rounded-[6px] flex flex-col items-center justify-center p-6 space-y-4">
+              <span className="text-8xl">🍨</span>
+              <h3 className="text-2xl font-black text-amber-400">খাই খাই বাকেট</h3>
+              <p className="text-white/60 text-xs font-bold tracking-wider">PREMIUM SWEETS BUCKET</p>
             </div>
           </div>
         </div>
 
-        {/* Right: Specifications & Features */}
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-6 border-b pb-4">
+        {/* Specifications Card (Figma 1:1750) */}
+        <div className="w-full bg-[#2f7b3d] p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#022208]">
+          <div className="flex flex-col items-stretch w-full">
+            {/* Card Header (Figma 1:1754) */}
+            <div className="bg-[#0c3620] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
               পণ্যের বিবরণ
-            </h2>
-            <div className="space-y-4 text-slate-700">
-              <div className="grid grid-cols-3 py-2 border-b border-slate-100">
-                <span className="font-bold text-slate-500">নাম</span>
-                <span className="col-span-2 font-bold text-slate-900">খাই খাই বাকেট (Khai Khai Bucket)</span>
-              </div>
-              <div className="grid grid-cols-3 py-2 border-b border-slate-100">
-                <span className="font-bold text-slate-500">ধরন</span>
-                <span className="col-span-2 text-slate-800">ক্ষীর, মালাই ও ঘীরের তৈরি ঐতিহ্যবাহী মিষ্টি</span>
-              </div>
-              <div className="grid grid-cols-3 py-2 border-b border-slate-100">
-                <span className="font-bold text-slate-500">স্বাদ</span>
-                <span className="col-span-2 text-slate-800">সুস্বাদু মালাই ও এলাচির সুবাসযুক্ত অপূর্ব মিষ্টি স্বাদ</span>
-              </div>
-              <div className="grid grid-cols-3 py-2 border-b border-slate-100">
-                <span className="font-bold text-slate-500">উপাদান</span>
-                <span className="col-span-2 text-slate-800">খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই, চিনি ও এলাচ</span>
-              </div>
-              <div className="grid grid-cols-3 py-2 border-b border-slate-100">
-                <span className="font-bold text-slate-500">পরিবেশন</span>
-                <span className="col-span-2 text-slate-800">সরাসরি খাওয়ার উপযোগী</span>
-              </div>
+            </div>
+
+            {/* Spec List (Figma 1:1758) */}
+            <div className="w-full space-y-2.5 mb-6 text-left">
+              {[
+                { label: "নাম:", val: "খাই খাই বাকেট" },
+                { label: "ধরন:", val: "ক্ষীর, মালাই ও ঘীরের তৈরি ঐতিহ্যবাহী মিষ্টি" },
+                { label: "স্বাদ:", val: "সুস্বাদু মালাই ও এলাচির সুবাসযুক্ত অপূর্ব মিষ্টি স্বাদ" },
+                { label: "উপাদান:", val: "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই, চিনি ও এলাচ" },
+                { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
+                  <span className="w-4 h-4 rounded-full bg-[#0c3620] shrink-0 mr-3 flex items-center justify-center text-[10px] text-[#2f7b3d]">●</span>
+                  <p className="text-white">
+                    <span className="font-bold mr-1.5">{item.label}</span>
+                    <span className="font-light">{item.val}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Click to Call (Figma 1:1807) */}
+            <div className="w-full flex justify-center pb-3">
+              <a
+                href="tel:01337860236"
+                className="bg-[#0c3620] hover:bg-[#0c3620]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+              >
+                <span>📞</span>
+                কল করে অর্ডার করুন!
+              </a>
+            </div>
+
+            {/* Click to WhatsApp (Figma 1:1814) */}
+            <div className="w-full flex justify-center">
+              <a
+                href="https://wa.me/8801337860236"
+                target="_blank"
+                rel="noreferrer"
+                className="bg-[#0c3620] hover:bg-[#0c3620]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+              >
+                <span>💬</span>
+                হোয়াটসঅ্যাপ
+              </a>
             </div>
           </div>
-
-          <div>
-            <h3 className="text-xl font-black text-slate-900 mb-4">
-              কেন আমাদের খাই খাই বাকেট সেরা?
-            </h3>
-            <ul className="space-y-3">
-              {[
-                "খাঁটি গরুর দুধ, ক্ষীর ও মালাইয়ের নিখুঁত ও সমৃদ্ধ কারিগরী প্রসেস।",
-                "প্রতিটি বাকেটে পাবেন শরীরের জন্য প্রয়োজনীয় ভরপুর পুষ্টিগুণ।",
-                "সুন্দর ও চমৎকার প্যাকেজিং, যা উপহার দেওয়ার জন্য একদম সেরা ও মানানসই।",
-                "সম্পূর্ণ স্বাস্থ্যসম্মত ও হাইজেনিক ফ্যাক্টরি প্রসেসে প্রস্তুতকৃত।",
-                "কোনো প্রকার ক্ষতিকর রাসায়নিক বা প্রিজারভেটিভ ব্যবহার করা হয় না।",
-              ].map((text, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm text-slate-600 leading-relaxed">
-                  <span className="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">✓</span>
-                  <span>{text}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
-      </div>
 
-      {/* Checkout Form Section */}
-      <div id="order-form-section" className="max-w-4xl mx-auto px-4 py-16 scroll-mt-6">
-        <Card className="border-0 shadow-2xl rounded-3xl bg-white overflow-hidden">
-          <div className="bg-crab-red px-6 py-8 text-center text-white">
-            <h2 className="text-2xl md:text-3xl font-black mb-2">অর্ডার করতে নিচের ফর্মটি পূরণ করুন</h2>
-            <p className="text-white/80 text-sm">নিরাপদ ডেলিভারি ও ক্যাশ অন ডেলিভারি (হাতে পেয়ে টাকা পরিশোধ করবেন)</p>
-          </div>
+        {/* Checkout Form Section (Matching style and width of mobile viewport) */}
+        <div id="order-form-section" className="w-full scroll-mt-6">
+          <Card className="border-0 shadow-2xl rounded-3xl bg-white overflow-hidden">
+            <div className="bg-crab-red px-6 py-6 text-center text-white">
+              <h2 className="text-xl font-black mb-1">অর্ডার করতে নিচের ফর্মটি পূরণ করুন</h2>
+              <p className="text-white/80 text-xs">নিরাপদ ডেলিভারি ও ক্যাশ অন ডেলিভারি (হাতে পেয়ে টাকা পরিশোধ)</p>
+            </div>
 
-          <CardContent className="p-6 md:p-10">
-            <form onSubmit={handleOrderSubmit} className="space-y-8">
-              {/* Step 1: Product Weight Selection */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-crab-red/10 text-crab-red flex items-center justify-center text-xs font-bold">১</span>
-                  পরিমাণ নির্বাচন করুন
-                </h3>
+            <CardContent className="p-5 space-y-6">
+              <form onSubmit={handleOrderSubmit} className="space-y-6">
+                {/* Step 1: Weight Selection */}
+                <div className="space-y-3">
+                  <h3 className="text-[16px] font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-crab-red/10 text-crab-red flex items-center justify-center text-xs font-bold">১</span>
+                    পরিমাণ নির্বাচন করুন
+                  </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell" },
-                    { val: "1", label: "1 Kg", price: 850, tag: "Best Sell" },
-                    { val: "2", label: "2 Kg", price: 1600, tag: "ডেলিভারী ফ্রী" },
-                  ].map((item) => (
-                    <div
-                      key={item.val}
-                      onClick={() => setSelectedWeight(item.val as any)}
-                      className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                        selectedWeight === item.val
-                          ? "border-crab-red bg-crab-red/5 ring-2 ring-crab-red/10"
-                          : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
-                      }`}
-                    >
-                      <span className="absolute top-3 right-3 text-xs font-extrabold px-2 py-0.5 rounded-full bg-crab-red/10 text-crab-red">
-                        {item.tag}
-                      </span>
-                      <div className="space-y-1">
-                        <p className="font-black text-slate-900 text-lg">{item.label}</p>
-                        <p className="text-slate-500 text-xs">খাই খাই বাকেট</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell" },
+                      { val: "1", label: "1 Kg", price: 850, tag: "Best Sell" },
+                      { val: "2", label: "2 Kg", price: 1600, tag: "ফ্রী শিপিং" },
+                    ].map((item) => (
+                      <div
+                        key={item.val}
+                        onClick={() => setSelectedWeight(item.val as any)}
+                        className={`relative p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                          selectedWeight === item.val
+                            ? "border-crab-red bg-crab-red/5 ring-2 ring-crab-red/10"
+                            : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
+                        }`}
+                      >
+                        <span className="absolute top-1 right-1 text-[8px] font-extrabold px-1 py-0.5 rounded-full bg-crab-red/10 text-crab-red scale-90 origin-top-right">
+                          {item.tag}
+                        </span>
+                        <div className="space-y-0.5 mt-2">
+                          <p className="font-black text-slate-900 text-sm">{item.label}</p>
+                        </div>
+                        <p className="text-base font-black text-crab-red mt-2">৳{item.price}</p>
                       </div>
-                      <p className="text-2xl font-black text-crab-red mt-4">৳{item.price}</p>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 2: Shipping details */}
+                <div className="space-y-4 pt-3 border-t border-slate-100">
+                  <h3 className="text-[16px] font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-crab-red/10 text-crab-red flex items-center justify-center text-xs font-bold">২</span>
+                    ডেলিভারি ঠিকানা ও তথ্য
+                  </h3>
+
+                  <div className="space-y-4">
+                    {/* Name */}
+                    <div className="space-y-1">
+                      <Label htmlFor="name" className="text-xs font-bold text-slate-700">আপনার নাম *</Label>
+                      <Input
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="আপনার নাম লিখুন"
+                        className={`h-11 rounded-lg text-sm ${formErrors.name ? "border-red-500" : ""}`}
+                      />
+                      {formErrors.name && (
+                        <p className="text-xs text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" /> {formErrors.name}
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Step 2: Shipping details */}
-              <div className="space-y-6 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-crab-red/10 text-crab-red flex items-center justify-center text-xs font-bold">২</span>
-                  ডেলিভারি ঠিকানা ও তথ্য
-                </h3>
+                    {/* Phone */}
+                    <div className="space-y-1">
+                      <Label htmlFor="phone" className="text-xs font-bold text-slate-700">মোবাইল নাম্বার *</Label>
+                      <Input
+                        id="phone"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="মোবাইল নাম্বার দিন"
+                        type="tel"
+                        className={`h-11 rounded-lg text-sm ${formErrors.phone ? "border-red-500" : ""}`}
+                      />
+                      {formErrors.phone && (
+                        <p className="text-xs text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" /> {formErrors.phone}
+                        </p>
+                      )}
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Name field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="font-bold text-slate-700">আপনার নাম *</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="আপনার নাম লিখুন"
-                      className={`h-12 rounded-xl ${formErrors.name ? "border-red-500" : ""}`}
-                    />
-                    {formErrors.name && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" /> {formErrors.name}
-                      </p>
-                    )}
-                  </div>
+                    {/* Area selection */}
+                    <div className="space-y-1">
+                      <Label htmlFor="area" className="text-xs font-bold text-slate-700">ডেলিভারি এরিয়া *</Label>
+                      <select
+                        id="area"
+                        value={shippingArea}
+                        onChange={(e) => setShippingArea(e.target.value as any)}
+                        className="w-full h-11 rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red focus-visible:ring-offset-2"
+                      >
+                        <option value="inside">ঢাকার ভেতরে (৳৬০)</option>
+                        <option value="outside">ঢাকার বাইরে (৳১২০)</option>
+                      </select>
+                    </div>
 
-                  {/* Phone field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="font-bold text-slate-700">মোবাইল নাম্বার *</Label>
-                    <Input
-                      id="phone"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="মোবাইল নাম্বার দিন"
-                      type="tel"
-                      className={`h-12 rounded-xl ${formErrors.phone ? "border-red-500" : ""}`}
-                    />
-                    {formErrors.phone && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" /> {formErrors.phone}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Area selection */}
-                  <div className="space-y-2">
-                    <Label htmlFor="area" className="font-bold text-slate-700">ডেলিভারি এরিয়া *</Label>
-                    <select
-                      id="area"
-                      value={shippingArea}
-                      onChange={(e) => setShippingArea(e.target.value as any)}
-                      className="w-full h-12 rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="inside">ঢাকার ভেতরে (৳৬০)</option>
-                      <option value="outside">ঢাকার বাইরে (৳১২০)</option>
-                    </select>
-                  </div>
-
-                  {/* Full Address field */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="address" className="font-bold text-slate-700">পূর্ণাঙ্গ ঠিকানা *</Label>
-                    <textarea
-                      id="address"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="আপনার পূর্ণাঙ্গ ঠিকানা (রোড, বাড়ি, এলাকা, জেলা) লিখুন"
-                      className={`w-full min-h-[80px] p-3 rounded-xl border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red ${
-                        formErrors.address ? "border-red-500" : ""
-                      }`}
-                    />
-                    {formErrors.address && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" /> {formErrors.address}
-                      </p>
-                    )}
+                    {/* Full Address */}
+                    <div className="space-y-1">
+                      <Label htmlFor="address" className="text-xs font-bold text-slate-700">পূর্ণাঙ্গ ঠিকানা *</Label>
+                      <textarea
+                        id="address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="আপনার ঠিকানা (রোড, বাড়ি, এলাকা) লিখুন"
+                        className={`w-full min-h-[70px] p-2.5 rounded-lg border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red ${
+                          formErrors.address ? "border-red-500" : ""
+                        }`}
+                      />
+                      {formErrors.address && (
+                        <p className="text-xs text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" /> {formErrors.address}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Price & Summary Table */}
-              <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-3">
-                <div className="flex justify-between items-center text-sm text-slate-600">
-                  <span>পণ্য ({selectedWeight} Kg)</span>
-                  <span className="font-bold">৳{productPrice}</span>
+                {/* Price & Summary Table */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                  <div className="flex justify-between items-center text-xs text-slate-600">
+                    <span>পণ্য ({selectedWeight} Kg)</span>
+                    <span className="font-bold">৳{productPrice}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs text-slate-600">
+                    <span>ডেলিভারি চার্জ</span>
+                    <span className="font-bold">
+                      {selectedWeight === "2" ? "ফ্রী (০)" : `৳${deliveryFee}`}
+                    </span>
+                  </div>
+                  <div className="border-t border-slate-200 pt-2 flex justify-between items-center">
+                    <span className="font-extrabold text-slate-900 text-sm">সর্বমোট প্রদেয় মূল্য</span>
+                    <span className="font-black text-crab-red text-xl font-heading">৳{totalAmount}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-sm text-slate-600">
-                  <span>ডেলিভারি চার্জ</span>
-                  <span className="font-bold">
-                    {selectedWeight === "2" ? "ফ্রী (০)" : `৳${deliveryFee}`}
-                  </span>
-                </div>
-                <div className="border-t border-slate-200 pt-3 flex justify-between items-center">
-                  <span className="font-extrabold text-slate-900">সর্বমোট প্রদেয় মূল্য</span>
-                  <span className="font-black text-crab-red text-2xl font-heading">৳{totalAmount}</span>
-                </div>
-              </div>
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-14 bg-crab-red hover:bg-crab-red/90 text-white text-lg font-extrabold rounded-2xl shadow-xl shadow-crab-red/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin w-5 h-5" /> অর্ডার প্রসেস হচ্ছে...
-                  </>
-                ) : (
-                  <>
-                    অর্ডার নিশ্চিত করুন (৳{totalAmount})
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-12 bg-crab-red hover:bg-crab-red/90 text-white text-base font-extrabold rounded-xl shadow-xl shadow-crab-red/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin w-4 h-4" /> অর্ডার প্রসেস হচ্ছে...
+                    </>
+                  ) : (
+                    <>
+                      অর্ডার নিশ্চিত করুন (৳{totalAmount})
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
