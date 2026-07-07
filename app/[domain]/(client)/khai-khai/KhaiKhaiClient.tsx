@@ -34,7 +34,7 @@ export default function KhaiKhaiClient({
   products,
   domain,
 }: KhaiKhaiClientProps) {
-  const [selectedWeight, setSelectedWeight] = useState<"1" | "2">("1");
+  const [selectedWeight, setSelectedWeight] = useState<"1" | "2" | "3">("1");
   const [shippingArea, setShippingArea] = useState<"inside" | "outside" | "subcity">("inside");
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
@@ -44,15 +44,14 @@ export default function KhaiKhaiClient({
   // Showcase Images State
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const showcaseImages = [
-    "/images/khai-khai-bucket-main.png",
-    "/images/khai-khai-bucket-1.png",
-    "/images/khai-khai-bucket-2.png",
+    "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp",
+    "/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp",
   ];
 
   // Auto-slide images every 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveImageIdx((prev) => (prev === 2 ? 0 : prev + 1));
+      setActiveImageIdx((prev) => (prev === 1 ? 0 : prev + 1));
     }, 4000);
     return () => clearInterval(timer);
   }, []);
@@ -65,13 +64,14 @@ export default function KhaiKhaiClient({
 
   // Resolve prices based on selected weight
   const priceMap = {
-    "1": 850,
-    "2": 1600,
+    "1": 1699,
+    "2": 3199,
+    "3": 4599,
   };
 
   const singleProductPrice = priceMap[selectedWeight];
   const productPrice = singleProductPrice * quantity;
-  const deliveryFee = selectedWeight === "2" ? 0 : (
+  const deliveryFee = (selectedWeight === "2" || selectedWeight === "3") ? 0 : (
     shippingArea === "inside" ? 60 : (shippingArea === "subcity" ? 100 : 120)
   );
   const totalAmount = productPrice + deliveryFee;
@@ -89,8 +89,9 @@ export default function KhaiKhaiClient({
     // Try to match based on weight substring
     const match = khaiProducts.find((p) => {
       const nameLower = p.name.toLowerCase();
-      if (selectedWeight === "1") return nameLower.includes("1kg") || nameLower.includes("1 kg") || !nameLower.includes("2");
+      if (selectedWeight === "1") return nameLower.includes("1kg") || nameLower.includes("1 kg") || (!nameLower.includes("2") && !nameLower.includes("3"));
       if (selectedWeight === "2") return nameLower.includes("2kg") || nameLower.includes("2 kg");
+      if (selectedWeight === "3") return nameLower.includes("3kg") || nameLower.includes("3 kg");
       return false;
     });
 
@@ -282,7 +283,7 @@ export default function KhaiKhaiClient({
         {/* Subtitle Block (Figma 1:1726) */}
         <div className="w-full text-center pb-3">
           <p className="text-[20px] md:text-[28px] font-semibold leading-[30px] md:leading-[42px] text-white/95">
-            সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে CrabKhai এর প্রিমিয়াম খাই খাই বাকেট, প্রতিটি বাইটে খাঁটি দুধ ও ক্ষীরের অসাধারণ স্বাদ!
+            সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে CrabKhai এর প্রিমিয়াম খাই খাই বাকেট, প্রতিটি বাইটে সুন্দরবনের কাঁকড়ার অসাধারণ স্বাদ!
           </p>
         </div>
 
@@ -343,9 +344,9 @@ export default function KhaiKhaiClient({
               <div className="w-full space-y-2.5 mb-6 text-left flex-1 flex flex-col justify-center">
                 {[
                   { label: "নাম:", val: "CrabKhai খাই খাই বাকেট" },
-                  { label: "ধরন:", val: "সুন্দরবনের রেসিপিতে তৈরি প্রিমিয়াম ক্ষীর ও মালাই মিষ্টি" },
-                  { label: "স্বাদ:", val: "সুন্দরবনের ঐতিহ্যবাহী মালাই ও এলাচির অপূর্ব স্বাদ" },
-                  { label: "উপাদান:", val: "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই, চিনি ও এলাচ" },
+                  { label: "ধরন:", val: "সুন্দরবনের তাজা কাঁকড়া দিয়ে তৈরি প্রিমিয়াম সামুদ্রিক খাবার" },
+                  { label: "স্বাদ:", val: "সুন্দরবনের ঐতিহ্যবাহী মশলায় রান্না করা অপূর্ব ক্র্যাব স্বাদ" },
+                  { label: "উপাদান:", val: "সুন্দরবনের তাজা কাঁকড়া, বিশেষ মশলা ও ঐতিহ্যবাহী সস" },
                   { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
@@ -362,7 +363,7 @@ export default function KhaiKhaiClient({
                 {/* Click to Call (Figma 1:1807) */}
                 <div className="w-full flex justify-center pb-1">
                   <a
-                    href="tel:01337860236"
+                    href={`tel:${initialSiteConfig?.contactPhone || "01804221161"}`}
                     className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
                   >
                     <span>📞</span>
@@ -373,7 +374,7 @@ export default function KhaiKhaiClient({
                 {/* Click to WhatsApp (Figma 1:1814) */}
                 <div className="w-full flex justify-center">
                   <a
-                    href="https://wa.me/8801337860236"
+                    href={`https://wa.me/${(initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "").startsWith("88") ? (initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "") : "88" + (initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
                     className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
@@ -400,21 +401,21 @@ export default function KhaiKhaiClient({
               {/* Intro Paragraphs */}
               <div className="px-2.5 py-4 space-y-4 text-black text-[18px] leading-[28px] text-left">
                 <p className="text-black font-medium">
-                  সুন্দরবনের ঐতিহ্যবাহী রেসিপি অনুসরণ করে CrabKhai এর খাঁটি দুধের ক্ষীর থেকে তৈরি করা হয় এই খাই খাই বাকেট, মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
+                  সুন্দরবনের ঐতিহ্যবাহী রেসিপি অনুসরণ করে CrabKhai এর তাজা কাঁকড়া থেকে তৈরি করা হয় এই খাই খাই বাকেট, মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
                 </p>
                 <p className="text-black font-medium">
-                  খাঁটি দুধ, মালাই ও ক্ষীরের এত সুন্দর সংমিশ্রণ যা একবার মুখে দিলে সুন্দরবনের স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
+                  তাজা কাঁকড়া ও বিশেষ মশলার এত সুন্দর সংমিশ্রণ যা একবার মুখে দিলে সুন্দরবনের স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
                 </p>
               </div>
 
               {/* Bullet List */}
               <div className="px-2.5 pb-4 space-y-3">
                 {[
-                  "সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে খাঁটি দুধ, ক্ষীর, মালাই ও এলাচ দিয়ে প্রস্তুত।",
-                  "প্রতিটি CrabKhai বাকেটে পাবেন মালাই এবং ক্ষীরের ভরপুর পুষ্টি ও স্বাদ।",
+                  "সুন্দরবনের তাজা কাঁকড়া ও বিশেষ মশলা দিয়ে ঐতিহ্যবাহী রেসিপিতে প্রস্তুত।",
+                  "প্রতিটি CrabKhai বাকেটে পাবেন কাঁকড়ার ভরপুর প্রোটিন ও অসাধারণ স্বাদ।",
                   "CrabKhai এর প্রিমিয়াম বাকেট প্যাকেজিং — গিফটিং বা আপ্যায়নের জন্য দারুণ।",
-                  "কোনো কৃত্রিম সুবাস বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
-                  "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে CrabKhai এর নিজস্ব কারখানায় তৈরি।"
+                  "কোনো কৃত্রিম ফ্লেভার বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
+                  "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে CrabKhai এর নিজস্ব কিচেনে তৈরি।"
                 ].map((text, idx) => (
                   <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
                     {/* Crab icon related to CrabKhai */}
@@ -445,8 +446,8 @@ export default function KhaiKhaiClient({
           <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
             <div className="w-full h-full rounded-[8px] overflow-hidden shadow-2xl border border-white/10 bg-[#1a0204] flex items-center justify-center">
               <img
-                src="/images/khai-khai-bucket-main.png"
-                alt="Khai Khai Sweets Banner"
+                src="/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp"
+                alt="CrabKhai Bucket Banner"
                 className="w-full h-full object-cover select-none rounded-[8px]"
               />
             </div>
@@ -514,7 +515,7 @@ export default function KhaiKhaiClient({
               <span className="bg-crab-red text-white font-bold px-4 py-1.5 rounded-full text-[12px] tracking-wide mb-1.5">
                 PLACE YOUR ORDER
               </span>
-              <p className="text-[12px] text-crab-red/90 font-medium leading-[18px]">
+              <p className="text-[12px] text-black/70 font-medium leading-[18px]">
                 Secure checkout · Cash on Delivery · Nationwide delivery
               </p>
             </div>
@@ -525,14 +526,15 @@ export default function KhaiKhaiClient({
                 {/* Section Header */}
                 <div className="flex items-center gap-2 text-crab-red/90">
                   <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">🛒</span>
-                  <h4 className="font-bold text-[18px]">Your basket</h4>
+                  <h4 className="font-bold text-[18px] text-black">Your basket</h4>
                 </div>
 
                 {/* Variations Rows */}
                 <div className="space-y-3">
                   {[
-                    { val: "1", label: "1 Kg", price: 850, tag: "Best Sell", img: "/images/khai-khai-bucket-2.png" },
-                    { val: "2", label: "2 Kg", price: 1600, tag: "ডেলিভারী ফ্রী", img: "/images/khai-khai-bucket-main.png" },
+                    { val: "1", label: "1 Kg", price: 1699, tag: "Best Sell", img: "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp" },
+                    { val: "2", label: "2 Kg", price: 3199, tag: "ডেলিভারী ফ্রী", img: "/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp" },
+                    { val: "3", label: "3 Kg", price: 4599, tag: "ডেলিভারী ফ্রী", img: "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp" },
                   ].map((item) => {
                     const isSelected = selectedWeight === item.val;
                     return (
@@ -613,7 +615,7 @@ export default function KhaiKhaiClient({
                 {/* Section Header */}
                 <div className="flex items-center gap-2 text-crab-red/90">
                   <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">📍</span>
-                  <h4 className="font-bold text-[18px]">Delivery address</h4>
+                  <h4 className="font-bold text-[18px] text-black">Delivery address</h4>
                 </div>
 
                 <div className="space-y-4">
@@ -688,7 +690,7 @@ export default function KhaiKhaiClient({
                 {/* Section Header */}
                 <div className="flex items-center gap-2 text-crab-red/90">
                   <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">🚚</span>
-                  <h4 className="font-bold text-[18px]">Delivery speed</h4>
+                  <h4 className="font-bold text-[18px] text-black">Delivery speed</h4>
                 </div>
 
                 <div className="space-y-2">
@@ -727,7 +729,7 @@ export default function KhaiKhaiClient({
                 {/* Section Header */}
                 <div className="flex items-center gap-2 text-crab-red/90">
                   <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">💳</span>
-                  <h4 className="font-bold text-[18px]">Payment</h4>
+                  <h4 className="font-bold text-[18px] text-black">Payment</h4>
                 </div>
 
                 <div className="p-3.5 rounded-[8px] border border-crab-red bg-crab-red/5 flex flex-col gap-1.5">
@@ -750,7 +752,7 @@ export default function KhaiKhaiClient({
                   {/* Section Header */}
                   <div className="flex items-center gap-2 pb-2 border-b border-crab-red/20">
                     <span className="text-[18px]">📝</span>
-                    <h4 className="font-bold text-[18px]">Order summary</h4>
+                    <h4 className="font-bold text-[18px] text-black">Order summary</h4>
                   </div>
 
                   <div className="flex justify-between items-center text-sm">
