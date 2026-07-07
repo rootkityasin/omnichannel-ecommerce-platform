@@ -379,6 +379,56 @@ export default function KhaiKhaiClient({
           </div>
         </div>
 
+        {/* Unique Selling Points Card (Figma 1:1822 clone) */}
+        <div className="w-full bg-white p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.1)] flex flex-col items-stretch">
+          {/* Header Bar */}
+          <div className="bg-[#2f7b3d] w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
+            কেন আমাদের খাই খাই বাকেট অন্যদের<br />থেকে আলাদা
+          </div>
+
+          {/* Intro Paragraphs */}
+          <div className="px-2.5 py-4 space-y-4 text-[#333333] text-[18px] leading-[28px] text-left">
+            <p>
+              গঞ্জের মিষ্টির প্রতিটি প্রোডাক্টের মতোই আমাদের খাঁটি দুধ এর ক্ষীর থেকে তৈরি করা হয় এই খাই খাই বাকেট মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
+            </p>
+            <p>
+              খাঁটি দুধ এবং মালাই ও ক্ষীর এর এত সুন্দর সংমিশ্রন যা একবার মুখে দিলে এর স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
+            </p>
+          </div>
+
+          {/* Bullet List */}
+          <div className="px-2.5 pb-4 space-y-3">
+            {[
+              "খাঁটি দুধ মালাই ও ক্ষীর দিয়ে তৈরী।",
+              "প্রতিটি কামড়ে পাবেন খাঁটি দুধ ও ক্ষীরের সমপরিমান পুষ্টি।",
+              "সুন্দর প্যাকেজিং (গিফটিং-এর জন্য উপযুক্ত)",
+              "কোয়ালিটি মেইনটেইনড প্রোডাকশন।",
+              "হাইজেনিক ফ্যাক্টরি প্রসেস।"
+            ].map((text, idx) => (
+              <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-[#333333]">
+                {/* Seedling / Leaf icon in green color */}
+                <span className="text-[#2f7b3d] mr-3 mt-1.5 shrink-0">🌱</span>
+                <p className="leading-[26px]">{text}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Button */}
+          <div className="w-full flex justify-center pb-2">
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("order-form-section");
+                el?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="bg-[#0c3620] hover:bg-[#0c3620]/90 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+            >
+              <span>🛒</span>
+              অর্ডার করুন!
+            </button>
+          </div>
+        </div>
+
         {/* Checkout Form Section (Matching style and width of mobile viewport) */}
         <div id="order-form-section" className="w-full scroll-mt-6">
           <Card className="border-0 shadow-2xl rounded-3xl bg-white overflow-hidden">
