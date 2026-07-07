@@ -34,7 +34,7 @@ export default function KhaiKhaiClient({
   products,
   domain,
 }: KhaiKhaiClientProps) {
-  const [selectedWeight, setSelectedWeight] = useState<"0.5" | "1" | "2">("1");
+  const [selectedWeight, setSelectedWeight] = useState<"1" | "2">("1");
   const [shippingArea, setShippingArea] = useState<"inside" | "outside" | "subcity">("inside");
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
@@ -65,7 +65,6 @@ export default function KhaiKhaiClient({
 
   // Resolve prices based on selected weight
   const priceMap = {
-    "0.5": 500,
     "1": 850,
     "2": 1600,
   };
@@ -90,8 +89,7 @@ export default function KhaiKhaiClient({
     // Try to match based on weight substring
     const match = khaiProducts.find((p) => {
       const nameLower = p.name.toLowerCase();
-      if (selectedWeight === "0.5") return nameLower.includes("0.5") || nameLower.includes("500g");
-      if (selectedWeight === "1") return nameLower.includes("1kg") || nameLower.includes("1 kg") || (!nameLower.includes("0.5") && !nameLower.includes("2"));
+      if (selectedWeight === "1") return nameLower.includes("1kg") || nameLower.includes("1 kg") || !nameLower.includes("2");
       if (selectedWeight === "2") return nameLower.includes("2kg") || nameLower.includes("2 kg");
       return false;
     });
@@ -414,15 +412,15 @@ export default function KhaiKhaiClient({
               {/* Bullet List */}
               <div className="px-2.5 pb-4 space-y-3">
                 {[
-                  "খাঁটি দুধ মালাই ও ক্ষীর দিয়ে তৈরী।",
-                  "প্রতিটি কামড়ে পাবেন খাঁটি দুধ ও ক্ষীরের সমপরিমান পুষ্টি।",
-                  "সুন্দর প্যাকেজিং (গিফটিং-এর জন্য উপযুক্ত)",
-                  "কোয়ালিটি মেইনটেইনড প্রোডাকশন।",
-                  "হাইজেনিক ফ্যাক্টরি প্রসেস।"
+                  "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই ও এলাচ দিয়ে প্রস্তুত করা হয়।",
+                  "প্রতিটি বাকেটে পাবেন মালাই এবং ক্ষীরের ভরপুর পুষ্টি ও স্বাদ।",
+                  "প্রিমিয়াম বাকেট প্যাকেজিং যা গিফটিং বা আপ্যায়নের জন্য দারুণ।",
+                  "কোনো কৃত্রিম সুবাস বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
+                  "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে আমাদের নিজস্ব কারখানায় তৈরি।"
                 ].map((text, idx) => (
                   <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
-                    {/* Seedling / Leaf icon in theme color */}
-                    <span className="text-crab-red mr-3 mt-1.5 shrink-0">🌱</span>
+                    {/* Crab icon related to CrabKhai */}
+                    <span className="text-crab-red mr-3 mt-1.5 shrink-0 text-[20px]">🦀</span>
                     <p className="leading-[26px] text-black font-semibold">{text}</p>
                   </div>
                 ))}
@@ -535,7 +533,6 @@ export default function KhaiKhaiClient({
                 {/* Variations Rows */}
                 <div className="space-y-3">
                   {[
-                    { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell", img: "/images/khai-khai-bucket-1.png" },
                     { val: "1", label: "1 Kg", price: 850, tag: "Best Sell", img: "/images/khai-khai-bucket-2.png" },
                     { val: "2", label: "2 Kg", price: 1600, tag: "ডেলিভারী ফ্রী", img: "/images/khai-khai-bucket-main.png" },
                   ].map((item) => {
