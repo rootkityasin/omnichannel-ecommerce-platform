@@ -44,6 +44,7 @@ export default function KhaiKhaiClient({
   // Showcase Images State
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const showcaseImages = [
+    "/images/khai-khai-bucket-main.png",
     "/images/khai-khai-bucket-1.png",
     "/images/khai-khai-bucket-2.png",
   ];
@@ -51,7 +52,7 @@ export default function KhaiKhaiClient({
   // Auto-slide images every 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveImageIdx((prev) => (prev === 0 ? 1 : 0));
+      setActiveImageIdx((prev) => (prev === 2 ? 0 : prev + 1));
     }, 4000);
     return () => clearInterval(timer);
   }, []);
@@ -271,11 +272,11 @@ export default function KhaiKhaiClient({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,43,60,0.2)_0%,rgba(26,2,4,1)_100%)] pointer-events-none" />
 
       {/* Main Container mimicking standard mobile viewport layout */}
-      <div className="w-full max-w-[380px] flex flex-col items-stretch justify-center relative z-10 space-y-6">
+      <div className="w-full max-w-[380px] md:max-w-[1170px] flex flex-col items-stretch justify-center relative z-10 space-y-6 md:space-y-12">
         
         {/* Title Block (Figma 1:1720) */}
         <div className="w-full text-center pb-2">
-          <h1 className="text-[24px] font-bold leading-[36px] text-white">
+          <h1 className="text-[24px] md:text-[35px] font-bold leading-[36px] md:leading-[52.5px] text-white">
             নিজস্ব ফ্যাক্টরিতে তৈরি &quot;খাই খাই বাকেট&quot;,<br />
             সারা বাংলাদেশে হোম ডেলিভারি দেওয়া হয়!!
           </h1>
@@ -283,7 +284,7 @@ export default function KhaiKhaiClient({
 
         {/* Subtitle Block (Figma 1:1726) */}
         <div className="w-full text-center pb-3">
-          <p className="text-[20px] font-semibold leading-[30px] text-white/95">
+          <p className="text-[20px] md:text-[28px] font-semibold leading-[30px] md:leading-[42px] text-white/95">
             গঞ্জের মিষ্টি কোয়ালিটি খাই খাই বাকেট, প্রতিটি পিসে<br />
             দুধ এবং ক্ষীর এর স্বাদ!
           </p>
@@ -304,117 +305,178 @@ export default function KhaiKhaiClient({
           </button>
         </div>
 
-        {/* Image Showcase Box (Figma 1:1738) */}
-        <div className="w-full bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204]">
-          <div className="bg-[#220205] border border-white p-[5px] rounded-[8px] overflow-hidden relative group">
-            {/* Image Slider */}
-            <div className="aspect-[325/365.6] relative rounded-[6px] overflow-hidden flex items-center justify-center bg-slate-950">
-              <img
-                src={showcaseImages[activeImageIdx]}
-                alt={`Khai Khai Bucket - ${activeImageIdx + 1}`}
-                className="w-full h-full object-cover transition-all duration-700 ease-in-out select-none"
-              />
-              
-              {/* Pagination Dots */}
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
-                {showcaseImages.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImageIdx(idx)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all border border-white/20 ${
-                      activeImageIdx === idx ? "bg-white scale-110" : "bg-white/40"
-                    }`}
-                  />
+        {/* Responsive Grid for Hero Showcase and Specifications (Figma 1:2343) */}
+        <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8 items-stretch">
+          {/* Image Showcase Box (Figma 1:1738) */}
+          <div className="w-full md:w-1/2 bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204] flex flex-col">
+            <div className="bg-[#220205] border border-white p-[5px] rounded-[8px] overflow-hidden relative group flex-1 flex flex-col justify-center">
+              {/* Image Slider */}
+              <div className="aspect-[325/365.6] md:aspect-[545/613.13] relative rounded-[6px] overflow-hidden flex items-center justify-center bg-slate-950 flex-1">
+                <img
+                  src={showcaseImages[activeImageIdx]}
+                  alt={`Khai Khai Bucket - ${activeImageIdx + 1}`}
+                  className="w-full h-full object-cover transition-all duration-700 ease-in-out select-none"
+                />
+                
+                {/* Pagination Dots */}
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
+                  {showcaseImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveImageIdx(idx)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all border border-white/20 ${
+                        activeImageIdx === idx ? "bg-white scale-110" : "bg-white/40"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Specifications Card (Figma 1:1750) */}
+          <div className="w-full md:w-1/2 bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204] flex flex-col justify-between">
+            <div className="flex flex-col items-stretch w-full h-full justify-between">
+              {/* Card Header (Figma 1:1754) */}
+              <div className="bg-[#220205] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
+                পণ্যের বিবরণ
+              </div>
+
+              {/* Spec List (Figma 1:1758) */}
+              <div className="w-full space-y-2.5 mb-6 text-left flex-1 flex flex-col justify-center">
+                {[
+                  { label: "নাম:", val: "খাই খাই বাকেট" },
+                  { label: "ধরন:", val: "ক্ষীর, মালাই ও ঘীরের তৈরি ঐতিহ্যবাহী মিষ্টি" },
+                  { label: "স্বাদ:", val: "সুস্বাদু মালাই ও এলাচির সুবাসযুক্ত অপূর্ব মিষ্টি স্বাদ" },
+                  { label: "উপাদান:", val: "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই, চিনি ও এলাচ" },
+                  { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
+                    <span className="w-4 h-4 rounded-full bg-[#220205] shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
+                    <p className="text-white">
+                      <span className="font-bold mr-1.5">{item.label}</span>
+                      <span className="font-light">{item.val}</span>
+                    </p>
+                  </div>
                 ))}
+              </div>
+
+              <div className="space-y-3 w-full">
+                {/* Click to Call (Figma 1:1807) */}
+                <div className="w-full flex justify-center pb-1">
+                  <a
+                    href="tel:01337860236"
+                    className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+                  >
+                    <span>📞</span>
+                    কল করে অর্ডার করুন!
+                  </a>
+                </div>
+
+                {/* Click to WhatsApp (Figma 1:1814) */}
+                <div className="w-full flex justify-center">
+                  <a
+                    href="https://wa.me/8801337860236"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+                  >
+                    <span>💬</span>
+                    হোয়াটসঅ্যাপ
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Specifications Card (Figma 1:1750) */}
-        <div className="w-full bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204]">
-          <div className="flex flex-col items-stretch w-full">
-            {/* Card Header (Figma 1:1754) */}
-            <div className="bg-[#220205] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
-              পণ্যের বিবরণ
+        {/* Responsive Grid for USPs and Promo Banner */}
+        <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8 items-stretch">
+          {/* Unique Selling Points Card (Figma 1:1822 clone) */}
+          <div className="w-full md:w-1/2 bg-white p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.1)] flex flex-col justify-between items-stretch">
+            <div>
+              {/* Header Bar */}
+              <div className="bg-crab-red w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
+                কেন আমাদের খাই খাই বাকেট অন্যদের<br />থেকে আলাদা
+              </div>
+
+              {/* Intro Paragraphs */}
+              <div className="px-2.5 py-4 space-y-4 text-black text-[18px] leading-[28px] text-left">
+                <p className="text-black font-medium">
+                  গঞ্জের মিষ্টির প্রতিটি প্রোডাক্টের মতোই আমাদের খাঁটি দুধ এর ক্ষীর থেকে তৈরি করা হয় এই খাই খাই বাকেট মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
+                </p>
+                <p className="text-black font-medium">
+                  খাঁটি দুধ এবং মালাই ও ক্ষীর এর এত সুন্দর সংমিশ্রন যা একবার মুখে দিলে এর স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
+                </p>
+              </div>
+
+              {/* Bullet List */}
+              <div className="px-2.5 pb-4 space-y-3">
+                {[
+                  "খাঁটি দুধ মালাই ও ক্ষীর দিয়ে তৈরী।",
+                  "প্রতিটি কামড়ে পাবেন খাঁটি দুধ ও ক্ষীরের সমপরিমান পুষ্টি।",
+                  "সুন্দর প্যাকেজিং (গিফটিং-এর জন্য উপযুক্ত)",
+                  "কোয়ালিটি মেইনটেইনড প্রোডাকশন।",
+                  "হাইজেনিক ফ্যাক্টরি প্রসেস।"
+                ].map((text, idx) => (
+                  <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
+                    {/* Seedling / Leaf icon in theme color */}
+                    <span className="text-crab-red mr-3 mt-1.5 shrink-0">🌱</span>
+                    <p className="leading-[26px] text-black font-semibold">{text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Spec List (Figma 1:1758) */}
-            <div className="w-full space-y-2.5 mb-6 text-left">
-              {[
-                { label: "নাম:", val: "খাই খাই বাকেট" },
-                { label: "ধরন:", val: "ক্ষীর, মালাই ও ঘীরের তৈরি ঐতিহ্যবাহী মিষ্টি" },
-                { label: "স্বাদ:", val: "সুস্বাদু মালাই ও এলাচির সুবাসযুক্ত অপূর্ব মিষ্টি স্বাদ" },
-                { label: "উপাদান:", val: "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই, চিনি ও এলাচ" },
-                { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
-                  <span className="w-4 h-4 rounded-full bg-[#220205] shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
-                  <p className="text-white">
-                    <span className="font-bold mr-1.5">{item.label}</span>
-                    <span className="font-light">{item.val}</span>
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Click to Call (Figma 1:1807) */}
-            <div className="w-full flex justify-center pb-3">
-              <a
-                href="tel:01337860236"
-                className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+            {/* Button */}
+            <div className="w-full flex justify-center pb-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById("order-form-section");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="bg-[#220205] hover:bg-[#220205]/90 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
               >
-                <span>📞</span>
-                কল করে অর্ডার করুন!
-              </a>
+                <span>🛒</span>
+                অর্ডার করুন!
+              </button>
             </div>
+          </div>
 
-            {/* Click to WhatsApp (Figma 1:1814) */}
-            <div className="w-full flex justify-center">
-              <a
-                href="https://wa.me/8801337860236"
-                target="_blank"
-                rel="noreferrer"
-                className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
-              >
-                <span>💬</span>
-                হোয়াটসঅ্যাপ
-              </a>
+          {/* Promotional Banner (Figma 1:1885 clone) */}
+          <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
+            <div className="w-full h-full rounded-[8px] overflow-hidden shadow-2xl border border-white/10 bg-[#1a0204] flex items-center justify-center">
+              <img
+                src="/images/khai-khai-bucket-main.png"
+                alt="Khai Khai Sweets Banner"
+                className="w-full h-full object-cover select-none rounded-[8px]"
+              />
             </div>
           </div>
         </div>
 
-        {/* Unique Selling Points Card (Figma 1:1822 clone) */}
+        {/* Why Order From Us Card (Figma 1:1891 clone) */}
         <div className="w-full bg-white p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.1)] flex flex-col items-stretch">
           {/* Header Bar */}
-          <div className="bg-crab-red w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
-            কেন আমাদের খাই খাই বাকেট অন্যদের<br />থেকে আলাদা
-          </div>
-
-          {/* Intro Paragraphs */}
-          <div className="px-2.5 py-4 space-y-4 text-[#333333] text-[18px] leading-[28px] text-left">
-            <p>
-              গঞ্জের মিষ্টির প্রতিটি প্রোডাক্টের মতোই আমাদের খাঁটি দুধ এর ক্ষীর থেকে তৈরি করা হয় এই খাই খাই বাকেট মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
-            </p>
-            <p>
-              খাঁটি দুধ এবং মালাই ও ক্ষীর এর এত সুন্দর সংমিশ্রন যা একবার মুখে দিলে এর স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
-            </p>
+          <div className="bg-crab-red w-full py-2.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
+            আমাদের কাছে কেন অর্ডার করবেন
           </div>
 
           {/* Bullet List */}
-          <div className="px-2.5 pb-4 space-y-3">
+          <div className="px-2.5 py-4 space-y-4">
             {[
-              "খাঁটি দুধ মালাই ও ক্ষীর দিয়ে তৈরী।",
-              "প্রতিটি কামড়ে পাবেন খাঁটি দুধ ও ক্ষীরের সমপরিমান পুষ্টি।",
-              "সুন্দর প্যাকেজিং (গিফটিং-এর জন্য উপযুক্ত)",
-              "কোয়ালিটি মেইনটেইনড প্রোডাকশন।",
-              "হাইজেনিক ফ্যাক্টরি প্রসেস।"
+              "দীর্ঘ ২ বছর থেকে আমরা অনলাইনে বিশ্বস্ততার সাথে ব্যবসা করছি এবং উৎকৃষ্ট পণ্য সরবরাহের মাধ্যমে সেবা দিচ্ছি।",
+              "নিজস্ব প্রোডাকশন: প্রতিটি খাই খাই বাকেট তৈরি হয় আমাদের নিজস্ব ফ্যাক্টরিতে।",
+              "সুন্দর প্যাকেজিং — গিফটিং-এর জন্য একদম উপযুক্ত।",
+              "সর্বোচ্চ হাইজিন মেন্টেন করে আমাদের খাই খাই বাকেট গুলো তৈরি করা হয়।",
+              "সারা বাংলাদেশে ২৪ থেকে ৭২ ঘণ্টার মধ্যে হোম ডেলিভারী করা হয়।"
             ].map((text, idx) => (
-              <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-[#333333]">
-                {/* Seedling / Leaf icon in theme color */}
-                <span className="text-crab-red mr-3 mt-1.5 shrink-0">🌱</span>
-                <p className="leading-[26px]">{text}</p>
+              <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
+                {/* Check icon in theme color */}
+                <span className="text-crab-red mr-3 mt-1.5 shrink-0 font-extrabold text-[20px]">✓</span>
+                <p className="leading-[26px] text-black font-semibold">{text}</p>
               </div>
             ))}
           </div>
@@ -434,19 +496,14 @@ export default function KhaiKhaiClient({
             </button>
           </div>
         </div>
-        {/* Promotional Banner (Figma 1:1885 clone) */}
-        <div className="w-full flex flex-col items-center">
-          <div className="w-full max-w-[370px] aspect-[370/416.25] rounded-[8px] overflow-hidden shadow-2xl border border-white/10 bg-slate-900">
-            <img
-              src="/images/khai-khai-promo-banner.png"
-              alt="Khai Khai Sweets Banner"
-              className="w-full h-full object-cover select-none"
-            />
-          </div>
+
+        {/* Limited Time Offer Banner (Figma 1:2908 bottom segment) */}
+        <div className="w-full bg-crab-red text-white py-3.5 text-center font-bold text-[22px] md:text-[28px] rounded-[6px] shadow-lg">
+          সীমিত সময়ের অফার
         </div>
 
-        {/* Checkout Form Section (Matching style and width of mobile viewport) */}
-        <div id="order-form-section" className="w-full scroll-mt-6">
+        {/* Checkout Form Section (Matching style and width of mobile viewport, centered on desktop) */}
+        <div id="order-form-section" className="w-full max-w-[760px] mx-auto scroll-mt-6">
           <div className="bg-white p-4 rounded-[12px] shadow-2xl flex flex-col items-stretch space-y-6">
             
             {/* Header Title (Figma 1:1958) */}
@@ -478,9 +535,9 @@ export default function KhaiKhaiClient({
                 {/* Variations Rows */}
                 <div className="space-y-3">
                   {[
-                    { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell" },
-                    { val: "1", label: "1 Kg", price: 850, tag: "Best Sell" },
-                    { val: "2", label: "2 Kg", price: 1600, tag: "ডেলিভারী ফ্রী" },
+                    { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell", img: "/images/khai-khai-bucket-1.png" },
+                    { val: "1", label: "1 Kg", price: 850, tag: "Best Sell", img: "/images/khai-khai-bucket-2.png" },
+                    { val: "2", label: "2 Kg", price: 1600, tag: "ডেলিভারী ফ্রী", img: "/images/khai-khai-bucket-main.png" },
                   ].map((item) => {
                     const isSelected = selectedWeight === item.val;
                     return (
@@ -502,7 +559,7 @@ export default function KhaiKhaiClient({
                           {/* Image thumb */}
                           <div className="w-[80px] h-[80px] rounded-[6px] overflow-hidden border border-slate-100 shrink-0 bg-slate-100">
                             <img
-                              src="/images/khai-khai-bucket-1.png"
+                              src={item.img}
                               alt={item.label}
                               className="w-full h-full object-cover"
                             />
@@ -510,7 +567,7 @@ export default function KhaiKhaiClient({
 
                           {/* Info & Quantity controls */}
                           <div className="space-y-2">
-                            <h5 className="font-bold text-slate-800 text-[16px]">{item.label}</h5>
+                            <h5 className="font-bold text-black text-[16px]">{item.label}</h5>
                             <p className="font-black text-crab-red text-[18px]">৳ {item.price}</p>
                             
                             {/* Quantity buttons */}
@@ -557,7 +614,7 @@ export default function KhaiKhaiClient({
               </div>
 
               {/* Delivery Address Section (Figma 1:2054) */}
-              <div className="space-y-3 pt-3 border-t border-dashed border-slate-100">
+              <div className="space-y-3 pt-3 border-t border-slate-100">
                 {/* Section Header */}
                 <div className="flex items-center gap-2 text-crab-red/90">
                   <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">📍</span>
@@ -567,13 +624,13 @@ export default function KhaiKhaiClient({
                 <div className="space-y-4">
                   {/* Name field */}
                   <div className="space-y-1 text-left">
-                    <Label htmlFor="name" className="text-sm font-bold text-slate-700">আপনার নাম *</Label>
+                    <Label htmlFor="name" className="text-sm font-bold text-black">আপনার নাম *</Label>
                     <Input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="আপনার নাম"
-                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red ${
+                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red text-black placeholder:text-slate-400 ${
                         formErrors.name ? "ring-2 ring-red-500" : ""
                       }`}
                     />
@@ -584,14 +641,14 @@ export default function KhaiKhaiClient({
 
                   {/* Phone field */}
                   <div className="space-y-1 text-left">
-                    <Label htmlFor="phone" className="text-sm font-bold text-slate-700">আপনার মোবাইল নম্বর *</Label>
+                    <Label htmlFor="phone" className="text-sm font-bold text-black">আপনার মোবাইল নম্বর *</Label>
                     <Input
                       id="phone"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="01XXXXXXXXX"
                       type="tel"
-                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red ${
+                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red text-black placeholder:text-slate-400 ${
                         formErrors.phone ? "ring-2 ring-red-500" : ""
                       }`}
                     />
@@ -602,13 +659,13 @@ export default function KhaiKhaiClient({
 
                   {/* Address field */}
                   <div className="space-y-1 text-left">
-                    <Label htmlFor="address" className="text-sm font-bold text-slate-700">আপনার সম্পূর্ণ ঠিকানা *</Label>
+                    <Label htmlFor="address" className="text-sm font-bold text-black">আপনার সম্পূর্ণ ঠিকানা *</Label>
                     <Input
                       id="address"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="বাসা / রোড / এলাকা, থানা, জেলা"
-                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red ${
+                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red text-black placeholder:text-slate-400 ${
                         formErrors.address ? "ring-2 ring-red-500" : ""
                       }`}
                     />
@@ -619,13 +676,13 @@ export default function KhaiKhaiClient({
 
                   {/* Note/Comment field */}
                   <div className="space-y-1 text-left">
-                    <Label htmlFor="note" className="text-sm font-bold text-slate-700">আপনার মন্তব্য (optional)</Label>
+                    <Label htmlFor="note" className="text-sm font-bold text-black">আপনার মন্তব্য (optional)</Label>
                     <textarea
                       id="note"
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                       placeholder="অর্ডার অথবা ডেলিভারি সম্পকে মন্তব্য...."
-                      className="w-full min-h-[80px] p-3 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red"
+                      className="w-full min-h-[80px] p-3 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red text-black placeholder:text-slate-400"
                     />
                   </div>
                 </div>
@@ -662,7 +719,7 @@ export default function KhaiKhaiClient({
                           readOnly
                           className="w-4 h-4 text-crab-red focus:ring-crab-red"
                         />
-                        <span className="text-slate-800 font-semibold text-[16px]">{option.label}</span>
+                        <span className="text-black font-semibold text-[16px]">{option.label}</span>
                       </div>
                       <span className="font-black text-crab-red text-[16px]">{option.fee} ৳</span>
                     </label>
@@ -686,7 +743,7 @@ export default function KhaiKhaiClient({
                       readOnly
                       className="w-4 h-4 text-crab-red focus:ring-crab-red"
                     />
-                    <span className="text-slate-800 font-bold text-[16px]">Cash On Delivery</span>
+                    <span className="text-black font-bold text-[16px]">Cash On Delivery</span>
                   </div>
                   <p className="text-xs text-slate-500 pl-7">পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</p>
                 </div>
