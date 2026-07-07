@@ -39,6 +39,21 @@ export default function KhaiKhaiClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<{ id: string; total: number } | null>(null);
 
+  // Showcase Images State
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const showcaseImages = [
+    "/images/khai-khai-bucket-1.png",
+    "/images/khai-khai-bucket-2.png",
+  ];
+
+  // Auto-slide images every 4 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveImageIdx((prev) => (prev === 0 ? 1 : 0));
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Form State
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -285,11 +300,28 @@ export default function KhaiKhaiClient({
 
         {/* Image Showcase Box (Figma 1:1738) */}
         <div className="w-full bg-[#2f7b3d] p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#094c15]">
-          <div className="bg-[#0c3620] border border-white p-[5px] rounded-[8px] overflow-hidden">
-            <div className="bg-gradient-to-br from-amber-500/10 to-rose-500/10 aspect-[325/365] rounded-[6px] flex flex-col items-center justify-center p-6 space-y-4">
-              <span className="text-8xl">🍨</span>
-              <h3 className="text-2xl font-black text-amber-400">খাই খাই বাকেট</h3>
-              <p className="text-white/60 text-xs font-bold tracking-wider">PREMIUM SWEETS BUCKET</p>
+          <div className="bg-[#0c3620] border border-white p-[5px] rounded-[8px] overflow-hidden relative group">
+            {/* Image Slider */}
+            <div className="aspect-[325/365.6] relative rounded-[6px] overflow-hidden flex items-center justify-center bg-slate-950">
+              <img
+                src={showcaseImages[activeImageIdx]}
+                alt={`Khai Khai Bucket - ${activeImageIdx + 1}`}
+                className="w-full h-full object-cover transition-all duration-700 ease-in-out select-none"
+              />
+              
+              {/* Pagination Dots */}
+              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
+                {showcaseImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveImageIdx(idx)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all border border-white/20 ${
+                      activeImageIdx === idx ? "bg-white scale-110" : "bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
