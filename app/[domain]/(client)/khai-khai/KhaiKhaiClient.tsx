@@ -428,6 +428,16 @@ export default function KhaiKhaiClient({
             </button>
           </div>
         </div>
+        {/* Promotional Banner (Figma 1:1885 clone) */}
+        <div className="w-full flex flex-col items-center">
+          <div className="w-full max-w-[370px] aspect-[370/416.25] rounded-[8px] overflow-hidden shadow-2xl border border-white/10 bg-slate-900">
+            <img
+              src="/images/khai-khai-promo-banner.png"
+              alt="Khai Khai Sweets Banner"
+              className="w-full h-full object-cover select-none"
+            />
+          </div>
+        </div>
 
         {/* Checkout Form Section (Matching style and width of mobile viewport) */}
         <div id="order-form-section" className="w-full scroll-mt-6">
