@@ -35,7 +35,9 @@ export default function KhaiKhaiClient({
   domain,
 }: KhaiKhaiClientProps) {
   const [selectedWeight, setSelectedWeight] = useState<"0.5" | "1" | "2">("1");
-  const [shippingArea, setShippingArea] = useState<"inside" | "outside">("inside");
+  const [shippingArea, setShippingArea] = useState<"inside" | "outside" | "subcity">("inside");
+  const [quantity, setQuantity] = useState(1);
+  const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<{ id: string; total: number } | null>(null);
 
@@ -67,8 +69,11 @@ export default function KhaiKhaiClient({
     "2": 1600,
   };
 
-  const productPrice = priceMap[selectedWeight];
-  const deliveryFee = selectedWeight === "2" ? 0 : (shippingArea === "inside" ? 60 : 120);
+  const singleProductPrice = priceMap[selectedWeight];
+  const productPrice = singleProductPrice * quantity;
+  const deliveryFee = selectedWeight === "2" ? 0 : (
+    shippingArea === "inside" ? 60 : (shippingArea === "subcity" ? 100 : 120)
+  );
   const totalAmount = productPrice + deliveryFee;
 
   // Resolve DB Product ID
@@ -145,11 +150,12 @@ export default function KhaiKhaiClient({
       customerName: name,
       customerPhone: phone,
       customerAddress: address,
+      comment: note,
       items: [
         {
           productId: targetProduct.id,
-          quantity: 1,
-          price: productPrice,
+          quantity: quantity,
+          price: singleProductPrice,
         },
       ],
       totalAmount: totalAmount,
@@ -167,8 +173,8 @@ export default function KhaiKhaiClient({
           eventId: purchaseEventId,
           eventData: {
             content_ids: [targetProduct.id],
-            contents: [{ id: targetProduct.id, quantity: 1 }],
-            num_items: 1,
+            contents: [{ id: targetProduct.id, quantity: quantity }],
+            num_items: quantity,
             value: totalAmount,
             currency: "BDT",
             order_id: res.orderId,
@@ -260,9 +266,9 @@ export default function KhaiKhaiClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#0c3620] py-6 px-4 md:px-0 font-bangla flex flex-col items-center">
+    <div className="min-h-screen bg-[#1a0204] py-6 px-4 md:px-0 font-bangla flex flex-col items-center">
       {/* Decorative Ornaments / Background Image Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(47,123,61,0.25)_0%,rgba(12,54,32,1)_100%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,43,60,0.2)_0%,rgba(26,2,4,1)_100%)] pointer-events-none" />
 
       {/* Main Container mimicking standard mobile viewport layout */}
       <div className="w-full max-w-[380px] flex flex-col items-stretch justify-center relative z-10 space-y-6">
@@ -291,7 +297,7 @@ export default function KhaiKhaiClient({
               const el = document.getElementById("order-form-section");
               el?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="bg-[#0c3620] hover:bg-[#0c3620]/80 text-white font-bold text-[22px] rounded-[5px] w-[201.8px] h-[53px] flex items-center justify-center gap-2 border border-white/20 transition-all shadow-lg active:scale-95"
+            className="bg-crab-red hover:bg-crab-red/90 text-white font-bold text-[22px] rounded-[5px] w-[201.8px] h-[53px] flex items-center justify-center gap-2 border border-white/20 transition-all shadow-lg active:scale-95"
           >
             <span>🛒</span>
             অর্ডার করুন!
@@ -299,8 +305,8 @@ export default function KhaiKhaiClient({
         </div>
 
         {/* Image Showcase Box (Figma 1:1738) */}
-        <div className="w-full bg-[#2f7b3d] p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#094c15]">
-          <div className="bg-[#0c3620] border border-white p-[5px] rounded-[8px] overflow-hidden relative group">
+        <div className="w-full bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204]">
+          <div className="bg-[#220205] border border-white p-[5px] rounded-[8px] overflow-hidden relative group">
             {/* Image Slider */}
             <div className="aspect-[325/365.6] relative rounded-[6px] overflow-hidden flex items-center justify-center bg-slate-950">
               <img
@@ -327,10 +333,10 @@ export default function KhaiKhaiClient({
         </div>
 
         {/* Specifications Card (Figma 1:1750) */}
-        <div className="w-full bg-[#2f7b3d] p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#022208]">
+        <div className="w-full bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204]">
           <div className="flex flex-col items-stretch w-full">
             {/* Card Header (Figma 1:1754) */}
-            <div className="bg-[#0c3620] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
+            <div className="bg-[#220205] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
               পণ্যের বিবরণ
             </div>
 
@@ -344,7 +350,7 @@ export default function KhaiKhaiClient({
                 { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
-                  <span className="w-4 h-4 rounded-full bg-[#0c3620] shrink-0 mr-3 flex items-center justify-center text-[10px] text-[#2f7b3d]">●</span>
+                  <span className="w-4 h-4 rounded-full bg-[#220205] shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
                   <p className="text-white">
                     <span className="font-bold mr-1.5">{item.label}</span>
                     <span className="font-light">{item.val}</span>
@@ -357,7 +363,7 @@ export default function KhaiKhaiClient({
             <div className="w-full flex justify-center pb-3">
               <a
                 href="tel:01337860236"
-                className="bg-[#0c3620] hover:bg-[#0c3620]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+                className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
               >
                 <span>📞</span>
                 কল করে অর্ডার করুন!
@@ -370,7 +376,7 @@ export default function KhaiKhaiClient({
                 href="https://wa.me/8801337860236"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-[#0c3620] hover:bg-[#0c3620]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+                className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
               >
                 <span>💬</span>
                 হোয়াটসঅ্যাপ
@@ -382,7 +388,7 @@ export default function KhaiKhaiClient({
         {/* Unique Selling Points Card (Figma 1:1822 clone) */}
         <div className="w-full bg-white p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.1)] flex flex-col items-stretch">
           {/* Header Bar */}
-          <div className="bg-[#2f7b3d] w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
+          <div className="bg-crab-red w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
             কেন আমাদের খাই খাই বাকেট অন্যদের<br />থেকে আলাদা
           </div>
 
@@ -406,8 +412,8 @@ export default function KhaiKhaiClient({
               "হাইজেনিক ফ্যাক্টরি প্রসেস।"
             ].map((text, idx) => (
               <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-[#333333]">
-                {/* Seedling / Leaf icon in green color */}
-                <span className="text-[#2f7b3d] mr-3 mt-1.5 shrink-0">🌱</span>
+                {/* Seedling / Leaf icon in theme color */}
+                <span className="text-crab-red mr-3 mt-1.5 shrink-0">🌱</span>
                 <p className="leading-[26px]">{text}</p>
               </div>
             ))}
@@ -421,7 +427,7 @@ export default function KhaiKhaiClient({
                 const el = document.getElementById("order-form-section");
                 el?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="bg-[#0c3620] hover:bg-[#0c3620]/90 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+              className="bg-[#220205] hover:bg-[#220205]/90 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
             >
               <span>🛒</span>
               অর্ডার করুন!
@@ -441,141 +447,271 @@ export default function KhaiKhaiClient({
 
         {/* Checkout Form Section (Matching style and width of mobile viewport) */}
         <div id="order-form-section" className="w-full scroll-mt-6">
-          <Card className="border-0 shadow-2xl rounded-3xl bg-white overflow-hidden">
-            <div className="bg-crab-red px-6 py-6 text-center text-white">
-              <h2 className="text-xl font-black mb-1">অর্ডার করতে নিচের ফর্মটি পূরণ করুন</h2>
-              <p className="text-white/80 text-xs">নিরাপদ ডেলিভারি ও ক্যাশ অন ডেলিভারি (হাতে পেয়ে টাকা পরিশোধ)</p>
+          <div className="bg-white p-4 rounded-[12px] shadow-2xl flex flex-col items-stretch space-y-6">
+            
+            {/* Header Title (Figma 1:1958) */}
+            <div className="w-full text-center py-2">
+              <h2 className="text-crab-red font-bold text-[24px] leading-[36px]">
+                অর্ডার করতে নিচের ফর্মটি পূরণ করুন
+              </h2>
             </div>
 
-            <CardContent className="p-5 space-y-6">
-              <form onSubmit={handleOrderSubmit} className="space-y-6">
-                {/* Step 1: Weight Selection */}
-                <div className="space-y-3">
-                  <h3 className="text-[16px] font-black text-slate-900 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-crab-red/10 text-crab-red flex items-center justify-center text-xs font-bold">১</span>
-                    পরিমাণ নির্বাচন করুন
-                  </h3>
+            {/* Red Badge Banner (Figma 1:1962) */}
+            <div className="bg-crab-red/10 rounded-[8px] py-4 px-3 text-center flex flex-col items-center">
+              <span className="bg-crab-red text-white font-bold px-4 py-1.5 rounded-full text-[12px] tracking-wide mb-1.5">
+                PLACE YOUR ORDER
+              </span>
+              <p className="text-[12px] text-crab-red/90 font-medium leading-[18px]">
+                Secure checkout · Cash on Delivery · Nationwide delivery
+              </p>
+            </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell" },
-                      { val: "1", label: "1 Kg", price: 850, tag: "Best Sell" },
-                      { val: "2", label: "2 Kg", price: 1600, tag: "ফ্রী শিপিং" },
-                    ].map((item) => (
+            <form onSubmit={handleOrderSubmit} className="space-y-6">
+              {/* Basket Card (Figma 1:1970) */}
+              <div className="space-y-3">
+                {/* Section Header */}
+                <div className="flex items-center gap-2 text-crab-red/90">
+                  <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">🛒</span>
+                  <h4 className="font-bold text-[18px]">Your basket</h4>
+                </div>
+
+                {/* Variations Rows */}
+                <div className="space-y-3">
+                  {[
+                    { val: "0.5", label: "0.5 Kg", price: 500, tag: "Good Sell" },
+                    { val: "1", label: "1 Kg", price: 850, tag: "Best Sell" },
+                    { val: "2", label: "2 Kg", price: 1600, tag: "ডেলিভারী ফ্রী" },
+                  ].map((item) => {
+                    const isSelected = selectedWeight === item.val;
+                    return (
                       <div
                         key={item.val}
                         onClick={() => setSelectedWeight(item.val as any)}
-                        className={`relative p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                          selectedWeight === item.val
-                            ? "border-crab-red bg-crab-red/5 ring-2 ring-crab-red/10"
+                        className={`relative p-3 rounded-[8px] border cursor-pointer transition-all flex items-center justify-between ${
+                          isSelected
+                            ? "border-crab-red bg-crab-red/5 shadow-sm"
                             : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
                         }`}
                       >
-                        <span className="absolute top-1 right-1 text-[8px] font-extrabold px-1 py-0.5 rounded-full bg-crab-red/10 text-crab-red scale-90 origin-top-right">
+                        {/* Highlights Badge */}
+                        <span className="absolute top-2 left-2 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-crab-red/10 text-crab-red">
                           {item.tag}
                         </span>
-                        <div className="space-y-0.5 mt-2">
-                          <p className="font-black text-slate-900 text-sm">{item.label}</p>
+
+                        <div className="flex items-center gap-3 mt-4">
+                          {/* Image thumb */}
+                          <div className="w-[80px] h-[80px] rounded-[6px] overflow-hidden border border-slate-100 shrink-0 bg-slate-100">
+                            <img
+                              src="/images/khai-khai-bucket-1.png"
+                              alt={item.label}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+
+                          {/* Info & Quantity controls */}
+                          <div className="space-y-2">
+                            <h5 className="font-bold text-slate-800 text-[16px]">{item.label}</h5>
+                            <p className="font-black text-crab-red text-[18px]">৳ {item.price}</p>
+                            
+                            {/* Quantity buttons */}
+                            {isSelected && (
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center border border-slate-200 rounded-md h-7 w-[90px] overflow-hidden bg-white mt-1"
+                              >
+                                <button
+                                  type="button"
+                                  disabled={quantity <= 1}
+                                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                                  className="w-7 h-full text-slate-500 font-bold hover:bg-slate-50 disabled:opacity-50"
+                                >
+                                  −
+                                </button>
+                                <span className="flex-1 text-center text-xs font-bold text-slate-700 select-none">
+                                  {quantity}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setQuantity((prev) => prev + 1)}
+                                  className="w-7 h-full text-slate-500 font-bold hover:bg-slate-50"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-base font-black text-crab-red mt-2">৳{item.price}</p>
+
+                        {/* Check Indicator */}
+                        <div className="shrink-0 mr-1">
+                          {isSelected ? (
+                            <span className="w-5 h-5 rounded-full bg-crab-red flex items-center justify-center text-white text-[10px] font-bold">✓</span>
+                          ) : (
+                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-white" />
+                          )}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Delivery Address Section (Figma 1:2054) */}
+              <div className="space-y-3 pt-3 border-t border-dashed border-slate-100">
+                {/* Section Header */}
+                <div className="flex items-center gap-2 text-crab-red/90">
+                  <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">📍</span>
+                  <h4 className="font-bold text-[18px]">Delivery address</h4>
                 </div>
 
-                {/* Step 2: Shipping details */}
-                <div className="space-y-4 pt-3 border-t border-slate-100">
-                  <h3 className="text-[16px] font-black text-slate-900 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-crab-red/10 text-crab-red flex items-center justify-center text-xs font-bold">২</span>
-                    ডেলিভারি ঠিকানা ও তথ্য
-                  </h3>
+                <div className="space-y-4">
+                  {/* Name field */}
+                  <div className="space-y-1 text-left">
+                    <Label htmlFor="name" className="text-sm font-bold text-slate-700">আপনার নাম *</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="আপনার নাম"
+                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red ${
+                        formErrors.name ? "ring-2 ring-red-500" : ""
+                      }`}
+                    />
+                    {formErrors.name && (
+                      <p className="text-xs text-red-500 font-medium">{formErrors.name}</p>
+                    )}
+                  </div>
 
-                  <div className="space-y-4">
-                    {/* Name */}
-                    <div className="space-y-1">
-                      <Label htmlFor="name" className="text-xs font-bold text-slate-700">আপনার নাম *</Label>
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="আপনার নাম লিখুন"
-                        className={`h-11 rounded-lg text-sm ${formErrors.name ? "border-red-500" : ""}`}
-                      />
-                      {formErrors.name && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" /> {formErrors.name}
-                        </p>
-                      )}
-                    </div>
+                  {/* Phone field */}
+                  <div className="space-y-1 text-left">
+                    <Label htmlFor="phone" className="text-sm font-bold text-slate-700">আপনার মোবাইল নম্বর *</Label>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="01XXXXXXXXX"
+                      type="tel"
+                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red ${
+                        formErrors.phone ? "ring-2 ring-red-500" : ""
+                      }`}
+                    />
+                    {formErrors.phone && (
+                      <p className="text-xs text-red-500 font-medium">{formErrors.phone}</p>
+                    )}
+                  </div>
 
-                    {/* Phone */}
-                    <div className="space-y-1">
-                      <Label htmlFor="phone" className="text-xs font-bold text-slate-700">মোবাইল নাম্বার *</Label>
-                      <Input
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="মোবাইল নাম্বার দিন"
-                        type="tel"
-                        className={`h-11 rounded-lg text-sm ${formErrors.phone ? "border-red-500" : ""}`}
-                      />
-                      {formErrors.phone && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" /> {formErrors.phone}
-                        </p>
-                      )}
-                    </div>
+                  {/* Address field */}
+                  <div className="space-y-1 text-left">
+                    <Label htmlFor="address" className="text-sm font-bold text-slate-700">আপনার সম্পূর্ণ ঠিকানা *</Label>
+                    <Input
+                      id="address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="বাসা / রোড / এলাকা, থানা, জেলা"
+                      className={`h-12 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:ring-crab-red ${
+                        formErrors.address ? "ring-2 ring-red-500" : ""
+                      }`}
+                    />
+                    {formErrors.address && (
+                      <p className="text-xs text-red-500 font-medium">{formErrors.address}</p>
+                    )}
+                  </div>
 
-                    {/* Area selection */}
-                    <div className="space-y-1">
-                      <Label htmlFor="area" className="text-xs font-bold text-slate-700">ডেলিভারি এরিয়া *</Label>
-                      <select
-                        id="area"
-                        value={shippingArea}
-                        onChange={(e) => setShippingArea(e.target.value as any)}
-                        className="w-full h-11 rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red focus-visible:ring-offset-2"
-                      >
-                        <option value="inside">ঢাকার ভেতরে (৳৬০)</option>
-                        <option value="outside">ঢাকার বাইরে (৳১২০)</option>
-                      </select>
-                    </div>
-
-                    {/* Full Address */}
-                    <div className="space-y-1">
-                      <Label htmlFor="address" className="text-xs font-bold text-slate-700">পূর্ণাঙ্গ ঠিকানা *</Label>
-                      <textarea
-                        id="address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="আপনার ঠিকানা (রোড, বাড়ি, এলাকা) লিখুন"
-                        className={`w-full min-h-[70px] p-2.5 rounded-lg border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red ${
-                          formErrors.address ? "border-red-500" : ""
-                        }`}
-                      />
-                      {formErrors.address && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" /> {formErrors.address}
-                        </p>
-                      )}
-                    </div>
+                  {/* Note/Comment field */}
+                  <div className="space-y-1 text-left">
+                    <Label htmlFor="note" className="text-sm font-bold text-slate-700">আপনার মন্তব্য (optional)</Label>
+                    <textarea
+                      id="note"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="অর্ডার অথবা ডেলিভারি সম্পকে মন্তব্য...."
+                      className="w-full min-h-[80px] p-3 rounded-[8px] text-base bg-slate-50 border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crab-red"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Price & Summary Table */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-                  <div className="flex justify-between items-center text-xs text-slate-600">
-                    <span>পণ্য ({selectedWeight} Kg)</span>
-                    <span className="font-bold">৳{productPrice}</span>
+              {/* Delivery Speed Section (Figma 1:2091) */}
+              <div className="space-y-3 pt-3 border-t border-dashed border-slate-100">
+                {/* Section Header */}
+                <div className="flex items-center gap-2 text-crab-red/90">
+                  <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">🚚</span>
+                  <h4 className="font-bold text-[18px]">Delivery speed</h4>
+                </div>
+
+                <div className="space-y-2">
+                  {[
+                    { val: "inside", label: "ঢাকার ভিতর", fee: 60 },
+                    { val: "outside", label: "ঢাকার বাহিরে", fee: 120 },
+                    { val: "subcity", label: "ঢাকা সাব-সিটি ভিতর", fee: 100 },
+                  ].map((option) => (
+                    <label
+                      key={option.val}
+                      onClick={() => setShippingArea(option.val as any)}
+                      className={`flex items-center justify-between p-3 rounded-[8px] border cursor-pointer transition-all ${
+                        shippingArea === option.val
+                          ? "border-crab-red bg-crab-red/5"
+                          : "border-slate-100 bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="shipping_option"
+                          checked={shippingArea === option.val}
+                          readOnly
+                          className="w-4 h-4 text-crab-red focus:ring-crab-red"
+                        />
+                        <span className="text-slate-800 font-semibold text-[16px]">{option.label}</span>
+                      </div>
+                      <span className="font-black text-crab-red text-[16px]">{option.fee} ৳</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Payment Section (Figma 1:2126) */}
+              <div className="space-y-3 pt-3 border-t border-dashed border-slate-100">
+                {/* Section Header */}
+                <div className="flex items-center gap-2 text-crab-red/90">
+                  <span className="w-9 h-9 rounded-full bg-crab-red/10 flex items-center justify-center text-[18px] text-crab-red">💳</span>
+                  <h4 className="font-bold text-[18px]">Payment</h4>
+                </div>
+
+                <div className="p-3.5 rounded-[8px] border border-crab-red bg-crab-red/5 flex flex-col gap-1.5">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      checked
+                      readOnly
+                      className="w-4 h-4 text-crab-red focus:ring-crab-red"
+                    />
+                    <span className="text-slate-800 font-bold text-[16px]">Cash On Delivery</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-slate-600">
-                    <span>ডেলিভারি চার্জ</span>
-                    <span className="font-bold">
-                      {selectedWeight === "2" ? "ফ্রী (০)" : `৳${deliveryFee}`}
-                    </span>
+                  <p className="text-xs text-slate-500 pl-7">পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</p>
+                </div>
+              </div>
+
+              {/* Order Summary & Submit Section (Figma 1:2150) */}
+              <div className="space-y-4 pt-4 border-t border-dashed border-slate-100">
+                <div className="p-4 rounded-xl bg-crab-red/10 text-crab-red space-y-3">
+                  {/* Section Header */}
+                  <div className="flex items-center gap-2 pb-2 border-b border-crab-red/20">
+                    <span className="text-[18px]">📝</span>
+                    <h4 className="font-bold text-[18px]">Order summary</h4>
                   </div>
-                  <div className="border-t border-slate-200 pt-2 flex justify-between items-center">
-                    <span className="font-extrabold text-slate-900 text-sm">সর্বমোট প্রদেয় মূল্য</span>
-                    <span className="font-black text-crab-red text-xl font-heading">৳{totalAmount}</span>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium">Subtotal</span>
+                    <span className="font-bold text-base">{productPrice} ৳</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium">Delivery</span>
+                    <span className="font-bold text-base">{deliveryFee} ৳</span>
+                  </div>
+                  <div className="border-t border-crab-red/20 pt-3 flex justify-between items-center text-crab-red">
+                    <span className="font-black text-base uppercase tracking-wider">TOTAL</span>
+                    <span className="font-black text-[22px]">{totalAmount} ৳</span>
                   </div>
                 </div>
 
@@ -583,21 +719,28 @@ export default function KhaiKhaiClient({
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 bg-crab-red hover:bg-crab-red/90 text-white text-base font-extrabold rounded-xl shadow-xl shadow-crab-red/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-crab-red hover:bg-crab-red/90 text-white text-lg font-black rounded-xl shadow-xl shadow-crab-red/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="animate-spin w-4 h-4" /> অর্ডার প্রসেস হচ্ছে...
+                      <Loader2 className="animate-spin w-5 h-5" /> অর্ডার প্রসেস হচ্ছে...
                     </>
                   ) : (
                     <>
-                      অর্ডার নিশ্চিত করুন (৳{totalAmount})
+                      <span>🔒</span>
+                      <span>PLACE ORDER · {totalAmount} ৳</span>
                     </>
                   )}
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
+
+                {/* Footer security badges */}
+                <div className="flex justify-center items-center gap-6 text-[12px] text-slate-400 font-medium">
+                  <span className="flex items-center gap-1">🛡️ Secure checkout</span>
+                  <span className="flex items-center gap-1">🤝 COD available</span>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
