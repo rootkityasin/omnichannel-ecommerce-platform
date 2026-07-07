@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Volume1,
   Volume2,
@@ -66,6 +67,9 @@ function getBackgroundAudio() {
 }
 
 export function HomepageSoundButton() {
+  const pathname = usePathname();
+  const isKhaiKhaiPage = pathname?.endsWith("/khai-khai");
+
   const [isMounted, setIsMounted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
@@ -273,7 +277,7 @@ export function HomepageSoundButton() {
     }
   };
 
-  if (!isMounted) return null;
+  if (!isMounted || isKhaiKhaiPage) return null;
 
   const VolumeIcon = isMuted ? VolumeX : volume <= 0.5 ? Volume1 : Volume2;
 

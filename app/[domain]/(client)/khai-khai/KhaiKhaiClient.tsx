@@ -273,18 +273,16 @@ export default function KhaiKhaiClient({
       <div className="w-full max-w-[380px] md:max-w-[1170px] flex flex-col items-stretch justify-center relative z-10 space-y-6 md:space-y-12">
         
         {/* Title Block (Figma 1:1720) */}
-        <div className="w-full text-center pb-2">
+        <div className="w-full text-center pb-2 pt-8 md:pt-12">
           <h1 className="text-[24px] md:text-[35px] font-bold leading-[36px] md:leading-[52.5px] text-white">
-            নিজস্ব ফ্যাক্টরিতে তৈরি &quot;খাই খাই বাকেট&quot;,<br />
-            সারা বাংলাদেশে হোম ডেলিভারি দেওয়া হয়!!
+            CrabKhai এর সুন্দরবনের স্বাদে তৈরি &quot;খাই খাই বাকেট&quot; এখন সারা বাংলাদেশে হোম ডেলিভারি!
           </h1>
         </div>
 
         {/* Subtitle Block (Figma 1:1726) */}
         <div className="w-full text-center pb-3">
           <p className="text-[20px] md:text-[28px] font-semibold leading-[30px] md:leading-[42px] text-white/95">
-            গঞ্জের মিষ্টি কোয়ালিটি খাই খাই বাকেট, প্রতিটি পিসে<br />
-            দুধ এবং ক্ষীর এর স্বাদ!
+            সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে CrabKhai এর প্রিমিয়াম খাই খাই বাকেট, প্রতিটি বাইটে খাঁটি দুধ ও ক্ষীরের অসাধারণ স্বাদ!
           </p>
         </div>
 
@@ -338,17 +336,17 @@ export default function KhaiKhaiClient({
             <div className="flex flex-col items-stretch w-full h-full justify-between">
               {/* Card Header (Figma 1:1754) */}
               <div className="bg-[#220205] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
-                পণ্যের বিবরণ
+                CrabKhai বাকেটের বিবরণ
               </div>
 
               {/* Spec List (Figma 1:1758) */}
               <div className="w-full space-y-2.5 mb-6 text-left flex-1 flex flex-col justify-center">
                 {[
-                  { label: "নাম:", val: "খাই খাই বাকেট" },
-                  { label: "ধরন:", val: "ক্ষীর, মালাই ও ঘীরের তৈরি ঐতিহ্যবাহী মিষ্টি" },
-                  { label: "স্বাদ:", val: "সুস্বাদু মালাই ও এলাচির সুবাসযুক্ত অপূর্ব মিষ্টি স্বাদ" },
+                  { label: "নাম:", val: "CrabKhai খাই খাই বাকেট" },
+                  { label: "ধরন:", val: "সুন্দরবনের রেসিপিতে তৈরি প্রিমিয়াম ক্ষীর ও মালাই মিষ্টি" },
+                  { label: "স্বাদ:", val: "সুন্দরবনের ঐতিহ্যবাহী মালাই ও এলাচির অপূর্ব স্বাদ" },
                   { label: "উপাদান:", val: "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই, চিনি ও এলাচ" },
-                  { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
+                  { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
                     <span className="w-4 h-4 rounded-full bg-[#220205] shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
@@ -396,27 +394,27 @@ export default function KhaiKhaiClient({
             <div>
               {/* Header Bar */}
               <div className="bg-crab-red w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
-                কেন আমাদের খাই খাই বাকেট অন্যদের<br />থেকে আলাদা
+                কেন CrabKhai এর খাই খাই বাকেট অন্যদের থেকে আলাদা
               </div>
 
               {/* Intro Paragraphs */}
               <div className="px-2.5 py-4 space-y-4 text-black text-[18px] leading-[28px] text-left">
                 <p className="text-black font-medium">
-                  গঞ্জের মিষ্টির প্রতিটি প্রোডাক্টের মতোই আমাদের খাঁটি দুধ এর ক্ষীর থেকে তৈরি করা হয় এই খাই খাই বাকেট মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
+                  সুন্দরবনের ঐতিহ্যবাহী রেসিপি অনুসরণ করে CrabKhai এর খাঁটি দুধের ক্ষীর থেকে তৈরি করা হয় এই খাই খাই বাকেট, মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
                 </p>
                 <p className="text-black font-medium">
-                  খাঁটি দুধ এবং মালাই ও ক্ষীর এর এত সুন্দর সংমিশ্রন যা একবার মুখে দিলে এর স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
+                  খাঁটি দুধ, মালাই ও ক্ষীরের এত সুন্দর সংমিশ্রণ যা একবার মুখে দিলে সুন্দরবনের স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
                 </p>
               </div>
 
               {/* Bullet List */}
               <div className="px-2.5 pb-4 space-y-3">
                 {[
-                  "খাঁটি গরুর দুধের ছানা, ক্ষীর, মালাই ও এলাচ দিয়ে প্রস্তুত করা হয়।",
-                  "প্রতিটি বাকেটে পাবেন মালাই এবং ক্ষীরের ভরপুর পুষ্টি ও স্বাদ।",
-                  "প্রিমিয়াম বাকেট প্যাকেজিং যা গিফটিং বা আপ্যায়নের জন্য দারুণ।",
-                  "কোনো কৃত্রিম সুবাস বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
-                  "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে আমাদের নিজস্ব কারখানায় তৈরি।"
+                  "সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে খাঁটি দুধ, ক্ষীর, মালাই ও এলাচ দিয়ে প্রস্তুত।",
+                  "প্রতিটি CrabKhai বাকেটে পাবেন মালাই এবং ক্ষীরের ভরপুর পুষ্টি ও স্বাদ।",
+                  "CrabKhai এর প্রিমিয়াম বাকেট প্যাকেজিং — গিফটিং বা আপ্যায়নের জন্য দারুণ।",
+                  "কোনো কৃত্রিম সুবাস বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
+                  "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে CrabKhai এর নিজস্ব কারখানায় তৈরি।"
                 ].map((text, idx) => (
                   <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
                     {/* Crab icon related to CrabKhai */}
@@ -459,7 +457,7 @@ export default function KhaiKhaiClient({
         <div className="w-full bg-white p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.1)] flex flex-col items-stretch">
           {/* Header Bar */}
           <div className="bg-crab-red w-full py-2.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
-            আমাদের কাছে কেন অর্ডার করবেন
+            CrabKhai থেকে কেন অর্ডার করবেন
           </div>
 
           {/* Bullet List */}
