@@ -44,8 +44,8 @@ export default function KhaiKhaiClient({
   // Showcase Images State
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const showcaseImages = [
-    "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp",
     "/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp",
+    "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp",
   ];
 
   // Auto-slide images every 4 seconds
@@ -305,10 +305,10 @@ export default function KhaiKhaiClient({
         {/* Responsive Grid for Hero Showcase and Specifications (Figma 1:2343) */}
         <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8 items-stretch">
           {/* Image Showcase Box (Figma 1:1738) */}
-          <div className="w-full md:w-1/2 bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204] flex flex-col">
-            <div className="bg-[#220205] border border-white p-[5px] rounded-[8px] overflow-hidden relative group flex-1 flex flex-col justify-center">
+          <div className="w-full md:w-1/2 flex flex-col">
+            <div className="overflow-hidden relative group flex-1 flex flex-col justify-center rounded-[8px]">
               {/* Image Slider */}
-              <div className="aspect-[325/365.6] md:aspect-[545/613.13] relative rounded-[6px] overflow-hidden flex items-center justify-center bg-slate-950 flex-1">
+              <div className="aspect-[325/365.6] md:aspect-[545/613.13] relative rounded-[8px] overflow-hidden flex items-center justify-center flex-1">
                 <img
                   src={showcaseImages[activeImageIdx]}
                   alt={`Khai Khai Bucket - ${activeImageIdx + 1}`}
@@ -446,7 +446,7 @@ export default function KhaiKhaiClient({
           <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
             <div className="w-full h-full rounded-[8px] overflow-hidden shadow-2xl border border-white/10 bg-[#1a0204] flex items-center justify-center">
               <img
-                src="/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp"
+                src="/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp"
                 alt="CrabKhai Bucket Banner"
                 className="w-full h-full object-cover select-none rounded-[8px]"
               />
@@ -696,8 +696,6 @@ export default function KhaiKhaiClient({
                 <div className="space-y-2">
                   {[
                     { val: "inside", label: "ঢাকার ভিতর", fee: 60 },
-                    { val: "outside", label: "ঢাকার বাহিরে", fee: 120 },
-                    { val: "subcity", label: "ঢাকা সাব-সিটি ভিতর", fee: 100 },
                   ].map((option) => (
                     <label
                       key={option.val}
