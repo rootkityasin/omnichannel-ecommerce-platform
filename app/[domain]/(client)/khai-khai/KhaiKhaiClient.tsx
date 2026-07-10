@@ -71,9 +71,7 @@ export default function KhaiKhaiClient({
 
   const singleProductPrice = priceMap[selectedWeight];
   const productPrice = singleProductPrice * quantity;
-  const deliveryFee = (selectedWeight === "2" || selectedWeight === "3") ? 0 : (
-    shippingArea === "inside" ? 60 : (shippingArea === "subcity" ? 100 : 120)
-  );
+  const deliveryFee = (selectedWeight === "2" || selectedWeight === "3") ? 0 : 100;
   const totalAmount = productPrice + deliveryFee;
 
   // Resolve DB Product ID
@@ -695,7 +693,7 @@ export default function KhaiKhaiClient({
 
                 <div className="space-y-2">
                   {[
-                    { val: "inside", label: "ঢাকার ভিতর", fee: 60 },
+                    { val: "inside", label: "ঢাকার ভিতর", fee: 100 },
                   ].map((option) => (
                     <label
                       key={option.val}
