@@ -341,8 +341,8 @@ export default function KhaiKhaiClient({
               {/* Spec List (Figma 1:1758) */}
               <div className="w-full space-y-2.5 mb-6 text-left flex-1 flex flex-col justify-center">
                 {[
-                  "Premium Ready-to-Fry Soft Shell Crab",
-                  "Guaranteed FIFA Player Card",
+                  "প্রিমিয়াম রেডি-টু-ফ্রাই সফট শেল ক্র্যাব",
+                  "নিশ্চিত FIFA প্লেয়ার কার্ড",
                   "৫% Discount Card (পরবর্তী অর্ডারের জন্য)",
                   "World Cup Jersey Lottery-তে অংশ নেওয়ার সুযোগ"
                 ].map((text, idx) => (
@@ -357,10 +357,17 @@ export default function KhaiKhaiClient({
 
               {/* Price and Stock Promos */}
               <div className="w-full text-white text-left space-y-2.5 mb-6 px-1">
-                <p className="text-[17px] font-medium text-white/90">যেটা আলাদা আলাদা কিনলে লাগবে ১,৭৪০ টাকা</p>
+                <p className="text-[17px] font-medium text-white/90">
+                  যেটা আলাদা আলাদা কিনলে লাগবে{" "}
+                  <span className="relative inline-block px-1">
+                    ১,৭৪০
+                    <span className="absolute inset-0 flex items-center justify-center text-[22px] pointer-events-none select-none">❌</span>
+                  </span>{" "}
+                  টাকা
+                </p>
                 <p className="text-[22px] font-bold text-yellow-300">মূল্য: ১,৬৯৯ টাকা</p>
                 <p className="text-[15px] font-medium text-white/90 leading-[22px] pt-1">
-                  স্টক সীমিত। আজই অর্ডার করুন এবং বিশ্বকাপের প্রতিটি ম্যাচকে করে তুলুন আরও স্মরণীয়।
+                  স্টক সীমিত। আজই অর্ডার করুন এবং উপভোগ করুন সুন্দরবনের আসল কাঁকড়া।
                 </p>
               </div>
 
@@ -406,11 +413,11 @@ export default function KhaiKhaiClient({
               {/* Product List Section */}
               <div className="px-2.5 py-4 space-y-3 text-left">
                 {[
-                  "২০০ গ্রাম মসলা ক্র্যাব বম্ব — ৳৩৩০",
-                  "২০০ গ্রাম ক্রিসপি ক্র্যাব বম্ব — ৳৩৩০",
-                  "২০০ গ্রাম মসলা ক্র্যাব উইংস — ৳৩৫০",
-                  "২০০ গ্রাম ক্রিসপি ক্র্যাব উইংস — ৳৩৩০",
-                  "২০০ গ্রাম ক্রিসপি টেম্পুরা শ্রিম্প — ৳৪০০"
+                  "২০০ গ্রাম মসলা ক্র্যাব বম্ব",
+                  "২০০ গ্রাম ক্রিসপি ক্র্যাব বম্ব",
+                  "২০০ গ্রাম মসলা ক্র্যাব উইংস",
+                  "২০০ গ্রাম ক্রিসপি ক্র্যাব উইংস",
+                  "২০০ গ্রাম ক্রিসপি টেম্পুরা শ্রিম্প"
                 ].map((text, idx) => (
                   <div key={idx} className="flex items-center py-2.5 border-b border-dashed border-slate-100 last:border-b-0 text-[18px] text-black">
                     <span className="text-crab-red mr-3 text-[20px]">🦀</span>
