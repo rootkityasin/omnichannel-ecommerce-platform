@@ -266,23 +266,23 @@ export default function KhaiKhaiClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#1a0204] py-6 px-4 md:px-0 font-bangla flex flex-col items-center">
+    <div className="min-h-screen bg-white py-6 px-4 md:px-0 font-bangla flex flex-col items-center">
       {/* Decorative Ornaments / Background Image Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,43,60,0.2)_0%,rgba(26,2,4,1)_100%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,43,60,0.05)_0%,rgba(255,255,255,1)_100%)] pointer-events-none" />
 
       {/* Main Container mimicking standard mobile viewport layout */}
       <div className="w-full max-w-[380px] md:max-w-[1170px] flex flex-col items-stretch justify-center relative z-10 space-y-6 md:space-y-12">
         
         {/* Title Block (Figma 1:1720) */}
         <div className="w-full text-center pb-2 pt-8 md:pt-12">
-          <h1 className="text-[24px] md:text-[35px] font-bold leading-[36px] md:leading-[52.5px] text-white">
+          <h1 className="text-[24px] md:text-[35px] font-bold leading-[36px] md:leading-[52.5px] text-black">
             CrabKhai এর সুন্দরবনের স্বাদে তৈরি &quot;খাই খাই বাকেট&quot; এখন সারা বাংলাদেশে হোম ডেলিভারি!
           </h1>
         </div>
 
         {/* Subtitle Block (Figma 1:1726) */}
         <div className="w-full text-center pb-3">
-          <p className="text-[20px] md:text-[28px] font-semibold leading-[30px] md:leading-[42px] text-white/95">
+          <p className="text-[20px] md:text-[28px] font-semibold leading-[30px] md:leading-[42px] text-black/80">
             সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে CrabKhai এর প্রিমিয়াম খাই খাই বাকেট, প্রতিটি বাইটে সুন্দরবনের কাঁকড়ার অসাধারণ স্বাদ!
           </p>
         </div>
@@ -295,7 +295,7 @@ export default function KhaiKhaiClient({
               const el = document.getElementById("order-form-section");
               el?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="bg-crab-red hover:bg-crab-red/90 text-white font-bold text-[22px] rounded-[5px] w-[201.8px] h-[53px] flex items-center justify-center gap-2 border border-white/20 transition-all shadow-lg active:scale-95"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold text-[22px] rounded-[5px] w-[201.8px] h-[53px] flex items-center justify-center gap-2 border border-white/20 transition-all shadow-lg active:scale-95"
           >
             <span>🛒</span>
             অর্ডার করুন!
@@ -333,10 +333,10 @@ export default function KhaiKhaiClient({
           </div>
 
           {/* Specifications Card (Figma 1:1750) */}
-          <div className="w-full md:w-1/2 bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_#1a0204] flex flex-col justify-between">
+          <div className="w-full md:w-1/2 bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.15)] flex flex-col justify-between">
             <div className="flex flex-col items-stretch w-full h-full justify-between">
               {/* Card Header (Figma 1:1754) */}
-              <div className="bg-[#220205] w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-white mb-4">
+              <div className="bg-white w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-yellow-500 mb-4">
                 CrabKhai বাকেটের বিবরণ
               </div>
 
@@ -350,7 +350,7 @@ export default function KhaiKhaiClient({
                   { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
-                    <span className="w-4 h-4 rounded-full bg-[#220205] shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
+                    <span className="w-4 h-4 rounded-full bg-white shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
                     <p className="text-white">
                       <span className="font-bold mr-1.5">{item.label}</span>
                       <span className="font-light">{item.val}</span>
@@ -364,7 +364,7 @@ export default function KhaiKhaiClient({
                 <div className="w-full flex justify-center pb-1">
                   <a
                     href={`tel:${initialSiteConfig?.contactPhone || "01804221161"}`}
-                    className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+                    className="bg-white hover:bg-slate-100 border-[3px] border-yellow-500 rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-yellow-500 text-[18px] transition-all shadow-md active:scale-95"
                   >
                     <span>📞</span>
                     কল করে অর্ডার করুন!
@@ -377,7 +377,7 @@ export default function KhaiKhaiClient({
                     href={`https://wa.me/${(initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "").startsWith("88") ? (initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "") : "88" + (initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="bg-[#220205] hover:bg-[#220205]/90 border-[3px] border-white rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-white text-[18px] transition-all shadow-md active:scale-95"
+                    className="bg-white hover:bg-slate-100 border-[3px] border-yellow-500 rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-yellow-500 text-[18px] transition-all shadow-md active:scale-95"
                   >
                     <span>💬</span>
                     হোয়াটসঅ্যাপ
@@ -434,7 +434,7 @@ export default function KhaiKhaiClient({
                   const el = document.getElementById("order-form-section");
                   el?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="bg-[#220205] hover:bg-[#220205]/90 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
               >
                 <span>🛒</span>
                 অর্ডার করুন!
@@ -444,7 +444,7 @@ export default function KhaiKhaiClient({
 
           {/* Promotional Banner (Figma 1:1885 clone) */}
           <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
-            <div className="w-full h-full rounded-[8px] overflow-hidden shadow-2xl border border-white/10 bg-[#1a0204] flex items-center justify-center">
+            <div className="w-full h-full rounded-[8px] overflow-hidden shadow-2xl border border-slate-100 bg-white flex items-center justify-center">
               <img
                 src="/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp"
                 alt="CrabKhai Bucket Banner"
@@ -486,7 +486,7 @@ export default function KhaiKhaiClient({
                 const el = document.getElementById("order-form-section");
                 el?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="bg-[#220205] hover:bg-[#220205]/90 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold text-[18px] rounded-[5px] w-[176.94px] h-[49px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
             >
               <span>🛒</span>
               অর্ডার করুন!
