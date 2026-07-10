@@ -44,6 +44,7 @@ export default function KhaiKhaiClient({
   // Showcase Images State
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const showcaseImages = [
+    "/images/crabkhai-bucket-new.jpg",
     "/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp",
     "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp",
   ];
@@ -51,7 +52,7 @@ export default function KhaiKhaiClient({
   // Auto-slide images every 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveImageIdx((prev) => (prev === 1 ? 0 : prev + 1));
+      setActiveImageIdx((prev) => (prev === 2 ? 0 : prev + 1));
     }, 4000);
     return () => clearInterval(timer);
   }, []);
