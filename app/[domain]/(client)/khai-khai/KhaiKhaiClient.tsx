@@ -274,14 +274,14 @@ export default function KhaiKhaiClient({
         {/* Title Block (Figma 1:1720) */}
         <div className="w-full text-center pb-2 pt-8 md:pt-12">
           <h1 className="text-[24px] md:text-[35px] font-bold leading-[36px] md:leading-[52.5px] text-black">
-            CrabKhai এর সুন্দরবনের স্বাদে তৈরি &quot;খাই খাই বাকেট&quot; এখন সারা বাংলাদেশে হোম ডেলিভারি!
+            CrabKhai এর &quot;খাই খাই বাকেট&quot;
           </h1>
         </div>
 
         {/* Subtitle Block (Figma 1:1726) */}
         <div className="w-full text-center pb-3">
           <p className="text-[20px] md:text-[28px] font-semibold leading-[30px] md:leading-[42px] text-black/80">
-            সুন্দরবনের ঐতিহ্যবাহী রেসিপিতে CrabKhai এর প্রিমিয়াম খাই খাই বাকেট, প্রতিটি বাইটে সুন্দরবনের কাঁকড়ার অসাধারণ স্বাদ!
+            CrabKhai এর প্রিমিয়াম খাই খাই বাকেট, প্রতিটি বাইটে সুন্দরবনের কাঁকড়ার অসাধারণ স্বাদ!
           </p>
         </div>
 
@@ -334,7 +334,7 @@ export default function KhaiKhaiClient({
           <div className="w-full md:w-1/2 bg-crab-red p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.15)] flex flex-col justify-between">
             <div className="flex flex-col items-stretch w-full h-full justify-between">
               {/* Card Header (Figma 1:1754) */}
-              <div className="bg-white w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-yellow-500 mb-4">
+              <div className="bg-white w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-black mb-4">
                 CrabKhai বাকেটের বিবরণ
               </div>
 
@@ -362,7 +362,7 @@ export default function KhaiKhaiClient({
                 <div className="w-full flex justify-center pb-1">
                   <a
                     href={`tel:${initialSiteConfig?.contactPhone || "01804221161"}`}
-                    className="bg-white hover:bg-slate-100 border-[3px] border-yellow-500 rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-yellow-500 text-[18px] transition-all shadow-md active:scale-95"
+                    className="bg-white hover:bg-slate-100 border-[3px] border-black rounded-[8px] w-[243.86px] h-[55px] flex items-center justify-center gap-2 font-bold text-black text-[18px] transition-all shadow-md active:scale-95"
                   >
                     <span>📞</span>
                     কল করে অর্ডার করুন!
@@ -375,7 +375,7 @@ export default function KhaiKhaiClient({
                     href={`https://wa.me/${(initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "").startsWith("88") ? (initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "") : "88" + (initialSiteConfig?.contactPhone || "01804221161").replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="bg-white hover:bg-slate-100 border-[3px] border-yellow-500 rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-yellow-500 text-[18px] transition-all shadow-md active:scale-95"
+                    className="bg-white hover:bg-slate-100 border-[3px] border-black rounded-[8px] w-[178.55px] h-[55px] flex items-center justify-center gap-2 font-bold text-black text-[18px] transition-all shadow-md active:scale-95"
                   >
                     <span>💬</span>
                     হোয়াটসঅ্যাপ
@@ -393,7 +393,7 @@ export default function KhaiKhaiClient({
             <div>
               {/* Header Bar */}
               <div className="bg-crab-red w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
-                কেন CrabKhai এর খাই খাই বাকেট অন্যদের থেকে আলাদা
+                crab প্রোডাক্টে কী কী আছে
               </div>
 
               {/* Intro Paragraphs */}
@@ -462,11 +462,11 @@ export default function KhaiKhaiClient({
           {/* Bullet List */}
           <div className="px-2.5 py-4 space-y-4">
             {[
-              "দীর্ঘ ২ বছর থেকে আমরা অনলাইনে বিশ্বস্ততার সাথে ব্যবসা করছি এবং উৎকৃষ্ট পণ্য সরবরাহের মাধ্যমে সেবা দিচ্ছি।",
-              "নিজস্ব প্রোডাকশন: প্রতিটি খাই খাই বাকেট তৈরি হয় আমাদের নিজস্ব ফ্যাক্টরিতে।",
-              "সুন্দর প্যাকেজিং — গিফটিং-এর জন্য একদম উপযুক্ত।",
-              "সর্বোচ্চ হাইজিন মেন্টেন করে আমাদের খাই খাই বাকেট গুলো তৈরি করা হয়।",
-              "সারা বাংলাদেশে ২৪ থেকে ৭২ ঘণ্টার মধ্যে হোম ডেলিভারী করা হয়।"
+              "সুন্দরবনের তাজা কাঁকড়া",
+              "প্রতিটি CrabKhai বাকেটে পাবেন কাঁকড়ার ভরপুর প্রোটিন ও অসাধারণ স্বাদ।",
+              "কোনো কৃত্রিম ফ্লেভার বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
+              "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে প্রতিটি খাই খাই বাকেট তৈরি হয় আমাদের নিজস্ব ফ্যাক্টরিতে।",
+              "সর্বোচ্চ হাইজিন মেন্টেন করে আমাদের খাই খাই বাকেট গুলো তৈরি করা হয়।"
             ].map((text, idx) => (
               <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
                 {/* Check icon in theme color */}
