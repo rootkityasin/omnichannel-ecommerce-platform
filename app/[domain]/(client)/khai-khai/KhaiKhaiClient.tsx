@@ -357,15 +357,8 @@ export default function KhaiKhaiClient({
 
               {/* Price and Stock Promos */}
               <div className="w-full text-white text-left space-y-2.5 mb-6 px-1">
-                <p className="text-[17px] font-medium text-white/90">
-                  যেটা আলাদা আলাদা কিনলে লাগবে{" "}
-                  <span className="relative inline-block px-1">
-                    ১,৭৪০
-                    <span className="absolute inset-0 flex items-center justify-center text-[22px] pointer-events-none select-none">❌</span>
-                  </span>{" "}
-                  টাকা
-                </p>
-                <p className="text-[22px] font-bold text-yellow-300">মূল্য: ১,৬৯৯ টাকা</p>
+                <p className="text-[17px] font-medium text-white/90">যেটা আলাদা আলাদা কিনলে লাগবে ১,৭৪০ টাকা</p>
+                <p className="text-[22px] font-bold text-yellow-300">এখন কিনতে লাগবে মাত্র ১,৬৯৯ টাকা</p>
                 <p className="text-[15px] font-medium text-white/90 leading-[22px] pt-1">
                   স্টক সীমিত। আজই অর্ডার করুন এবং উপভোগ করুন সুন্দরবনের আসল কাঁকড়া।
                 </p>
@@ -427,7 +420,7 @@ export default function KhaiKhaiClient({
 
                 {/* Total Weight Highlight */}
                 <div className="mt-4 p-3 bg-crab-red/5 rounded-[6px] border border-crab-red/20 text-center font-bold text-[20px] text-crab-red">
-                  Total 1kg softshell crab
+                  মোট ১ কেজি সফটশেল ক্র্যাব
                 </div>
               </div>
             </div>
@@ -538,9 +531,9 @@ export default function KhaiKhaiClient({
                 {/* Variations Rows */}
                 <div className="space-y-3">
                   {[
-                    { val: "1", label: "1 Kg", price: 1699, tag: "Best Sell", img: "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp" },
-                    { val: "2", label: "2 Kg", price: 3199, tag: "ডেলিভারী ফ্রী", img: "/media/tenants/crabkhai/uploads/2026/06/5a8003d3-4277-4296-b5d9-21adda0876c0/original.webp" },
-                    { val: "3", label: "3 Kg", price: 4599, tag: "ডেলিভারী ফ্রী", img: "/media/tenants/crabkhai/uploads/2026/06/d8f43938-341d-4fd0-b60b-4a0dd83ea70b/original.webp" },
+                    { val: "1", label: "1 Kg", price: 1699, tag: "Best Sell", img: "/images/crabkhai-bucket-new.jpg" },
+                    { val: "2", label: "2 Kg", price: 3199, tag: "ডেলিভারী ফ্রী", img: "/images/crabkhai-bucket-new.jpg" },
+                    { val: "3", label: "3 Kg", price: 4599, tag: "ডেলিভারী ফ্রী", img: "/images/crabkhai-bucket-new.jpg" },
                   ].map((item) => {
                     const isSelected = selectedWeight === item.val;
                     return (
