@@ -335,26 +335,33 @@ export default function KhaiKhaiClient({
             <div className="flex flex-col items-stretch w-full h-full justify-between">
               {/* Card Header (Figma 1:1754) */}
               <div className="bg-white w-full py-2.5 rounded-[8px] text-center font-bold text-[24px] text-black mb-4">
-                CrabKhai বাকেটের বিবরণ
+                প্রতি বালতিতে থাকছে:
               </div>
 
               {/* Spec List (Figma 1:1758) */}
               <div className="w-full space-y-2.5 mb-6 text-left flex-1 flex flex-col justify-center">
                 {[
-                  { label: "নাম:", val: "CrabKhai খাই খাই বাকেট" },
-                  { label: "ধরন:", val: "সুন্দরবনের তাজা কাঁকড়া দিয়ে তৈরি প্রিমিয়াম সামুদ্রিক খাবার" },
-                  { label: "স্বাদ:", val: "সুন্দরবনের ঐতিহ্যবাহী মশলায় রান্না করা অপূর্ব ক্র্যাব স্বাদ" },
-                  { label: "উপাদান:", val: "সুন্দরবনের তাজা কাঁকড়া, বিশেষ মশলা ও ঐতিহ্যবাহী সস" },
-                  { label: "পরিবেশন:", val: "সরাসরি খাওয়ার উপযোগী" },
-                ].map((item, idx) => (
+                  "Premium Ready-to-Fry Soft Shell Crab",
+                  "Guaranteed FIFA Player Card",
+                  "৫% Discount Card (পরবর্তী অর্ডারের জন্য)",
+                  "World Cup Jersey Lottery-তে অংশ নেওয়ার সুযোগ"
+                ].map((text, idx) => (
                   <div key={idx} className="flex items-center pb-2 border-b border-dashed border-white/40 last:border-b-0 w-full text-[18px]">
-                    <span className="w-4 h-4 rounded-full bg-white shrink-0 mr-3 flex items-center justify-center text-[10px] text-crab-red">●</span>
-                    <p className="text-white">
-                      <span className="font-bold mr-1.5">{item.label}</span>
-                      <span className="font-light">{item.val}</span>
+                    <span className="shrink-0 mr-3 text-[20px]">☑️</span>
+                    <p className="text-white font-semibold">
+                      {text}
                     </p>
                   </div>
                 ))}
+              </div>
+
+              {/* Price and Stock Promos */}
+              <div className="w-full text-white text-left space-y-2.5 mb-6 px-1">
+                <p className="text-[17px] font-medium text-white/90">যেটা আলাদা আলাদা কিনলে লাগবে ১,৭৪০ টাকা</p>
+                <p className="text-[22px] font-bold text-yellow-300">মূল্য: ১,৬৯৯ টাকা</p>
+                <p className="text-[15px] font-medium text-white/90 leading-[22px] pt-1">
+                  স্টক সীমিত। আজই অর্ডার করুন এবং বিশ্বকাপের প্রতিটি ম্যাচকে করে তুলুন আরও স্মরণীয়।
+                </p>
               </div>
 
               <div className="space-y-3 w-full">
@@ -393,34 +400,28 @@ export default function KhaiKhaiClient({
             <div>
               {/* Header Bar */}
               <div className="bg-crab-red w-full py-3.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
-                crab প্রোডাক্টে কী কী আছে
+                Crab প্রোডাক্ট কী কী আছে
               </div>
 
-              {/* Intro Paragraphs */}
-              <div className="px-2.5 py-4 space-y-4 text-black text-[18px] leading-[28px] text-left">
-                <p className="text-black font-medium">
-                  সুন্দরবনের ঐতিহ্যবাহী রেসিপি অনুসরণ করে CrabKhai এর তাজা কাঁকড়া থেকে তৈরি করা হয় এই খাই খাই বাকেট, মান ও স্বাদের উপর সর্বোচ্চ গুরুত্ব দিয়ে।
-                </p>
-                <p className="text-black font-medium">
-                  তাজা কাঁকড়া ও বিশেষ মশলার এত সুন্দর সংমিশ্রণ যা একবার মুখে দিলে সুন্দরবনের স্বাদে হারিয়ে যাবেন ইনশাল্লাহ।
-                </p>
-              </div>
-
-              {/* Bullet List */}
-              <div className="px-2.5 pb-4 space-y-3">
+              {/* Product List Section */}
+              <div className="px-2.5 py-4 space-y-3 text-left">
                 {[
-                  "সুন্দরবনের তাজা কাঁকড়া ও বিশেষ মশলা দিয়ে ঐতিহ্যবাহী রেসিপিতে প্রস্তুত।",
-                  "প্রতিটি CrabKhai বাকেটে পাবেন কাঁকড়ার ভরপুর প্রোটিন ও অসাধারণ স্বাদ।",
-                  "CrabKhai এর প্রিমিয়াম বাকেট প্যাকেজিং — গিফটিং বা আপ্যায়নের জন্য দারুণ।",
-                  "কোনো কৃত্রিম ফ্লেভার বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
-                  "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে CrabKhai এর নিজস্ব কিচেনে তৈরি।"
+                  "২০০ গ্রাম মসলা ক্র্যাব বম্ব — ৳৩৩০",
+                  "২০০ গ্রাম ক্রিসপি ক্র্যাব বম্ব — ৳৩৩০",
+                  "২০০ গ্রাম মসলা ক্র্যাব উইংস — ৳৩৫০",
+                  "২০০ গ্রাম ক্রিসপি ক্র্যাব উইংস — ৳৩৩০",
+                  "২০০ গ্রাম ক্রিসপি টেম্পুরা শ্রিম্প — ৳৪০০"
                 ].map((text, idx) => (
-                  <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
-                    {/* Crab icon related to CrabKhai */}
-                    <span className="text-crab-red mr-3 mt-1.5 shrink-0 text-[20px]">🦀</span>
-                    <p className="leading-[26px] text-black font-semibold">{text}</p>
+                  <div key={idx} className="flex items-center py-2.5 border-b border-dashed border-slate-100 last:border-b-0 text-[18px] text-black">
+                    <span className="text-crab-red mr-3 text-[20px]">🦀</span>
+                    <p className="font-semibold">{text}</p>
                   </div>
                 ))}
+
+                {/* Total Weight Highlight */}
+                <div className="mt-4 p-3 bg-crab-red/5 rounded-[6px] border border-crab-red/20 text-center font-bold text-[20px] text-crab-red">
+                  Total 1kg softshell crab
+                </div>
               </div>
             </div>
 
