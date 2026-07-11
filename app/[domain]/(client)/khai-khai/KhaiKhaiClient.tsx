@@ -420,7 +420,7 @@ export default function KhaiKhaiClient({
 
                 {/* Total Weight Highlight */}
                 <div className="mt-4 p-3 bg-crab-red/5 rounded-[6px] border border-crab-red/20 text-center font-bold text-[20px] text-crab-red">
-                  মোট ১ কেজি সফটশেল ক্র্যাব
+                  ১ কেজি নরম খোলসের কাঁকড়া এবং অথেনটিক ব্ল্যাক টাইগার শ্রিম্প
                 </div>
               </div>
             </div>
@@ -457,17 +457,20 @@ export default function KhaiKhaiClient({
         <div className="w-full bg-white p-[10px] rounded-[8px] shadow-[1px_1px_10px_0.5px_rgba(0,0,0,0.1)] flex flex-col items-stretch">
           {/* Header Bar */}
           <div className="bg-crab-red w-full py-2.5 rounded-[8px] text-center font-bold text-[20px] leading-[28px] text-white">
-            CrabKhai থেকে কেন অর্ডার করবেন
+            যে কারণে আমাদের কাঁকড়া বেস্ট: 🦀
           </div>
 
           {/* Bullet List */}
           <div className="px-2.5 py-4 space-y-4">
             {[
-              "সুন্দরবনের তাজা কাঁকড়া",
-              "প্রতিটি CrabKhai বাকেটে পাবেন কাঁকড়ার ভরপুর প্রোটিন ও অসাধারণ স্বাদ।",
-              "কোনো কৃত্রিম ফ্লেভার বা ক্ষতিকারক প্রিজারভেটিভ ব্যবহার করা হয় না।",
-              "সম্পূর্ণ স্বাস্থ্যসম্মত উপায়ে প্রতিটি খাই খাই বাকেট তৈরি হয় আমাদের নিজস্ব ফ্যাক্টরিতে।",
-              "সর্বোচ্চ হাইজিন মেন্টেন করে আমাদের খাই খাই বাকেট গুলো তৈরি করা হয়।"
+              "তাজা কাঁকড়া ও ব্ল্যাক টাইগার চিংড়ি স্বাস্থ্যসম্মত উপায়ে প্রতিটি আইটেম তৈরি হয়",
+              "সফট শেল কাঁকড়া। পুরোটাই খাওয়া যায়",
+              "লাইভ ফ্রোজেন অর্থাৎ আমাদের কাকড়া ফেচ করার পর ক্লিন & গ্রেডিং করে ফ্রিজে রেখে দেয়া হয়। যার কারণে সুন্দরবনের ফ্রেশনেস টা থেকে যায়।",
+              "আমরা ফ্যাক্টরি থেকে খুব কম স্টক করি। ইনভেন্টরি তে মাল ফেলে রাখিনা। যার কারণে প্রত্যেক টা কাঁকড়া আপনার বাসায় একদম ফ্রেশ টা পৌছায়।",
+              "বাসায়, পার্টিতে অথবা যে কোন অনুষ্ঠানে ইন্সট্যান্ট ভেজে খেতে পারবেন৷",
+              "বাসায় মেহমান আসলে নাস্তার জন্য পার্ফেক্ট, eye catchy একটা আইটেম৷",
+              "বাচ্চাদের টিফিনে ঝামেলা ছাড়া সকাল সকাল ভেজে দিতে পারবেন।",
+              "ব্রেডেড হওয়াতে ক্রিসপিনেস হবে ভরপুর।"
             ].map((text, idx) => (
               <div key={idx} className="flex items-start py-2.5 border-b border-slate-100 last:border-b-0 text-[18px] text-black">
                 {/* Check icon in theme color */}
@@ -475,6 +478,19 @@ export default function KhaiKhaiClient({
                 <p className="leading-[26px] text-black font-semibold">{text}</p>
               </div>
             ))}
+          </div>
+
+          {/* Additional Promotional Copy */}
+          <div className="px-2.5 pb-4 pt-2 text-center text-black space-y-3">
+            <p className="font-bold text-[18px] text-crab-red leading-[26px]">
+              এখনো অর্ডার না করে থাকলে জলদি অর্ডার করে ফেলেন। ১০০% সিওর, আপনার ভালো লাগতে বাধ্য 🦀❤️
+            </p>
+            <p className="font-black text-[22px] tracking-wide text-slate-800">
+              So Crabby, So Yummy
+            </p>
+            <p className="text-slate-500 font-bold text-[16px]">
+              #crabkhai #brocode #crabs
+            </p>
           </div>
 
           {/* Button */}
