@@ -829,7 +829,7 @@ export default function PromoPage() {
                         onClick={() =>
                           setNewCard({ ...newCard, style: "CLASSIC" })
                         }
-                        className={`cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center gap-2 transition-all ${newCard.style === "CLASSIC" ? "border-ocean-blue bg-blue-50/50" : "border-slate-100 hover:border-slate-200"}`}
+                        className={`cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center gap-2 transition-all ${newCard.style === "CLASSIC" ? "border-blue-600 bg-blue-50/50" : "border-slate-100 hover:border-slate-200"}`}
                       >
                         <div className="w-full h-12 bg-white rounded border border-slate-200 shadow-sm"></div>
                         <span className="text-xs font-bold text-slate-600">
@@ -974,7 +974,7 @@ export default function PromoPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-ocean-blue hover:bg-ocean-blue/90 text-white"
+                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold"
                 >
                   {editingPromoId ? "Update Promotion" : "Create Promotion"}
                 </Button>
